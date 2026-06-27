@@ -25,11 +25,20 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
 
           {/* Navigation */}
           <nav className="px-6 lg:px-8 py-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-20">
-            <div className="font-sans font-extrabold text-2xl tracking-tight select-none">
+            <div className="font-sans font-extrabold text-2xl tracking-tight select-none shrink-0">
               <span className="text-black dark:text-white">alur</span>
-              <span className="text-[#FACC15]">ku</span>
+              <span className="text-amber-600 dark:text-[#FACC15]">ku</span>
               <span className="text-black dark:text-white">.</span>
             </div>
+
+            {/* Corporate Menu Links */}
+            <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-300">
+              <button onClick={() => document.getElementById('specs-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Fitur</button>
+              <button onClick={() => document.getElementById('ai-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Asisten AI</button>
+              <button onClick={() => document.getElementById('comparison-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Keunggulan</button>
+              <button onClick={() => document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Tanya Jawab</button>
+            </div>
+
             <div className="flex items-center gap-6">
               {isInstallable && (
                 <button
@@ -81,7 +90,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
-                  Kuasai Waktumu, Lancarkan Alurmu.
+                  kuasai waktumu, lancarkan alurmu.
                 </div>
                 <h1
                   className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter mb-6 leading-[1.1] text-slate-900 dark:text-white reveal-on-scroll"
@@ -161,11 +170,12 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                         <img src="/favicon.png" className="w-6 h-6 rounded" alt="logo" />
                         <span className="text-[10px] sm:text-xs font-black tracking-tight text-slate-800 dark:text-white">Alurku Workspace</span>
                       </div>
-                      <div className="space-y-2 text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                        <div className="py-1.5 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default">📋 Papan Kanban</div>
-                        <div className="py-1.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-md transition-colors cursor-default">📅 Garis Waktu</div>
-                        <div className="py-1.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-md transition-colors cursor-default">📊 Analisis Kerja</div>
-                        <div className="py-1.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-md transition-colors cursor-default">⚙️ Pengaturan</div>
+                      <div className="space-y-1.5 text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                        <div className="px-2 text-[8px] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">Proyek Aktif</div>
+                        <div className="py-1 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default flex items-center gap-1.5">📁 Alurku Webapp</div>
+                        <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Sistem Database</div>
+                        <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Integrasi API</div>
+                        <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Desain Aplikasi</div>
                       </div>
                     </div>
                     {/* Mockup Kanban Board */}
