@@ -47,8 +47,8 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                 style={{ animationDelay: '300ms' }}
               >
                 {t(
-                  'Alurku organizes your work plans into clear daily priorities, complete with capacity estimates and real-time team progress visualizations.',
-                  'Alurku merapikan daftar rencana kerjamu menjadi prioritas harian yang jelas, lengkap dengan estimasi kapasitas, serta visualisasi progres tim secara real-time.'
+                  'alurku. organizes your work plans into clear daily priorities, complete with capacity estimates and real-time team progress visualizations.',
+                  'alurku. merapikan daftar rencana kerjamu menjadi prioritas harian yang jelas, lengkap dengan estimasi kapasitas, serta visualisasi progres tim secara real-time.'
                 )}
               </p>
               <div
@@ -118,7 +118,9 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                       <div className="px-2 text-[8px] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
                         {t('Active Projects', 'Proyek Aktif')}
                       </div>
-                      <div className="py-1 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default flex items-center gap-1.5">📁 Alurku Webapp</div>
+                      <div className="py-1 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default flex items-center gap-1.5">
+                        📁 alur<span className="text-[#EAB308] dark:text-[#FACC15]">ku</span>. Webapp
+                      </div>
                       <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">{t('📁 Database System', '📁 Sistem Database')}</div>
                       <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">{t('📁 API Integration', '📁 Integrasi API')}</div>
                       <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">{t('📁 App Design', '📁 Desain Aplikasi')}</div>
@@ -142,7 +144,9 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                         
                         {/* Card 1 */}
                         <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">{t('Alurku UI Design', 'Desain Antarmuka Alurku')}</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">
+                            {t('alurku. UI Design', 'Desain Antarmuka alurku.')}
+                          </span>
                           <div className="flex justify-between items-center">
                             <span className="text-[7px] sm:text-[8px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-1.5 rounded font-black">UI/UX</span>
                             <div className="flex items-center gap-1">

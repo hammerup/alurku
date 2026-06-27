@@ -192,7 +192,7 @@ export default function LandingPage({
                 handleInstallClick={handleInstallClick}
                 language={language}
               />
-              <LandingAISection showAuthForm={showAuthForm} />
+              <LandingAISection showAuthForm={showAuthForm} language={language} />
               <LandingFeatures showAuthForm={showAuthForm} />
               <LandingFAQ />
               <LandingCTA setIsLoginMode={setIsLoginMode} setShowAuthForm={setShowAuthForm} />
