@@ -23,13 +23,15 @@ export default function LandingHeader({
   return (
     <header className="sticky top-0 z-[100] w-full bg-[#111E38] text-white border-b border-slate-900/50 shadow-md">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
-        {/* Logo with enlarged favicon image icon */}
+        {/* Logo — squircle monogram badge matching footer style */}
         <div
           onClick={() => setCurrentTab('home')}
-          className="flex items-center gap-3 cursor-pointer hover:opacity-95 transition-opacity font-sans font-extrabold text-3xl lg:text-4xl tracking-tight select-none"
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity select-none"
         >
-          <img src="/favicon.png" alt="Alurku" className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover shadow-sm" />
-          <span className="text-white">
+          <div className="w-9 h-9 md:w-10 md:h-10 bg-[#FACC15] rounded-xl flex items-center justify-center shadow-sm shrink-0">
+            <span className="text-[#111E38] font-black text-lg leading-none">a</span>
+          </div>
+          <span className="font-black text-2xl md:text-3xl tracking-tight text-white leading-none">
             alur<span className="text-[#FACC15]">ku</span>.
           </span>
         </div>

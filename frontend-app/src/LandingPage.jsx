@@ -9,6 +9,8 @@ import LandingAISection from './components/LandingPage/LandingAISection';
 import LandingFeatures from './components/LandingPage/LandingFeatures';
 import LandingFAQ from './components/LandingPage/LandingFAQ';
 import LandingCTA from './components/LandingPage/LandingCTA';
+import LandingSocialProof from './components/LandingPage/LandingSocialProof';
+import LandingTestimonials from './components/LandingPage/LandingTestimonials';
 import LandingFeaturesPage from './components/LandingPage/LandingFeaturesPage';
 import LandingPricingPage from './components/LandingPage/LandingPricingPage';
 import LandingGuidePage from './components/LandingPage/LandingGuidePage';
@@ -171,6 +173,17 @@ export default function LandingPage({
             .animate-fade-up {
               animation: fade-up 0.5s ease-out both;
             }
+            @keyframes scroll-x {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-scroll-x {
+              animation: scroll-x 32s linear infinite;
+              width: max-content;
+            }
+            .animate-scroll-x:hover {
+              animation-play-state: paused;
+            }
           `}</style>
           <LandingHeader
             currentTab={currentTab}
@@ -192,8 +205,10 @@ export default function LandingPage({
                 handleInstallClick={handleInstallClick}
                 language={language}
               />
+              <LandingSocialProof language={language} />
               <LandingAISection showAuthForm={showAuthForm} language={language} />
               <LandingFeatures showAuthForm={showAuthForm} language={language} />
+              <LandingTestimonials language={language} />
               <LandingFAQ language={language} />
               <LandingCTA setIsLoginMode={setIsLoginMode} setShowAuthForm={setShowAuthForm} language={language} />
             </>
@@ -208,6 +223,9 @@ export default function LandingPage({
             setIsSupportAlertOpen={setIsSupportAlertOpen}
             setIsPrivacyOpen={setIsPrivacyOpen}
             setIsTermsOpen={setIsTermsOpen}
+            language={language}
+            isInstallable={isInstallable}
+            handleInstallClick={handleInstallClick}
           />
 
           {/* Jump to Top Button */}

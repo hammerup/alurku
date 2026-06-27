@@ -743,13 +743,16 @@ export default function LandingFeatures({ showAuthForm, language }) {
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16 reveal-on-scroll">
               <span className="text-neutral-500 font-bold tracking-widest uppercase text-xs mb-3 block">
-                Fitur Unggulan
+                {t('Key Features', 'Fitur Unggulan')}
               </span>
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6 uppercase">
-                Fitur Cerdas untuk Menemani Alur Kerjamu
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6">
+                {t('Smart Features to Elevate Your Workflow', 'Fitur Cerdas untuk Menemani Alur Kerjamu')}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
-                Lebih dari sekadar daftar tugas biasa. Dirancang secara intuitif untuk membantu Anda dan tim mencapai target lebih cepat tanpa stres.
+                {t(
+                  'More than just a to-do list. Designed intuitively to help you and your team hit targets faster — without the stress.',
+                  'Lebih dari sekadar daftar tugas biasa. Dirancang secara intuitif untuk membantu Anda dan tim mencapai target lebih cepat tanpa stres.'
+                )}
               </p>
             </div>
 
