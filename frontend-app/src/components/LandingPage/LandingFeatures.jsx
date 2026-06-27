@@ -262,14 +262,13 @@ export default function LandingFeatures({ showAuthForm }) {
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16 reveal-on-scroll">
               <span className="text-neutral-500 font-bold tracking-widest uppercase text-xs mb-3 block">
-                Global Infrastructure
+                Fitur Unggulan
               </span>
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6 uppercase">
-                Enterprise-Grade Architecture
+                Fitur Cerdas untuk Menemani Alur Kerjamu
               </h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
-                More than just a to-do list. Built on robust standards to securely automate your team's daily
-                operations.
+                Lebih dari sekadar daftar tugas biasa. Dirancang secara intuitif untuk membantu Anda dan tim mencapai target lebih cepat tanpa stres.
               </p>
             </div>
 
@@ -323,103 +322,55 @@ export default function LandingFeatures({ showAuthForm }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Specs Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Pillar 1: Automated AI Planning */}
               <div
                 className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
                 style={{ animationDelay: '100ms' }}
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-indigo-500/10 dark:group-hover:bg-indigo-500/20 transition-colors"></div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-indigo-500/10 dark:group-hover:bg-indigo-500/20 transition-colors"></div>
                 <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-indigo-100 dark:border-indigo-800/50">
-                  🔐
-                </div>
-                <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Zero-Trust Security
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Industry-standard security with stateless JWT, Bcrypt hashing, and strict Role-Based Access Control.
-                  Automated CI/CD pipelines protect against OWASP Top 10 vulnerabilities.
-                </p>
-              </div>
-              <div
-                className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
-                style={{ animationDelay: '200ms' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-blue-500/10 dark:group-hover:bg-blue-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-blue-100 dark:border-blue-800/50">
-                  ⏳
-                </div>
-                <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Intelligent Workflows
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Automated project scheduling that intelligently bypasses weekends and national holidays. A dynamic
-                  hybrid queue system tracks precise workload bottlenecks.
-                </p>
-              </div>
-              <div
-                className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
-                style={{ animationDelay: '300ms' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-emerald-500/10 dark:group-hover:bg-emerald-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-emerald-100 dark:border-emerald-800/50">
                   🤖
                 </div>
                 <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Multi-AI Co-Pilot
+                  Asisten Perencana Otomatis
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Dual-engine AI architecture (Google Gemini & Meta Llama 3) for proactive task drafting, live meeting
-                  extractions, and context-aware chat assistance.
+                  Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI Alurku akan memprediksi durasi dan menyusun jadwal harianmu secara otomatis, sehingga kamu tidak perlu lagi menebak-nebak.
                 </p>
               </div>
-              <div
-                className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
-                style={{ animationDelay: '100ms' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 dark:bg-sky-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-sky-500/10 dark:group-hover:bg-sky-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-sky-100 dark:border-sky-800/50">
-                  💬
-                </div>
-                <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Unified Collaboration
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Secure team workspaces with real-time chat, Direct Messages, 1-click Google Meets, and safe read-only
-                  guest previews for external sharing.
-                </p>
-              </div>
+
+              {/* Pillar 2: Workload Analytics */}
               <div
                 className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
                 style={{ animationDelay: '200ms' }}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 dark:bg-amber-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-amber-500/10 dark:group-hover:bg-amber-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-amber-100 dark:border-amber-800/50">
-                  📊
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-emerald-500/10 dark:group-hover:bg-emerald-500/20 transition-colors"></div>
+                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-emerald-100 dark:border-emerald-800/50">
+                  ⚖️
                 </div>
                 <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Actionable Analytics
+                  Kerja Seimbang, Anti-Kewalahan
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Instantly generate executive reports, monitor project health, and balance team workloads visually
-                  using Estimated Time Consumption (ETC) metrics.
+                  Ketahui batas kapasitasmu dan timmu. Alurku memvisualisasikan beban kerja secara real-time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu.
                 </p>
               </div>
+
+              {/* Pillar 3: Visual Workflow */}
               <div
                 className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
                 style={{ animationDelay: '300ms' }}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-500/5 dark:bg-slate-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-slate-500/10 dark:group-hover:bg-slate-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-slate-200 dark:border-slate-700/50">
-                  ⚡
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 dark:bg-amber-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-amber-500/10 dark:group-hover:bg-amber-500/20 transition-colors"></div>
+                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-amber-100 dark:border-amber-800/50">
+                  📋
                 </div>
                 <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  High-Performance Engine
+                  Satu Layar untuk Semua Progres
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Built on React 18, Vite, and FastAPI. Features an optimistic UI for zero-latency interactions and a
-                  self-cleaning database for perpetual speed.
+                  Pantau jalan ceritamu dari awal hingga akhir proyek. Dengan tampilan yang bersih dan dinamis, kamu selalu tahu apa yang sedang dikerjakan, siapa yang mengerjakan, dan apa yang harus diselesaikan selanjutnya.
                 </p>
               </div>
             </div>

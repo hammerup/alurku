@@ -3,13 +3,13 @@ import { useState } from 'react';
 export function useTheme() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.getItem('innocean_auth') !== 'true') return true; // Landing Page selalu dark
+      if (localStorage.getItem('innocean_auth') !== 'true') return false; // Landing Page default light
       if ('theme' in localStorage) {
         return localStorage.getItem('theme') === 'dark';
       }
-      return true; // Default to dark theme for new visitors
+      return false; // Default to light theme for new visitors
     }
-    return true;
+    return false;
   });
   const [appTheme, setAppTheme] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -40,8 +40,8 @@ export function useTheme() {
     return '';
   });
   const [language, setLanguage] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_lang') || 'en';
-    return 'en';
+    if (typeof window !== 'undefined') return localStorage.getItem('innocean_lang') || 'id';
+    return 'id';
   });
 
   return {

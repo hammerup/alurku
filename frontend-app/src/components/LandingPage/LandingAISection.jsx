@@ -41,18 +41,13 @@ export default function LandingAISection({ showAuthForm }) {
               <div className="reveal-on-scroll">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-xs mb-6 border border-indigo-100 dark:border-indigo-800/50">
                   <span className="text-base leading-none">✨</span>
-                  Powered by Dual AI Engine
+                  Asisten Pintar Beban Kerja
                 </div>
                 <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6 leading-[1.1] uppercase">
-                  Work smarter, not harder with <br className="hidden lg:block" />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-600 to-black dark:from-slate-300 dark:to-white">
-                    AI Assistance.
-                  </span>
+                  Kerja Lebih Tenang & Teratur dengan Bantuan Asisten AI.
                 </h2>
                 <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 font-medium leading-relaxed">
-                  Experience seamless productivity with our context-aware Smart Assistant. Driven by the cutting-edge
-                  intelligence of Google Gemini and Meta Llama 3, the AI handles the busywork so your team can focus on
-                  what matters.
+                  Nikmati kemudahan mengatur beban kerja Anda tanpa pusing. Asisten Cerdas Alurku membantu menyelesaikan urusan administratif sehingga Anda dan tim bisa fokus pada hasil yang nyata.
                 </p>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
@@ -61,11 +56,10 @@ export default function LandingAISection({ showAuthForm }) {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight mb-1">
-                        Proactive Task Drafting
+                        Pembuatan Tugas Otomatis
                       </h4>
                       <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Simply type a rough idea, and the AI instantly generates structured briefs, sub-tasks, and
-                        estimates the time required.
+                        Tulis ide kasar Anda, dan AI Alurku akan langsung merapikannya menjadi detail tugas, sub-tugas, serta memprediksi durasi pengerjaannya secara otomatis.
                       </p>
                     </div>
                   </div>
@@ -75,11 +69,10 @@ export default function LandingAISection({ showAuthForm }) {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight mb-1">
-                        Live Meeting Extraction
+                        Rangkuman Hasil Rapat
                       </h4>
                       <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Use the live notepad during meetings. The AI will capture action items, assign them correctly,
-                        and bulk-create tasks automatically.
+                        Gunakan catatan rapat interaktif. AI akan menyaring keputusan penting, menunjuk penanggung jawab, dan membuat daftar tugas secara otomatis.
                       </p>
                     </div>
                   </div>
@@ -89,11 +82,10 @@ export default function LandingAISection({ showAuthForm }) {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight mb-1">
-                        Context-Aware Co-Pilot
+                        Asisten Konteks Proyek
                       </h4>
                       <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                        Tag the AI Assistant inside any task thread. It instantly reads your project descriptions,
-                        checklists, and comment history to provide highly accurate answers.
+                        Panggil asisten AI di kolom komentar. AI akan membaca deskripsi proyek dan riwayat obrolan untuk memberi solusi yang akurat secara real-time.
                       </p>
                     </div>
                   </div>

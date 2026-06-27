@@ -54,16 +54,16 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                 }}
                 className="sm:hidden font-bold text-sm text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
               >
-                Register
+                Daftar
               </button>
               <button
                 onClick={() => {
                   setIsLoginMode(false);
                   setShowAuthForm(true);
                 }}
-                className="hidden sm:flex bg-black hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-bold py-2 px-5 rounded-full transition-all text-sm items-center gap-2 group shadow-lg"
+                className="hidden sm:flex bg-[#FACC15] hover:bg-[#F5C200] text-[#111E38] font-extrabold py-2 px-5 rounded-full transition-all text-sm items-center gap-2 group shadow-md"
               >
-                Request Access
+                Coba Gratis
                 <span className="transition-transform group-hover:translate-x-1">→</span>
               </button>
             </div>
@@ -78,27 +78,25 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   style={{ animationDelay: '100ms' }}
                 >
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neutral-400 dark:bg-neutral-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-black dark:bg-white"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
-                  Enterprise Workload Management
+                  Kuasai Waktumu, Lancarkan Alurmu.
                 </div>
                 <h1
-                  className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter mb-6 leading-[1.05] text-slate-900 dark:text-white reveal-on-scroll uppercase"
+                  className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter mb-6 leading-[1.1] text-slate-900 dark:text-white reveal-on-scroll"
                   style={{ animationDelay: '200ms' }}
                 >
-                  Orchestrate teams <br />
-                  with{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-br from-neutral-500 to-black dark:from-neutral-400 dark:to-white">
-                    absolute precision.
+                  Berhenti mengingat semua tugasmu, <br />
+                  <span className="text-[#111E38] dark:text-[#FACC15]">
+                    mulailah menyelesaikannya.
                   </span>
                 </h1>
                 <p
                   className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-10 font-medium leading-relaxed reveal-on-scroll"
                   style={{ animationDelay: '300ms' }}
                 >
-                  The modern workflow helper for professionals and teams. Synchronize workflows, predict bottlenecks
-                  with AI, and achieve outstanding results seamlessly.
+                  Alurku adalah asisten cerdas yang mengubah tumpukan rencana kerjamu menjadi alur eksekusi yang rapi. Fokus pada hasil, biarkan AI kami yang mengatur jadwalnya.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 reveal-on-scroll" style={{ animationDelay: '400ms' }}>
                   <button
@@ -106,16 +104,16 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                       setIsLoginMode(true);
                       setShowAuthForm(true);
                     }}
-                    className="bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-bold py-3.5 px-8 rounded-full shadow-lg transition-all text-sm flex items-center justify-center gap-2 group hover:-translate-y-0.5"
+                    className="bg-[#FACC15] hover:bg-[#F5C200] text-[#111E38] font-extrabold py-3.5 px-8 rounded-full shadow-lg transition-all text-sm flex items-center justify-center gap-2 group hover:-translate-y-0.5"
                   >
-                    Start now
+                    Mulai Rapikan Alurku
                     <span className="transition-transform group-hover:translate-x-1">→</span>
                   </button>
                   <button
                     onClick={() => document.getElementById('ai-section')?.scrollIntoView({ behavior: 'smooth' })}
                     className="bg-white dark:bg-black text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 font-bold py-3.5 px-8 border border-neutral-200 dark:border-neutral-800 rounded-full transition-all text-sm flex items-center justify-center shadow-sm"
                   >
-                    Explore Features
+                    Jelajahi Fitur
                   </button>
                   {isInstallable && (
                     <button
@@ -157,41 +155,96 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   </div>
                   {/* Mockup Body */}
                   <div className="flex h-[400px]">
-                    <div className="w-1/4 border-r border-slate-100 dark:border-slate-800 p-4 space-y-4 bg-slate-50/30 dark:bg-slate-900/30">
+                    {/* Mockup Sidebar */}
+                    <div className="w-1/4 border-r border-slate-100 dark:border-slate-800 p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
                       <div className="flex items-center gap-2 mb-6">
-                        <div className="w-6 h-6 rounded bg-black dark:bg-white"></div>
-                        <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
+                        <img src="/favicon.png" className="w-6 h-6 rounded" alt="logo" />
+                        <span className="text-[10px] sm:text-xs font-black tracking-tight text-slate-800 dark:text-white">Alurku Workspace</span>
                       </div>
-                      <div className="space-y-3">
-                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-full"></div>
-                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
-                        <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-4/6"></div>
+                      <div className="space-y-2 text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        <div className="py-1.5 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default">📋 Papan Kanban</div>
+                        <div className="py-1.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-md transition-colors cursor-default">📅 Garis Waktu</div>
+                        <div className="py-1.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-md transition-colors cursor-default">📊 Analisis Kerja</div>
+                        <div className="py-1.5 px-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-md transition-colors cursor-default">⚙️ Pengaturan</div>
                       </div>
                     </div>
-                    <div className="flex-1 p-6 bg-white dark:bg-[#0e1116]">
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-6"></div>
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        <div className="h-24 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 rounded-xl p-4 flex flex-col justify-between">
-                          <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
-                          <div className="h-6 bg-neutral-300 dark:bg-neutral-600 rounded w-1/3"></div>
-                        </div>
-                        <div className="h-24 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 rounded-xl p-4 flex flex-col justify-between">
-                          <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
-                          <div className="h-6 bg-neutral-400 dark:bg-neutral-500 rounded w-1/3"></div>
-                        </div>
-                        <div className="h-24 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 rounded-xl p-4 flex flex-col justify-between">
-                          <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
-                          <div className="h-6 bg-black dark:bg-white rounded w-1/3"></div>
-                        </div>
+                    {/* Mockup Kanban Board */}
+                    <div className="flex-1 p-5 bg-white dark:bg-[#0e1116] flex flex-col overflow-hidden">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-white">Papan Kanban Pengembangan</span>
+                        <span className="text-[8px] sm:text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-0.5 px-2 rounded-full font-bold">Aktif: 4 Tugas</span>
                       </div>
-                      <div className="space-y-3">
-                        <div className="h-12 border border-slate-100 dark:border-slate-800 rounded-lg w-full flex items-center px-4">
-                          <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 mr-3"></div>
-                          <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+                      
+                      <div className="grid grid-cols-3 gap-3 flex-1 overflow-hidden">
+                        {/* Column 1: Perlu Dikerjakan */}
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
+                          <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
+                            <span>Perlu Dikerjakan</span>
+                            <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">2</span>
+                          </div>
+                          
+                          {/* Card 1 */}
+                          <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Desain Antarmuka Alurku</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[7px] sm:text-[8px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-1.5 rounded font-black">UI/UX</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">🔴 Tinggi</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card 2 */}
+                          <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Integrasi API Gemini</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[7px] sm:text-[8px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 py-0.5 px-1.5 rounded font-black">AI</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[7px] sm:text-[8px] text-amber-500 font-bold">🟡 Sedang</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="h-12 border border-slate-100 dark:border-slate-800 rounded-lg w-full flex items-center px-4">
-                          <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 mr-3"></div>
-                          <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
+
+                        {/* Column 2: Sedang Dikerjakan */}
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
+                          <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
+                            <span>Sedang Dikerjakan</span>
+                            <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">1</span>
+                          </div>
+
+                          {/* Card 3 */}
+                          <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 border-l-4 border-l-blue-500">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Pengembangan Landing Page</span>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                              <div className="bg-blue-500 h-full w-[65%]"></div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[7px] sm:text-[8px] bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 py-0.5 px-1.5 rounded font-black">Frontend</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">🔴 Tinggi</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Column 3: Selesai */}
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
+                          <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
+                            <span>Selesai</span>
+                            <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">1</span>
+                          </div>
+
+                          {/* Card 4 */}
+                          <div className="bg-white/60 dark:bg-neutral-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 opacity-75">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 line-through leading-tight">Setup Database Neon</span>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[7px] sm:text-[8px] bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 py-0.5 px-1.5 rounded font-black">Backend</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[8px] sm:text-[9px] text-green-500 font-bold">✅ Ok</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
