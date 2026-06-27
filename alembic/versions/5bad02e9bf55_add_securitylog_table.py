@@ -28,7 +28,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('key')
     )
     op.create_index(op.f('ix_security_logs_key'), 'security_logs', ['key'], unique=False)
-    op.drop_constraint(op.f('requests_timestamp_key'), 'requests', type_='unique')
     op.alter_column('subtasks', 'assignee',
                existing_type=sa.TEXT(),
                type_=sa.String(length=50),
@@ -38,7 +37,6 @@ def upgrade() -> None:
                type_=sa.String(length=50),
                existing_nullable=True,
                existing_server_default=sa.text("'active'::text"))
-    op.drop_column('users', 'tier')
     # ### end Alembic commands ###
 
 
