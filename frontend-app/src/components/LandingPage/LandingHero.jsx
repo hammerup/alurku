@@ -161,7 +161,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                           <div className="flex justify-between items-center">
                             <span className="text-[7px] sm:text-[8px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 py-0.5 px-1.5 rounded font-black">AI</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-[7px] sm:text-[8px] text-amber-500 font-bold">{t('🟡 Medium', '🟡 Sedang')}</span>
+                              <span className="text-[7px] sm:text-[8px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 py-0.5 px-1.5 rounded font-black">{t('🟡 Medium', '🟡 Sedang')}</span>
                             </div>
                           </div>
                         </div>

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-export default function LandingFeatures({ showAuthForm }) {
+export default function LandingFeatures({ showAuthForm, language }) {
   const [activeFeatureTab, setActiveFeatureTab] = useState('kanban');
+
+  const t = (en, id) => (language === 'id' ? id : en);
 
   useEffect(() => {
     if (!showAuthForm) {
@@ -16,37 +18,59 @@ export default function LandingFeatures({ showAuthForm }) {
     }
   }, [showAuthForm]);
 
+  const featureIcons = {
+    kanban: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    ),
+    list: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      </svg>
+    ),
+    timeline: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    calendar: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    analytics: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+      </svg>
+    )
+  };
 
   const features = [
     {
       id: 'kanban',
-      title: 'Kanban Board',
-      icon: '📋',
-      desc: 'Drag-and-drop cards across customizable columns. Perfect for agile workflows and visualizing daily progress.',
+      title: t('Kanban Board', 'Papan Kanban'),
+      desc: t('Drag-and-drop cards across customizable columns. Perfect for agile workflows and visualizing daily progress.', 'Geser dan letakkan kartu tugas di kolom yang dapat disesuaikan. Sangat cocok untuk alur kerja tangkas (agile) dan memantau progres harian.'),
     },
     {
       id: 'list',
-      title: 'Table List',
-      icon: '🗂️',
-      desc: 'A compact, spreadsheet-like view for managing tasks. Ideal for bulk actions and quick data entry.',
+      title: t('Table List', 'Daftar Tabel'),
+      desc: t('A compact, spreadsheet-like view for managing tasks. Ideal for bulk actions and quick data entry.', 'Tampilan ringkas mirip spreadsheet untuk mengelola tugas. Sangat ideal untuk aksi massal dan input data yang cepat.'),
     },
     {
       id: 'timeline',
-      title: 'Gantt Timeline',
-      icon: '🛤️',
-      desc: 'Map out complex project schedules. Drag task edges to adjust durations and balance team workloads visually.',
+      title: t('Gantt Timeline', 'Garis Waktu Gantt'),
+      desc: t('Map out complex project schedules. Drag task edges to adjust durations and balance team workloads visually.', 'Petakan jadwal proyek yang kompleks. Tarik ujung tugas untuk menyesuaikan durasi dan menyeimbangkan kapasitas tim secara visual.'),
     },
     {
       id: 'calendar',
-      title: 'Smart Calendar',
-      icon: '📅',
-      desc: 'Track deadlines effortlessly. Automatically skips weekends and national holidays for accurate planning.',
+      title: t('Smart Calendar', 'Kalender Pintar'),
+      desc: t('Track deadlines effortlessly. Automatically skips weekends and national holidays for accurate planning.', 'Pantau batas waktu tugas dengan mudah. Secara otomatis melewati akhir pekan dan hari libur nasional untuk perencanaan yang akurat.'),
     },
     {
       id: 'analytics',
-      title: 'Analytics',
-      icon: '📊',
-      desc: 'Real-time project health scores, ETC workload distribution, and AI-generated executive summaries.',
+      title: t('Workload Analytics', 'Analisis Beban Kerja'),
+      desc: t('Real-time project health scores, ETC workload distribution, and AI-generated executive summaries.', 'Skor kesehatan proyek real-time, distribusi kapasitas beban kerja (ETC), serta rangkuman eksekutif otomatis dari AI.'),
     },
   ];
 
@@ -194,11 +218,11 @@ export default function LandingFeatures({ showAuthForm }) {
         >
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16 reveal-on-scroll">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6 uppercase">
-                Built for every workflow
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6">
+                {t('Built for every workflow', 'Didesain untuk Setiap Alur Kerja')}
               </h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
-                Switch seamlessly between multiple views to manage your work exactly how you want. No reloads required.
+                {t('Switch seamlessly between multiple views to manage your work exactly how you want. No reloads required.', 'Beralih tampilan secara mulus untuk mengelola pekerjaan sesuai keinginan Anda. Tanpa muat ulang halaman.')}
               </p>
             </div>
 
@@ -224,7 +248,10 @@ export default function LandingFeatures({ showAuthForm }) {
                           : 'text-slate-500 dark:text-slate-300'
                       }`}
                     >
-                      <span>{feature.icon}</span> {feature.title}
+                      <span className={activeFeatureTab === feature.id ? 'text-[#111E38] dark:text-[#FACC15]' : 'text-slate-400 dark:text-slate-500'}>
+                        {featureIcons[feature.id]}
+                      </span>{' '}
+                      {feature.title}
                     </h3>
                     <p
                       className={`text-sm leading-relaxed font-medium ${
@@ -329,30 +356,42 @@ export default function LandingFeatures({ showAuthForm }) {
                 <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
                   <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">Jadwal Harian AI</span>
-                    <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-2 rounded-full font-bold">Otomatis</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('AI Daily Schedule', 'Jadwal Harian AI')}</span>
+                    <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-2 rounded-full font-bold">{t('Auto', 'Otomatis')}</span>
                   </div>
                   <div className="space-y-3 text-xs">
                     <div className="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/40 rounded-xl">
-                      <span className="text-lg">✨</span>
+                      <span className="text-indigo-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                      </span>
                       <div className="flex-1">
-                        <div className="font-bold text-slate-800 dark:text-slate-200">Menyusun Rencana Kerja</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500">Durasi diprediksi: 2.5 jam</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200">{t('Arrange Work Plan', 'Menyusun Rencana Kerja')}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">{t('Predicted duration: 2.5h', 'Durasi diprediksi: 2.5 jam')}</div>
                       </div>
                       <span className="text-[10px] text-indigo-600 font-bold">09:00</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                      <span className="text-lg">📋</span>
+                      <span className="text-slate-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                        </svg>
+                      </span>
                       <div className="flex-1">
-                        <div className="font-bold text-slate-800 dark:text-slate-200">Review Desain Mockup</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500">Durasi: 1 jam</div>
+                        <div className="font-bold text-slate-800 dark:text-slate-200">{t('Review Mockup Design', 'Review Desain Mockup')}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">{t('Duration: 1h', 'Durasi: 1 jam')}</div>
                       </div>
                       <span className="text-[10px] text-slate-500">11:30</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                      <span className="text-lg">☕</span>
+                      <span className="text-slate-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </span>
                       <div className="flex-1">
-                        <div className="font-bold text-slate-400 dark:text-slate-500 line-through">Istirahat Siang</div>
+                        <div className="font-bold text-slate-400 dark:text-slate-550 line-through">{t('Lunch Break', 'Istirahat Siang')}</div>
                       </div>
                       <span className="text-[10px] text-slate-400">12:30</span>
                     </div>
@@ -361,24 +400,29 @@ export default function LandingFeatures({ showAuthForm }) {
 
                 {/* Text Content (Right) */}
                 <div className="space-y-6 order-1 md:order-2">
-                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-xl shadow-sm border border-indigo-100 dark:border-indigo-800/50">
-                    🤖
+                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-sm border border-indigo-100 dark:border-indigo-800/50">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
                   </div>
                   <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
-                    Asisten Perencana Otomatis
+                    {t('Automated AI Planning', 'Asisten Perencana Otomatis')}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-                    Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI Alurku akan memprediksi durasi dan menyusun jadwal harianmu secara otomatis, sehingga kamu tidak perlu lagi menebak-nebak.
+                    {t(
+                      "Not sure how long a project will take? alurku. AI will automatically predict the duration and organize your daily schedule, so you don't have to guess anymore.",
+                      "Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI alurku. akan memprediksi durasi dan menyusun jadwal harianmu secara otomatis, sehingga kamu tidak perlu lagi menebak-nebak."
+                    )}
                   </p>
                   <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Estimasi durasi pengerjaan berbasis AI
+                      <span className="text-emerald-500">✓</span> {t('AI-based task duration estimation', 'Estimasi durasi pengerjaan berbasis AI')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Penyusunan jadwal harian otomatis
+                      <span className="text-emerald-500">✓</span> {t('Automatic daily scheduling', 'Penyusunan jadwal harian otomatis')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Penyesuaian cerdas terhadap hambatan kerja
+                      <span className="text-emerald-500">✓</span> {t('Intelligent adjustment to blockers', 'Penyesuaian cerdas terhadap hambatan kerja')}
                     </li>
                   </ul>
                 </div>
@@ -388,24 +432,29 @@ export default function LandingFeatures({ showAuthForm }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
                 {/* Text Content (Left) */}
                 <div className="space-y-6">
-                  <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-xl shadow-sm border border-emerald-100 dark:border-emerald-800/50">
-                    ⚖️
+                  <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-sm border border-emerald-100 dark:border-emerald-800/50">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5" />
+                    </svg>
                   </div>
                   <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
-                    Kerja Seimbang, Anti-Kewalahan
+                    {t('Work-Life Balance, Anti-Burnout', 'Kerja Seimbang, Anti-Kewalahan')}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-                    Ketahui batas kapasitasmu dan timmu. Alurku memvisualisasikan beban kerja secara real-time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu.
+                    {t(
+                      "Know the capacity limits of yourself and your team. alurku. visualizes workload in real-time so you can distribute tasks fairly, prevent burnout, and rest on time.",
+                      "Ketahui batas kapasitasmu dan timmu. alurku. memvisualisasikan beban kerja secara real time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu."
+                    )}
                   </p>
                   <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Visualisasi grafik beban kerja tim secara langsung
+                      <span className="text-emerald-500">✓</span> {t('Real-time team workload visualization', 'Visualisasi grafik beban kerja tim secara langsung')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Distribusi tugas otomatis yang adil
+                      <span className="text-emerald-500">✓</span> {t('Fair automated task distribution', 'Distribusi tugas otomatis yang adil')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Deteksi dini potensi kelelahan (burnout)
+                      <span className="text-emerald-500">✓</span> {t('Early detection of burnout potential', 'Deteksi dini potensi kelelahan (burnout)')}
                     </li>
                   </ul>
                 </div>
@@ -414,14 +463,14 @@ export default function LandingFeatures({ showAuthForm }) {
                 <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
                   <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">Beban Kerja Tim</span>
-                    <span className="text-[10px] text-emerald-600 font-bold">Normal</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('Team Workload', 'Beban Kerja Tim')}</span>
+                    <span className="text-[10px] text-emerald-600 font-bold">{t('Normal', 'Normal')}</span>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
-                        <span>Eka Hary (UI Developer)</span>
-                        <span className="text-emerald-600">80% Kapasitas</span>
+                        <span>Adit Pratama (UI Developer)</span>
+                        <span className="text-emerald-600">{t('80% Capacity', '80% Kapasitas')}</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
                         <div className="bg-emerald-500 h-full w-[80%] rounded-full"></div>
@@ -430,7 +479,7 @@ export default function LandingFeatures({ showAuthForm }) {
                     <div>
                       <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
                         <span>Jane Smith (Backend Eng)</span>
-                        <span className="text-amber-600">95% Kapasitas</span>
+                        <span className="text-amber-600">{t('95% Capacity', '95% Kapasitas')}</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
                         <div className="bg-amber-500 h-full w-[95%] rounded-full"></div>
@@ -439,7 +488,7 @@ export default function LandingFeatures({ showAuthForm }) {
                     <div>
                       <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
                         <span>David Miller (Project Manager)</span>
-                        <span className="text-blue-600">45% Kapasitas</span>
+                        <span className="text-blue-600">{t('45% Capacity', '45% Kapasitas')}</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
                         <div className="bg-blue-500 h-full w-[45%] rounded-full"></div>
@@ -455,15 +504,20 @@ export default function LandingFeatures({ showAuthForm }) {
                 <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
                   <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">Alur Kanban</span>
-                    <span className="text-[10px] bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 py-0.5 px-2 rounded-full font-bold">1 Tugas Baru</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('Kanban Flow', 'Alur Kanban')}</span>
+                    <span className="text-[10px] bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 py-0.5 px-2 rounded-full font-bold">{t('1 New Task', '1 Tugas Baru')}</span>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
                     <div className="bg-white dark:bg-slate-905 p-3 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-2 border-l-4 border-l-amber-500">
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">Pengembangan Fitur Kanban</span>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">{t('Kanban Feature Development', 'Pengembangan Fitur Kanban')}</span>
                       <div className="flex justify-between items-center text-[10px] text-slate-400">
-                        <span>📋 Alur Kerja</span>
-                        <span className="text-amber-500 font-bold">Baru Masuk</span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                          </svg>
+                          {t('Workflow', 'Alur Kerja')}
+                        </span>
+                        <span className="text-[9px] font-black bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 py-0.5 px-2 rounded-full">{t('New', 'Baru Masuk')}</span>
                       </div>
                     </div>
                   </div>
@@ -471,24 +525,29 @@ export default function LandingFeatures({ showAuthForm }) {
 
                 {/* Text Content (Right) */}
                 <div className="space-y-6 order-1 md:order-2">
-                  <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-xl shadow-sm border border-amber-100 dark:border-amber-800/50">
-                    📋
+                  <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center shadow-sm border border-amber-100 dark:border-amber-800/50">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
                   </div>
                   <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
-                    Satu Layar untuk Semua Progres
+                    {t('One Screen for All Progress', 'Satu Layar untuk Semua Progres')}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-                    Pantau jalan ceritamu dari awal hingga akhir proyek. Dengan tampilan yang bersih dan dinamis, kamu selalu tahu apa yang sedang dikerjakan, siapa yang mengerjakan, dan apa yang harus diselesaikan selanjutnya.
+                    {t(
+                      "Track your story from project start to finish. With a clean and dynamic view, you always know what is being done, who is doing it, and what needs to be completed next.",
+                      "Pantau jalan ceritamu dari awal hingga akhir proyek. Dengan tampilan yang bersih dan dinamis, kamu selalu tahu apa yang sedang dikerjakan, siapa yang mengerjakan, dan apa yang harus diselesaikan selanjutnya."
+                    )}
                   </p>
                   <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Drag-and-drop antar kolom yang intuitif
+                      <span className="text-emerald-500">✓</span> {t('Intuitive drag-and-drop between columns', 'Drag-and-drop antar kolom yang intuitif')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Garis waktu interaktif (Gantt Chart)
+                      <span className="text-emerald-500">✓</span> {t('Interactive timeline (Gantt Chart)', 'Garis waktu interaktif (Gantt Chart)')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> Sinkronisasi real-time antar anggota tim
+                      <span className="text-emerald-500">✓</span> {t('Real-time sync across team members', 'Sinkronisasi real-time antar anggota tim')}
                     </li>
                   </ul>
                 </div>

@@ -85,6 +85,34 @@ export default function LandingAISection({ showAuthForm, language }) {
     )
   };
 
+  const stepIcons = {
+    0: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    ),
+    1: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    ),
+    2: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      </svg>
+    ),
+    3: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+    ),
+    4: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    )
+  };
+
   // Handle typing simulation
   useEffect(() => {
     if (showAuthForm) return;
@@ -116,7 +144,10 @@ export default function LandingAISection({ showAuthForm, language }) {
   }, [selectedScenario, language, showAuthForm]);
 
   // Handle step-by-step slideshow simulation
-  const fullText = 'Extract tasks: 1. Redesign homepage by next Friday (@johndoe). 2. Fix login API bug (@jane). 3. Update documentation.';
+  const fullText = t(
+    'Extract tasks: 1. Redesign homepage by next Friday (@budi). 2. Fix login API bug (@siti). 3. Update documentation.',
+    'Ekstrak tugas: 1. Desain ulang beranda sebelum Jumat depan (@budi). 2. Perbaiki bug API login (@siti). 3. Perbarui dokumentasi.'
+  );
   useEffect(() => {
     if (simStep === 0) {
       let i = 0;
@@ -130,7 +161,7 @@ export default function LandingAISection({ showAuthForm, language }) {
     } else {
       setTypedText(fullText);
     }
-  }, [simStep]);
+  }, [simStep, fullText]);
 
   return (
     <>
@@ -409,31 +440,26 @@ export default function LandingAISection({ showAuthForm, language }) {
                   id: 0,
                   title: t('1. Tell the AI what you need', '1. Tulis instruksi Anda pada AI'),
                   desc: t('Just type your request naturally. No need to fill out complex forms or select multiple dropdowns.', 'Ketik instruksi atau salin catatan kerja Anda. AI akan merespons layaknya asisten pribadi.'),
-                  icon: '💬',
                 },
                 {
                   id: 1,
                   title: t('2. AI extracts the details', '2. AI menyaring informasi detail'),
                   desc: t('The Smart Assistant instantly pulls out the task title, assignees, deadlines, and generates a structured checklist.', 'Asisten pintar menyaring judul tugas, menentukan penanggung jawab, mendeteksi deadline, dan membuat sub-tugas.'),
-                  icon: '🧠',
                 },
                 {
                   id: 2,
                   title: t('3. Task appears on your board', '3. Tugas muncul di papan Kanban'),
                   desc: t('Boom! Your task is perfectly categorized, prioritized, and placed on your Kanban board ready for action.', 'Tugas yang rapi langsung disalurkan ke dalam kolom prioritas papan Kanban tim Anda.'),
-                  icon: '🚀',
                 },
                 {
                   id: 3,
                   title: t('4. Collaborate Instantly', '4. Mulai kolaborasi tim'),
                   desc: t('Team members get notified. Start discussions, share files, and track progress in one place without switching apps.', 'Anggota tim mendapat notifikasi instan. Anda bisa berdiskusi langsung di kolom detail tugas.'),
-                  icon: '💬',
                 },
                 {
                   id: 4,
                   title: t('5. Automated Insights', '5. Analisis performa otomatis'),
                   desc: t('Generate executive summaries and workload analytics instantly with the click of a button.', 'Dapatkan rangkuman performa kerja proyek serta grafik kapasitas beban kerja tim secara real-time.'),
-                  icon: '📊',
                 },
               ].map((step) => (
                 <div
@@ -450,7 +476,10 @@ export default function LandingAISection({ showAuthForm, language }) {
                       simStep === step.id ? 'text-black dark:text-white' : 'text-slate-500 dark:text-slate-300'
                     }`}
                   >
-                    <span>{step.icon}</span> {step.title}
+                    <span className={simStep === step.id ? 'text-[#111E38] dark:text-[#FACC15]' : 'text-slate-400 dark:text-slate-500'}>
+                      {stepIcons[step.id]}
+                    </span>{' '}
+                    {step.title}
                   </h3>
                   <p
                     className={`text-xs sm:text-sm leading-relaxed font-medium ${
@@ -478,11 +507,13 @@ export default function LandingAISection({ showAuthForm, language }) {
                 <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-lg">
                   <div className="flex items-center gap-3 mb-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                     <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center rounded-full text-lg">
-                      ✨
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
                     </div>
                     <div>
                       <div className="font-bold text-slate-800 dark:text-white text-sm">Smart Assistant</div>
-                      <div className="text-[10px] text-indigo-500">Ready to help</div>
+                      <div className="text-[10px] text-indigo-500">{t('Ready to help', 'Siap membantu')}</div>
                     </div>
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
@@ -491,7 +522,6 @@ export default function LandingAISection({ showAuthForm, language }) {
                   </div>
                 </div>
               </div>
-
               {/* Step 1: AI Processing */}
               <div
                 className={`absolute inset-0 p-8 flex flex-col justify-center transition-all duration-700 ${
@@ -502,7 +532,7 @@ export default function LandingAISection({ showAuthForm, language }) {
                   <div className="flex justify-between items-center mb-4 shrink-0">
                     <div className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                       <span className="animate-spin w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full inline-block"></span>
-                      {t('Extracting 3 tasks...', 'Mengekstrak 3 tugas...')}
+                      {t('Extracting 3 tasks...', 'Mengekstraksi 3 tugas...')}
                     </div>
                   </div>
                   <div className="space-y-3 overflow-y-auto custom-scrollbar pr-1 pb-1">
@@ -515,10 +545,10 @@ export default function LandingAISection({ showAuthForm, language }) {
                         {t('Redesign homepage', 'Desain ulang beranda')}
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/40 py-0.5 px-2 rounded">
-                          @johndoe
+                        <span className="text-[9px] font-black text-[#111E38] dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 py-0.5 px-2 rounded">
+                          @budi
                         </span>
-                        <span className="text-[9px] font-bold text-slate-400">Jumat depan / Next Friday</span>
+                        <span className="text-[9px] font-bold text-slate-400">{t('Next Friday', 'Jumat depan')}</span>
                       </div>
                     </div>
                     {/* Task 2 */}
@@ -530,8 +560,8 @@ export default function LandingAISection({ showAuthForm, language }) {
                         {t('Fix login API bug', 'Perbaiki bug login API')}
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/40 py-0.5 px-2 rounded">
-                          @jane
+                        <span className="text-[9px] font-black text-[#111E38] dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 py-0.5 px-2 rounded">
+                          @siti
                         </span>
                         <span className="text-[9px] font-bold text-red-500">ASAP / Segera</span>
                       </div>
@@ -565,23 +595,23 @@ export default function LandingAISection({ showAuthForm, language }) {
                   <div className="flex gap-2 flex-1 overflow-hidden">
                     {/* Col 1 */}
                     <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl flex flex-col gap-2">
-                      <div className="text-[8px] font-black text-slate-400 uppercase tracking-wider">To Do</div>
+                      <div className="text-[8px] font-black text-slate-400 uppercase tracking-wider">{t('To Do', 'Rencana')}</div>
                       <div className="bg-white dark:bg-neutral-900 border p-2 rounded shadow-sm text-[9px] font-bold">
-                        Update Doc
+                        {t('Update Doc', 'Perbarui Doc')}
                       </div>
                     </div>
                     {/* Col 2 */}
-                    <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl flex flex-col gap-2 border-t-2 border-indigo-500">
-                      <div className="text-[8px] font-black text-indigo-600 uppercase tracking-wider">In Progress</div>
+                    <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl flex flex-col gap-2 border-t-2 border-[#2563eb] dark:border-t-[#38bdf8]">
+                      <div className="text-[8px] font-black text-[#2563eb] dark:text-[#38bdf8] uppercase tracking-wider">{t('In Progress', 'Sedang Jalan')}</div>
                       <div className="bg-white dark:bg-neutral-900 border p-2 rounded shadow-sm text-[9px] font-bold">
-                        Redesign Homepage
+                        {t('Redesign Homepage', 'Desain Beranda')}
                       </div>
                     </div>
                     {/* Col 3 */}
                     <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl flex flex-col gap-2">
-                      <div className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Done</div>
+                      <div className="text-[8px] font-black text-slate-400 uppercase tracking-wider">{t('Done', 'Selesai')}</div>
                       <div className="bg-white dark:bg-neutral-900 border p-2 rounded shadow-sm text-[9px] font-bold line-through text-slate-400">
-                        Fix Login API
+                        {t('Fix Login API', 'Perbaiki Login API')}
                       </div>
                     </div>
                   </div>
@@ -594,14 +624,16 @@ export default function LandingAISection({ showAuthForm, language }) {
                   simStep === 3 ? 'opacity-100 translate-y-0 z-20' : 'opacity-0 translate-y-8 z-0 pointer-events-none'
                 }`}
               >
-                <div className="bg-white dark:bg-neutral-900 border border-slate-205 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                <div className="bg-white dark:bg-neutral-900 border border-slate-200 rounded-2xl p-5 shadow-xl flex flex-col gap-4">
                   <div className="flex items-center gap-2 border-b pb-3 shrink-0">
-                    <span className="text-base">💬</span>
+                    <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
                     <span className="text-xs font-black text-slate-850 dark:text-white">{t('Redesign Homepage - Discussion', 'Desain Ulang Beranda - Diskusi')}</span>
                   </div>
                   <div className="space-y-3 text-[10px] sm:text-xs">
                     <div className="flex gap-2">
-                      <span className="font-bold text-indigo-600">@johndoe:</span>
+                      <span className="font-bold text-[#111E38] dark:text-slate-200">@budi:</span>
                       <span className="text-slate-500 dark:text-slate-350">{t("I've started the wireframes.", 'Saya sudah mulai merancang wireframe.')}</span>
                     </div>
                     <div className="flex gap-2 bg-indigo-50/50 dark:bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
@@ -621,13 +653,16 @@ export default function LandingAISection({ showAuthForm, language }) {
                 }`}
               >
                 <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-3">
-                  <span className="text-xs font-black text-slate-800 dark:text-white block border-b pb-2 shrink-0">
-                    📊 alurku. Workload Insights
+                  <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5 border-b pb-2 shrink-0">
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    {t('alurku. Workload Insights', 'alurku. Analisis Beban Kerja')}
                   </span>
                   <div className="space-y-3 text-[10px] sm:text-xs">
                     <div>
                       <div className="flex justify-between font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        <span>John Doe (Frontend)</span>
+                        <span>Budi (Frontend)</span>
                         <span>0.8 ETC</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -636,15 +671,18 @@ export default function LandingAISection({ showAuthForm, language }) {
                     </div>
                     <div>
                       <div className="flex justify-between font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        <span>Jane (Backend)</span>
+                        <span>Siti (Backend)</span>
                         <span>1.4 ETC</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                         <div className="bg-rose-500 h-full w-[95%] animate-pulse"></div>
                       </div>
                     </div>
-                    <div className="text-[9px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-2 rounded-lg border border-rose-100 dark:border-rose-900/30">
-                      ⚠️ {t('Warning: Jane is over-allocated. Balance workload.', 'Peringatan: Beban kerja Jane berlebih. Seimbangkan tugas.')}
+                    <div className="text-[9px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-2 rounded-lg border border-rose-100 dark:border-rose-900/30 flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>{t('Warning: Siti is over-allocated. Balance workload.', 'Peringatan: Beban kerja Siti berlebih. Seimbangkan tugas.')}</span>
                     </div>
                   </div>
                 </div>

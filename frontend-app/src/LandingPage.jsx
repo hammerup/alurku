@@ -193,7 +193,7 @@ export default function LandingPage({
                 language={language}
               />
               <LandingAISection showAuthForm={showAuthForm} language={language} />
-              <LandingFeatures showAuthForm={showAuthForm} />
+              <LandingFeatures showAuthForm={showAuthForm} language={language} />
               <LandingFAQ />
               <LandingCTA setIsLoginMode={setIsLoginMode} setShowAuthForm={setShowAuthForm} />
             </>
