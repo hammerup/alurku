@@ -4,3 +4,20 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
 }
+
+/* Remove excessive capitalization and wide letter-spacing on the landing page for a clean corporate feel */
+#comparison-section th,
+#comparison-section td,
+#comparison-section h2,
+#comparison-section div,
+#comparison-section span,
+#cta-section h2,
+#cta-section button,
+#faq-section h2,
+#ai-section h2,
+#specs-section h2,
+#specs-section span,
+#specs-section h3 {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}

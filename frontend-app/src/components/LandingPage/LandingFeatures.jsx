@@ -322,56 +322,176 @@ export default function LandingFeatures({ showAuthForm }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-32">
               {/* Pillar 1: Automated AI Planning */}
-              <div
-                className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
-                style={{ animationDelay: '100ms' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-indigo-500/10 dark:group-hover:bg-indigo-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-indigo-100 dark:border-indigo-800/50">
-                  🤖
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
+                {/* Visual Mockup (Left) */}
+                <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">Jadwal Harian AI</span>
+                    <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-2 rounded-full font-bold">Otomatis</span>
+                  </div>
+                  <div className="space-y-3 text-xs">
+                    <div className="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/40 rounded-xl">
+                      <span className="text-lg">✨</span>
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">Menyusun Rencana Kerja</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">Durasi diprediksi: 2.5 jam</div>
+                      </div>
+                      <span className="text-[10px] text-indigo-600 font-bold">09:00</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                      <span className="text-lg">📋</span>
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-800 dark:text-slate-200">Review Desain Mockup</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500">Durasi: 1 jam</div>
+                      </div>
+                      <span className="text-[10px] text-slate-500">11:30</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                      <span className="text-lg">☕</span>
+                      <div className="flex-1">
+                        <div className="font-bold text-slate-400 dark:text-slate-500 line-through">Istirahat Siang</div>
+                      </div>
+                      <span className="text-[10px] text-slate-400">12:30</span>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Asisten Perencana Otomatis
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI Alurku akan memprediksi durasi dan menyusun jadwal harianmu secara otomatis, sehingga kamu tidak perlu lagi menebak-nebak.
-                </p>
+
+                {/* Text Content (Right) */}
+                <div className="space-y-6 order-1 md:order-2">
+                  <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-xl shadow-sm border border-indigo-100 dark:border-indigo-800/50">
+                    🤖
+                  </div>
+                  <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
+                    Asisten Perencana Otomatis
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                    Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI Alurku akan memprediksi durasi dan menyusun jadwal harianmu secara otomatis, sehingga kamu tidak perlu lagi menebak-nebak.
+                  </p>
+                  <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Estimasi durasi pengerjaan berbasis AI
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Penyusunan jadwal harian otomatis
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Penyesuaian cerdas terhadap hambatan kerja
+                    </li>
+                  </ul>
+                </div>
               </div>
 
               {/* Pillar 2: Workload Analytics */}
-              <div
-                className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
-                style={{ animationDelay: '200ms' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-emerald-500/10 dark:group-hover:bg-emerald-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-emerald-100 dark:border-emerald-800/50">
-                  ⚖️
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
+                {/* Text Content (Left) */}
+                <div className="space-y-6">
+                  <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-xl shadow-sm border border-emerald-100 dark:border-emerald-800/50">
+                    ⚖️
+                  </div>
+                  <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
+                    Kerja Seimbang, Anti-Kewalahan
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                    Ketahui batas kapasitasmu dan timmu. Alurku memvisualisasikan beban kerja secara real-time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu.
+                  </p>
+                  <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Visualisasi grafik beban kerja tim secara langsung
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Distribusi tugas otomatis yang adil
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Deteksi dini potensi kelelahan (burnout)
+                    </li>
+                  </ul>
                 </div>
-                <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Kerja Seimbang, Anti-Kewalahan
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Ketahui batas kapasitasmu dan timmu. Alurku memvisualisasikan beban kerja secara real-time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu.
-                </p>
+
+                {/* Visual Mockup (Right) */}
+                <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">Beban Kerja Tim</span>
+                    <span className="text-[10px] text-emerald-600 font-bold">Normal</span>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
+                        <span>Eka Hary (UI Developer)</span>
+                        <span className="text-emerald-600">80% Kapasitas</span>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div className="bg-emerald-500 h-full w-[80%] rounded-full"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
+                        <span>Jane Smith (Backend Eng)</span>
+                        <span className="text-amber-600">95% Kapasitas</span>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div className="bg-amber-500 h-full w-[95%] rounded-full"></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
+                        <span>David Miller (Project Manager)</span>
+                        <span className="text-blue-600">45% Kapasitas</span>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div className="bg-blue-500 h-full w-[45%] rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Pillar 3: Visual Workflow */}
-              <div
-                className="bg-white dark:bg-[#111827] p-8 border border-slate-200 dark:border-slate-800 rounded-3xl hover:-translate-y-2 transition-transform shadow-sm hover:shadow-xl reveal-on-scroll relative overflow-hidden group"
-                style={{ animationDelay: '300ms' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 dark:bg-amber-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-amber-500/10 dark:group-hover:bg-amber-500/20 transition-colors"></div>
-                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center text-xl mb-6 shadow-sm border border-amber-100 dark:border-amber-800/50">
-                  📋
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
+                {/* Visual Mockup (Left) */}
+                <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">Alur Kanban</span>
+                    <span className="text-[10px] bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 py-0.5 px-2 rounded-full font-bold">1 Tugas Baru</span>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
+                    <div className="bg-white dark:bg-slate-905 p-3 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-2 border-l-4 border-l-amber-500">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">Pengembangan Fitur Kanban</span>
+                      <div className="flex justify-between items-center text-[10px] text-slate-400">
+                        <span>📋 Alur Kerja</span>
+                        <span className="text-amber-500 font-bold">Baru Masuk</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-lg mb-2">
-                  Satu Layar untuk Semua Progres
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                  Pantau jalan ceritamu dari awal hingga akhir proyek. Dengan tampilan yang bersih dan dinamis, kamu selalu tahu apa yang sedang dikerjakan, siapa yang mengerjakan, dan apa yang harus diselesaikan selanjutnya.
-                </p>
+
+                {/* Text Content (Right) */}
+                <div className="space-y-6 order-1 md:order-2">
+                  <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-xl shadow-sm border border-amber-100 dark:border-amber-800/50">
+                    📋
+                  </div>
+                  <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
+                    Satu Layar untuk Semua Progres
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                    Pantau jalan ceritamu dari awal hingga akhir proyek. Dengan tampilan yang bersih dan dinamis, kamu selalu tahu apa yang sedang dikerjakan, siapa yang mengerjakan, dan apa yang harus diselesaikan selanjutnya.
+                  </p>
+                  <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Drag-and-drop antar kolom yang intuitif
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Garis waktu interaktif (Gantt Chart)
+                    </li>
+                    <li className="flex items-center gap-2.5">
+                      <span className="text-emerald-500">✓</span> Sinkronisasi real-time antar anggota tim
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -414,12 +534,11 @@ export default function LandingFeatures({ showAuthForm }) {
           </div>
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16 reveal-on-scroll">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6 uppercase">
-                Why Alurku?
+              <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-6">
+                Mengapa Alurku?
               </h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
-                Stop adapting to generic tools. Experience a platform built specifically for your team's unique
-                workflow.
+                Berhenti beradaptasi dengan alat yang kaku. Rasakan pengalaman platform yang dirancang khusus untuk alur kerja unik tim Anda.
               </p>
             </div>
 
