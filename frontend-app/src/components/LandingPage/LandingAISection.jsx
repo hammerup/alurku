@@ -14,13 +14,13 @@ export default function LandingAISection({ showAuthForm, language }) {
 
   const scenarios = {
     tasks: {
-      name: '⚡ Ekstrak Tugas',
-      nameEn: '⚡ Extract Tasks',
+      name: 'Ekstrak Tugas',
+      nameEn: 'Extract Tasks',
       userPrompt: 'Tolong buatkan tugas dari catatan rapat ini: 1. Desain antarmuka baru sebelum Jumat (@budi) 2. Perbaiki bug autentikasi (@siti).',
       userPromptEn: 'Extract tasks from meeting notes: 1. Redesign homepage by Friday (@budi) 2. Fix login bug (@siti).',
       aiResponse: {
-        title: '🤖 Ditemukan 2 aksi kerja baru:',
-        titleEn: '🤖 Found 2 action items:',
+        title: 'Tentu, berikut adalah 2 tugas baru yang berhasil dibuat:',
+        titleEn: 'Certainly! Here are the 2 new tasks created:',
         items: [
           { text: 'Desain ulang beranda', textEn: 'Redesign homepage', label: 'Desain', labelEn: 'Design', assignee: 'Budi', date: 'Jumat / Friday' },
           { text: 'Perbaiki bug autentikasi', textEn: 'Fix authentication bug', label: 'Backend', labelEn: 'Backend', assignee: 'Siti', date: 'Segera / ASAP' },
@@ -28,13 +28,13 @@ export default function LandingAISection({ showAuthForm, language }) {
       }
     },
     capacity: {
-      name: '📊 Estimasi Waktu',
-      nameEn: '📊 Time Estimate',
+      name: 'Estimasi Waktu',
+      nameEn: 'Time Estimate',
       userPrompt: 'Hitung estimasi waktu (ETC) untuk pengerjaan modul integrasi API pembayaran.',
       userPromptEn: 'Calculate the time estimate (ETC) for payment API integration.',
       aiResponse: {
-        title: '🤖 Estimasi Kapasitas AI:',
-        titleEn: '🤖 AI Capacity Estimate:',
+        title: 'Berikut adalah hasil analisis kapasitas kerja:',
+        titleEn: 'Here is the workload capacity analysis:',
         capacityCard: {
           estimation: '8 Jam Kerja (1.0 ETC)',
           estimationEn: '8 Work Hours (1.0 ETC)',
@@ -46,13 +46,13 @@ export default function LandingAISection({ showAuthForm, language }) {
       }
     },
     summary: {
-      name: '📈 Status Kesehatan',
-      nameEn: '📈 Health Status',
+      name: 'Status Kesehatan',
+      nameEn: 'Health Status',
       userPrompt: 'Berikan ringkasan kesehatan proyek alurku. saat ini.',
       userPromptEn: 'Give me the current health summary of alurku. project.',
       aiResponse: {
-        title: '🤖 Rangkuman Kesehatan Proyek:',
-        titleEn: '🤖 Project Health Summary:',
+        title: 'Berikut adalah rangkuman performa proyek saat ini:',
+        titleEn: 'Here is the current project performance summary:',
         healthCard: {
           status: 'Sangat Sehat (92%)',
           statusEn: 'Highly Healthy (92%)',
@@ -65,6 +65,24 @@ export default function LandingAISection({ showAuthForm, language }) {
         }
       }
     }
+  };
+
+  const scenarioIcons = {
+    tasks: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+    ),
+    capacity: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    summary: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+      </svg>
+    )
   };
 
   // Handle typing simulation
@@ -125,7 +143,7 @@ export default function LandingAISection({ showAuthForm, language }) {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Side text content */}
             <div className="reveal-on-scroll">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-xs mb-6 border border-indigo-100 dark:border-indigo-800/50">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111E38] text-white dark:bg-white/10 dark:text-white font-extrabold text-xs mb-6 shadow-md select-none border-none">
                 <span className="text-base leading-none">✨</span>
                 {t('Asisten Pintar Beban Kerja', 'Asisten Pintar Beban Kerja')}
               </div>
@@ -143,8 +161,10 @@ export default function LandingAISection({ showAuthForm, language }) {
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700 text-2xl shadow-sm">
-                    🤖
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight mb-1">
@@ -160,8 +180,10 @@ export default function LandingAISection({ showAuthForm, language }) {
                 </div>
                 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-800/50 text-2xl shadow-sm">
-                    📝
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-800/50 shadow-sm">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white text-lg tracking-tight mb-1">
@@ -178,7 +200,7 @@ export default function LandingAISection({ showAuthForm, language }) {
               </div>
 
               {/* Scenario Interactive Selector */}
-              <div className="mt-10 p-5 bg-slate-50 dark:bg-neutral-900/60 rounded-3xl border border-slate-200/60 dark:border-slate-800/80">
+              <div className="mt-10 p-5 bg-slate-50 dark:bg-neutral-900/60 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 animate-fade-in">
                 <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider block mb-3">
                   {t('⚡ TEST AI SCENARIOS (CLICK TO PLAY):', '⚡ UJI SKENARIO AI (KLIK UNTUK MENCOBA):')}
                 </span>
@@ -187,13 +209,14 @@ export default function LandingAISection({ showAuthForm, language }) {
                     <button
                       key={key}
                       onClick={() => setSelectedScenario(key)}
-                      className={`px-4 py-2.5 rounded-full text-xs font-black shadow-sm transition-all hover:-translate-y-0.5 ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-black shadow-sm transition-all hover:-translate-y-0.5 flex items-center gap-2 ${
                         selectedScenario === key
                           ? 'bg-[#111E38] dark:bg-white text-white dark:text-[#111E38]'
                           : 'bg-white dark:bg-neutral-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                       }`}
                     >
-                      {language === 'id' ? scenarios[key].name : scenarios[key].nameEn}
+                      {scenarioIcons[key]}
+                      <span>{language === 'id' ? scenarios[key].name : scenarios[key].nameEn}</span>
                     </button>
                   ))}
                 </div>
@@ -238,24 +261,24 @@ export default function LandingAISection({ showAuthForm, language }) {
                   {/* AI Response Bubble */}
                   {chatStatus !== 'typing' && (
                     <div className="flex gap-3 items-start flex-row-reverse">
-                      <div className="w-7 h-7 rounded-xl bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] flex items-center justify-center text-xs shadow-md flex-shrink-0 font-black">
-                        ✨
+                      <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-black shadow-md flex-shrink-0">
+                        AI
                       </div>
                       
                       {chatStatus === 'thinking' ? (
                         /* Pulsing Thinking Indicator */
-                        <div className="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/30 p-4 rounded-2xl rounded-tr-sm text-xs text-indigo-500 dark:text-indigo-400 font-bold flex items-center gap-2">
+                        <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl rounded-tr-sm text-xs text-slate-800 dark:text-slate-100 font-extrabold flex items-center gap-2 shadow-sm animate-pulse">
                           <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600 dark:bg-indigo-400"></span>
                           </span>
-                          {t('Alurku AI sedang menganalisis...', 'Alurku AI is analyzing...')}
+                          {t('Alurku AI is analyzing...', 'Alurku AI sedang menganalisis...')}
                         </div>
                       ) : (
                         /* Complete Rich AI Response Cards */
                         <div className="bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 p-4 rounded-2xl rounded-tr-sm text-xs text-indigo-900 dark:text-indigo-200 w-[85%] shadow-md select-none mac-animate">
                           <div className="font-bold mb-3 flex items-center gap-2">
-                            <span>🤖</span> {t(scenarios[selectedScenario].aiResponse.titleEn, scenarios[selectedScenario].aiResponse.title)}
+                            {t(scenarios[selectedScenario].aiResponse.titleEn, scenarios[selectedScenario].aiResponse.title)}
                           </div>
                           
                           {/* Scenario 1 Output: Task Lists */}
