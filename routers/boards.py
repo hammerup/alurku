@@ -6,22 +6,26 @@ import json
 from datetime import datetime, timedelta
 import os
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage
+from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace
 from schemas import *
 from dependencies import *
 from utils import *
+from routers.workspaces import get_active_workspace_id
 
 router = APIRouter()
 
 @router.get("/api/boards")
 def get_boards(
-    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_active_workspace_id)
 ):
-    # Auto-create a private "To-do List" board if it doesn't exist
+    # Auto-create a private "To-do List" board if it doesn't exist in the active workspace
     todo_exists = db.query(Board).filter(
         Board.owner_username == current_user,
         Board.name.ilike("To-do List"),
-        Board.is_private == 1
+        Board.is_private == 1,
+        Board.workspace_id == workspace_id
     ).first()
     
     if not todo_exists:
@@ -44,7 +48,8 @@ def get_boards(
             created_at=now_str,
             statuses=default_statuses,
             categories=default_categories,
-            is_private=1
+            is_private=1,
+            workspace_id=workspace_id
         )
         db.add(new_todo)
         try:
@@ -52,7 +57,10 @@ def get_boards(
         except Exception as e:
             db.rollback()
 
-    owned = db.query(Board).filter(Board.owner_username == current_user).all()
+    owned = db.query(Board).filter(
+        Board.owner_username == current_user,
+        Board.workspace_id == workspace_id
+    ).all()
     member_links = (
         db.query(BoardMember)
         .filter(
@@ -62,7 +70,8 @@ def get_boards(
         .all()
     )
     shared = [
-        db.query(Board).filter(Board.id == m.board_id).first() for m in member_links
+        b for m in member_links
+        if (b := db.query(Board).filter(Board.id == m.board_id, Board.workspace_id == workspace_id).first()) is not None
     ]
 
     leave_dates = get_leave_dates(db)
@@ -250,17 +259,20 @@ def create_board(
     payload: BoardModel,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_active_workspace_id)
 ):
     if not payload.name or len(payload.name.strip()) == 0 or len(payload.name) > 100:
         raise HTTPException(
             status_code=400, detail="Project name must be between 1 and 100 characters."
         )
 
-    # Cek apakah project dengan nama yang sama sudah pernah dibuat oleh user ini
+    # Cek apakah project dengan nama yang sama sudah pernah dibuat oleh user ini di workspace ini
     existing_board = (
         db.query(Board)
         .filter(
-            Board.name == payload.name.strip(), Board.owner_username == current_user
+            Board.name == payload.name.strip(),
+            Board.owner_username == current_user,
+            Board.workspace_id == workspace_id
         )
         .first()
     )
@@ -291,6 +303,7 @@ def create_board(
         statuses=default_statuses,
         categories=default_categories,
         is_private=is_private,
+        workspace_id=workspace_id
     )
     db.add(new_board)
     db.commit()
@@ -524,13 +537,16 @@ def create_task(
     task: RequestFormModel,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_active_workspace_id)
 ):
     if len(task.project_name) > 255 or len(task.description) > 10000:
         raise HTTPException(
             status_code=400, detail="Payload size exceeds maximum allowed limit."
         )
 
-    if not check_board_access(db, board_id, current_user):
+    # Verify board belongs to current workspace
+    board = db.query(Board).filter(Board.id == board_id, Board.workspace_id == workspace_id).first()
+    if not board:
         raise HTTPException(status_code=403, detail="Access denied")
 
     now = datetime.now()
@@ -542,7 +558,6 @@ def create_task(
         counter += 1
         timestamp = (now + timedelta(seconds=counter)).strftime("%Y-%m-%d %H:%M:%S")
         
-    board = db.query(Board).filter(Board.id == board_id).first()
     if board and getattr(board, "is_private", 0) == 1:
         assignees = get_assignees(task.requester)
         if any(a.lower() != current_user.lower() for a in assignees):
@@ -554,6 +569,7 @@ def create_task(
     try:
         new_task = Request(
             board_id=board_id,
+            workspace_id=workspace_id,
             timestamp=timestamp,
             project_name=task.project_name,
             requester=task.requester,

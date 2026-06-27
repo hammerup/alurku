@@ -153,3 +153,12 @@ class TransferBoardModel(BaseModel):
 class DMModel(BaseModel):
     text: str
 
+
+class WorkspaceCreateModel(BaseModel):
+    name: str
+
+
+class WorkspaceInviteModel(BaseModel):
+    username_or_email: str
+    role: Optional[str] = "member"
+

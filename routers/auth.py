@@ -7,7 +7,7 @@ import os
 import requests
 import time
 
-from database import get_db, User, get_security_log, set_security_log
+from database import get_db, User, get_security_log, set_security_log, Workspace, WorkspaceMember
 from schemas import RegisterModel, LoginModel, GoogleLoginModel, VerifyModel
 from dependencies import get_password_hash, verify_password, create_access_token, SECRET_KEY, ALGORITHM
 import jwt
@@ -66,6 +66,23 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Se
         created_at=now_str,
     )
     db.add(new_user)
+    db.flush()
+
+    # Create default personal workspace
+    default_ws = Workspace(
+        name=f"Workspace Pribadi {new_user.full_name or new_user.username}",
+        owner_username=new_user.username
+    )
+    db.add(default_ws)
+    db.flush()
+
+    # Create default workspace membership
+    ws_member = WorkspaceMember(
+        workspace_id=default_ws.id,
+        username=new_user.username,
+        role="admin"
+    )
+    db.add(ws_member)
     db.commit()
 
     # Kirim Email Verifikasi
@@ -169,6 +186,23 @@ def google_login(payload: GoogleLoginModel, db: Session = Depends(get_db)):
             created_at=now_str,
         )
         db.add(user)
+        db.flush()
+
+        # Create default personal workspace
+        default_ws = Workspace(
+            name=f"Workspace Pribadi {user.full_name or user.username}",
+            owner_username=user.username
+        )
+        db.add(default_ws)
+        db.flush()
+
+        # Create default workspace membership
+        ws_member = WorkspaceMember(
+            workspace_id=default_ws.id,
+            username=user.username,
+            role="admin"
+        )
+        db.add(ws_member)
         db.commit()
     else:
         evaluate_user_lifecycle(db, user)

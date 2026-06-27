@@ -353,6 +353,8 @@ export default function useAppLogic() {
   const [avatarsMap, setAvatarsMap] = useState({});
   const [myTeam, setMyTeam] = useState([]);
   const [boards, setBoards] = useState([]);
+  const [workspaces, setWorkspaces] = useState([]);
+  const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [selectedBoard, setSelectedBoard] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('innocean_selected_board');
@@ -1643,6 +1645,75 @@ export default function useAppLogic() {
     };
   }, []);
 
+  const fetchWorkspaces = () => {
+    if (!isAuthenticated) return Promise.resolve([]);
+    return axios
+      .get('/api/workspaces')
+      .then((res) => {
+        const list = res.data || [];
+        setWorkspaces(list);
+        
+        if (list.length > 0) {
+          const savedId = localStorage.getItem('alurku_active_workspace_id');
+          const found = list.find((w) => String(w.id) === String(savedId));
+          const active = found || list[0];
+          
+          setActiveWorkspace(active);
+          localStorage.setItem('alurku_active_workspace_id', active.id);
+          return list;
+        }
+        return [];
+      })
+      .catch((err) => {
+        console.error('Error fetching workspaces:', err);
+        return [];
+      });
+  };
+
+  const createWorkspace = (name) => {
+    if (!name.trim()) return;
+    axios
+      .post('/api/workspaces', { name: name.trim() })
+      .then((res) => {
+        showNotification(language === 'id' ? 'Workspace berhasil dibuat!' : 'Workspace created successfully!', 'success');
+        fetchWorkspaces().then((list) => {
+          const newWs = list.find((w) => w.id === res.data.workspace.id);
+          if (newWs) {
+             switchWorkspace(newWs);
+          }
+        });
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || 'Failed to create workspace', 'error');
+      });
+  };
+
+  const switchWorkspace = (workspace) => {
+    setActiveWorkspace(workspace);
+    localStorage.setItem('alurku_active_workspace_id', workspace.id);
+    
+    // Hapus selected board dari workspace lama agar tidak bentrok
+    localStorage.removeItem('innocean_selected_board');
+    setSelectedBoard(null);
+    
+    showNotification(
+      language === 'id' 
+        ? `Berpindah ke workspace: ${workspace.name}`
+        : `Switched to workspace: ${workspace.name}`,
+      'info'
+    );
+    
+    // Hapus cached global tasks cache
+    cachedGlobalTasks = null;
+    cachedGlobalTasksTime = 0;
+    
+    // Muat ulang papan dan tugas untuk workspace yang baru
+    setTimeout(() => {
+      fetchBoards();
+      fetchTasks(true);
+    }, 50);
+  };
+
   const fetchBoards = () => {
     if (!isAuthenticated) return;
     setIsBoardsLoading(true);
@@ -1847,7 +1918,10 @@ export default function useAppLogic() {
         setIsLoading(false);
       });
 
-      fetchBoards();
+      fetchWorkspaces().then(() => {
+        fetchBoards();
+        fetchTasks();
+      });
       fetchInvitations();
       fetchNotifications();
       fetchAvatars();
@@ -1855,7 +1929,6 @@ export default function useAppLogic() {
       fetchProfileStatus();
       fetchDmConversations();
       fetchInboxChats();
-      fetchTasks();
 
       const interval = setInterval(() => {
         if (document.visibilityState === 'visible') {
@@ -4386,6 +4459,11 @@ export default function useAppLogic() {
   }, [tasks, userDirectory]);
 
   return {
+    workspaces,
+    activeWorkspace,
+    fetchWorkspaces,
+    createWorkspace,
+    switchWorkspace,
     isAuthenticated,
     currentUser,
     isLoginMode,

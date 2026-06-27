@@ -2,9 +2,9 @@ import os
 from dotenv import load_dotenv
 import bcrypt
 import json
-from sqlalchemy import create_engine, Column, Integer, String, Text, text, DateTime, Boolean, Float
+from sqlalchemy import create_engine, Column, Integer, String, Text, text, DateTime, Boolean, Float, ForeignKey
 from datetime import datetime
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 load_dotenv()
 
@@ -22,10 +22,38 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+class Workspace(Base):
+    __tablename__ = "workspaces"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    owner_username = Column(String(50), ForeignKey("users.username", ondelete="CASCADE"), index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    owner = relationship("User", back_populates="owned_workspaces")
+    members = relationship("WorkspaceMember", back_populates="workspace", cascade="all, delete-orphan")
+    boards = relationship("Board", back_populates="workspace", cascade="all, delete-orphan")
+    requests = relationship("Request", back_populates="workspace", cascade="all, delete-orphan")
+
+
+class WorkspaceMember(Base):
+    __tablename__ = "workspace_members"
+    id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    username = Column(String(50), ForeignKey("users.username", ondelete="CASCADE"), index=True)
+    role = Column(String(20), default="member")  # admin, member, viewer
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    workspace = relationship("Workspace", back_populates="members")
+    user = relationship("User", back_populates="workspace_memberships")
+
+
 class Request(Base):
     __tablename__ = "requests"
     id = Column(Integer, primary_key=True, index=True)
     board_id = Column(Integer, index=True, nullable=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
     project_name = Column(String(100))
     requester = Column(String(100))
@@ -41,6 +69,9 @@ class Request(Base):
     etc = Column(Float, default=2.0)
     auto_nudge = Column(Boolean, default=False)
     recurring = Column(String(50), default="none")
+
+    # Relationships
+    workspace = relationship("Workspace", back_populates="requests")
 
 
 class LeaveDay(Base):
@@ -87,10 +118,15 @@ class User(Base):
     deletion_date = Column(DateTime, nullable=True)
     is_superadmin = Column(Integer, default=0)
 
+    # Relationships
+    owned_workspaces = relationship("Workspace", back_populates="owner", cascade="all, delete-orphan")
+    workspace_memberships = relationship("WorkspaceMember", back_populates="user", cascade="all, delete-orphan")
+
 
 class Board(Base):
     __tablename__ = "boards"
     id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
     name = Column(String(100))
     owner_username = Column(String(50), index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -99,6 +135,9 @@ class Board(Base):
     last_activity_date = Column(DateTime, nullable=True)
     deletion_date = Column(DateTime, nullable=True)
     is_private = Column(Integer, default=0)
+
+    # Relationships
+    workspace = relationship("Workspace", back_populates="boards")
 
 
 class BoardMember(Base):
@@ -121,6 +160,7 @@ class Comment(Base):
 class Notification(Base):
     __tablename__ = "notifications"
     id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=True, index=True)
     user_username = Column(String(50), index=True)
     message = Column(String(255))
     type = Column(String(50), default="info")
@@ -186,17 +226,53 @@ def setup_db():
                 is_superadmin=1,
             )
             db.add(new_admin)
+            db.flush()
+            
+            # Create default workspace for admin
+            admin_ws = Workspace(
+                name="Workspace Pribadi Admin",
+                owner_username="admin"
+            )
+            db.add(admin_ws)
+            db.flush()
+            
+            # Create member link
+            ws_member = WorkspaceMember(
+                workspace_id=admin_ws.id,
+                username="admin",
+                role="admin"
+            )
+            db.add(ws_member)
             db.commit()
-        elif admin.is_superadmin == 0:
-            admin.is_superadmin = 1
-            db.commit()
+        else:
+            if admin.is_superadmin == 0:
+                admin.is_superadmin = 1
+                db.commit()
 
-        elif not admin.password.startswith("$2b$"):
-            salt = bcrypt.gensalt()
-            admin.password = bcrypt.hashpw(
-                admin.password.encode("utf-8")[:71], salt
-            ).decode("utf-8")
-            db.commit()
+            if not admin.password.startswith("$2b$"):
+                salt = bcrypt.gensalt()
+                admin.password = bcrypt.hashpw(
+                    admin.password.encode("utf-8")[:71], salt
+                ).decode("utf-8")
+                db.commit()
+
+        # Check if admin has any workspace membership, if not, create one
+        if admin:
+            existing_ws_member = db.query(WorkspaceMember).filter(WorkspaceMember.username == "admin").first()
+            if not existing_ws_member:
+                admin_ws = Workspace(
+                    name="Workspace Pribadi Admin",
+                    owner_username="admin"
+                )
+                db.add(admin_ws)
+                db.flush()
+                ws_member = WorkspaceMember(
+                    workspace_id=admin_ws.id,
+                    username="admin",
+                    role="admin"
+                )
+                db.add(ws_member)
+                db.commit()
     finally:
         db.close()
 

@@ -11,14 +11,17 @@ from schemas import *
 from dependencies import *
 from utils import *
 from routers.ai import generate_ai_text
+from routers.workspaces import get_active_workspace_id
 
 router = APIRouter()
 
 @router.get("/api/tasks/all")
 def get_all_global_tasks(
-    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_active_workspace_id)
 ):
-    owned_subq = db.query(Board.id).filter(Board.owner_username == current_user)
+    owned_subq = db.query(Board.id).filter(Board.owner_username == current_user, Board.workspace_id == workspace_id)
     shared_subq = db.query(BoardMember.board_id).filter(
         BoardMember.member_username == current_user, BoardMember.status == "accepted"
     )
@@ -26,6 +29,7 @@ def get_all_global_tasks(
     tasks = (
         db.query(Request)
         .filter(
+            Request.workspace_id == workspace_id,
             or_(Request.board_id.in_(owned_subq), Request.board_id.in_(shared_subq)),
             or_(Request.requester == None, Request.requester != "System"),
             or_(

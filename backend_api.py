@@ -551,6 +551,8 @@ from routers.leaves import router as leaves_router
 app.include_router(leaves_router)
 from routers.ai import router as ai_router
 app.include_router(ai_router)
+from routers.workspaces import router as workspaces_router
+app.include_router(workspaces_router)
 
 def run_startup_auto_nudge():
     # Only run if current local time is past 08:00 AM
