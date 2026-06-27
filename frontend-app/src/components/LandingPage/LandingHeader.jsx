@@ -11,49 +11,46 @@ export default function LandingHeader({
   const [isOpen, setIsOpen] = useState(false);
 
   const tabs = [
-    { id: 'home', label: 'Beranda' },
-    { id: 'features', label: 'Fitur' },
-    { id: 'pricing', label: 'Harga' },
-    { id: 'guide', label: 'Panduan' },
-    { id: 'about', label: 'Tentang Kami' },
+    { id: 'home', label: 'Beranda', path: '/' },
+    { id: 'features', label: 'Fitur', path: '/fitur' },
+    { id: 'pricing', label: 'Harga', path: '/harga' },
+    { id: 'guide', label: 'Panduan', path: '/panduan' },
+    { id: 'about', label: 'Tentang Kami', path: '/tentang' },
   ];
 
   return (
-    <header className="sticky top-0 z-[100] w-full bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+    <header className="sticky top-0 z-[100] w-full bg-[#111E38] text-white border-b border-slate-900/50 shadow-md">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
-        {/* Enlarge Logo with favicon image icon */}
+        {/* Logo with favicon image icon */}
         <div
           onClick={() => setCurrentTab('home')}
           className="flex items-center gap-3 cursor-pointer hover:opacity-95 transition-opacity font-sans font-extrabold text-3xl lg:text-4xl tracking-tight select-none"
         >
           <img src="/favicon.png" alt="Alurku" className="w-8 h-8 md:w-9 md:h-9 rounded-xl object-cover shadow-sm" />
-          <span className="text-black dark:text-white">
+          <span className="text-white">
             alur<span className="text-[#FACC15]">ku</span>.
           </span>
         </div>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation with pathname permalinks */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
-          {tabs.map((tab) => {
-            const hash = tab.id === 'features' ? '#fitur' : tab.id === 'pricing' ? '#harga' : tab.id === 'guide' ? '#panduan' : tab.id === 'about' ? '#tentang' : '#';
-            return (
-              <a
-                key={tab.id}
-                href={hash}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setCurrentTab(tab.id);
-                }}
-                className={`transition-colors py-1 ${
-                  currentTab === tab.id
-                    ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {tab.label}
-              </a>
-            );
-          })}
+          {tabs.map((tab) => (
+            <a
+              key={tab.id}
+              href={tab.path}
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentTab(tab.id);
+              }}
+              className={`transition-colors py-1 ${
+                currentTab === tab.id
+                  ? 'text-[#FACC15] border-b-2 border-[#FACC15]'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </a>
+          ))}
         </nav>
 
         {/* Right Side Actions */}
@@ -61,7 +58,7 @@ export default function LandingHeader({
           {isInstallable && (
             <button
               onClick={handleInstallClick}
-              className="flex text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors items-center gap-1.5"
+              className="flex text-sm font-bold text-slate-300 hover:text-white transition-colors items-center gap-1.5"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -79,7 +76,7 @@ export default function LandingHeader({
               setIsLoginMode(true);
               setShowAuthForm(true);
             }}
-            className="text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
+            className="text-sm font-bold text-slate-300 hover:text-white transition-colors"
           >
             Masuk
           </button>
@@ -88,7 +85,7 @@ export default function LandingHeader({
               setIsLoginMode(false);
               setShowAuthForm(true);
             }}
-            className="bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] hover:opacity-90 font-extrabold py-2.5 px-6 rounded-full shadow-md transition-all text-sm flex items-center gap-1.5 group"
+            className="bg-[#FACC15] hover:bg-[#F5C200] text-[#111E38] font-extrabold py-2.5 px-6 rounded-full shadow-md transition-all text-sm flex items-center gap-1.5 group border border-[#EAB308]"
           >
             Coba Gratis
             <span className="transition-transform group-hover:translate-x-1">→</span>
@@ -98,7 +95,7 @@ export default function LandingHeader({
         {/* Hamburger Menu Toggle (Mobile) */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white"
+          className="md:hidden p-2 text-slate-300 hover:text-white"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isOpen ? (
@@ -112,36 +109,33 @@ export default function LandingHeader({
 
       {/* Mobile Drawer Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white dark:bg-neutral-950 border-t border-slate-200/50 dark:border-slate-800/50 px-6 py-4 space-y-4">
+        <div className="md:hidden bg-[#111E38] border-t border-slate-800/80 px-6 py-4 space-y-4">
           <div className="flex flex-col gap-3 font-bold">
-            {tabs.map((tab) => {
-              const hash = tab.id === 'features' ? '#fitur' : tab.id === 'pricing' ? '#harga' : tab.id === 'guide' ? '#panduan' : tab.id === 'about' ? '#tentang' : '#';
-              return (
-                <a
-                  key={tab.id}
-                  href={hash}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setCurrentTab(tab.id);
-                    setIsOpen(false);
-                  }}
-                  className={`text-left text-sm py-1.5 ${
-                    currentTab === tab.id
-                      ? 'text-indigo-600 dark:text-indigo-400 font-extrabold'
-                      : 'text-slate-600 dark:text-slate-300'
-                  }`}
-                >
-                  {tab.label}
-                </a>
-              );
-            })}
+            {tabs.map((tab) => (
+              <a
+                key={tab.id}
+                href={tab.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentTab(tab.id);
+                  setIsOpen(false);
+                }}
+                className={`text-left text-sm py-1.5 ${
+                  currentTab === tab.id
+                    ? 'text-[#FACC15] font-extrabold'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </a>
+            ))}
           </div>
-          <hr className="border-slate-100 dark:border-slate-800" />
+          <hr className="border-slate-800" />
           <div className="flex flex-col gap-4">
             {isInstallable && (
               <button
                 onClick={handleInstallClick}
-                className="flex text-sm font-bold text-indigo-600 dark:text-indigo-400 items-center gap-1.5"
+                className="flex text-sm font-bold text-slate-300 hover:text-white items-center gap-1.5"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -160,7 +154,7 @@ export default function LandingHeader({
                 setShowAuthForm(true);
                 setIsOpen(false);
               }}
-              className="text-left text-sm font-bold text-slate-600 dark:text-slate-300"
+              className="text-left text-sm font-bold text-slate-300 hover:text-white"
             >
               Masuk
             </button>
@@ -170,7 +164,7 @@ export default function LandingHeader({
                 setShowAuthForm(true);
                 setIsOpen(false);
               }}
-              className="w-full bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] text-center font-extrabold py-3 rounded-full text-sm shadow-md"
+              className="w-full bg-[#FACC15] text-[#111E38] hover:bg-[#F5C200] text-center font-extrabold py-3 rounded-full text-sm shadow-md border border-[#EAB308]"
             >
               Coba Gratis
             </button>

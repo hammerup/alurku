@@ -51,47 +51,47 @@ export default function LandingPage({
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isSupportAlertOpen, setIsSupportAlertOpen] = useState(false);
-  const getTabFromHash = (hash) => {
-    switch (hash) {
-      case '#fitur': return 'features';
-      case '#harga': return 'pricing';
-      case '#panduan': return 'guide';
-      case '#tentang': return 'about';
+  const getTabFromPath = (path) => {
+    switch (path) {
+      case '/fitur': return 'features';
+      case '/harga': return 'pricing';
+      case '/panduan': return 'guide';
+      case '/tentang': return 'about';
       default: return 'home';
     }
   };
 
-  const getHashFromTab = (tab) => {
+  const getPathFromTab = (tab) => {
     switch (tab) {
-      case 'features': return '#fitur';
-      case 'pricing': return '#harga';
-      case 'guide': return '#panduan';
-      case 'about': return '#tentang';
-      default: return '#';
+      case 'features': return '/fitur';
+      case 'pricing': return '/harga';
+      case 'guide': return '/panduan';
+      case 'about': return '/tentang';
+      default: return '/';
     }
   };
 
   const [currentTab, setCurrentTab] = useState(() => {
     if (typeof window !== 'undefined') {
-      return getTabFromHash(window.location.hash);
+      return getTabFromPath(window.location.pathname);
     }
     return 'home';
   });
 
-  // Listen to hash changes (browser back/forward or direct links)
+  // Listen to popstate changes (browser back/forward buttons)
   useEffect(() => {
-    const handleHashChange = () => {
-      setCurrentTab(getTabFromHash(window.location.hash));
+    const handlePopState = () => {
+      setCurrentTab(getTabFromPath(window.location.pathname));
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Update hash and scroll to top when tab changes
+  // Update URL pathname and scroll to top when tab changes programmatically
   useEffect(() => {
-    const newHash = getHashFromTab(currentTab);
-    if (window.location.hash !== newHash) {
-      window.location.hash = newHash;
+    const newPath = getPathFromTab(currentTab);
+    if (window.location.pathname !== newPath) {
+      window.history.pushState({}, '', newPath);
     }
     window.scrollTo({ top: 0 });
   }, [currentTab]);

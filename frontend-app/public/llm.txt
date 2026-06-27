@@ -8,11 +8,11 @@ Alurku adalah platform manajemen proyek dan tugas yang berfokus pada keseimbanga
 - Papan Kanban & Garis Waktu Interaktif (Gantt Chart)
 
 ## Halaman Utama & Permalink
-- Beranda: https://alurku.app/ (Atau https://alurku.app/#)
-- Fitur Lengkap: https://alurku.app/#fitur
-- Paket Harga: https://alurku.app/#harga
-- Panduan Produk: https://alurku.app/#panduan
-- Tentang Kami: https://alurku.app/#tentang
+- Beranda: https://alurku.app/
+- Fitur Lengkap: https://alurku.app/fitur
+- Paket Harga: https://alurku.app/harga
+- Panduan Produk: https://alurku.app/panduan
+- Tentang Kami: https://alurku.app/tentang
 
 ## Kontak & Hubungi Kami
 - Email: ekahary89@gmail.com
