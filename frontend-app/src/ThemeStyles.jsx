@@ -3,6 +3,76 @@ import React from 'react';
 export default function AppThemes({ appTheme }) {
   return (
     <>
+      {(!appTheme || appTheme === 'default') && (
+        <style>{`
+          /* Default Alurku Theme Colors */
+          
+          /* Light Mode */
+          html:not(.dark) body { 
+            background-color: #F3F4F6 !important; 
+            color: #111E38 !important; 
+          }
+          html:not(.dark) body .bg-neutral-50,
+          html:not(.dark) body .bg-slate-50,
+          html:not(.dark) body .bg-neutral-100\\/50,
+          html:not(.dark) body .min-h-screen.bg-neutral-50 {
+            background-color: #F3F4F6 !important;
+          }
+          html:not(.dark) body .bg-white,
+          html:not(.dark) body .bg-card,
+          html:not(.dark) body .tour-board-title { 
+            background-color: #FAFAFA !important; 
+            border-color: #E5E7EB !important;
+          }
+          html:not(.dark) body .bg-neutral-100,
+          html:not(.dark) body .bg-slate-100 {
+            background-color: #E5E7EB !important;
+            border-color: #E5E7EB !important;
+          }
+
+          /* Dark Mode */
+          .dark body { 
+            background-color: #090D16 !important; 
+            color: #F3F4F6 !important; 
+          }
+          .dark .dark\\:bg-neutral-950,
+          .dark .dark\\:bg-slate-950,
+          .dark .dark\\:bg-black {
+            background-color: #090D16 !important;
+          }
+          .dark .dark\\:bg-neutral-900,
+          .dark .dark\\:bg-slate-900,
+          .dark .bg-white\\/95,
+          .dark .bg-white {
+            background-color: #121B2D !important;
+            border-color: #1E293B !important;
+          }
+          .dark .dark\\:bg-neutral-800,
+          .dark .dark\\:bg-slate-800 {
+            background-color: #1E293B !important;
+          }
+
+          /* Accent & Buttons (Flat Yellow #FACC15) */
+          .bg-indigo-600, .bg-blue-600 {
+            background-color: #FACC15 !important;
+            color: #111E38 !important;
+            font-weight: 800 !important;
+          }
+          .bg-indigo-600:hover, .bg-blue-600:hover {
+            background-color: #EAB308 !important;
+          }
+          .text-indigo-600, .dark\\:text-indigo-400, .text-blue-600, .dark\\:text-blue-400 {
+            color: #FACC15 !important;
+          }
+          .border-indigo-500, .border-blue-500 {
+            border-color: #FACC15 !important;
+          }
+          .focus\\:border-indigo-500:focus, .focus\\:ring-indigo-500\\/20:focus-within {
+            border-color: #FACC15 !important;
+          }
+        `}</style>
+      )}
+
       {appTheme === 'gamer' && (
         <style>{`
           /* Gamer (Steam) Dark Mode Overrides */

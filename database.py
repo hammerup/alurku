@@ -180,7 +180,7 @@ def setup_db():
             hashed_pw = bcrypt.hashpw("admin123".encode("utf-8"), salt).decode("utf-8")
             new_admin = User(
                 username="admin",
-                email="admin@innocean.co.id",
+                email="admin@alurku.app",
                 full_name="System Admin",
                 password=hashed_pw,
                 is_superadmin=1,

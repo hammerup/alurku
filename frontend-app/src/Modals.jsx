@@ -648,7 +648,7 @@ export function TeamModal({
                       }
                     }
                   }}
-                  placeholder="e.g. john, jane@innocean.co.id, mike..."
+                  placeholder="e.g. john, jane@alurku.app, mike..."
                   className="w-full p-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-full focus:border-neutral-300 dark:focus:border-neutral-700 focus:bg-white dark:focus:bg-black focus:outline-none text-sm font-medium placeholder-neutral-400 transition-all"
                   required
                   autoComplete="off"

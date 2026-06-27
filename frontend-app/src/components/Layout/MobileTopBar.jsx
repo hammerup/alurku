@@ -54,18 +54,15 @@ export default function MobileTopBar() {
           </svg>
         </button>
         <div
-          className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity tour-board-title-mobile"
+          className="cursor-pointer hover:opacity-80 transition-opacity tour-board-title-mobile font-sans font-extrabold text-2xl tracking-tight select-none"
           onClick={() => {
             setSelectedBoard(null);
             setIsProactiveAIOpen(true);
           }}
         >
-          <span className="font-black text-black dark:text-white tracking-tighter uppercase leading-none text-xl">
-            INNOCEAN
-          </span>
-          <span className="text-[8px] font-bold text-indigo-500 dark:text-indigo-400 tracking-[0.3em] uppercase mt-0.5">
-            Tracker
-          </span>
+          <span className="text-black dark:text-white">alur</span>
+          <span className="text-[#FACC15]">ku</span>
+          <span className="text-black dark:text-white">.</span>
         </div>
       </div>
 

@@ -25,11 +25,10 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
 
           {/* Navigation */}
           <nav className="px-6 lg:px-8 py-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-20">
-            <div className="flex flex-col">
-              <span className="font-black text-black dark:text-white text-3xl tracking-tighter uppercase leading-none">
-                INNOCEAN
-              </span>
-              <span className="text-[10px] font-bold text-neutral-500 tracking-[0.3em] uppercase mt-1">Tracker</span>
+            <div className="font-sans font-extrabold text-2xl tracking-tight select-none">
+              <span className="text-black dark:text-white">alur</span>
+              <span className="text-[#FACC15]">ku</span>
+              <span className="text-black dark:text-white">.</span>
             </div>
             <div className="flex items-center gap-6">
               {isInstallable && (
@@ -98,8 +97,8 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-10 font-medium leading-relaxed reveal-on-scroll"
                   style={{ animationDelay: '300ms' }}
                 >
-                  The central nervous system for INNOCEAN's professionals. Synchronize workflows, predict bottlenecks
-                  with AI, and deliver outstanding global results seamlessly.
+                  The modern workflow helper for professionals and teams. Synchronize workflows, predict bottlenecks
+                  with AI, and achieve outstanding results seamlessly.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 reveal-on-scroll" style={{ animationDelay: '400ms' }}>
                   <button
@@ -153,7 +152,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                       <div className="w-3 h-3 rounded-full bg-neutral-500 dark:bg-neutral-500"></div>
                     </div>
                     <div className="mx-auto bg-white dark:bg-black border border-slate-200 dark:border-slate-800 rounded-md px-24 py-1.5 flex items-center justify-center">
-                      <span className="text-[10px] text-slate-400 font-mono">innocean-tracker.app</span>
+                      <span className="text-[10px] text-slate-400 font-mono">alurku.app</span>
                     </div>
                   </div>
                   {/* Mockup Body */}

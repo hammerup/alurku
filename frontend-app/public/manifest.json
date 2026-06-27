@@ -1,11 +1,11 @@
 {
-  "name": "INNOCEAN Tracker",
-  "short_name": "Tracker",
-  "description": "Enterprise Workload Manager",
+  "name": "Alurku",
+  "short_name": "Alurku",
+  "description": "Task & Project Management Webapp",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#4f46e5",
+  "background_color": "#090D16",
+  "theme_color": "#111E38",
   "icons": [
     {
       "src": "/icon-192.png",

@@ -5,7 +5,7 @@ export default function LandingFAQ() {
 
   const faqs = [
     {
-      q: 'Is INNOCEAN Tracker really free forever?',
+      q: 'Is Alurku really free forever?',
       a: 'The software itself has zero per-user licensing fees. It is designed to be deployed on your own cloud infrastructure. While it runs perfectly on free-tier services (like Vercel and Neon DB) for small teams, scaling up to enterprise-level traffic will require paid cloud resources from your hosting provider.',
     },
     {
@@ -22,7 +22,7 @@ export default function LandingFAQ() {
     },
     {
       q: 'What browsers are supported? Can I use it on mobile?',
-      a: 'INNOCEAN Tracker is optimized for modern desktop browsers like Google Chrome, Firefox, and Safari. While it is fully responsive and functional on mobile browsers, we recommend installing it as a Progressive Web App (PWA) for the best native-app-like experience on your phone.',
+      a: 'Alurku is optimized for modern desktop browsers like Google Chrome, Firefox, and Safari. While it is fully responsive and functional on mobile browsers, we recommend installing it as a Progressive Web App (PWA) for the best native-app-like experience on your phone.',
     },
     {
       q: 'Can I manage multiple projects at once?',

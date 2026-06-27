@@ -12,7 +12,7 @@ export default function LandingFooter({ setIsSupportAlertOpen, setIsPrivacyOpen,
           }}
           className="text-[10px] font-bold text-neutral-400 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
         >
-          Contact IT Support
+          Contact Support
         </a>
         <button
           onClick={() => setIsPrivacyOpen(true)}
@@ -28,7 +28,7 @@ export default function LandingFooter({ setIsSupportAlertOpen, setIsPrivacyOpen,
         </button>
       </div>
       <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
-        © {new Date().getFullYear()} INNOCEAN Tracker. Engineered with precision.
+        © {new Date().getFullYear()} Alurku. Engineered with precision.
       </p>
     </footer>
   );

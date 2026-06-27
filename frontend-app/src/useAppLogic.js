@@ -596,7 +596,7 @@ export default function useAppLogic() {
 
           // Tampilkan Desktop Notif jika diizinkan
           if (browserNotifEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('INNOCEAN Tracker', { body: displayMsg });
+            new Notification('Alurku', { body: displayMsg });
           }
 
           // Tampilkan Toast In-App Notif
@@ -788,7 +788,7 @@ export default function useAppLogic() {
           ? [
               {
                 popover: {
-                  title: tMsg('Welcome to INNOCEAN Tracker! 🚀', 'Selamat datang di INNOCEAN Tracker! 🚀'),
+                  title: tMsg('Welcome to Alurku! 🚀', 'Selamat datang di Alurku! 🚀'),
                   description: tMsg(
                     'This is your main dashboard. Let us give you a quick tour! Click the logo anytime to return here.',
                     'Ini adalah dasbor utama Anda. Mari kita mulai tur singkat! Klik logo kapan saja untuk kembali ke sini.'
@@ -971,8 +971,8 @@ export default function useAppLogic() {
                 popover: {
                   title: tMsg('Home Dashboard', 'Beranda Utama'),
                   description: tMsg(
-                    'Click the INNOCEAN Tracker logo anytime to return to your Home Dashboard.',
-                    'Klik logo INNOCEAN Tracker kapan saja untuk kembali ke Beranda Utama Anda.'
+                    'Click the Alurku logo anytime to return to your Home Dashboard.',
+                    'Klik logo Alurku kapan saja untuk kembali ke Beranda Utama Anda.'
                   ),
                   side: 'right',
                   align: 'center',
@@ -1997,9 +1997,9 @@ export default function useAppLogic() {
 
   useEffect(() => {
     if (unreadCount > 0) {
-      document.title = `(${unreadCount}) INNOCEAN Tracker`;
+      document.title = `(${unreadCount}) Alurku`;
     } else {
-      document.title = 'INNOCEAN Tracker | Enterprise Workload Manager';
+      document.title = 'Alurku | Task & Project Management';
     }
   }, [unreadCount]);
 

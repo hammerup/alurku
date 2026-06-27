@@ -65,10 +65,10 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
                   )}
                 </li>
                 <li>
-                  <strong className="text-black dark:text-white">Domain Restriction:</strong>{' '}
+                  <strong className="text-black dark:text-white">Email Registration:</strong>{' '}
                   {tMsg(
-                    'Access is strictly whitelisted and limited to authorized @innocean.co.id and @innocean.com domains.',
-                    'Akses di-whitelist secara ketat dan terbatas pada domain resmi @innocean.co.id dan @innocean.com.'
+                    'Registration is open to all users with valid email addresses.',
+                    'Pendaftaran terbuka untuk semua pengguna dengan alamat email yang valid.'
                   )}
                 </li>
                 <li>

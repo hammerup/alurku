@@ -464,7 +464,7 @@ export default function LandingFeatures({ showAuthForm }) {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16 reveal-on-scroll">
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white mb-6 uppercase">
-                Why INNOCEAN Tracker?
+                Why Alurku?
               </h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
                 Stop adapting to generic tools. Experience a platform built specifically for your team's unique
@@ -483,7 +483,7 @@ export default function LandingFeatures({ showAuthForm }) {
                       Capability
                     </th>
                     <th className="sticky top-0 z-30 bg-indigo-50 p-4 md:p-6 text-[10px] sm:text-xs font-black uppercase tracking-widest text-indigo-700 border-b-2 border-indigo-200 w-1/4 text-center rounded-t-3xl relative border-x border-t-4 border-t-indigo-500 border-x-indigo-100 shadow-[0_-15px_30px_rgba(99,102,241,0.15)]">
-                      INNOCEAN Tracker
+                      Alurku
                     </th>
                     <th className="sticky top-0 z-20 bg-white p-4 md:p-6 text-[10px] sm:text-xs font-black uppercase tracking-widest text-neutral-400 border-b border-neutral-200 w-1/4 text-center">
                       Spreadsheets / Excel

@@ -314,20 +314,17 @@ export default function Sidebar() {
               setIsMobileMenuOpen(false);
             }}
           >
-            <div className="flex flex-col">
-              <span
-                className={`font-black text-black dark:text-white tracking-tighter uppercase leading-none ${
-                  isCollapsed ? 'text-sm' : 'text-xl'
-                }`}
-              >
-                {isCollapsed ? 'IT' : 'INNOCEAN'}
-              </span>
-              {!isCollapsed && (
-                <span className="text-[8px] font-bold text-indigo-500 dark:text-indigo-400 tracking-[0.3em] uppercase mt-0.5">
-                  Tracker
-                </span>
-              )}
-            </div>
+            {isCollapsed ? (
+              <div className="w-8 h-8 rounded-lg bg-[#111E38] flex items-center justify-center font-sans font-extrabold text-lg text-[#FACC15] shadow-sm select-none">
+                a
+              </div>
+            ) : (
+              <div className="font-sans font-extrabold text-2xl tracking-tight select-none">
+                <span className="text-black dark:text-white">alur</span>
+                <span className="text-[#FACC15]">ku</span>
+                <span className="text-black dark:text-white">.</span>
+              </div>
+            )}
           </div>
           {!isCollapsed && (
             <button
