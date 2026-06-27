@@ -34,19 +34,26 @@ export default function LandingHeader({
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-bold">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setCurrentTab(tab.id)}
-              className={`transition-colors py-1 ${
-                currentTab === tab.id
-                  ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const hash = tab.id === 'features' ? '#fitur' : tab.id === 'pricing' ? '#harga' : tab.id === 'guide' ? '#panduan' : tab.id === 'about' ? '#tentang' : '#';
+            return (
+              <a
+                key={tab.id}
+                href={hash}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentTab(tab.id);
+                }}
+                className={`transition-colors py-1 ${
+                  currentTab === tab.id
+                    ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </a>
+            );
+          })}
         </nav>
 
         {/* Right Side Actions */}
@@ -107,22 +114,27 @@ export default function LandingHeader({
       {isOpen && (
         <div className="md:hidden bg-white dark:bg-neutral-950 border-t border-slate-200/50 dark:border-slate-800/50 px-6 py-4 space-y-4">
           <div className="flex flex-col gap-3 font-bold">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setCurrentTab(tab.id);
-                  setIsOpen(false);
-                }}
-                className={`text-left text-sm py-1.5 ${
-                  currentTab === tab.id
-                    ? 'text-indigo-600 dark:text-indigo-400 font-extrabold'
-                    : 'text-slate-600 dark:text-slate-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              const hash = tab.id === 'features' ? '#fitur' : tab.id === 'pricing' ? '#harga' : tab.id === 'guide' ? '#panduan' : tab.id === 'about' ? '#tentang' : '#';
+              return (
+                <a
+                  key={tab.id}
+                  href={hash}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentTab(tab.id);
+                    setIsOpen(false);
+                  }}
+                  className={`text-left text-sm py-1.5 ${
+                    currentTab === tab.id
+                      ? 'text-indigo-600 dark:text-indigo-400 font-extrabold'
+                      : 'text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {tab.label}
+                </a>
+              );
+            })}
           </div>
           <hr className="border-slate-100 dark:border-slate-800" />
           <div className="flex flex-col gap-4">

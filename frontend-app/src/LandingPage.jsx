@@ -51,14 +51,50 @@ export default function LandingPage({
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isSupportAlertOpen, setIsSupportAlertOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState('home');
+  const getTabFromHash = (hash) => {
+    switch (hash) {
+      case '#fitur': return 'features';
+      case '#harga': return 'pricing';
+      case '#panduan': return 'guide';
+      case '#tentang': return 'about';
+      default: return 'home';
+    }
+  };
 
+  const getHashFromTab = (tab) => {
+    switch (tab) {
+      case 'features': return '#fitur';
+      case 'pricing': return '#harga';
+      case 'guide': return '#panduan';
+      case 'about': return '#tentang';
+      default: return '#';
+    }
+  };
+
+  const [currentTab, setCurrentTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return getTabFromHash(window.location.hash);
+    }
+    return 'home';
+  });
+
+  // Listen to hash changes (browser back/forward or direct links)
   useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentTab(getTabFromHash(window.location.hash));
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Update hash and scroll to top when tab changes
+  useEffect(() => {
+    const newHash = getHashFromTab(currentTab);
+    if (window.location.hash !== newHash) {
+      window.location.hash = newHash;
+    }
     window.scrollTo({ top: 0 });
   }, [currentTab]);
-
-
-
 
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -71,24 +107,28 @@ export default function LandingPage({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Intersection Observer for scroll animations (runs on tab switch too!)
   useEffect(() => {
     if (!showAuthForm) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('animate-fade-up');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.1 }
-      );
+      const timer = setTimeout(() => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-up');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
 
-      document.querySelectorAll('.reveal-on-scroll').forEach((el) => observer.observe(el));
-      return () => observer.disconnect();
+        document.querySelectorAll('.reveal-on-scroll').forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [showAuthForm]);
+  }, [showAuthForm, currentTab]);
 
   return (
     <div className={!showAuthForm 
