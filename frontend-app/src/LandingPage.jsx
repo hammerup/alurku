@@ -47,6 +47,8 @@ export default function LandingPage({
   loginWithGoogle,
   isInstallable,
   handleInstallClick,
+  language,
+  setLanguage,
 }) {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -177,6 +179,8 @@ export default function LandingPage({
             setShowAuthForm={setShowAuthForm}
             isInstallable={isInstallable}
             handleInstallClick={handleInstallClick}
+            language={language}
+            setLanguage={setLanguage}
           />
 
           {currentTab === 'home' && (

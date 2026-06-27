@@ -109,102 +109,15 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                       <span className="text-[10px] text-slate-400 font-mono">alurku.app</span>
                     </div>
                   </div>
-                  {/* Mockup Body */}
-                  <div className="flex h-[400px]">
-                    {/* Mockup Sidebar */}
-                    <div className="w-1/4 border-r border-slate-100 dark:border-slate-800 p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
-                      <div className="flex items-center gap-2 mb-6">
-                        <img src="/favicon.png" className="w-6 h-6 rounded" alt="logo" />
-                        <span className="text-[10px] sm:text-xs font-black tracking-tight text-slate-800 dark:text-white">Alurku Workspace</span>
-                      </div>
-                      <div className="space-y-1.5 text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                        <div className="px-2 text-[8px] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">Proyek Aktif</div>
-                        <div className="py-1 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default flex items-center gap-1.5">📁 Alurku Webapp</div>
-                        <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Sistem Database</div>
-                        <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Integrasi API</div>
-                        <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Desain Aplikasi</div>
-                      </div>
-                    </div>
-                    {/* Mockup Kanban Board */}
-                    <div className="flex-1 p-5 bg-white dark:bg-[#0e1116] flex flex-col overflow-hidden">
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-white">Papan Kanban Pengembangan</span>
-                        <span className="text-[8px] sm:text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-0.5 px-2 rounded-full font-bold">Aktif: 4 Tugas</span>
-                      </div>
-                      
-                      <div className="grid grid-cols-3 gap-3 flex-1 overflow-hidden">
-                        {/* Column 1: Perlu Dikerjakan */}
-                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
-                          <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
-                            <span>Perlu Dikerjakan</span>
-                            <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">2</span>
-                          </div>
-                          
-                          {/* Card 1 */}
-                          <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Desain Antarmuka Alurku</span>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[7px] sm:text-[8px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-1.5 rounded font-black">UI/UX</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">🔴 Tinggi</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Card 2 */}
-                          <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Integrasi API Gemini</span>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[7px] sm:text-[8px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 py-0.5 px-1.5 rounded font-black">AI</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-[7px] sm:text-[8px] text-amber-500 font-bold">🟡 Sedang</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Column 2: Sedang Dikerjakan */}
-                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
-                          <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
-                            <span>Sedang Dikerjakan</span>
-                            <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">1</span>
-                          </div>
-
-                          {/* Card 3 */}
-                          <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 border-l-4 border-l-blue-500">
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Pengembangan Landing Page</span>
-                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                              <div className="bg-blue-500 h-full w-[65%]"></div>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[7px] sm:text-[8px] bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 py-0.5 px-1.5 rounded font-black">Frontend</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">🔴 Tinggi</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Column 3: Selesai */}
-                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
-                          <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
-                            <span>Selesai</span>
-                            <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">1</span>
-                          </div>
-
-                          {/* Card 4 */}
-                          <div className="bg-white/60 dark:bg-neutral-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 opacity-75">
-                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 line-through leading-tight">Setup Database Neon</span>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[7px] sm:text-[8px] bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 py-0.5 px-1.5 rounded font-black">Backend</span>
-                              <div className="flex items-center gap-1">
-                                <span className="text-[8px] sm:text-[9px] text-green-500 font-bold">✅ Ok</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Mockup Body (Real Workspace Image) */}
+                  <div className="relative h-[400px] overflow-hidden select-none">
+                    <img 
+                      src="/hero_mockup.png" 
+                      alt="Alurku Project Workspace Dashboard" 
+                      className="w-full h-full object-cover object-top filter hover:brightness-[1.02] transition-all duration-300"
+                    />
+                    {/* Subtly overlayed glass shine */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/5 pointer-events-none"></div>
                   </div>
                 </div>
 

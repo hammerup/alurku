@@ -7,26 +7,28 @@ export default function LandingHeader({
   setShowAuthForm,
   isInstallable,
   handleInstallClick,
+  language,
+  setLanguage,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const tabs = [
-    { id: 'home', label: 'Beranda', path: '/' },
-    { id: 'features', label: 'Fitur', path: '/fitur' },
-    { id: 'pricing', label: 'Harga', path: '/harga' },
-    { id: 'guide', label: 'Panduan', path: '/panduan' },
-    { id: 'about', label: 'Tentang Kami', path: '/tentang' },
+    { id: 'home', label: language === 'id' ? 'Beranda' : 'Home', path: '/' },
+    { id: 'features', label: language === 'id' ? 'Fitur' : 'Features', path: '/fitur' },
+    { id: 'pricing', label: language === 'id' ? 'Harga' : 'Pricing', path: '/harga' },
+    { id: 'guide', label: language === 'id' ? 'Panduan' : 'Guide', path: '/panduan' },
+    { id: 'about', label: language === 'id' ? 'Tentang Kami' : 'About Us', path: '/tentang' },
   ];
 
   return (
     <header className="sticky top-0 z-[100] w-full bg-[#111E38] text-white border-b border-slate-900/50 shadow-md">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
-        {/* Logo with favicon image icon */}
+        {/* Logo with enlarged favicon image icon */}
         <div
           onClick={() => setCurrentTab('home')}
           className="flex items-center gap-3 cursor-pointer hover:opacity-95 transition-opacity font-sans font-extrabold text-3xl lg:text-4xl tracking-tight select-none"
         >
-          <img src="/favicon.png" alt="Alurku" className="w-8 h-8 md:w-9 md:h-9 rounded-xl object-cover shadow-sm" />
+          <img src="/favicon.png" alt="Alurku" className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover shadow-sm" />
           <span className="text-white">
             alur<span className="text-[#FACC15]">ku</span>.
           </span>
@@ -68,9 +70,20 @@ export default function LandingHeader({
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"
                 ></path>
               </svg>
-              Install App
+              {language === 'id' ? 'Pasang Aplikasi' : 'Install App'}
             </button>
           )}
+
+          {/* Language Toggle Button */}
+          <button
+            onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 text-xs font-bold transition-all text-slate-300 hover:text-white bg-slate-800/40"
+            title={language === 'id' ? 'Ubah ke Bahasa Inggris' : 'Switch to Indonesian'}
+          >
+            <span>🌐</span>
+            <span className="uppercase">{language || 'id'}</span>
+          </button>
+
           <button
             onClick={() => {
               setIsLoginMode(true);
@@ -78,7 +91,7 @@ export default function LandingHeader({
             }}
             className="text-sm font-bold text-slate-300 hover:text-white transition-colors"
           >
-            Masuk
+            {language === 'id' ? 'Masuk' : 'Login'}
           </button>
           <button
             onClick={() => {
@@ -87,7 +100,7 @@ export default function LandingHeader({
             }}
             className="bg-[#FACC15] hover:bg-[#F5C200] text-[#111E38] font-extrabold py-2.5 px-6 rounded-full shadow-md transition-all text-sm flex items-center gap-1.5 group border border-[#EAB308]"
           >
-            Coba Gratis
+            {language === 'id' ? 'Coba Gratis' : 'Try Free'}
             <span className="transition-transform group-hover:translate-x-1">→</span>
           </button>
         </div>
@@ -145,9 +158,19 @@ export default function LandingHeader({
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"
                   ></path>
                 </svg>
-                Install App
+                {language === 'id' ? 'Pasang Aplikasi' : 'Install App'}
               </button>
             )}
+
+            {/* Mobile Language Toggle */}
+            <button
+              onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
+              className="flex items-center gap-1.5 text-sm font-bold text-slate-300 hover:text-white text-left"
+            >
+              <span>🌐</span>
+              <span>{language === 'id' ? 'Bahasa: Indonesia (Ubah)' : 'Language: English (Change)'}</span>
+            </button>
+
             <button
               onClick={() => {
                 setIsLoginMode(true);
@@ -156,7 +179,7 @@ export default function LandingHeader({
               }}
               className="text-left text-sm font-bold text-slate-300 hover:text-white"
             >
-              Masuk
+              {language === 'id' ? 'Masuk' : 'Login'}
             </button>
             <button
               onClick={() => {
@@ -166,7 +189,7 @@ export default function LandingHeader({
               }}
               className="w-full bg-[#FACC15] text-[#111E38] hover:bg-[#F5C200] text-center font-extrabold py-3 rounded-full text-sm shadow-md border border-[#EAB308]"
             >
-              Coba Gratis
+              {language === 'id' ? 'Coba Gratis' : 'Try Free'}
             </button>
           </div>
         </div>
