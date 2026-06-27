@@ -319,7 +319,7 @@ export default function Sidebar() {
             ) : (
               <div className="font-sans font-extrabold text-2xl tracking-tight select-none">
                 <span className="text-black dark:text-white">alur</span>
-                <span className="text-amber-600 dark:text-[#FACC15]">ku</span>
+                <span className="text-[#FACC15]">ku</span>
                 <span className="text-black dark:text-white">.</span>
               </div>
             )}

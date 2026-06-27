@@ -23,60 +23,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="px-6 lg:px-8 py-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-20">
-            <div className="font-sans font-extrabold text-2xl tracking-tight select-none shrink-0">
-              <span className="text-black dark:text-white">alur</span>
-              <span className="text-amber-600 dark:text-[#FACC15]">ku</span>
-              <span className="text-black dark:text-white">.</span>
-            </div>
 
-            {/* Corporate Menu Links */}
-            <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-600 dark:text-slate-300">
-              <button onClick={() => document.getElementById('specs-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Fitur</button>
-              <button onClick={() => document.getElementById('ai-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Asisten AI</button>
-              <button onClick={() => document.getElementById('comparison-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Keunggulan</button>
-              <button onClick={() => document.getElementById('faq-section')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-black dark:hover:text-white transition-colors">Tanya Jawab</button>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {isInstallable && (
-                <button
-                  onClick={handleInstallClick}
-                  className="hidden sm:flex text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors items-center gap-1.5"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.5"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"
-                    ></path>
-                  </svg>
-                  Install App
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  setIsLoginMode(false);
-                  setShowAuthForm(true);
-                }}
-                className="sm:hidden font-bold text-sm text-slate-600 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors"
-              >
-                Daftar
-              </button>
-              <button
-                onClick={() => {
-                  setIsLoginMode(false);
-                  setShowAuthForm(true);
-                }}
-                className="hidden sm:flex bg-[#FACC15] hover:bg-[#F5C200] text-[#111E38] font-extrabold py-2 px-5 rounded-full transition-all text-sm items-center gap-2 group shadow-md"
-              >
-                Coba Gratis
-                <span className="transition-transform group-hover:translate-x-1">→</span>
-              </button>
-            </div>
-          </nav>
 
           {/* Stripe-like Hero Section */}
           <main className="flex-1 flex items-center pt-10 pb-24 lg:pt-20 lg:pb-32 px-6 lg:px-8 max-w-7xl mx-auto w-full relative z-10">
