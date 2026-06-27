@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies needed for compiling python extensions (like psycopg2)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependencies lists
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend source files
+# Note: For our FastAPI backend, source files are at the root level of the workspace
+COPY alembic.ini .
+COPY alembic/ ./alembic/
+COPY routers/ ./routers/
+COPY services/ ./services/
+COPY utils.py database.py dependencies.py schemas.py backend_api.py ./
+
+EXPOSE 8000
+
+# Start backend using uvicorn
+CMD ["uvicorn", "backend_api:app", "--host", "0.0.0.0", "--port", "8000"]
