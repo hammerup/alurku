@@ -45,15 +45,7 @@ def update_profile(
             status_code=400, detail="Avatar image size is too large (Max 2MB)."
         )
 
-    # Validasi Whitelist Email pada saat Edit Profile
-    email_lower = payload.email.lower()
-    if not (
-        email_lower.endswith("@innocean.co.id") or email_lower.endswith("@innocean.com")
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Only @innocean.co.id or @innocean.com emails are allowed.",
-        )
+    # Validasi Whitelist Email pada saat Edit Profile - Removed for commercial release
 
     existing_email = (
         db.query(User)

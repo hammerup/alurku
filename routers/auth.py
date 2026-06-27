@@ -22,16 +22,6 @@ router = APIRouter()
 
 @router.post("/api/register")
 def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    # Validasi Domain Whitelist (innocean.co.id & innocean.com)
-    email_lower = user_data.email.lower()
-    if not (
-        email_lower.endswith("@innocean.co.id") or email_lower.endswith("@innocean.com")
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Only @innocean.co.id or @innocean.com emails are allowed.",
-        )
-
     # Validasi Standar Industri untuk Kekuatan Password
     if len(user_data.password) < 8:
         raise HTTPException(
@@ -158,13 +148,6 @@ def google_login(payload: GoogleLoginModel, db: Session = Depends(get_db)):
     email = user_info.get("email", "").lower()
     name = user_info.get("name", "")
     picture = user_info.get("picture", "")
-
-    # Validasi Whitelist Domain Perusahaan
-    if not (email.endswith("@innocean.co.id") or email.endswith("@innocean.com")):
-        raise HTTPException(
-            status_code=403,
-            detail="Only @innocean.co.id or @innocean.com emails are allowed to login.",
-        )
 
     user = db.query(User).filter(User.email == email).first()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
