@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstallable, handleInstallClick }) {
+export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstallable, handleInstallClick, language }) {
+  const t = (en, id) => (language === 'id' ? id : en);
+
   return (
     <>
       <div className="min-h-screen flex flex-col relative z-10">
@@ -29,22 +31,25 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                 </span>
-                kuasai waktumu, lancarkan alurmu.
+                {t('master your time, streamline your flow.', 'kuasai waktumu, lancarkan alurmu.')}
               </div>
               <h1
                 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter mb-6 leading-[1.1] text-slate-900 dark:text-white reveal-on-scroll"
                 style={{ animationDelay: '200ms' }}
               >
-                Berhenti mengingat semua tugasmu, <br />
-                <span className="text-[#111E38] dark:text-[#FACC15]">
-                  mulailah menyelesaikannya.
-                </span>
+                {t(
+                  <>Stop remembering all your tasks, <br /><span className="text-[#111E38] dark:text-[#FACC15]">start getting them done.</span></>,
+                  <>Berhenti mengingat semua tugasmu, <br /><span className="text-[#111E38] dark:text-[#FACC15]">mulailah menyelesaikannya.</span></>
+                )}
               </h1>
               <p
                 className="text-slate-600 dark:text-slate-400 text-lg md:text-xl font-medium mb-10 leading-relaxed reveal-on-scroll"
                 style={{ animationDelay: '300ms' }}
               >
-                Alurku merapikan daftar rencana kerjamu menjadi prioritas harian yang jelas, lengkap dengan estimasi kapasitas, serta visualisasi progres tim secara real-time.
+                {t(
+                  'Alurku organizes your work plans into clear daily priorities, complete with capacity estimates and real-time team progress visualizations.',
+                  'Alurku merapikan daftar rencana kerjamu menjadi prioritas harian yang jelas, lengkap dengan estimasi kapasitas, serta visualisasi progres tim secara real-time.'
+                )}
               </p>
               <div
                 className="flex flex-col sm:flex-row gap-4 justify-start items-stretch sm:items-center reveal-on-scroll"
@@ -57,7 +62,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   }}
                   className="bg-[#111E38] hover:bg-[#1a2e54] dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-slate-900 dark:border-white"
                 >
-                  Coba Gratis Sekarang
+                  {t('Try Free Now', 'Coba Gratis Sekarang')}
                 </button>
                 {isInstallable && (
                   <button
@@ -72,7 +77,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"
                       ></path>
                     </svg>{' '}
-                    Pasang Aplikasi
+                    {t('Install App', 'Pasang Aplikasi')}
                   </button>
                 )}
               </div>
@@ -98,97 +103,102 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   </div>
                 </div>
 
-                {/* Mockup Body (Controllable HTML/CSS for brand protection) */}
+                {/* Mockup Body */}
                 <div className="flex h-[400px]">
                   {/* Mockup Sidebar */}
                   <div className="w-1/4 border-r border-slate-100 dark:border-slate-800 p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
                     <div className="flex items-center gap-2 mb-6">
                       <img src="/favicon.png" className="w-6 h-6 rounded" alt="logo" />
-                      <span className="text-[10px] sm:text-xs font-black tracking-tight text-slate-800 dark:text-white">Alurku Workspace</span>
+                      {/* Logo text aligned with guidelines */}
+                      <span className="text-[10px] sm:text-xs font-black tracking-tight text-slate-800 dark:text-white select-none">
+                        alur<span className="text-[#EAB308] dark:text-[#FACC15]">ku</span>.
+                      </span>
                     </div>
                     <div className="space-y-1.5 text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                      <div className="px-2 text-[8px] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">Proyek Aktif</div>
+                      <div className="px-2 text-[8px] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
+                        {t('Active Projects', 'Proyek Aktif')}
+                      </div>
                       <div className="py-1 px-2 bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] rounded-md cursor-default flex items-center gap-1.5">📁 Alurku Webapp</div>
-                      <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Sistem Database</div>
-                      <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Integrasi API</div>
-                      <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">📁 Desain Aplikasi</div>
+                      <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">{t('📁 Database System', '📁 Sistem Database')}</div>
+                      <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">{t('📁 API Integration', '📁 Integrasi API')}</div>
+                      <div className="py-1 px-2 hover:bg-slate-50 dark:hover:bg-slate-850 rounded-md transition-colors cursor-default flex items-center gap-1.5">{t('📁 App Design', '📁 Desain Aplikasi')}</div>
                     </div>
                   </div>
 
                   {/* Mockup Kanban Board */}
                   <div className="flex-1 p-5 bg-white dark:bg-[#0e1116] flex flex-col overflow-hidden">
                     <div className="flex justify-between items-center mb-4">
-                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-white">Papan Kanban Pengembangan</span>
-                      <span className="text-[8px] sm:text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-0.5 px-2 rounded-full font-bold">Aktif: 4 Tugas</span>
+                      <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-white">{t('Development Kanban Board', 'Papan Kanban Pengembangan')}</span>
+                      <span className="text-[8px] sm:text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-0.5 px-2 rounded-full font-bold">{t('Active: 4 Tasks', 'Aktif: 4 Tugas')}</span>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-3 flex-1 overflow-hidden">
-                      {/* Column 1: Perlu Dikerjakan */}
+                      {/* Column 1: To Do */}
                       <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
                         <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
-                          <span>Perlu Dikerjakan</span>
+                          <span>{t('To Do', 'Perlu Dikerjakan')}</span>
                           <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">2</span>
                         </div>
                         
                         {/* Card 1 */}
                         <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Desain Antarmuka Alurku</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">{t('Alurku UI Design', 'Desain Antarmuka Alurku')}</span>
                           <div className="flex justify-between items-center">
                             <span className="text-[7px] sm:text-[8px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-1.5 rounded font-black">UI/UX</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">🔴 Tinggi</span>
+                              <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">{t('🔴 High', '🔴 Tinggi')}</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Card 2 */}
                         <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5">
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Integrasi API Gemini</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">{t('Gemini API Integration', 'Integrasi API Gemini')}</span>
                           <div className="flex justify-between items-center">
                             <span className="text-[7px] sm:text-[8px] bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 py-0.5 px-1.5 rounded font-black">AI</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-[7px] sm:text-[8px] text-amber-500 font-bold">🟡 Sedang</span>
+                              <span className="text-[7px] sm:text-[8px] text-amber-500 font-bold">{t('🟡 Medium', '🟡 Sedang')}</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Column 2: Sedang Dikerjakan */}
+                      {/* Column 2: In Progress */}
                       <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
                         <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
-                          <span>Sedang Dikerjakan</span>
+                          <span>{t('In Progress', 'Sedang Dikerjakan')}</span>
                           <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">1</span>
                         </div>
 
                         {/* Card 3 */}
                         <div className="bg-white dark:bg-neutral-900 p-2 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 border-l-4 border-l-blue-500">
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Pengembangan Landing Page</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-800 dark:text-slate-200 leading-tight">{t('Landing Page Development', 'Pengembangan Landing Page')}</span>
                           <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
                             <div className="bg-blue-500 h-full w-[65%]"></div>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-[7px] sm:text-[8px] bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 py-0.5 px-1.5 rounded font-black">Frontend</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">🔴 Tinggi</span>
+                              <span className="text-[7px] sm:text-[8px] text-red-500 font-bold">{t('🔴 High', '🔴 Tinggi')}</span>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Column 3: Selesai */}
+                      {/* Column 3: Done */}
                       <div className="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-2 flex flex-col gap-2 border border-slate-100 dark:border-slate-800/60 overflow-hidden">
                         <div className="text-[8px] sm:text-[9px] font-extrabold text-slate-500 uppercase tracking-wider flex justify-between px-1 mb-1">
-                          <span>Selesai</span>
+                          <span>{t('Done', 'Selesai')}</span>
                           <span className="bg-slate-200 dark:bg-slate-800 px-1.5 rounded">1</span>
                         </div>
 
                         {/* Card 4 */}
                         <div className="bg-white/60 dark:bg-neutral-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 opacity-75">
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 line-through leading-tight">Setup Database Neon</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 line-through leading-tight">{t('Neon Database Setup', 'Setup Database Neon')}</span>
                           <div className="flex justify-between items-center">
                             <span className="text-[7px] sm:text-[8px] bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 py-0.5 px-1.5 rounded font-black">Backend</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-[8px] sm:text-[9px] text-green-500 font-bold">✅ Ok</span>
+                              <span className="text-[8px] sm:text-[9px] text-green-500 font-bold">{t('✅ Ok', '✅ Ok')}</span>
                             </div>
                           </div>
                         </div>
