@@ -10,8 +10,8 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
         <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden">
           <img 
             src="/happy_team.png" 
-            alt="Happy Corporate Team Collaboration" 
-            className="w-full h-full object-cover opacity-15 dark:opacity-[0.06] filter blur-[0.5px]" 
+            alt="Happy Indonesian Team Collaboration" 
+            className="w-full h-full object-cover opacity-25 dark:opacity-[0.08]" 
           />
           {/* Grid pattern overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:20px_20px] opacity-40"></div>
