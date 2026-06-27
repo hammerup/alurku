@@ -38,7 +38,7 @@ export default function TimelineView({
 
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('innocean_timeline_sidebar');
+      const saved = localStorage.getItem('alurku_timeline_sidebar');
       return saved ? Number(saved) : 320;
     }
     return 320;
@@ -72,7 +72,7 @@ export default function TimelineView({
     const handleMouseUp = () => {
       if (isResizingSidebar) {
         setIsResizingSidebar(false);
-        localStorage.setItem('innocean_timeline_sidebar', sidebarWidth);
+        localStorage.setItem('alurku_timeline_sidebar', sidebarWidth);
       }
     };
     if (isResizingSidebar) {

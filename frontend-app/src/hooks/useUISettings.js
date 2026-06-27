@@ -6,9 +6,9 @@ export function useUISettings() {
   
   const [notification, setNotification] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('innocean_notify');
+      const saved = sessionStorage.getItem('alurku_notify');
       if (saved) {
-        sessionStorage.removeItem('innocean_notify');
+        sessionStorage.removeItem('alurku_notify');
         return { ...JSON.parse(saved), id: Date.now() };
       }
     }

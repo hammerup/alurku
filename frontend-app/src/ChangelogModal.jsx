@@ -317,8 +317,8 @@ export default function ChangelogModal({ setIsChangelogOpen, language }) {
           'Mengaktifkan Transfer Tugas Lintas Proyek: Pindahkan tugas via mode Edit, Transfer Massal di Daftar Tabel, atau Seret-dan-Lepas di Kanban Global.'
         ),
         tMsg(
-          'Clicking the INNOCEAN Tracker logo now instantly launches the full-screen Proactive AI Planner.',
-          'Mengeklik logo INNOCEAN Tracker kini secara instan meluncurkan Perencana AI Proaktif layar penuh.'
+          'Clicking the Alurku logo now instantly launches the full-screen Proactive AI Planner.',
+          'Mengeklik logo Alurku kini secara instan meluncurkan Perencana AI Proaktif layar penuh.'
         ),
       ],
     },
@@ -482,7 +482,7 @@ export default function ChangelogModal({ setIsChangelogOpen, language }) {
       version: 'v1.0.0',
       date: 'Initial Launch',
       type: 'release',
-      title: tMsg('INNOCEAN Tracker MVP', 'INNOCEAN Tracker MVP'),
+      title: tMsg('Alurku MVP', 'Alurku MVP'),
       changes: [
         tMsg(
           'Launched core Kanban, Timeline (Gantt), and Calendar views.',

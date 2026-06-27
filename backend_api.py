@@ -51,7 +51,7 @@ import datetime
 ENCODERS_BY_TYPE[datetime.datetime] = lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S")
 ENCODERS_BY_TYPE[datetime.date] = lambda d: d.strftime("%Y-%m-%d")
 
-app = FastAPI(title="INNOCEAN Tracker API")
+app = FastAPI(title="Alurku API")
 
 # Jalankan inisialisasi DB awal (tanpa alter migrations manual)
 setup_db()
@@ -64,8 +64,8 @@ load_dotenv()
 
 # Ambil URL frontend dari .env (jika ada), supaya bisa connect dari Vercel
 FRONTEND_URL = os.getenv(
-    "FRONTEND_URL", "https://innocean-tracker.vercel.app"
-)  # Sesuaikan dengan URL Vercel Innocean Anda
+    "FRONTEND_URL", "https://alurku.app"
+)  # Sesuaikan dengan URL Vercel Alurku Anda
 
 # Mengizinkan React/Vue (Frontend) mengakses API ini
 app.add_middleware(
@@ -179,7 +179,7 @@ from services.email_service import send_email_async
 def read_root():
     return {
         "status": "online",
-        "message": "INNOCEAN Tracker API is running smoothly! All systems go.",
+        "message": "Alurku API is running smoothly! All systems go.",
     }
 
 

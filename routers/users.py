@@ -12,7 +12,7 @@ from dependencies import *
 from utils import *
 from services.email_service import send_email
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://innocean-tracker.vercel.app")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://alurku.app")
 
 router = APIRouter()
 
@@ -102,14 +102,14 @@ def update_profile(
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
                 <h2 style="color: #0f172a; margin-top: 0; text-transform: uppercase; font-weight: 900;">Verify Your New Email</h2>
                 <p style="color: #475569; font-size: 16px;">Hello <strong>@{user.username}</strong>,</p>
-                <p style="color: #475569; font-size: 15px;">You recently changed your email address on INNOCEAN Tracker. Please click the button below to verify this new email address:</p>
+                <p style="color: #475569; font-size: 15px;">You recently changed your email address on Alurku. Please click the button below to verify this new email address:</p>
                 <a href="{verify_link}" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0;">Verify New Email</a>
                 <p style="color: #64748b; font-size: 14px;">If you didn't request this, please contact the administrator immediately.</p>
             </div>
             """
             background_tasks.add_task(
                 send_email,
-                user.email, "Verify Your New Email - INNOCEAN Tracker", html_body
+                user.email, "Verify Your New Email - Alurku", html_body
             )
             return {
                 "message": "Profile updated! Please check your inbox to verify your new email.",

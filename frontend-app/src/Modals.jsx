@@ -122,7 +122,7 @@ export function WelcomeTourModal({
     if (action === 'start') {
       startDriverTour();
     } else {
-      localStorage.setItem(`innocean_tour_done_v2_${currentUser}`, 'true');
+      localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
       setIsProactiveAIOpen(true);
     }
   });
@@ -165,7 +165,7 @@ export function WelcomeTourModal({
               value={language}
               onChange={(val) => {
                 setLanguage(val);
-                localStorage.setItem('innocean_lang', val);
+                localStorage.setItem('alurku_lang', val);
               }}
               fullWidth={true}
             />

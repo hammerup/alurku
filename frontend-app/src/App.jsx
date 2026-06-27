@@ -497,7 +497,7 @@ function App() {
     lastProjectMsgIdRef.current = null;
     if (selectedBoard) {
       sessionLastReadProjectRef.current = localStorage.getItem(
-        `innocean_last_read_board_${selectedBoard.id}_${currentUser}`
+        `alurku_last_read_board_${selectedBoard.id}_${currentUser}`
       );
     }
   }, [isProjectChatOpen, drawerTab, selectedBoard?.id, currentUser]);
@@ -546,7 +546,7 @@ function App() {
             setShowScrollBottom(false);
             if (selectedBoard) {
               localStorage.setItem(
-                `innocean_last_read_board_${selectedBoard.id}_${currentUser}`,
+                `alurku_last_read_board_${selectedBoard.id}_${currentUser}`,
                 projectChatMessages[projectChatMessages.length - 1].timestamp
               );
             }
@@ -563,7 +563,7 @@ function App() {
             setShowScrollBottom(false);
             if (selectedBoard) {
               localStorage.setItem(
-                `innocean_last_read_board_${selectedBoard.id}_${currentUser}`,
+                `alurku_last_read_board_${selectedBoard.id}_${currentUser}`,
                 projectChatMessages[projectChatMessages.length - 1].timestamp
               );
             }
@@ -607,10 +607,10 @@ function App() {
   // Pagination State for Projects
   const [boardPage, setBoardPage] = useState(1);
   const [boardsPerPage, setBoardsPerPage] = useState(() => {
-    if (typeof window !== 'undefined') return Number(localStorage.getItem('innocean_boards_per_page')) || 7;
+    if (typeof window !== 'undefined') return Number(localStorage.getItem('alurku_boards_per_page')) || 7;
     return 7;
   });
-  useEffect(() => localStorage.setItem('innocean_boards_per_page', boardsPerPage), [boardsPerPage]);
+  useEffect(() => localStorage.setItem('alurku_boards_per_page', boardsPerPage), [boardsPerPage]);
 
   const translateNotif = (msg) => {
     if (!msg) return '';
@@ -835,7 +835,7 @@ function App() {
     setShowScrollBottom(!isNearBottom);
     if (isNearBottom && projectChatMessages.length > 0 && selectedBoard) {
       localStorage.setItem(
-        `innocean_last_read_board_${selectedBoard.id}_${currentUser}`,
+        `alurku_last_read_board_${selectedBoard.id}_${currentUser}`,
         projectChatMessages[projectChatMessages.length - 1].timestamp
       );
     }
@@ -1228,7 +1228,7 @@ function App() {
               </h2>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-8">
                 {tMsg(
-                  'We have updated our Terms of Service and Privacy Policy to better protect your data and improve our services. Please review and accept them to continue using INNOCEAN Tracker.',
+                  'We have updated our Terms of Service and Privacy Policy to better protect your data and improve our services. Please review and accept them to continue using Alurku.',
                   'Kami telah memperbarui Syarat dan Ketentuan serta Kebijakan Privasi untuk melindungi data Anda dan meningkatkan layanan kami. Silakan tinjau dan setujui untuk melanjutkan.'
                 )}
               </p>
@@ -1420,7 +1420,7 @@ function App() {
           {/* Universal Footer for Logged In User */}
           <footer className="flex flex-col sm:flex-row py-2.5 px-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black justify-between items-center gap-2 sm:gap-4 shrink-0 z-40 relative">
             <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest text-center sm:text-left">
-              © {new Date().getFullYear()} INNOCEAN Tracker.
+              © {new Date().getFullYear()} Alurku.
             </p>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
               <button

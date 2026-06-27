@@ -9,7 +9,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
         {/* Happy Team Background Stock Photo with light overlays for high readability */}
         <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden">
           <img 
-            src="/happy_team.png" 
+            src="/happy_team.webp" 
             alt="Happy Indonesian Team Collaboration" 
             className="w-full h-full object-cover opacity-25 dark:opacity-[0.08]" 
           />

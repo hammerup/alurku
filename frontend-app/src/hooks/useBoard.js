@@ -5,7 +5,7 @@ export function useBoard({ isAuthenticated, currentUser, showNotification, setIs
   const [boards, setBoards] = useState([]);
   const [selectedBoard, setSelectedBoard] = useState(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('innocean_selected_board');
+      const stored = localStorage.getItem('alurku_selected_board');
       return stored ? JSON.parse(stored) : null;
     }
     return null;
@@ -76,7 +76,7 @@ export function useBoard({ isAuthenticated, currentUser, showNotification, setIs
         showNotification('Project deleted successfully.', 'success');
         if (selectedBoard?.id === boardId) {
           setSelectedBoard(null);
-          localStorage.removeItem('innocean_selected_board');
+          localStorage.removeItem('alurku_selected_board');
         }
         fetchBoards();
         if (onSuccess) onSuccess();

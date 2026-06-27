@@ -348,7 +348,7 @@ export default function ChatWorkspaceModal({
 
   // Remember last opened chat
   useEffect(() => {
-    const savedChat = localStorage.getItem(`innocean_cw_active_${currentUser}`);
+    const savedChat = localStorage.getItem(`alurku_cw_active_${currentUser}`);
     if (savedChat && !activeChat && !workspaceChatTarget) {
       try {
         const parsed = JSON.parse(savedChat);
@@ -375,7 +375,7 @@ export default function ChatWorkspaceModal({
 
   useEffect(() => {
     if (activeChat) {
-      localStorage.setItem(`innocean_cw_active_${currentUser}`, JSON.stringify(activeChat));
+      localStorage.setItem(`alurku_cw_active_${currentUser}`, JSON.stringify(activeChat));
     }
   }, [activeChat, currentUser]);
 
@@ -425,8 +425,8 @@ export default function ChatWorkspaceModal({
     if (activeChat) {
       const storageKey =
         activeChat.type === 'project'
-          ? `innocean_last_read_board_${activeChat.id}_${currentUser}`
-          : `innocean_last_read_task_${activeChat.id}_${currentUser}`;
+          ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
+          : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
       sessionLastReadRef.current = localStorage.getItem(storageKey);
     }
   }, [activeChat?.id, activeChat?.type, currentUser]);
@@ -499,8 +499,8 @@ export default function ChatWorkspaceModal({
 
       const storageKey =
         activeChat.type === 'project'
-          ? `innocean_last_read_board_${activeChat.id}_${currentUser}`
-          : `innocean_last_read_task_${activeChat.id}_${currentUser}`;
+          ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
+          : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
 
       if (!initialScrollDoneRef.current) {
         initialScrollDoneRef.current = true;
@@ -908,7 +908,7 @@ export default function ChatWorkspaceModal({
                             if (chat.latest_sender === currentUser) return false;
                             if (chat.is_dm) return chat.unread_count > 0;
                             if (chat.is_project_chat) {
-                              const lastRead = localStorage.getItem(`innocean_last_read_board_${chat.board_id}_${currentUser}`);
+                              const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
                               const hasUnreadNotification = (notifications || []).some(
                                 n => !n.is_read && String(n.related_task_id) === String(chat.board_id) && 
                                 (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
@@ -916,7 +916,7 @@ export default function ChatWorkspaceModal({
                               if (!lastRead) return true;
                               return chat.timestamp > lastRead || hasUnreadNotification;
                             } else {
-                              const lastRead = localStorage.getItem(`innocean_last_read_task_${chat.task_id}_${currentUser}`);
+                              const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
                               const hasUnreadNotification = (notifications || []).some(
                                 n => !n.is_read && String(n.related_task_id) === String(chat.task_id) && 
                                 (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')

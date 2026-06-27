@@ -386,7 +386,7 @@ USER REQUEST:
       if (setViewMode) setViewMode('list');
       if (fetchTasks) fetchTasks();
     }
-    localStorage.setItem('innocean_ai_offer_docs', 'true');
+    localStorage.setItem('alurku_ai_offer_docs', 'true');
     close();
     setTimeout(() => {
       if (setIsProjectChatOpen) setIsProjectChatOpen(true);

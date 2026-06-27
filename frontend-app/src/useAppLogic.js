@@ -221,12 +221,12 @@ export default function useAppLogic() {
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) {
-      localStorage.removeItem('innocean_auth');
-      localStorage.removeItem('innocean_token');
-      localStorage.removeItem('innocean_username');
+      localStorage.removeItem('alurku_auth');
+      localStorage.removeItem('alurku_token');
+      localStorage.removeItem('alurku_username');
       return false;
     }
-    return localStorage.getItem('innocean_auth') === 'true';
+    return localStorage.getItem('alurku_auth') === 'true';
   });
 
   const isAuthenticatedRef = useRef(isAuthenticated);
@@ -236,7 +236,7 @@ export default function useAppLogic() {
 
   const [currentUser, setCurrentUser] = useState(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) return '';
-    return localStorage.getItem('innocean_username') || '';
+    return localStorage.getItem('alurku_username') || '';
   });
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showAuthForm, setShowAuthForm] = useState(() => {
@@ -275,7 +275,7 @@ export default function useAppLogic() {
   const [colModal, setColModal] = useState({ isOpen: false, target: 'Status', mode: 'add', oldName: '', newName: '' });
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('innocean_view_mode') || 'kanban';
+      return localStorage.getItem('alurku_view_mode') || 'kanban';
     }
     return 'kanban';
   });
@@ -290,7 +290,7 @@ export default function useAppLogic() {
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [showHasSubtasks, setShowHasSubtasks] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_hide_completed') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_hide_completed') === 'true';
     return false;
   });
   const [calDate, setCalDate] = useState(new Date());
@@ -320,9 +320,9 @@ export default function useAppLogic() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [notification, setNotification] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('innocean_notify');
+      const saved = sessionStorage.getItem('alurku_notify');
       if (saved) {
-        sessionStorage.removeItem('innocean_notify');
+        sessionStorage.removeItem('alurku_notify');
         return { ...JSON.parse(saved), id: Date.now() };
       }
     }
@@ -357,7 +357,7 @@ export default function useAppLogic() {
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [selectedBoard, setSelectedBoard] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('innocean_selected_board');
+      const saved = localStorage.getItem('alurku_selected_board');
       return saved && saved !== 'null' && saved !== 'undefined' ? JSON.parse(saved) : null;
     }
     return null;
@@ -395,7 +395,7 @@ export default function useAppLogic() {
   const prevProactiveAIOpen = useRef(isProactiveAIOpen);
   useEffect(() => {
     if (prevProactiveAIOpen.current === true && !isProactiveAIOpen && isAuthenticated && currentUser) {
-      const hasAccepted = localStorage.getItem(`innocean_tos_accepted_${currentUser}`);
+      const hasAccepted = localStorage.getItem(`alurku_tos_accepted_${currentUser}`);
       if (hasAccepted !== 'true') {
         const timer = setTimeout(() => {
           setShowTosUpdate(true);
@@ -407,7 +407,7 @@ export default function useAppLogic() {
   }, [isProactiveAIOpen, isAuthenticated, currentUser]);
 
   const handleAcceptTos = () => {
-    localStorage.setItem(`innocean_tos_accepted_${currentUser}`, 'true');
+    localStorage.setItem(`alurku_tos_accepted_${currentUser}`, 'true');
     setShowTosUpdate(false);
     showNotification(
       language === 'id' ? 'Terima kasih telah menyetujui persyaratan!' : 'Thank you for accepting the terms!',
@@ -458,21 +458,21 @@ export default function useAppLogic() {
 
   // NEW: Project Boards Preferences
   const [boardViewMode, setBoardViewMode] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_board_view') || 'grid';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_view') || 'grid';
     return 'grid';
   });
   const [boardSortBy, setBoardSortBy] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_board_sort') || 'active';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'active';
     return 'active';
   });
   const [favoriteBoards, setFavoriteBoards] = useState(() => {
-    if (typeof window !== 'undefined') return JSON.parse(localStorage.getItem('innocean_fav_boards') || '[]');
+    if (typeof window !== 'undefined') return JSON.parse(localStorage.getItem('alurku_fav_boards') || '[]');
     return [];
   });
-  useEffect(() => localStorage.setItem('innocean_board_view', boardViewMode), [boardViewMode]);
-  useEffect(() => localStorage.setItem('innocean_board_sort', boardSortBy), [boardSortBy]);
-  useEffect(() => localStorage.setItem('innocean_fav_boards', JSON.stringify(favoriteBoards)), [favoriteBoards]);
-  useEffect(() => localStorage.setItem('innocean_hide_completed', hideCompleted), [hideCompleted]);
+  useEffect(() => localStorage.setItem('alurku_board_view', boardViewMode), [boardViewMode]);
+  useEffect(() => localStorage.setItem('alurku_board_sort', boardSortBy), [boardSortBy]);
+  useEffect(() => localStorage.setItem('alurku_fav_boards', JSON.stringify(favoriteBoards)), [favoriteBoards]);
+  useEffect(() => localStorage.setItem('alurku_hide_completed', hideCompleted), [hideCompleted]);
 
   const confirmPendingStatusChange = () => {
     if (!pendingStatusChange) return;
@@ -504,19 +504,19 @@ export default function useAppLogic() {
   const [feedbackText, setFeedbackText] = useState('');
   const [supportText, setSupportText] = useState('');
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_docs_open', isDocsOpen);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_docs_open', isDocsOpen);
   }, [isDocsOpen]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_chat_ws_open', isChatWorkspaceOpen);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_chat_ws_open', isChatWorkspaceOpen);
   }, [isChatWorkspaceOpen]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_changelog_open', isChangelogOpen);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_changelog_open', isChangelogOpen);
   }, [isChangelogOpen]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_proactive_ai_open', isProactiveAIOpen);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_proactive_ai_open', isProactiveAIOpen);
   }, [isProactiveAIOpen]);
 
   const [chatBg, setChatBg] = useState('');
@@ -541,41 +541,41 @@ export default function useAppLogic() {
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
   const [dateFormat, setDateFormat] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_date_format') || 'DD MMM YYYY';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_date_format') || 'DD MMM YYYY';
     return 'DD MMM YYYY';
   });
 
   const [showLiveClock, setShowLiveClock] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_show_clock') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_show_clock') === 'true';
     return false;
   });
   const [showLiveClockDate, setShowLiveClockDate] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_show_clock_date') !== 'false';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_show_clock_date') !== 'false';
     return true;
   });
   const [pomodoroEnabled, setPomodoroEnabled] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_pomodoro') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_pomodoro') === 'true';
     return false;
   });
   const [showAssistantButton, setShowAssistantButton] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_show_assistant_btn') !== 'false';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_show_assistant_btn') !== 'false';
     return true;
   });
   const [notifPosition, setNotifPosition] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_notif_pos') || 'bottom-right';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_notif_pos') || 'bottom-right';
     return 'bottom-right';
   });
   const [notifSound, setNotifSound] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_notif_sound') !== 'false';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_notif_sound') !== 'false';
     return true;
   });
   const [notifPrivacy, setNotifPrivacy] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_notif_privacy') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_notif_privacy') === 'true';
     return false;
   });
 
   const [browserNotifEnabled, setBrowserNotifEnabled] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_browser_notif') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_browser_notif') === 'true';
     return false;
   });
 
@@ -650,7 +650,7 @@ export default function useAppLogic() {
 
   useEffect(() => {
     if (currentUser) {
-      setChatBg(localStorage.getItem(`innocean_chat_bg_${currentUser}`) || '');
+      setChatBg(localStorage.getItem(`alurku_chat_bg_${currentUser}`) || '');
     } else {
       setChatBg('');
     }
@@ -667,7 +667,7 @@ export default function useAppLogic() {
       reader.onloadend = () => {
         setChatBg(reader.result);
         if (currentUser) {
-          localStorage.setItem(`innocean_chat_bg_${currentUser}`, reader.result);
+          localStorage.setItem(`alurku_chat_bg_${currentUser}`, reader.result);
         }
         showNotification('Chat background updated!', 'success');
       };
@@ -678,7 +678,7 @@ export default function useAppLogic() {
   const removeChatBg = () => {
     setChatBg('');
     if (currentUser) {
-      localStorage.removeItem(`innocean_chat_bg_${currentUser}`);
+      localStorage.removeItem(`alurku_chat_bg_${currentUser}`);
     }
     showNotification('Chat background removed!', 'success');
   };
@@ -686,14 +686,14 @@ export default function useAppLogic() {
   const handleSelectDefaultBg = (bgStr) => {
     setChatBg(bgStr);
     if (currentUser) {
-      localStorage.setItem(`innocean_chat_bg_${currentUser}`, bgStr);
+      localStorage.setItem(`alurku_chat_bg_${currentUser}`, bgStr);
     }
     showNotification('Chat theme updated!', 'success');
   };
 
   const handleSelectAppTheme = (themeStr) => {
     setAppTheme(themeStr);
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_app_theme', themeStr);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_app_theme', themeStr);
     showNotification('App background updated!', 'success');
   };
 
@@ -707,7 +707,7 @@ export default function useAppLogic() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setAppBgImage(reader.result);
-        if (typeof window !== 'undefined') localStorage.setItem('innocean_app_bg_image', reader.result);
+        if (typeof window !== 'undefined') localStorage.setItem('alurku_app_bg_image', reader.result);
         showNotification('Custom background updated!', 'success');
       };
       reader.readAsDataURL(file);
@@ -716,19 +716,19 @@ export default function useAppLogic() {
 
   const removeAppBgImage = () => {
     setAppBgImage('');
-    if (typeof window !== 'undefined') localStorage.removeItem('innocean_app_bg_image');
+    if (typeof window !== 'undefined') localStorage.removeItem('alurku_app_bg_image');
     showNotification('Custom background removed!', 'success');
   };
 
   const handleSelectAppTexture = (textureStr) => {
     setAppTexture(textureStr);
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_app_texture', textureStr);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_app_texture', textureStr);
     showNotification('Texture overlay updated!', 'success');
   };
 
   const handleSelectCardTheme = (themeStr) => {
     setCardTheme(themeStr);
-    if (typeof window !== 'undefined') localStorage.setItem('innocean_card_theme', themeStr);
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_card_theme', themeStr);
     showNotification('Task card theme updated!', 'success');
   };
 
@@ -776,10 +776,10 @@ export default function useAppLogic() {
       overlayColor: 'rgba(0, 0, 0, 0.75)',
       onDestroyStarted: () => {
         if (!selectedBoard || selectedBoard.id === 'global') {
-          localStorage.setItem(`innocean_tour_done_v2_${currentUser}`, 'true');
+          localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
           setIsProactiveAIOpen(true);
         } else {
-          localStorage.setItem(`innocean_board_tour_done_v2_${currentUser}`, 'true');
+          localStorage.setItem(`alurku_board_tour_done_v2_${currentUser}`, 'true');
         }
         setIsFormOpen(false);
         setIsMobileMenuOpen(false);
@@ -1161,8 +1161,8 @@ export default function useAppLogic() {
 
   useEffect(() => {
     if (selectedBoard && selectedBoard.id !== 'global' && !isProactiveAIOpen && !isProjectChatOpen) {
-      const hasSeenBoardTour = localStorage.getItem(`innocean_board_tour_done_v2_${currentUser}`);
-      const isAIOffering = localStorage.getItem('innocean_ai_offer_docs') === 'true';
+      const hasSeenBoardTour = localStorage.getItem(`alurku_board_tour_done_v2_${currentUser}`);
+      const isAIOffering = localStorage.getItem('alurku_ai_offer_docs') === 'true';
       if (!hasSeenBoardTour && !isAIOffering) {
         const timer = setTimeout(() => {
           startDriverTour();
@@ -1182,21 +1182,21 @@ export default function useAppLogic() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      const hasSeenTour = localStorage.getItem(`innocean_tour_done_v2_${currentUser}`);
-      const legacyTour = localStorage.getItem('innocean_tour_done_v2');
+      const hasSeenTour = localStorage.getItem(`alurku_tour_done_v2_${currentUser}`);
+      const legacyTour = localStorage.getItem('alurku_tour_done_v2');
 
       if (!hasSeenTour && !legacyTour) {
         const timer = setTimeout(() => setShowWelcomeTour(true), 1500);
         return () => clearTimeout(timer);
       } else {
         if (!hasSeenTour && legacyTour) {
-          localStorage.setItem(`innocean_tour_done_v2_${currentUser}`, 'true');
-          localStorage.removeItem('innocean_tour_done_v2');
+          localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
+          localStorage.removeItem('alurku_tour_done_v2');
         }
 
-        const justLoggedIn = sessionStorage.getItem('innocean_just_logged_in');
+        const justLoggedIn = sessionStorage.getItem('alurku_just_logged_in');
         if (justLoggedIn) {
-          sessionStorage.removeItem('innocean_just_logged_in');
+          sessionStorage.removeItem('alurku_just_logged_in');
         }
       }
     }
@@ -1243,10 +1243,10 @@ export default function useAppLogic() {
         .post('/api/google-login', { token: tokenResponse.access_token }, { timeout: 75000 })
         .then((res) => {
           clearTimeout(wakeTimer);
-          localStorage.setItem('innocean_auth', 'true');
-          localStorage.setItem('innocean_token', res.data.token);
-          localStorage.setItem('innocean_username', res.data.username);
-          sessionStorage.setItem('innocean_just_logged_in', 'true');
+          localStorage.setItem('alurku_auth', 'true');
+          localStorage.setItem('alurku_token', res.data.token);
+          localStorage.setItem('alurku_username', res.data.username);
+          sessionStorage.setItem('alurku_just_logged_in', 'true');
           // Gunakan Hard Reload agar memori React untuk Dashboard termuat dengan bersih tanpa blank screen
           window.location.href = '/';
         })
@@ -1583,14 +1583,14 @@ export default function useAppLogic() {
     setSelectedBoard(null);
 
     setTimeout(() => {
-      localStorage.removeItem('innocean_auth');
-      localStorage.removeItem('innocean_token');
-      localStorage.removeItem('innocean_username');
-      localStorage.removeItem('innocean_selected_board');
-      localStorage.removeItem('innocean_proactive_ai_open');
-      localStorage.removeItem('innocean_docs_open');
-      localStorage.removeItem('innocean_chat_ws_open');
-      localStorage.removeItem('innocean_changelog_open');
+      localStorage.removeItem('alurku_auth');
+      localStorage.removeItem('alurku_token');
+      localStorage.removeItem('alurku_username');
+      localStorage.removeItem('alurku_selected_board');
+      localStorage.removeItem('alurku_proactive_ai_open');
+      localStorage.removeItem('alurku_docs_open');
+      localStorage.removeItem('alurku_chat_ws_open');
+      localStorage.removeItem('alurku_changelog_open');
 
       // Gunakan reload untuk memastikan seluruh memori cache/state React benar-benar bersih
       // Spinner loading akan menutupi transisi ini dengan mulus
@@ -1599,9 +1599,9 @@ export default function useAppLogic() {
   };
 
   useEffect(() => {
-    const sessionExpired = sessionStorage.getItem('innocean_session_expired');
+    const sessionExpired = sessionStorage.getItem('alurku_session_expired');
     if (sessionExpired) {
-      sessionStorage.removeItem('innocean_session_expired');
+      sessionStorage.removeItem('alurku_session_expired');
       showNotification('Session expired. Please login again.', 'error');
     }
   }, []);
@@ -1611,17 +1611,17 @@ export default function useAppLogic() {
       if (window.isLoggingOut) return;
       
       // Clear storage
-      localStorage.removeItem('innocean_auth');
-      localStorage.removeItem('innocean_token');
-      localStorage.removeItem('innocean_username');
-      localStorage.removeItem('innocean_selected_board');
-      localStorage.removeItem('innocean_proactive_ai_open');
-      localStorage.removeItem('innocean_docs_open');
-      localStorage.removeItem('innocean_chat_ws_open');
-      localStorage.removeItem('innocean_changelog_open');
+      localStorage.removeItem('alurku_auth');
+      localStorage.removeItem('alurku_token');
+      localStorage.removeItem('alurku_username');
+      localStorage.removeItem('alurku_selected_board');
+      localStorage.removeItem('alurku_proactive_ai_open');
+      localStorage.removeItem('alurku_docs_open');
+      localStorage.removeItem('alurku_chat_ws_open');
+      localStorage.removeItem('alurku_changelog_open');
       
       // Set session expired indicator in sessionStorage to show notification on fresh load
-      sessionStorage.setItem('innocean_session_expired', 'true');
+      sessionStorage.setItem('alurku_session_expired', 'true');
 
       // Redirect immediately to clean all state and prevent blank/black screens
       window.location.href = '/';
@@ -1693,7 +1693,7 @@ export default function useAppLogic() {
     localStorage.setItem('alurku_active_workspace_id', workspace.id);
     
     // Hapus selected board dari workspace lama agar tidak bentrok
-    localStorage.removeItem('innocean_selected_board');
+    localStorage.removeItem('alurku_selected_board');
     setSelectedBoard(null);
     
     showNotification(
@@ -1958,9 +1958,9 @@ export default function useAppLogic() {
 
   useEffect(() => {
     if (selectedBoard) {
-      localStorage.setItem('innocean_selected_board', JSON.stringify(selectedBoard));
+      localStorage.setItem('alurku_selected_board', JSON.stringify(selectedBoard));
     } else {
-      localStorage.removeItem('innocean_selected_board');
+      localStorage.removeItem('alurku_selected_board');
     }
   }, [selectedBoard]);
 
@@ -2006,8 +2006,8 @@ export default function useAppLogic() {
           if (dbCols.length === 0) dbCols = DEFAULT_COLUMNS;
           if (dbCats.length === 0) dbCats = DEFAULT_CATEGORIES;
 
-          const savedCols = localStorage.getItem(`innocean_columns_${selectedBoard.id}`);
-          const savedCats = localStorage.getItem(`innocean_categories_${selectedBoard.id}`);
+          const savedCols = localStorage.getItem(`alurku_columns_${selectedBoard.id}`);
+          const savedCats = localStorage.getItem(`alurku_categories_${selectedBoard.id}`);
           let localCols = savedCols && savedCols !== 'null' && savedCols !== 'undefined' ? JSON.parse(savedCols) : [];
           let localCats = savedCats && savedCats !== 'null' && savedCats !== 'undefined' ? JSON.parse(savedCats) : [];
 
@@ -2049,7 +2049,7 @@ export default function useAppLogic() {
   }, [selectedBoard, userDirectory, isAuthenticated]);
 
   useEffect(() => {
-    localStorage.setItem('innocean_view_mode', viewMode);
+    localStorage.setItem('alurku_view_mode', viewMode);
   }, [viewMode]);
 
   useEffect(() => {
@@ -2099,12 +2099,12 @@ export default function useAppLogic() {
         if (chat.is_dm) return;
         if (chat.is_project_chat) {
           localStorage.setItem(
-            `innocean_last_read_board_${chat.board_id}_${currentUser}`,
+            `alurku_last_read_board_${chat.board_id}_${currentUser}`,
             chat.timestamp
           );
         } else {
           localStorage.setItem(
-            `innocean_last_read_task_${chat.task_id}_${currentUser}`,
+            `alurku_last_read_task_${chat.task_id}_${currentUser}`,
             chat.timestamp
           );
         }
@@ -2175,7 +2175,7 @@ export default function useAppLogic() {
       const defaultCatsLower = new Set(DEFAULT_CATEGORIES.map((c) => c.toLowerCase()));
       const preFilterLen = newCats.length;
       
-      const emptyCatsKey = `innocean_empty_cats_${selectedBoard.id}`;
+      const emptyCatsKey = `alurku_empty_cats_${selectedBoard.id}`;
       let emptyCatsTimestamps = {};
       try {
         emptyCatsTimestamps = JSON.parse(localStorage.getItem(emptyCatsKey) || '{}');
@@ -2282,11 +2282,11 @@ export default function useAppLogic() {
 
       if (selectedBoard.id !== 'global') {
         if (colsChanged) {
-          localStorage.setItem(`innocean_columns_${selectedBoard.id}`, JSON.stringify(newCols));
+          localStorage.setItem(`alurku_columns_${selectedBoard.id}`, JSON.stringify(newCols));
           setColumns(newCols);
         }
         if (catsChanged) {
-          localStorage.setItem(`innocean_categories_${selectedBoard.id}`, JSON.stringify(newCats));
+          localStorage.setItem(`alurku_categories_${selectedBoard.id}`, JSON.stringify(newCats));
           setCategories(newCats);
         }
         if (colsChanged || catsChanged) {
@@ -2327,7 +2327,7 @@ export default function useAppLogic() {
     const list = target === 'Status' ? columns : categories;
     const setList = target === 'Status' ? setColumns : setCategories;
     const storageKey =
-      target === 'Status' ? `innocean_columns_${selectedBoard?.id}` : `innocean_categories_${selectedBoard?.id}`;
+      target === 'Status' ? `alurku_columns_${selectedBoard?.id}` : `alurku_categories_${selectedBoard?.id}`;
 
     if (mode === 'add') {
       const name = newName.trim();
@@ -2826,7 +2826,7 @@ export default function useAppLogic() {
         newCols.splice(destination.index, 0, removed);
         setColumns(newCols);
         if (selectedBoard && selectedBoard.id !== 'global') {
-          localStorage.setItem(`innocean_columns_${selectedBoard.id}`, JSON.stringify(newCols));
+          localStorage.setItem(`alurku_columns_${selectedBoard.id}`, JSON.stringify(newCols));
         }
       } else if (groupBy === 'Category') {
         const newCats = Array.from(categories);
@@ -2834,7 +2834,7 @@ export default function useAppLogic() {
         newCats.splice(destination.index, 0, removed);
         setCategories(newCats);
         if (selectedBoard && selectedBoard.id !== 'global') {
-          localStorage.setItem(`innocean_categories_${selectedBoard.id}`, JSON.stringify(newCats));
+          localStorage.setItem(`alurku_categories_${selectedBoard.id}`, JSON.stringify(newCats));
         }
       }
       return;
@@ -3748,7 +3748,7 @@ export default function useAppLogic() {
     const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `INNOCEAN_Export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `alurku_Export_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     setIsExportModalOpen(false);
     setIsLoading(false);
@@ -3776,11 +3776,11 @@ export default function useAppLogic() {
       .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 75000 })
       .then((res) => {
         clearTimeout(wakeTimer);
-        localStorage.setItem('innocean_auth', 'true');
-        localStorage.setItem('innocean_token', res.data.token);
-        localStorage.setItem('innocean_username', loginUsername.trim());
+        localStorage.setItem('alurku_auth', 'true');
+        localStorage.setItem('alurku_token', res.data.token);
+        localStorage.setItem('alurku_username', loginUsername.trim());
 
-        sessionStorage.setItem('innocean_just_logged_in', 'true');
+        sessionStorage.setItem('alurku_just_logged_in', 'true');
         // Gunakan Hard Reload agar memori React untuk Dashboard termuat dengan bersih tanpa blank screen
         window.location.href = '/';
       })

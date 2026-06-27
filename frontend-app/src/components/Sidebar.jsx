@@ -67,7 +67,7 @@ export default function Sidebar() {
 
   // Sidebar collapse state
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_sidebar_collapsed') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_sidebar_collapsed') === 'true';
     return false;
   });
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -87,7 +87,7 @@ export default function Sidebar() {
   const toggleCollapse = () => {
     setIsCollapsed((prev) => {
       const next = !prev;
-      localStorage.setItem('innocean_sidebar_collapsed', String(next));
+      localStorage.setItem('alurku_sidebar_collapsed', String(next));
       return next;
     });
   };
@@ -97,7 +97,7 @@ export default function Sidebar() {
       if (chat.latest_sender === currentUser) return false;
       if (chat.is_dm) return (chat.unread_count || 0) > 0;
       if (chat.is_project_chat) {
-        const lastRead = localStorage.getItem(`innocean_last_read_board_${chat.board_id}_${currentUser}`);
+        const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
         const hasUnreadNotification = (notifications || []).some(
           n => !n.is_read && String(n.related_task_id) === String(chat.board_id) && 
           (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
@@ -105,7 +105,7 @@ export default function Sidebar() {
         if (!lastRead) return true;
         return chat.timestamp > lastRead || hasUnreadNotification;
       } else {
-        const lastRead = localStorage.getItem(`innocean_last_read_task_${chat.task_id}_${currentUser}`);
+        const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
         const hasUnreadNotification = (notifications || []).some(
           n => !n.is_read && String(n.related_task_id) === String(chat.task_id) && 
           (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
@@ -132,13 +132,13 @@ export default function Sidebar() {
   }, [unreadInboxChatsCount, notifications, dmConversations]);
 
   const [sortMode, setSortMode] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_board_sort') || 'recent';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'recent';
     return 'recent';
   });
 
   const handleSortChange = (mode) => {
     setSortMode(mode);
-    localStorage.setItem('innocean_board_sort', mode);
+    localStorage.setItem('alurku_board_sort', mode);
   };
 
   const todoListBoard = useMemo(() => {

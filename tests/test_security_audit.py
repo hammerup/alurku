@@ -30,7 +30,7 @@ def test_xss_in_registration_username():
     """AUDIT: Memastikan registrasi menolak injeksi script HTML pada username (Stored XSS)"""
     payload = {
         "full_name": "Hacker",
-        "email": "hacker@innocean.co.id",
+        "email": "hacker@alurku.com",
         "username": "<script>alert('XSS')</script>",
         "password": "ValidPassword123!",
     }
@@ -60,7 +60,7 @@ def test_brute_force_login_protection():
 
 def test_email_bombing_protection():
     """AUDIT: Memastikan endpoint Lupa Sandi memiliki cooldown/jeda (Mencegah Spam / DoS)"""
-    payload = {"email": "admin@innocean.co.id", "origin": "http://localhost"}
+    payload = {"email": "admin@alurku.com", "origin": "http://localhost"}
 
     # Tembak API 2 kali berturut-turut tanpa jeda
     client.post("/api/forgot-password", json=payload)
@@ -199,7 +199,7 @@ def test_database_bloat_avatar_protection():
     huge_avatar = "data:image/png;base64," + ("A" * 2500000)
     payload = {
         "full_name": "Attacker",
-        "email": "attacker@innocean.co.id",
+        "email": "attacker@alurku.com",
         "avatar": huge_avatar,
     }
 
@@ -214,8 +214,10 @@ def test_database_bloat_avatar_protection():
 def test_dos_task_creation_protection():
     """AUDIT: Memastikan sistem menolak pembuatan task dengan deskripsi raksasa (Database Bloat)"""
     from backend_api import get_current_user
+    from routers.workspaces import get_active_workspace_id
 
     app.dependency_overrides[get_current_user] = lambda: "attacker_user"
+    app.dependency_overrides[get_active_workspace_id] = lambda: 1
 
     # Payload dengan deskripsi teks raksasa (25.000 karakter)
     huge_payload = {

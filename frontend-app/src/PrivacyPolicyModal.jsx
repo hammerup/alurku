@@ -33,8 +33,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-lg text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-10">
               {tMsg(
-                'This Privacy Policy clearly describes how INNOCEAN Tracker ("we", "us", or "our") collects, uses, stores, shares, and protects your personal and corporate data when you utilize our enterprise workload management platform. We are deeply committed to maintaining the highest standards of data privacy, compliance with data protection laws, and enforcing a Zero-Trust security architecture.',
-                'Kebijakan Privasi ini secara jelas menjelaskan bagaimana INNOCEAN Tracker ("kami") mengumpulkan, menggunakan, menyimpan, membagikan, dan melindungi data pribadi dan perusahaan Anda saat Anda menggunakan platform manajemen beban kerja kami. Kami sangat berkomitmen untuk menjaga standar tertinggi privasi data, kepatuhan terhadap undang-undang perlindungan data, dan menegakkan arsitektur keamanan Zero-Trust.'
+                'This Privacy Policy clearly describes how Alurku ("we", "us", or "our") collects, uses, stores, shares, and protects your personal and corporate data when you utilize our enterprise workload management platform. We are deeply committed to maintaining the highest standards of data privacy, compliance with data protection laws, and enforcing a Zero-Trust security architecture.',
+                'Kebijakan Privasi ini secara jelas menjelaskan bagaimana Alurku ("kami") mengumpulkan, menggunakan, menyimpan, membagikan, dan melindungi data pribadi dan perusahaan Anda saat Anda menggunakan platform manajemen beban kerja kami. Kami sangat berkomitmen untuk menjaga standar tertinggi privasi data, kepatuhan terhadap undang-undang perlindungan data, dan menegakkan arsitektur keamanan Zero-Trust.'
               )}
             </p>
 
@@ -150,8 +150,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'INNOCEAN Tracker rejects invasive tracking cookies. We heavily utilize standard HTML5 Web Storage (Local Storage & Session Storage) locally on your device solely for:',
-                  'INNOCEAN Tracker menolak cookie pelacakan yang invasif. Kami banyak menggunakan Web Storage standar HTML5 (Penyimpanan Lokal & Penyimpanan Sesi) secara lokal di perangkat Anda hanya untuk:'
+                  'Alurku rejects invasive tracking cookies. We heavily utilize standard HTML5 Web Storage (Local Storage & Session Storage) locally on your device solely for:',
+                  'Alurku menolak cookie pelacakan yang invasif. Kami banyak menggunakan Web Storage standar HTML5 (Penyimpanan Lokal & Penyimpanan Sesi) secara lokal di perangkat Anda hanya untuk:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
@@ -218,8 +218,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'To mitigate database bloat and adhere to data lifecycle best practices, INNOCEAN Tracker enforces aggressive automated retention policies (Auto-Purging):',
-                  'Untuk mengurangi pembengkakan database dan mematuhi praktik terbaik siklus hidup data, INNOCEAN Tracker menerapkan kebijakan penyimpanan otomatis yang agresif:'
+                  'To mitigate database bloat and adhere to data lifecycle best practices, Alurku enforces aggressive automated retention policies (Auto-Purging):',
+                  'Untuk mengurangi pembengkakan database dan mematuhi praktik terbaik siklus hidup data, Alurku menerapkan kebijakan penyimpanan otomatis yang agresif:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
@@ -254,8 +254,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'INNOCEAN Tracker is deployed on modern cloud infrastructure (including Vercel, Render, and Neon PostgreSQL). As such, your data may be transferred to, and maintained on, computers located outside of your state, province, or country where the data protection laws may differ. By submitting your information, you agree to this transfer, storing, and processing.',
-                  'INNOCEAN Tracker disebarkan di infrastruktur cloud modern (termasuk Vercel, Render, dan Neon PostgreSQL). Dengan demikian, data Anda dapat ditransfer ke, dan dipelihara di, komputer yang berlokasi di luar negara atau provinsi Anda di mana undang-undang perlindungan data mungkin berbeda. Dengan mengirimkan informasi Anda, Anda menyetujui transfer dan penyimpanan ini.'
+                  'Alurku is deployed on modern cloud infrastructure (including Vercel, Render, and Neon PostgreSQL). As such, your data may be transferred to, and maintained on, computers located outside of your state, province, or country where the data protection laws may differ. By submitting your information, you agree to this transfer, storing, and processing.',
+                  'Alurku disebarkan di infrastruktur cloud modern (termasuk Vercel, Render, dan Neon PostgreSQL). Dengan demikian, data Anda dapat ditransfer ke, dan dipelihara di, komputer yang berlokasi di luar negara atau provinsi Anda di mana undang-undang perlindungan data mungkin berbeda. Dengan mengirimkan informasi Anda, Anda menyetujui transfer dan penyimpanan ini.'
                 )}
               </p>
             </div>
@@ -292,8 +292,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
         <div className="mt-16 pt-10 border-t border-neutral-200 dark:border-neutral-800 flex flex-col items-center pb-10">
           <p className="text-xs text-neutral-500 font-medium mb-6 text-center max-w-lg">
             {tMsg(
-              'By continuing to use INNOCEAN Tracker, you acknowledge that you have read and understood this Privacy Policy.',
-              'Dengan terus menggunakan INNOCEAN Tracker, Anda mengakui bahwa Anda telah membaca dan memahami Kebijakan Privasi ini.'
+              'By continuing to use Alurku, you acknowledge that you have read and understood this Privacy Policy.',
+              'Dengan terus menggunakan Alurku, Anda mengakui bahwa Anda telah membaca dan memahami Kebijakan Privasi ini.'
             )}
           </p>
           <button

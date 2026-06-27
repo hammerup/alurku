@@ -5,12 +5,12 @@ import { useGoogleLogin } from '@react-oauth/google';
 export function useAuth({ showNotification, setIsLoading, language, onClearSession }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) {
-      localStorage.removeItem('innocean_auth');
-      localStorage.removeItem('innocean_token');
-      localStorage.removeItem('innocean_username');
+      localStorage.removeItem('alurku_auth');
+      localStorage.removeItem('alurku_token');
+      localStorage.removeItem('alurku_username');
       return false;
     }
-    return localStorage.getItem('innocean_auth') === 'true';
+    return localStorage.getItem('alurku_auth') === 'true';
   });
 
   const isAuthenticatedRef = useRef(isAuthenticated);
@@ -20,7 +20,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
 
   const [currentUser, setCurrentUser] = useState(() => {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) return '';
-    return localStorage.getItem('innocean_username') || '';
+    return localStorage.getItem('alurku_username') || '';
   });
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showAuthForm, setShowAuthForm] = useState(() => {
@@ -59,9 +59,9 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
   const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
-    const sessionExpired = sessionStorage.getItem('innocean_session_expired');
+    const sessionExpired = sessionStorage.getItem('alurku_session_expired');
     if (sessionExpired) {
-      sessionStorage.removeItem('innocean_session_expired');
+      sessionStorage.removeItem('alurku_session_expired');
       showNotification('Session expired. Please login again.', 'error');
     }
   }, []);
@@ -71,13 +71,13 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
       if (window.isLoggingOut) return;
       
       // Clear storage
-      localStorage.removeItem('innocean_auth');
-      localStorage.removeItem('innocean_token');
-      localStorage.removeItem('innocean_username');
-      localStorage.removeItem('innocean_selected_board');
+      localStorage.removeItem('alurku_auth');
+      localStorage.removeItem('alurku_token');
+      localStorage.removeItem('alurku_username');
+      localStorage.removeItem('alurku_selected_board');
       
       // Set session expired indicator
-      sessionStorage.setItem('innocean_session_expired', 'true');
+      sessionStorage.setItem('alurku_session_expired', 'true');
 
       // Redirect immediately to clean all state and prevent blank/black screens
       window.location.href = '/';
@@ -103,10 +103,10 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
         .post('/api/google-login', { token: tokenResponse.access_token }, { timeout: 75000 })
         .then((res) => {
           clearTimeout(wakeTimer);
-          localStorage.setItem('innocean_auth', 'true');
-          localStorage.setItem('innocean_token', res.data.token);
-          localStorage.setItem('innocean_username', res.data.username);
-          sessionStorage.setItem('innocean_just_logged_in', 'true');
+          localStorage.setItem('alurku_auth', 'true');
+          localStorage.setItem('alurku_token', res.data.token);
+          localStorage.setItem('alurku_username', res.data.username);
+          sessionStorage.setItem('alurku_just_logged_in', 'true');
           window.location.href = '/';
         })
         .catch((err) => {
@@ -129,9 +129,9 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
     if (onClearSession) onClearSession();
 
     setTimeout(() => {
-      localStorage.removeItem('innocean_auth');
-      localStorage.removeItem('innocean_token');
-      localStorage.removeItem('innocean_username');
+      localStorage.removeItem('alurku_auth');
+      localStorage.removeItem('alurku_token');
+      localStorage.removeItem('alurku_username');
       
       window.location.href = '/';
     }, 1000);
@@ -158,11 +158,11 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
       .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 75000 })
       .then((res) => {
         clearTimeout(wakeTimer);
-        localStorage.setItem('innocean_auth', 'true');
-        localStorage.setItem('innocean_token', res.data.token);
-        localStorage.setItem('innocean_username', loginUsername.trim());
+        localStorage.setItem('alurku_auth', 'true');
+        localStorage.setItem('alurku_token', res.data.token);
+        localStorage.setItem('alurku_username', loginUsername.trim());
 
-        sessionStorage.setItem('innocean_just_logged_in', 'true');
+        sessionStorage.setItem('alurku_just_logged_in', 'true');
         window.location.href = '/';
       })
       .catch((err) => {

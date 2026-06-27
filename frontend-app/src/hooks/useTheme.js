@@ -3,7 +3,7 @@ import { useState } from 'react';
 export function useTheme() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.getItem('innocean_auth') !== 'true') return false; // Landing Page default light
+      if (localStorage.getItem('alurku_auth') !== 'true') return false; // Landing Page default light
       if ('theme' in localStorage) {
         return localStorage.getItem('theme') === 'dark';
       }
@@ -13,34 +13,34 @@ export function useTheme() {
   });
   const [appTheme, setAppTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.getItem('innocean_auth') !== 'true') return '';
-      return localStorage.getItem('innocean_app_theme') || '';
+      if (localStorage.getItem('alurku_auth') !== 'true') return '';
+      return localStorage.getItem('alurku_app_theme') || '';
     }
     return '';
   });
   const [appBgImage, setAppBgImage] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.getItem('innocean_auth') !== 'true') return '';
-      return localStorage.getItem('innocean_app_bg_image') || '';
+      if (localStorage.getItem('alurku_auth') !== 'true') return '';
+      return localStorage.getItem('alurku_app_bg_image') || '';
     }
     return '';
   });
   const [appTexture, setAppTexture] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.getItem('innocean_auth') !== 'true') return '';
-      return localStorage.getItem('innocean_app_texture') || '';
+      if (localStorage.getItem('alurku_auth') !== 'true') return '';
+      return localStorage.getItem('alurku_app_texture') || '';
     }
     return '';
   });
   const [cardTheme, setCardTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.getItem('innocean_auth') !== 'true') return '';
-      return localStorage.getItem('innocean_card_theme') || '';
+      if (localStorage.getItem('alurku_auth') !== 'true') return '';
+      return localStorage.getItem('alurku_card_theme') || '';
     }
     return '';
   });
   const [language, setLanguage] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_lang') || 'id';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_lang') || 'id';
     return 'id';
   });
 

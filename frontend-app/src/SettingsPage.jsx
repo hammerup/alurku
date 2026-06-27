@@ -120,13 +120,13 @@ export default function SettingsPage({
       Notification.requestPermission().then(function (permission) {
         if (permission === 'granted') {
           setBrowserNotifEnabled(true);
-          localStorage.setItem('innocean_browser_notif', 'true');
-          new Notification('INNOCEAN Tracker', {
+          localStorage.setItem('alurku_browser_notif', 'true');
+          new Notification('Alurku', {
             body: tMsg('Desktop notifications enabled!', 'Notifikasi desktop diaktifkan!'),
           });
         } else {
           setBrowserNotifEnabled(false);
-          localStorage.setItem('innocean_browser_notif', 'false');
+          localStorage.setItem('alurku_browser_notif', 'false');
           showNotification(
             tMsg('Notification permission denied by browser.', 'Izin notifikasi ditolak oleh browser.'),
             'error'
@@ -135,14 +135,14 @@ export default function SettingsPage({
       });
     } else {
       setBrowserNotifEnabled(false);
-      localStorage.setItem('innocean_browser_notif', 'false');
+      localStorage.setItem('alurku_browser_notif', 'false');
     }
   };
 
   const handlePreviewNotif = (msg, type) => {
     showNotification(msg, type);
     if (browserNotifEnabled && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification('INNOCEAN Tracker', { body: msg });
+      new Notification('Alurku', { body: msg });
     }
   };
 
@@ -802,7 +802,7 @@ export default function SettingsPage({
                     value={language}
                     onChange={(val) => {
                       setLanguage(val);
-                      localStorage.setItem('innocean_lang', val);
+                      localStorage.setItem('alurku_lang', val);
                     }}
                   />
                 </SettingItem>
@@ -819,7 +819,7 @@ export default function SettingsPage({
                       value={dateFormat}
                       onChange={(e) => {
                         setDateFormat(e.target.value);
-                        localStorage.setItem('innocean_date_format', e.target.value);
+                        localStorage.setItem('alurku_date_format', e.target.value);
                       }}
                       className={`w-full md:w-56 appearance-none pr-10 cursor-pointer ${InputClass}`}
                     >
@@ -861,7 +861,7 @@ export default function SettingsPage({
                     size="small"
                       onChange={(v) => {
                         setShowLiveClock(v);
-                        localStorage.setItem('innocean_show_clock', v);
+                        localStorage.setItem('alurku_show_clock', v);
                       }}
                     />
                   </SettingItem>
@@ -882,7 +882,7 @@ export default function SettingsPage({
                         size="small"
                         onChange={(v) => {
                           setShowLiveClockDate(v);
-                          localStorage.setItem('innocean_show_clock_date', v);
+                          localStorage.setItem('alurku_show_clock_date', v);
                         }}
                       />
                     </SettingItem>
@@ -903,7 +903,7 @@ export default function SettingsPage({
                       size="small"
                       onChange={(v) => {
                         setPomodoroEnabled(v);
-                        localStorage.setItem('innocean_pomodoro', v);
+                        localStorage.setItem('alurku_pomodoro', v);
                       }}
                     />
                   </SettingItem>
@@ -923,7 +923,7 @@ export default function SettingsPage({
                       size="small"
                       onChange={(v) => {
                         setShowAssistantButton(v);
-                        localStorage.setItem('innocean_show_assistant_btn', v);
+                        localStorage.setItem('alurku_show_assistant_btn', v);
                       }}
                     />
                   </SettingItem>
@@ -956,7 +956,7 @@ export default function SettingsPage({
                     size="small"
                     onChange={(v) => {
                       setNotifSound(v);
-                      localStorage.setItem('innocean_notif_sound', v);
+                      localStorage.setItem('alurku_notif_sound', v);
                     }}
                   />
                 </SettingItem>
@@ -976,7 +976,7 @@ export default function SettingsPage({
                     size="small"
                     onChange={(v) => {
                       setNotifPrivacy(v);
-                      localStorage.setItem('innocean_notif_privacy', v);
+                      localStorage.setItem('alurku_notif_privacy', v);
                     }}
                   />
                 </SettingItem>
@@ -1011,7 +1011,7 @@ export default function SettingsPage({
                         key={pos}
                         onClick={() => {
                           setNotifPosition(pos);
-                          localStorage.setItem('innocean_notif_pos', pos);
+                          localStorage.setItem('alurku_notif_pos', pos);
                         }}
                         className={`py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${
                           notifPosition === pos

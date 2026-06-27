@@ -182,7 +182,7 @@ export default function TaskDetailModal({
     setShowTaskScrollBottom(!isNearBottom);
     if (isNearBottom && regularComments.length > 0) {
       localStorage.setItem(
-        `innocean_last_read_task_${selectedTask.id}_${currentUser}`,
+        `alurku_last_read_task_${selectedTask.id}_${currentUser}`,
         regularComments[regularComments.length - 1].timestamp
       );
     }
@@ -260,7 +260,7 @@ export default function TaskDetailModal({
     initialScrollDoneRef.current = false;
     setFirstUnreadId(null);
     lastTaskMsgIdRef.current = null;
-    sessionLastReadRef.current = localStorage.getItem(`innocean_last_read_task_${selectedTask.id}_${currentUser}`);
+    sessionLastReadRef.current = localStorage.getItem(`alurku_last_read_task_${selectedTask.id}_${currentUser}`);
   }, [selectedTask.id, activeTab, currentUser]);
 
   React.useEffect(() => {
@@ -303,7 +303,7 @@ export default function TaskDetailModal({
           setTimeout(() => {
             commentsEndRef.current?.scrollIntoView({ behavior: 'auto' });
             localStorage.setItem(
-              `innocean_last_read_task_${selectedTask.id}_${currentUser}`,
+              `alurku_last_read_task_${selectedTask.id}_${currentUser}`,
               regularComments[regularComments.length - 1].timestamp
             );
           }, 150);
@@ -317,7 +317,7 @@ export default function TaskDetailModal({
           if (isNearBottom || isMyMessage) {
             commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
             localStorage.setItem(
-              `innocean_last_read_task_${selectedTask.id}_${currentUser}`,
+              `alurku_last_read_task_${selectedTask.id}_${currentUser}`,
               regularComments[regularComments.length - 1].timestamp
             );
           }

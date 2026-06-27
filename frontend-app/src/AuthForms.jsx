@@ -39,7 +39,7 @@ export default function AuthForms({
       <div className="text-center mb-10 flex flex-col items-center">
         <div className="flex flex-col items-center">
           <h1 className="text-3xl font-black text-black dark:text-white tracking-tighter uppercase leading-none">
-            INNOCEAN
+            Alurku
           </h1>
           <span className="text-[10px] font-bold text-neutral-500 tracking-[0.3em] uppercase mt-1">Tracker</span>
         </div>

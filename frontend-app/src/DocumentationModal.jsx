@@ -52,10 +52,10 @@ const getDocData = (tMsg, isSuperAdmin) => {
       sections: [
         {
           id: 'what-is-tracker',
-          title: tMsg('What is INNOCEAN Tracker?', 'Apa itu INNOCEAN Tracker?'),
+          title: tMsg('What is Alurku?', 'Apa itu Alurku?'),
           content: tMsg(
-            "<strong>INNOCEAN Tracker</strong> is an advanced, AI-powered project management and team collaboration platform designed to streamline your daily workflows. It serves as the central hub for your team to plan, track, and execute projects with precision.<br /><br />More than just a to-do list, the app offers a dynamic suite of features including real-time Kanban boards, interactive Gantt timelines, comprehensive workload analytics, and automated recurring tasks. With built-in AI assistants to estimate time, generate reports, and proactively plan your day, INNOCEAN Tracker empowers professionals to eliminate bottlenecks, balance team workloads, and deliver outstanding results on time.",
-            "<strong>INNOCEAN Tracker</strong> adalah platform manajemen proyek dan kolaborasi tim canggih berbasis AI yang dirancang untuk menyederhanakan alur kerja harian Anda. Aplikasi ini berfungsi sebagai pusat kendali utama bagi tim Anda untuk merencanakan, melacak, dan mengeksekusi proyek dengan presisi.<br /><br />Lebih dari sekadar daftar tugas, aplikasi ini menawarkan serangkaian fitur dinamis termasuk papan Kanban <em>real-time</em>, lini masa Gantt interaktif, analitik beban kerja komprehensif, dan otomatisasi tugas berulang. Dilengkapi dengan asisten AI bawaan untuk mengestimasi waktu, membuat laporan, dan merencanakan hari Anda secara proaktif, INNOCEAN Tracker memberdayakan para profesional untuk menghilangkan hambatan, menyeimbangkan beban kerja tim, dan memberikan hasil pekerjaan yang luar biasa tepat pada waktunya."
+            "<strong>Alurku</strong> is an advanced, AI-powered project management and team collaboration platform designed to streamline your daily workflows. It serves as the central hub for your team to plan, track, and execute projects with precision.<br /><br />More than just a to-do list, the app offers a dynamic suite of features including real-time Kanban boards, interactive Gantt timelines, comprehensive workload analytics, and automated recurring tasks. With built-in AI assistants to estimate time, generate reports, and proactively plan your day, Alurku empowers professionals to eliminate bottlenecks, balance team workloads, and deliver outstanding results on time.",
+            "<strong>Alurku</strong> adalah platform manajemen proyek dan kolaborasi tim canggih berbasis AI yang dirancang untuk menyederhanakan alur kerja harian Anda. Aplikasi ini berfungsi sebagai pusat kendali utama bagi tim Anda untuk merencanakan, melacak, dan mengeksekusi proyek dengan presisi.<br /><br />Lebih dari sekadar daftar tugas, aplikasi ini menawarkan serangkaian fitur dinamis termasuk papan Kanban <em>real-time</em>, lini masa Gantt interaktif, analitik beban kerja komprehensif, dan otomatisasi tugas berulang. Dilengkapi dengan asisten AI bawaan untuk mengestimasi waktu, membuat laporan, dan merencanakan hari Anda secara proaktif, Alurku memberdayakan para profesional untuk menghilangkan hambatan, menyeimbangkan beban kerja tim, dan memberikan hasil pekerjaan yang luar biasa tepat pada waktunya."
           ),
         },
       ],
@@ -66,8 +66,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Get Started', 'Mulai'),
       title: tMsg('Workspace & Projects', 'Ruang Kerja & Proyek'),
       desc: tMsg(
-        'INNOCEAN Tracker is organized into secure, isolated project workspaces. Think of a Project as a folder that contains specific campaigns, tasks, and authorized team members.',
-        'INNOCEAN Tracker diatur dalam ruang kerja proyek yang aman dan terisolasi. Pikirkan Proyek sebagai folder yang berisi kampanye spesifik, tugas, dan anggota tim yang berwenang.'
+        'Alurku is organized into secure, isolated project workspaces. Think of a Project as a folder that contains specific campaigns, tasks, and authorized team members.',
+        'Alurku diatur dalam ruang kerja proyek yang aman dan terisolasi. Pikirkan Proyek sebagai folder yang berisi kampanye spesifik, tugas, dan anggota tim yang berwenang.'
       ),
       sections: [
         {
@@ -426,7 +426,7 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Time & Deadlines', 'Waktu & Tenggat Waktu'),
       title: tMsg('The Deadline Engine', 'Mesin Tenggat Waktu'),
       desc: tMsg(
-        'One of INNOCEAN Tracker’s most powerful features is its ability to act as a virtual project manager that understands human availability.',
+        'One of Alurku’s most powerful features is its ability to act as a virtual project manager that understands human availability.',
         'Salah satu fitur paling kuat adalah kemampuannya untuk bertindak sebagai manajer proyek virtual yang memahami ketersediaan manusia.'
       ),
       sections: [
@@ -578,8 +578,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
           id: 'proactive-onboarding',
           title: tMsg('Proactive AI Onboarding', 'Onboarding AI Proaktif'),
           content: tMsg(
-            'After completing the welcome tour, or anytime you click the INNOCEAN Tracker logo at the top left of your screen, a full-screen Proactive AI will greet you. It helps you instantly build your first "To-do List" project and break down your broad goals into actionable tasks.',
-            'Setelah menyelesaikan tur selamat datang, atau kapan pun Anda mengeklik logo INNOCEAN Tracker di kiri atas layar, AI Proaktif layar penuh akan menyapa Anda. Ini membantu Anda langsung membangun proyek "To-do List" pertama Anda dan memecah tujuan besar menjadi tugas-tugas.'
+            'After completing the welcome tour, or anytime you click the Alurku logo at the top left of your screen, a full-screen Proactive AI will greet you. It helps you instantly build your first "To-do List" project and break down your broad goals into actionable tasks.',
+            'Setelah menyelesaikan tur selamat datang, atau kapan pun Anda mengeklik logo Alurku di kiri atas layar, AI Proaktif layar penuh akan menyapa Anda. Ini membantu Anda langsung membangun proyek "To-do List" pertama Anda dan memecah tujuan besar menjadi tugas-tugas.'
           ),
         },
         {
@@ -706,7 +706,7 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Your Account', 'Akun Anda'),
       title: tMsg('Support & Tickets', 'Dukungan & Tiket'),
       desc: tMsg(
-        'If you encounter an issue or have a brilliant idea to improve INNOCEAN Tracker, you can submit a ticket directly to the system administrators.',
+        'If you encounter an issue or have a brilliant idea to improve Alurku, you can submit a ticket directly to the system administrators.',
         'Jika Anda menemui masalah atau memiliki ide brilian, Anda dapat mengirimkan tiket langsung ke administrator sistem.'
       ),
       sections: [
@@ -734,7 +734,7 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('System & Security', 'Sistem & Keamanan'),
       title: tMsg('Security & Compliance', 'Keamanan & Kepatuhan'),
       desc: tMsg(
-        'INNOCEAN Tracker is built on a Zero-Trust Architecture, rigorously tested to ensure your corporate data remains completely secure and isolated.',
+        'Alurku is built on a Zero-Trust Architecture, rigorously tested to ensure your corporate data remains completely secure and isolated.',
         'Tracker dibangun pada Arsitektur Zero-Trust, diuji dengan ketat untuk memastikan data perusahaan Anda tetap aman dan terisolasi sepenuhnya.'
       ),
       sections: [

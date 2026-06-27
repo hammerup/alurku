@@ -1,4 +1,4 @@
-const isAuth = localStorage.getItem('innocean_auth') === 'true';
+const isAuth = localStorage.getItem('alurku_auth') === 'true';
 if (
   !isAuth || // Selalu paksa mode gelap jika belum login (Landing Page)
   localStorage.getItem('theme') === 'dark' ||

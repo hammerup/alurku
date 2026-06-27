@@ -16,7 +16,7 @@ export function useModals() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isDocsOpen, setIsDocsOpen] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_docs_open') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_docs_open') === 'true';
     return false;
   });
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
@@ -24,28 +24,28 @@ export function useModals() {
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isChatWorkspaceOpen, setIsChatWorkspaceOpen] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_chat_ws_open') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_chat_ws_open') === 'true';
     return false;
   });
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_changelog_open') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_changelog_open') === 'true';
     return false;
   });
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isProactiveAIOpen, setIsProactiveAIOpen] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedState = localStorage.getItem('innocean_proactive_ai_open');
+      const savedState = localStorage.getItem('alurku_proactive_ai_open');
       if (savedState === 'true') return true;
 
-      const currentUsr = localStorage.getItem('innocean_username');
-      const hasSeenTour = localStorage.getItem(`innocean_tour_done_v2_${currentUsr}`);
-      const legacyTour = localStorage.getItem('innocean_tour_done_v2');
+      const currentUsr = localStorage.getItem('alurku_username');
+      const hasSeenTour = localStorage.getItem(`alurku_tour_done_v2_${currentUsr}`);
+      const legacyTour = localStorage.getItem('alurku_tour_done_v2');
       const hasCompletedTour = hasSeenTour || legacyTour;
 
-      const justLoggedIn = sessionStorage.getItem('innocean_just_logged_in');
+      const justLoggedIn = sessionStorage.getItem('alurku_just_logged_in');
       if (justLoggedIn === 'true') {
         if (hasCompletedTour) return true;
       }

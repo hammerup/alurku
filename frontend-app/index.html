@@ -104,9 +104,66 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="/theme.js"></script>
+    <style>
+      /* Sembunyikan pre-rendered HTML jika user sudah login untuk menghindari kedipan visual */
+      html.is-auth #pre-rendered-landing {
+        display: none !important;
+      }
+    </style>
+    <script>
+      try {
+        if (localStorage.getItem('alurku_auth') === 'true') {
+          document.documentElement.classList.add('is-auth');
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="pre-rendered-landing">
+        <!-- Pre-rendered Static Landing HTML for SEO Indexing & Instant First Paint -->
+      <header style="background-color: #111E38; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1);">
+        <div style="display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 1.5rem;">
+          <div style="width: 36px; height: 36px; background-color: #FACC15; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #111E38; font-size: 1.1rem;">a</div>
+          <span>alurku<span style="color: #FACC15;">.</span></span>
+        </div>
+      </header>
+      
+      <main style="max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; font-family: sans-serif;">
+        <section style="text-align: center; margin-bottom: 4rem;">
+          <span style="color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.85rem;">Alurku. App</span>
+          <h1 style="font-size: 3rem; font-weight: 900; letter-spacing: -0.02em; color: #0f172a; margin-top: 0.5rem; margin-bottom: 1.5rem; line-height: 1.1;">
+            Asisten Cerdas untuk Menemani Alur Kerjamu
+          </h1>
+          <p style="color: #475569; font-size: 1.25rem; max-w: 800px; margin: 0 auto; line-height: 1.6;">
+            Alurku adalah asisten cerdas untuk mengelola rencana kerja, memantau beban tugas tim, dan melancarkan alur kerja kolaboratif Anda secara real-time. Hubungkan tugas, komunikasikan prioritas, dan optimalkan hasil kolaborasi tanpa stres.
+          </p>
+        </section>
+
+        <section style="margin-bottom: 4rem;">
+          <h2 style="font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 2.5rem; color: #0f172a;">Fitur Cerdas Unggulan Kami</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+            <div style="background-color: #f8fafc; padding: 2rem; border-radius: 1rem; border: 1px solid #e2e8f0;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; margin-top: 0; color: #0f172a;">Papan Kanban Interaktif</h3>
+              <p style="color: #475569; line-height: 1.5;">Atur dan geser tugas dengan mudah menggunakan drag-and-drop. Visualisasikan status setiap pekerjaan secara langsung.</p>
+            </div>
+            <div style="background-color: #f8fafc; padding: 2rem; border-radius: 1rem; border: 1px solid #e2e8f0;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; margin-top: 0; color: #0f172a;">Estimasi Cerdas AI</h3>
+              <p style="color: #475569; line-height: 1.5;">Gunakan asisten kecerdasan buatan (AI) terintegrasi untuk memperkirakan durasi dan membagi sub-tugas secara otomatis.</p>
+            </div>
+            <div style="background-color: #f8fafc; padding: 2rem; border-radius: 1rem; border: 1px solid #e2e8f0;">
+              <h3 style="font-size: 1.25rem; font-weight: 700; margin-top: 0; color: #0f172a;">Pemantauan Beban Kerja</h3>
+              <p style="color: #475569; line-height: 1.5;">Pantau distribusi tugas tim secara transparan agar tidak terjadi penumpukan pekerjaan dan kelelahan (burnout).</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer style="background-color: #0f172a; color: #94a3b8; padding: 3rem 2rem; text-align: center; font-size: 0.875rem; border-top: 1px solid #1e293b;">
+        <p style="margin-bottom: 1rem;">&copy; 2026 alurku. Hak Cipta Dilindungi Undang-Undang.</p>
+      </footer>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

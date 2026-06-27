@@ -98,7 +98,7 @@ export default function TableList({
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
   const [tasksPerPage, setTasksPerPage] = useState(() => {
-    if (typeof window !== 'undefined') return Number(localStorage.getItem('innocean_tasks_per_page')) || 15;
+    if (typeof window !== 'undefined') return Number(localStorage.getItem('alurku_tasks_per_page')) || 15;
     return 15;
   });
   const [isBulkSelectMode, setIsBulkSelectMode] = useState(false);
@@ -122,7 +122,7 @@ export default function TableList({
     }
   };
 
-  useEffect(() => localStorage.setItem('innocean_tasks_per_page', tasksPerPage), [tasksPerPage]);
+  useEffect(() => localStorage.setItem('alurku_tasks_per_page', tasksPerPage), [tasksPerPage]);
 
   useEffect(() => {
     setCurrentPage(1);

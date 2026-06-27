@@ -102,8 +102,8 @@ export default function SmartAssistant({
   useEffect(() => {
     if (isOpen) {
       setTimeout(scrollToBottom, 100);
-      if (messages.length === 0 || localStorage.getItem('innocean_ai_offer_docs') === 'true') {
-        if (localStorage.getItem('innocean_ai_offer_docs') === 'true') {
+      if (messages.length === 0 || localStorage.getItem('alurku_ai_offer_docs') === 'true') {
+        if (localStorage.getItem('alurku_ai_offer_docs') === 'true') {
           setAssistantMode('chat');
           startConversation();
         } else {
@@ -221,8 +221,8 @@ export default function SmartAssistant({
     const isGlobal = !selectedBoard || selectedBoard.id === 'global';
     const workspaceName = isGlobal ? 'Global Workspace' : selectedBoard?.name;
 
-    if (localStorage.getItem('innocean_ai_offer_docs') === 'true') {
-      localStorage.removeItem('innocean_ai_offer_docs');
+    if (localStorage.getItem('alurku_ai_offer_docs') === 'true') {
+      localStorage.removeItem('alurku_ai_offer_docs');
       addBotMessage(
         tMsg(
           `I've successfully created your "To-do List" tasks! 🎉\n\nWould you like a quick **Workspace Tour** to learn how to manage these tasks, or would you prefer to explore on your own?`,
@@ -287,7 +287,7 @@ export default function SmartAssistant({
             'Baiklah! Saya akan ada di sini jika Anda butuh bantuan. Cukup klik tombol ✨.'
           )
         );
-        localStorage.setItem(`innocean_board_tour_done_v2_${currentUser}`, 'true');
+        localStorage.setItem(`alurku_board_tour_done_v2_${currentUser}`, 'true');
         setStep('end');
         return;
       }
@@ -843,7 +843,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
                 bottleneckTasks,
                 topPerformers: topMembers,
               };
-              const prompt = `You are a conversational Project Manager AI for INNOCEAN Tracker. Analyze these workspace stats: ${JSON.stringify(
+              const prompt = `You are a conversational Project Manager AI for Alurku. Analyze these workspace stats: ${JSON.stringify(
                 statsForAI
               )}. Write a 3 sentence professional and insightful summary directly addressing the user "@${currentUser}". You can use markdown bold. Include emojis. Please respond strictly in ${
                 language === 'id' ? 'Indonesian' : 'English'
@@ -930,14 +930,14 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           .map((m) => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text.replace(/<[^>]*>?/gm, '')}`)
           .join('\n');
 
-        const prompt = `You are 'Smart Assistant', the AI Assistant inside INNOCEAN Tracker. Today is ${todayStr}. User @${currentUser} says: "${data}".
+        const prompt = `You are 'Smart Assistant', the AI Assistant inside Alurku. Today is ${todayStr}. User @${currentUser} says: "${data}".
 
 Recent Conversation History:
 ${recentHistory}
 
 Please respond in the same language that the user used in their message.
 
-CRITICAL RULE: You must stay strictly within the context of INNOCEAN Tracker, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in INNOCEAN Tracker. Do not provide information or perform tasks for out-of-context topics under any circumstances.
+CRITICAL RULE: You must stay strictly within the context of Alurku, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
 
 If the user wants to CREATE/ADD A TASK (e.g. "bikin task", "buatkan task", "create task"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "create_task", "project_name": "extracted title", "requester": "Assignee (with '@') OR Requester name (without '@') OR @${currentUser}", "category": "extracted or 'Other'", "deadline": "YYYY-MM-DD (format strictly like this)", "etc": "Estimate the time consumption in hours (integer) based on task complexity. If user specifies a time (e.g., 'this will take 4 hours'), use that. Default to 2 if unsure.", "description": "detailed description if provided, else empty", "subtasks": ["extracted subtask 1", "extracted subtask 2"]}
@@ -1877,7 +1877,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         let baseContext = '';
         if (data === 'Workspace')
           baseContext =
-            "Workspace & Projects: INNOCEAN Tracker is organized into isolated project workspaces. Users can create new projects or invite team members via the Team menu. It's a secure environment.";
+            "Workspace & Projects: Alurku is organized into isolated project workspaces. Users can create new projects or invite team members via the Team menu. It's a secure environment.";
         else if (data === 'Tasks')
           baseContext =
             "Tasks: Tasks are the core unit of work. Click 'New Request' to start. Users can use markdown for rich text, add sub-tasks (checklists), and set deadlines.";
@@ -1907,7 +1907,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             "Tickets: Users can submit System Feedback or Contact Support via the Account menu. These auto-generate a ticket ID (e.g. TKT-0001) which can be tracked in the 'My Tickets' panel.";
         else if (data === 'Security')
           baseContext =
-            'Security: INNOCEAN Tracker is built on a Zero-Trust Architecture. It protects against OWASP Top 10 vulnerabilities (XSS, DoS, IDOR, BOLA) and has passed 12 automated penetration tests. Users can view the full details in the System Specs menu.';
+            'Security: Alurku is built on a Zero-Trust Architecture. It protects against OWASP Top 10 vulnerabilities (XSS, DoS, IDOR, BOLA) and has passed 12 automated penetration tests. Users can view the full details in the System Specs menu.';
         else baseContext = `The user is asking about: ${data}.`;
 
         setTaskData((prev) => ({ ...prev, doc_topic: data, doc_context: baseContext }));
@@ -1925,7 +1925,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
 
         addBotMessage(tMsg('Reading the documentation... ⏳', 'Membaca dokumentasi... ⏳'));
 
-        const prompt = `You are the official Smart Assistant for INNOCEAN Tracker. The user asked for documentation about "${taskData.doc_topic}". \nHere is the core context about this feature: "${taskData.doc_context}"\nPlease provide a very simple, brief, and beginner-friendly explanation (maximum 2-3 short sentences). Make it easy for a layperson to understand. Use an analogy if helpful. Respond strictly in ${targetLang}.`;
+        const prompt = `You are the official Smart Assistant for Alurku. The user asked for documentation about "${taskData.doc_topic}". \nHere is the core context about this feature: "${taskData.doc_context}"\nPlease provide a very simple, brief, and beginner-friendly explanation (maximum 2-3 short sentences). Make it easy for a layperson to understand. Use an analogy if helpful. Respond strictly in ${targetLang}.`;
 
         axios
           .post('/api/ai/generate', { prompt, provider: selectedModel })
@@ -1969,7 +1969,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
 
         if (isDetailed) {
           addBotMessage(tMsg('Generating detailed explanation... ⏳', 'Membuat penjelasan detail... ⏳'));
-          const prompt = `You are the official Smart Assistant for INNOCEAN Tracker. The user wants a HIGHLY DETAILED explanation about "${
+          const prompt = `You are the official Smart Assistant for Alurku. The user wants a HIGHLY DETAILED explanation about "${
             taskData.doc_topic
           }". \nHere is the core context: "${
             taskData.doc_context

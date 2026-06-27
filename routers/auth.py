@@ -16,7 +16,7 @@ from services.email_service import send_email
 # Import evaluate_user_lifecycle from backend_api to resolve NameError
 from utils import *
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://innocean-tracker.vercel.app")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://alurku.app")
 
 router = APIRouter()
 
@@ -95,12 +95,12 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Se
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
         <h2 style="color: #0f172a; margin-top: 0; text-transform: uppercase; font-weight: 900;">Verify Your Email</h2>
         <p style="color: #475569; font-size: 16px;">Hello <strong>@{new_user.username}</strong>,</p>
-        <p style="color: #475569; font-size: 15px;">Welcome to INNOCEAN Tracker! Please click the button below to verify your email address and activate your account:</p>
+        <p style="color: #475569; font-size: 15px;">Welcome to Alurku! Please click the button below to verify your email address and activate your account:</p>
         <a href="{verify_link}" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0;">Verify Account</a>
         <p style="color: #64748b; font-size: 14px;">If you didn't request this, please ignore this email.</p>
     </div>
     """
-    background_tasks.add_task(send_email, new_user.email, "Verify Your INNOCEAN Tracker Account", html_body)
+    background_tasks.add_task(send_email, new_user.email, "Verify Your Alurku Account", html_body)
 
     return {
         "message": "Registration successful! Please check your email inbox to verify your account before logging in."
@@ -255,14 +255,14 @@ def forgot_password(payload: dict, background_tasks: BackgroundTasks, db: Sessio
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
         <h2 style="color: #0f172a; margin-top: 0; text-transform: uppercase; font-weight: 900;">Password Reset</h2>
         <p style="color: #475569; font-size: 16px;">Hello <strong>@{user.username}</strong>,</p>
-        <p style="color: #475569; font-size: 15px;">We received a request to reset your INNOCEAN Tracker password. Click the button below to set a new password:</p>
+        <p style="color: #475569; font-size: 15px;">We received a request to reset your Alurku password. Click the button below to set a new password:</p>
         <a href="{reset_link}" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0;">Reset Password</a>
         <p style="color: #64748b; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
         <p style="color: #94a3b8; font-size: 11px;">This link will expire in 24 hours.</p>
     </div>
     """
-    background_tasks.add_task(send_email, user.email, "Reset Your INNOCEAN Tracker Password", html_body)
+    background_tasks.add_task(send_email, user.email, "Reset Your Alurku Password", html_body)
     return {"message": "If your email is registered, a reset link has been sent."}
 
 

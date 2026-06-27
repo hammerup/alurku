@@ -17,7 +17,7 @@ def send_email(to_email: str, subject: str, html_content: str):
             return  # Skip silently if SMTP is not configured in .env
 
         msg = MIMEMultipart()
-        msg["From"] = f"INNOCEAN Tracker <{sender}>"
+        msg["From"] = f"Alurku <{sender}>"
         msg["To"] = to_email
         msg["Subject"] = subject
         msg.attach(MIMEText(html_content, "html"))

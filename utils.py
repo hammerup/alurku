@@ -108,7 +108,7 @@ def create_notification(
     ]:
         user = db.query(User).filter(User.username == username).first()
         if user and user.email:
-            subject = "INNOCEAN Tracker Update"
+            subject = "Alurku Update"
             if notif_type == "task_assigned":
                 subject = "New Task Assigned"
             elif notif_type == "mention":
@@ -130,14 +130,14 @@ def create_notification(
             safe_message = html.escape(safe_message.strip())
             html_body = f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
-                <h2 style="color: #0f172a; margin-top: 0; text-transform: uppercase; font-weight: 900;">INNOCEAN Tracker</h2>
+                <h2 style="color: #0f172a; margin-top: 0; text-transform: uppercase; font-weight: 900;">Alurku</h2>
                 <p style="color: #475569; font-size: 16px;">Hello <strong>@{username}</strong>,</p>
                 <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #4f46e5; margin: 20px 0; border-radius: 4px;">
                     <p style="margin: 0; color: #1e293b; font-size: 15px;">{safe_message}</p>
                 </div>
                 <p style="color: #64748b; font-size: 14px;">Please login to the workspace to view the details.</p>
                 <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-                <p style="color: #94a3b8; font-size: 11px;">This is an automated message from INNOCEAN Tracker. Please do not reply.</p>
+                <p style="color: #94a3b8; font-size: 11px;">This is an automated message from Alurku. Please do not reply.</p>
             </div>
             """
             if background_tasks:

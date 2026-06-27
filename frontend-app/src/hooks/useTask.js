@@ -11,7 +11,7 @@ export function useTask({ isAuthenticated, selectedBoard, setSelectedBoard, curr
   const [colModal, setColModal] = useState({ isOpen: false, target: 'Status', mode: 'add', oldName: '', newName: '' });
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('innocean_view_mode') || 'kanban';
+      return localStorage.getItem('alurku_view_mode') || 'kanban';
     }
     return 'kanban';
   });
@@ -26,7 +26,7 @@ export function useTask({ isAuthenticated, selectedBoard, setSelectedBoard, curr
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [showHasSubtasks, setShowHasSubtasks] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('innocean_hide_completed') === 'true';
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_hide_completed') === 'true';
     return false;
   });
 
