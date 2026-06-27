@@ -315,9 +315,7 @@ export default function Sidebar() {
             }}
           >
             {isCollapsed ? (
-              <div className="w-8 h-8 rounded-lg bg-[#111E38] flex items-center justify-center font-sans font-extrabold text-lg text-[#FACC15] shadow-sm select-none">
-                a
-              </div>
+              <img src="/favicon.png" alt="a." className="w-8 h-8 rounded-lg select-none object-cover" />
             ) : (
               <div className="font-sans font-extrabold text-2xl tracking-tight select-none">
                 <span className="text-black dark:text-white">alur</span>
