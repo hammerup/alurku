@@ -101,8 +101,8 @@ export default function LandingFeatures({ showAuthForm, language }) {
     },
     {
       id: 'list',
-      title: t('Table List', 'Daftar Tabel'),
-      desc: t('A compact, spreadsheet-like view for managing tasks. Ideal for bulk actions and quick data entry.', 'Tampilan ringkas mirip spreadsheet untuk mengelola tugas. Sangat ideal untuk aksi massal dan input data yang cepat.'),
+      title: t('Card List', 'Daftar Kartu'),
+      desc: t('A vertical stacked view of tasks for focused reading and detailed item-by-item management.', 'Tampilan daftar kartu bertumpuk vertikal agar Anda bisa fokus membaca dan mengelola detail tugas satu per satu dengan tenang.'),
     },
     {
       id: 'timeline',
@@ -126,451 +126,54 @@ export default function LandingFeatures({ showAuthForm, language }) {
   const renderFeatureMockup = () => {
     switch (activeFeatureTab) {
       case 'kanban': {
-        const renderKanbanCard = (task, faded = false, extraClasses = '') => (
-          <div className={`bg-white dark:bg-neutral-900 border border-slate-150 dark:border-slate-800 p-2.5 rounded-xl shadow-sm flex flex-col gap-2 hover:shadow-md transition-all ease-in-out duration-700 ${faded ? 'opacity-60' : ''} ${extraClasses}`}>
-            {/* Top Info Row */}
-            <div className="flex justify-between items-center text-[7px] text-slate-400 dark:text-slate-500 font-bold shrink-0">
-              <div className="flex items-center gap-1">
-                <span className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-500 dark:text-slate-400">{task.folder}</span>
-                <span>/</span>
-                <span>{task.dept}</span>
-              </div>
-              <span>{task.date}</span>
-            </div>
-
-            {/* Title */}
-            <h4 className="font-extrabold text-[9px] text-slate-800 dark:text-slate-200 leading-tight">
-              {task.title}
-            </h4>
-
-            {/* Badges Row */}
-            <div className="flex flex-wrap gap-1 font-black text-[7px] sm:text-[8px] shrink-0">
-              {task.badges.map((b, i) => (
-                <span key={i} className={`py-0.5 px-1.5 rounded ${b.cls}`}>{b.text}</span>
-              ))}
-            </div>
-
-            {/* Antrean badge */}
-            <span className="bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 py-0.5 px-1.5 rounded text-[7px] sm:text-[8px] font-black w-max shrink-0">
-              {task.antrean}
-            </span>
-
-            {/* Description */}
-            <p className="text-[8px] text-slate-400 dark:text-slate-500 leading-relaxed font-medium line-clamp-2">
-              {task.desc}
-            </p>
-
-            {/* Footer Info */}
-            <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-slate-850 text-[8px] font-bold text-slate-400 shrink-0">
-              <span className="text-[#111E38] dark:text-slate-200 bg-slate-100 dark:bg-slate-800/85 py-0.5 px-1.5 rounded-full font-black">
-                @{task.assignee}
-              </span>
-              <div className="flex items-center gap-2">
-                <span>📋 {task.subtasks}</span>
-                <span>⏳ {task.time}</span>
-              </div>
-            </div>
-          </div>
-        );
-
-        const tasksData = {
-          t4: {
-            folder: t('To-do List', 'Daftar Tugas'),
-            dept: t('Deployment', 'Rilis'),
-            date: '27 JUN 2026',
-            title: 'ALURKU WEB APP: 4. TESTING, DEPLOYMENT & LAUNCH',
-            badges: [
-              { text: t('NO DATE', 'TANPA DEADLINE'), cls: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' },
-              { text: 'HIGH', cls: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400' },
-              { text: '24H', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }
-            ],
-            antrean: t('Antrean #3 of 3', 'Antrean #3 dari 3'),
-            desc: t('Conduct comprehensive testing of the alurku. web application to identify and resolve bugs, ensure functionality, performance, and security.', 'Lakukan pengujian menyeluruh pada aplikasi web alurku. untuk menemukan bug, keamanan, serta performa sebelum rilis resmi.'),
-            assignee: 'budi',
-            subtasks: '0/5',
-            time: '-'
-          },
-          t3: {
-            folder: t('To-do List', 'Daftar Tugas'),
-            dept: t('Development', 'Koding'),
-            date: '27 JUN 2026',
-            title: 'ALURKU WEB APP: 3. FRONTEND & BACKEND DEVELOPMENT',
-            badges: [
-              { text: t('NO DATE', 'TANPA DEADLINE'), cls: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' },
-              { text: 'HIGH', cls: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400' },
-              { text: '80H', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }
-            ],
-            antrean: t('Antrean #2 of 3', 'Antrean #2 dari 3'),
-            desc: t('Implement the alurku. web application\'s user interface (frontend) and server-side logic with database integration (backend).', 'Mulai koding antarmuka pengguna (frontend) dan arsitektur database serverless serta integrasi API (backend).'),
-            assignee: 'siti',
-            subtasks: '0/5',
-            time: '-'
-          },
-          t2: {
-            folder: t('To-do List', 'Daftar Tugas'),
-            dept: t('Design', 'Desain'),
-            date: '27 JUN 2026',
-            title: 'ALURKU WEB APP: 2. UI/UX DESIGN & PROTOTYPING',
-            badges: [
-              { text: t('NO DATE', 'TANPA DEADLINE'), cls: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' },
-              { text: 'HIGH', cls: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400' },
-              { text: '16H', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }
-            ],
-            antrean: t('Antrean #1 of 3', 'Antrean #1 dari 3'),
-            desc: t('Design the user interface (UI) and user experience (UX) for the alurku. web application based on the requirements.', 'Rancang wireframe, mockup visual, serta prototipe interaktif untuk memetakan alur pengguna agar intuitif.'),
-            assignee: 'budi',
-            subtasks: '0/5',
-            time: '-'
-          },
-          t1: {
-            folder: t('To-do List', 'Daftar Tugas'),
-            dept: t('Planning', 'Rencana'),
-            date: '27 JUN 2026',
-            title: 'ALURKU WEB APP: 1. INITIAL REQUIREMENTS & PLANNING',
-            badges: [
-              { text: t('NO DATE', 'TANPA DEADLINE'), cls: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400' },
-              { text: 'HIGH', cls: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400' },
-              { text: '8H', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500' }
-            ],
-            antrean: t('Antrean #1 of 1', 'Antrean #1 dari 1'),
-            desc: t('Conduct detailed discussions with stakeholders to define the core purpose, target audience, and key requirements for the brand web.', 'Lakukan diskusi mendalam bersama klien untuk mematangkan alur kerja utama serta arsitektur brand.'),
-            assignee: 'siti',
-            subtasks: '0/5',
-            time: '-'
-          }
-        };
-
         return (
-          <div className="flex gap-3 h-full p-3 bg-slate-50 dark:bg-neutral-900 select-none overflow-x-auto text-[9px] text-slate-600 dark:text-slate-350 scrollbar-thin">
-            {/* Column 1: PENDING */}
-            <div className="flex-1 min-w-[180px] sm:min-w-[220px] bg-slate-100/60 dark:bg-neutral-950 p-2.5 rounded-2xl flex flex-col gap-2.5 h-full overflow-hidden">
-              <div className="flex items-center justify-between px-1.5 shrink-0">
-                <span className="font-extrabold text-[9px] sm:text-[10px] tracking-wider text-slate-700 dark:text-white uppercase">
-                  {t('PENDING', 'PERLU DIKERJAKAN')}
-                </span>
-                <span className="bg-slate-200 dark:bg-slate-850 text-slate-700 dark:text-slate-300 w-4 h-4 rounded-full flex items-center justify-center font-bold text-[8px]">
-                  {kanbanStep === 2 ? 0 : 1}
-                </span>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar pb-2">
-                {renderKanbanCard(
-                  tasksData.t4,
-                  false,
-                  `transition-all duration-700 ${
-                    kanbanStep === 2
-                      ? 'max-h-0 opacity-0 pointer-events-none overflow-hidden mb-0 p-0 border-none'
-                      : 'max-h-[300px] opacity-100 mb-2.5'
-                  }`
-                )}
-                {kanbanStep === 2 && (
-                  <div className="h-24 border border-dashed border-slate-250 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-300 dark:text-slate-700 font-bold text-[8px]">
-                    {t('Empty Column', 'Kolom Kosong')}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Column 2: IN PROGRESS */}
-            <div className="flex-1 min-w-[180px] sm:min-w-[220px] bg-slate-100/60 dark:bg-neutral-950 p-2.5 rounded-2xl flex flex-col gap-2.5 h-full overflow-hidden">
-              <div className="flex items-center justify-between px-1.5 shrink-0">
-                <span className="font-extrabold text-[9px] sm:text-[10px] tracking-wider text-[#2563eb] dark:text-[#38bdf8] uppercase">
-                  {t('IN PROGRESS', 'SEDANG JALAN')}
-                </span>
-                <span className="bg-slate-200 dark:bg-slate-850 text-slate-700 dark:text-slate-300 w-4 h-4 rounded-full flex items-center justify-center font-bold text-[8px]">
-                  {kanbanStep === 0 ? 2 : kanbanStep === 1 ? 1 : 2}
-                </span>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar pb-2">
-                {renderKanbanCard(
-                  tasksData.t2,
-                  false,
-                  `transition-all duration-700 ${
-                    kanbanStep >= 1
-                      ? 'max-h-0 opacity-0 pointer-events-none overflow-hidden mb-0 p-0 border-none'
-                      : 'max-h-[300px] opacity-100 mb-2.5'
-                  }`
-                )}
-                {renderKanbanCard(tasksData.t3, false, 'max-h-[300px] opacity-100 mb-2.5')}
-                {renderKanbanCard(
-                  tasksData.t4,
-                  false,
-                  `transition-all duration-700 ${
-                    kanbanStep !== 2
-                      ? 'max-h-0 opacity-0 pointer-events-none overflow-hidden mb-0 p-0 border-none'
-                      : 'max-h-[300px] opacity-100 mb-2.5'
-                  }`
-                )}
-              </div>
-            </div>
-
-            {/* Column 3: DONE */}
-            <div className="flex-1 min-w-[180px] sm:min-w-[220px] bg-slate-100/60 dark:bg-neutral-950 p-2.5 rounded-2xl flex flex-col gap-2.5 h-full overflow-hidden">
-              <div className="flex items-center justify-between px-1.5 shrink-0">
-                <span className="font-extrabold text-[9px] sm:text-[10px] tracking-wider text-slate-700 dark:text-white uppercase">
-                  {t('DONE', 'SELESAI')}
-                </span>
-                <span className="bg-slate-200 dark:bg-slate-850 text-slate-700 dark:text-slate-300 w-4 h-4 rounded-full flex items-center justify-center font-bold text-[8px]">
-                  {kanbanStep === 0 ? 1 : 2}
-                </span>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar pb-2">
-                {renderKanbanCard(
-                  tasksData.t2,
-                  true,
-                  `transition-all duration-700 ${
-                    kanbanStep === 0
-                      ? 'max-h-0 opacity-0 pointer-events-none overflow-hidden mb-0 p-0 border-none'
-                      : 'max-h-[300px] opacity-60 mb-2.5'
-                  }`
-                )}
-                {renderKanbanCard(tasksData.t1, true, 'max-h-[300px] opacity-60 mb-2.5')}
-              </div>
-            </div>
-
-            {/* Column 4: REJECTED */}
-            <div className="flex-1 min-w-[180px] sm:min-w-[220px] bg-slate-100/60 dark:bg-neutral-950 p-2.5 rounded-2xl flex flex-col gap-2.5 h-full overflow-hidden">
-              <div className="flex items-center justify-between px-1.5 shrink-0">
-                <span className="font-extrabold text-[9px] sm:text-[10px] tracking-wider text-slate-700 dark:text-white uppercase">
-                  {t('REJECTED', 'DITOLAK')}
-                </span>
-                <span className="bg-slate-200 dark:bg-slate-850 text-slate-700 dark:text-slate-300 w-4 h-4 rounded-full flex items-center justify-center font-bold text-[8px]">
-                  0
-                </span>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar pb-2">
-                <div className="h-24 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-300 dark:text-slate-700 font-bold text-[8px]">
-                  {t('Empty Column', 'Kolom Kosong')}
+          <div className="flex gap-3 sm:gap-4 h-full p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/50 overflow-hidden">
+            {['PENDING', 'IN PROGRESS', 'DONE'].map((col, i) => (
+              <div key={col} className="flex-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl p-3 flex flex-col gap-3">
+                <div className="flex justify-between items-center mb-1">
+                  <div className="w-1/2 h-2.5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+                  <div className="w-4 h-4 rounded-full bg-slate-300/50 dark:bg-slate-700/50"></div>
                 </div>
+                {Array.from({ length: i === 0 ? 3 : i === 1 ? 2 : 4 }).map((_, j) => (
+                  <div key={j} className="bg-white dark:bg-neutral-900 rounded-lg p-3 shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
+                    <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+                    <div className="w-2/3 h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+                    <div className="flex justify-between items-center mt-2">
+                      <div className={`w-8 h-3 rounded-full ${i===0 ? 'bg-indigo-100 dark:bg-indigo-900/50' : i===1 ? 'bg-amber-100 dark:bg-amber-900/50' : 'bg-emerald-100 dark:bg-emerald-900/50'}`}></div>
+                      <div className="w-4 h-4 rounded-full bg-slate-100 dark:bg-slate-800"></div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            ))}
           </div>
         );
       }
-
       case 'list': {
-        const t5Data = {
-          id: 5,
-          progress: '0/4',
-          title: t('alurku. Web App: 5. Database Connection Optimization', 'Aplikasi Web alurku.: 5. Optimasi Koneksi Database'),
-          desc: t('Investigate and resolve potential database connection pool leaks to ensure serverless stability.', 'Selidiki dan perbaiki potensi kebocoran koneksi database serverless untuk menjamin stabilitas sistem.'),
-          tags: [t('To-do List', 'Daftar Tugas'), t('Development', 'Koding'), t('Pending', 'Tunda'), 'HIGH', '0/3', '12h'],
-          assignee: 'budi'
-        };
-
-        const activeListCount = listStep >= 2 ? (listStep === 3 ? 4 : 5) : 4;
-        const isT5Completed = listStep === 3;
-
         return (
-          <div className="flex h-full bg-slate-50 dark:bg-neutral-900 select-none text-[10px] text-slate-600 dark:text-slate-300">
-            {/* Main Area */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden p-3 sm:p-4">
-              
-              {/* Filter Sort Bar */}
-              <div className="flex items-center gap-2 mb-3 text-[8px] font-black text-slate-400 dark:text-slate-500 overflow-x-auto whitespace-nowrap scrollbar-none pb-1 shrink-0">
-                <span className="uppercase tracking-widest text-[7px] text-slate-500 dark:text-slate-400">SORT BY:</span>
-                {['Queue', 'Name', 'Status', 'Start Date', 'Deadline', 'Priority'].map((opt) => (
-                  <button key={opt} className="hover:text-slate-800 dark:hover:text-white transition-all uppercase tracking-wider">{opt}</button>
-                ))}
-              </div>
-
-              {/* Quick Add Area */}
-              <div className="bg-white dark:bg-neutral-950 border border-slate-150 dark:border-slate-800 p-2.5 rounded-xl mb-3 flex flex-col gap-2 shrink-0 shadow-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <span className="text-amber-500 text-xs shrink-0">✨</span>
-                    <input 
-                      type="text" 
-                      readOnly
-                      value={listStep === 1 ? typedText : ''}
-                      placeholder={listStep === 1 ? '' : t('New task request title... (Press Enter to submit)', 'Judul pengajuan tugas baru... (Tekan Enter)')}
-                      className="bg-transparent border-none text-[9px] font-bold text-slate-700 dark:text-slate-200 outline-none w-full placeholder-slate-400"
-                    />
-                  </div>
-                  <button className={`bg-[#FACC15] text-[#111E38] text-[8px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider transition-all shrink-0 ${listStep === 2 ? 'scale-105 shadow-md' : 'hover:opacity-90'}`}>
-                    {t('Add Task', 'Tambah')}
-                  </button>
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5 text-[8px] font-black text-slate-400 dark:text-slate-500">
-                  <span className="bg-slate-50 dark:bg-neutral-900 border px-1.5 py-0.5 rounded flex items-center gap-1">
-                    👤 @budi
-                  </span>
-                  <span className="bg-slate-50 dark:bg-neutral-900 border px-1.5 py-0.5 rounded flex items-center gap-1">
-                    {t('Development', 'Pengembangan')} ▾
-                  </span>
-                  <span className="bg-slate-50 dark:bg-neutral-900 border px-1.5 py-0.5 rounded flex items-center gap-1">
-                    {t('Med Impact', 'Dampak Sedang')} ▾
-                  </span>
-                  <span className="bg-slate-50 dark:bg-neutral-900 border px-1.5 py-0.5 rounded flex items-center gap-1">
-                    📅 dd/mm/yyyy
-                  </span>
-                  <span className="bg-slate-50 dark:bg-neutral-900 border px-1.5 py-0.5 rounded flex items-center gap-1">
-                    ⏱ 2
-                  </span>
-                </div>
-              </div>
-
-              {/* Scrollable Tasks Card List */}
-              <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar pb-3">
-                {/* Simulated Task 5 (Added dynamically) */}
-                <div className={`transition-all duration-700 ease-in-out ${listStep >= 2 ? 'max-h-[200px] opacity-100 overflow-visible mb-2.5' : 'max-h-0 opacity-0 overflow-hidden mb-0 border-none py-0 shadow-none'}`}>
-                  <div className="bg-white dark:bg-neutral-950 border border-slate-150 dark:border-slate-800 p-2.5 rounded-xl shadow-sm flex flex-col gap-2 border-l-4 border-l-[#FACC15]">
-                    <div className="flex items-start gap-2">
-                      <input type="checkbox" checked={isT5Completed} readOnly className="rounded border-slate-300 dark:border-slate-700 text-indigo-650 mt-1 shrink-0" />
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2 flex-wrap mb-1">
-                          <h4 className={`font-extrabold text-[9px] sm:text-[10px] text-slate-800 dark:text-slate-200 leading-tight ${isT5Completed ? 'line-through text-slate-450 dark:text-slate-600' : ''}`}>
-                            {t5Data.title}
-                          </h4>
-                          <span className="text-[7px] text-slate-400 shrink-0">27 Jun 2026 ⇄ {t('No Deadline', 'Tanpa Batas')}</span>
-                        </div>
-                        <p className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-relaxed mb-2 truncate-2-lines line-clamp-2">
-                          {t5Data.desc}
-                        </p>
-                        
-                        <div className="flex justify-between items-center flex-wrap gap-2 pt-1.5 border-t border-slate-50 dark:border-slate-900">
-                          <div className="flex flex-wrap items-center gap-1 text-[7px] sm:text-[8px] font-black">
-                            <span className="bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 py-0.5 px-1.5 rounded">{t5Data.progress}</span>
-                            {t5Data.tags.map((tag, i) => {
-                              let cls = "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-350";
-                              if (tag === 'HIGH' || tag === 'Tinggi') cls = "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400";
-                              if (tag.includes('h') || tag.includes('0/')) cls = "bg-slate-50 dark:bg-neutral-900 border text-slate-400 dark:text-slate-500";
-                              return (
-                                <span key={i} className={`py-0.5 px-1.5 rounded ${cls}`}>{tag}</span>
-                              );
-                            })}
-                          </div>
-                          <span className="text-[8px] font-black text-[#111E38] dark:text-slate-200 bg-slate-100 dark:bg-slate-800/80 py-0.5 px-2 rounded-full">
-                            @{t5Data.assignee}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Static tasks */}
-                {[
-                  {
-                    id: 4,
-                    progress: '4/4',
-                    title: t('alurku. Web App: 4. Testing, Deployment & Launch', 'Aplikasi Web alurku.: 4. Pengujian & Peluncuran'),
-                    desc: t('Conduct comprehensive testing of the alurku. web application to identify and resolve bugs, ensure functionality, performance, and security.', 'Lakukan pengujian menyeluruh pada aplikasi web alurku. untuk menemukan bug, keamanan, serta performa sebelum rilis resmi.'),
-                    tags: [t('To-do List', 'Daftar Tugas'), t('Development', 'Riset'), t('Pending', 'Tunda'), 'HIGH', '0/5', '24h'],
-                    assignee: 'budi'
-                  },
-                  {
-                    id: 3,
-                    progress: '3/4',
-                    title: t('alurku. Web App: 3. Frontend & Backend Development', 'Aplikasi Web alurku.: 3. Pengembangan Frontend & Backend'),
-                    desc: t('Implement the alurku. web application\'s user interface (frontend) and server-side logic with database integration (backend).', 'Mulai koding antarmuka pengguna (frontend) dan arsitektur database serverless serta integrasi API (backend).'),
-                    tags: [t('To-do List', 'Daftar Tugas'), t('Development', 'Koding'), t('Pending', 'Tunda'), 'HIGH', '0/6', '80h'],
-                    assignee: 'siti'
-                  },
-                  {
-                    id: 2,
-                    progress: '2/4',
-                    title: t('alurku. Web App: 2. UI/UX Design & Prototyping', 'Aplikasi Web alurku.: 2. Desain UI/UX & Prototiping'),
-                    desc: t('Design the user interface (UI) and user experience (UX) for the alurku. web application based on the requirements.', 'Rancang wireframe, mockup visual, serta prototipe interaktif untuk memetakan alur pengguna agar intuitif.'),
-                    tags: [t('To-do List', 'Daftar Tugas'), t('Design', 'Desain'), t('Pending', 'Tunda'), 'HIGH', '0/5', '16h'],
-                    assignee: 'budi'
-                  },
-                  {
-                    id: 1,
-                    progress: '1/4',
-                    title: t('alurku. Web App: 1. Initial Requirements & Planning', 'Aplikasi Web alurku.: 1. Analisis Kebutuhan & Rencana'),
-                    desc: t('Conduct detailed discussions with stakeholders to define the core purpose, target audience, and key requirements for the brand web.', 'Lakukan diskusi mendalam bersama klien untuk mematangkan alur kerja utama serta arsitektur brand.'),
-                    tags: [t('To-do List', 'Daftar Tugas'), t('Planning', 'Rencana'), t('Pending', 'Tunda'), 'HIGH', '0/5', '8h'],
-                    assignee: 'siti'
-                  }
-                ].map((task) => (
-                  <div key={task.id} className="bg-white dark:bg-neutral-950 border border-slate-150 dark:border-slate-800 p-2.5 rounded-xl shadow-sm flex flex-col gap-2 border-l-4 border-l-[#FACC15]">
-                    <div className="flex items-start gap-2">
-                      <input type="checkbox" readOnly className="rounded border-slate-300 dark:border-slate-700 text-indigo-650 mt-1 shrink-0" />
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2 flex-wrap mb-1">
-                          <h4 className="font-extrabold text-[9px] sm:text-[10px] text-slate-800 dark:text-slate-200 leading-tight">
-                            {task.title}
-                          </h4>
-                          <span className="text-[7px] text-slate-400 shrink-0">27 Jun 2026 ⇄ {t('No Deadline', 'Tanpa Batas')}</span>
-                        </div>
-                        <p className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-relaxed mb-2 truncate-2-lines line-clamp-2">
-                          {task.desc}
-                        </p>
-                        
-                        <div className="flex justify-between items-center flex-wrap gap-2 pt-1.5 border-t border-slate-50 dark:border-slate-900">
-                          <div className="flex flex-wrap items-center gap-1 text-[7px] sm:text-[8px] font-black">
-                            <span className="bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 py-0.5 px-1.5 rounded">{task.progress}</span>
-                            {task.tags.map((tag, i) => {
-                              let cls = "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-350";
-                              if (tag === 'HIGH' || tag === 'Tinggi') cls = "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400";
-                              if (tag.includes('h') || tag.includes('0/')) cls = "bg-slate-50 dark:bg-neutral-900 border text-slate-400 dark:text-slate-500";
-                              return (
-                                <span key={i} className={`py-0.5 px-1.5 rounded ${cls}`}>{tag}</span>
-                              );
-                            })}
-                          </div>
-                          <span className="text-[8px] font-black text-[#111E38] dark:text-slate-200 bg-slate-105 dark:bg-slate-800/80 py-0.5 px-2 rounded-full">
-                            @{task.assignee}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Bottom Pagination Info */}
-              <div className="flex items-center justify-between text-[8px] font-black text-slate-400 dark:text-slate-500 border-t pt-2 shrink-0">
-                <div className="flex items-center gap-1">
-                  <span>SHOW:</span>
-                  <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded cursor-pointer">15 Tasks ▾</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button className="px-1.5 py-0.5 hover:text-slate-800 dark:hover:text-white">PREV</button>
-                  <span className="bg-[#FACC15] text-[#111E38] px-2 py-0.5 rounded shadow-sm">1</span>
-                  <button className="px-1.5 py-0.5 hover:text-slate-800 dark:hover:text-white">NEXT</button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span>ACTIVE: {activeListCount}</span>
-                  <button className="bg-slate-105 dark:bg-slate-800 text-slate-600 dark:text-slate-350 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-all">{t('BULK SELECT', 'MASSAL')}</button>
-                </div>
+          <div className="flex flex-col h-full p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/50 gap-2 overflow-hidden">
+            <div className="flex justify-between items-center mb-3 px-2">
+              <div className="w-1/4 h-3 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+              <div className="flex gap-2">
+                <div className="w-16 h-5 bg-[#FACC15] rounded-md opacity-80"></div>
+                <div className="w-16 h-5 bg-slate-200 dark:bg-slate-800 rounded-md"></div>
               </div>
             </div>
-
-            {/* Right Sidebar - Completed Tasks */}
-            <div className="hidden md:flex flex-col w-[120px] border-l border-slate-200 dark:border-slate-800 p-3 shrink-0 h-full overflow-hidden bg-white dark:bg-neutral-950">
-              <span className="text-[9px] font-black text-slate-800 dark:text-white flex items-center gap-1 mb-6 border-b pb-2 shrink-0">
-                <span className="text-emerald-500">✓</span> {t('Completed Tasks', 'Tugas Selesai')}
-              </span>
-              
-              {/* Dynamic Completed Sidebar */}
-              <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
-                {isT5Completed ? (
-                  <div className="w-full flex flex-col gap-2.5 animate-fade-down">
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 flex items-center justify-center text-lg mx-auto shadow-sm">
-                      🎉
-                    </div>
-                    <div className="bg-slate-50 dark:bg-neutral-900 p-2 rounded-xl border border-slate-150 dark:border-slate-800 text-left flex flex-col gap-1.5 shadow-sm">
-                      <span className="text-[7px] font-black text-emerald-600 uppercase tracking-widest">{t('Completed', 'Selesai')}</span>
-                      <h5 className="font-extrabold text-[8px] text-slate-800 dark:text-slate-200 leading-tight line-clamp-2">
-                        {t5Data.title}
-                      </h5>
-                    </div>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-neutral-900 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 w-2/3">
+                  <div className="w-4 h-4 rounded border-2 border-slate-200 dark:border-slate-700 shrink-0"></div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <div className={`h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full ${i%2===0 ? 'w-full' : 'w-4/5'}`}></div>
+                    <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full w-1/3"></div>
                   </div>
-                ) : (
-                  <>
-                    <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900 border flex items-center justify-center text-lg shadow-inner">
-                      🎉
-                    </div>
-                    <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 leading-relaxed px-1">
-                      {t('No completed tasks yet. Keep going!', 'Belum ada tugas selesai. Semangat!')}
-                    </p>
-                  </>
-                )}
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="hidden sm:block w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                  <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 shrink-0"></div>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         );
       }
