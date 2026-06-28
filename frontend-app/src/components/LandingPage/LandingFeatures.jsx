@@ -366,8 +366,8 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
                   <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('AI Daily Schedule', 'Jadwal Harian AI')}</span>
-                    <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 py-0.5 px-2 rounded-full font-bold">{t('Auto', 'Otomatis')}</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('AI Task Breakdown', 'Pemecahan Tugas AI')}</span>
+                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 py-0.5 px-2 rounded-full font-bold">{t('Auto', 'Otomatis')}</span>
                   </div>
                   <div className="space-y-3 text-xs">
                     <div className="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/40 rounded-xl">
@@ -380,7 +380,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                         <div className="font-bold text-slate-800 dark:text-slate-200">{t('Arrange Work Plan', 'Menyusun Rencana Kerja')}</div>
                         <div className="text-[10px] text-slate-400 dark:text-slate-500">{t('Predicted duration: 2.5h', 'Durasi diprediksi: 2.5 jam')}</div>
                       </div>
-                      <span className="text-[10px] text-indigo-600 font-bold">09:00</span>
+                      <span className="text-[10px] text-slate-500 font-bold">27 Jun</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
                       <span className="text-slate-500">
@@ -392,7 +392,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                         <div className="font-bold text-slate-800 dark:text-slate-200">{t('Review Mockup Design', 'Review Desain Mockup')}</div>
                         <div className="text-[10px] text-slate-400 dark:text-slate-500">{t('Duration: 1h', 'Durasi: 1 jam')}</div>
                       </div>
-                      <span className="text-[10px] text-slate-500">11:30</span>
+                      <span className="text-[10px] text-slate-500">28 Jun</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
                       <span className="text-slate-400">
@@ -401,9 +401,10 @@ export default function LandingFeatures({ showAuthForm, language }) {
                         </svg>
                       </span>
                       <div className="flex-1">
-                        <div className="font-bold text-slate-400 dark:text-slate-550 line-through">{t('Lunch Break', 'Istirahat Siang')}</div>
+                        <div className="font-bold text-slate-400 dark:text-slate-550 line-through">{t('Final Testing', 'Pengujian Akhir')}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-500 line-through">{t('Duration: 3h', 'Durasi: 3 jam')}</div>
                       </div>
-                      <span className="text-[10px] text-slate-400">12:30</span>
+                      <span className="text-[10px] text-slate-400 line-through">29 Jun</span>
                     </div>
                   </div>
                 </div>
@@ -421,7 +422,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                   <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                     {t(
                       "Not sure how long a project will take? alurku. AI will automatically predict the duration and organize your daily schedule, so you don't have to guess anymore.",
-                      "Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI alurku. akan memprediksi durasi dan menyusun jadwal harianmu secara otomatis, sehingga kamu tidak perlu lagi menebak-nebak."
+                      "Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI alurku. akan memecah proyek besar menjadi subtugas dan memprediksi durasinya secara otomatis."
                     )}
                   </p>
                   <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -429,7 +430,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                       <span className="text-emerald-500">✓</span> {t('AI-based task duration estimation', 'Estimasi durasi pengerjaan berbasis AI')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> {t('Automatic daily scheduling', 'Penyusunan jadwal harian otomatis')}
+                      <span className="text-emerald-500">✓</span> {t('Automatic task breakdown', 'Pemecahan tugas otomatis')}
                     </li>
                     <li className="flex items-center gap-2.5">
                       <span className="text-emerald-500">✓</span> {t('Intelligent adjustment to blockers', 'Penyesuaian cerdas terhadap hambatan kerja')}
@@ -489,19 +490,19 @@ export default function LandingFeatures({ showAuthForm, language }) {
                     <div>
                       <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
                         <span>Jane Smith (Backend Eng)</span>
-                        <span className="text-amber-600">{t('95% Capacity', '95% Kapasitas')}</span>
+                        <span className="text-rose-600 dark:text-rose-400">{t('95% Capacity', '95% Kapasitas')}</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-amber-500 h-full w-[95%] rounded-full"></div>
+                        <div className="bg-rose-500 h-full w-[95%] rounded-full"></div>
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
                         <span>David Miller (Project Manager)</span>
-                        <span className="text-blue-600">{t('45% Capacity', '45% Kapasitas')}</span>
+                        <span className="text-sky-500">{t('45% Capacity', '45% Kapasitas')}</span>
                       </div>
                       <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full w-[45%] rounded-full"></div>
+                        <div className="bg-sky-400 h-full w-[45%] rounded-full"></div>
                       </div>
                     </div>
                   </div>
@@ -515,7 +516,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-xs font-bold text-slate-800 dark:text-white">{t('Kanban Flow', 'Alur Kanban')}</span>
-                    <span className="text-[10px] bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 py-0.5 px-2 rounded-full font-bold">{t('1 New Task', '1 Tugas Baru')}</span>
+                    <span className="text-[10px] bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 py-0.5 px-2 rounded-full font-bold">{t('1 New Task', '1 Tugas Baru')}</span>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
                     <div className="bg-white dark:bg-slate-905 p-3 rounded-lg border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col gap-2 border-l-4 border-l-amber-500">

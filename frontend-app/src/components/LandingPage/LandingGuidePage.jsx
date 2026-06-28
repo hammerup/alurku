@@ -28,7 +28,7 @@ export default function LandingGuidePage() {
         {
           title: 'Menggunakan Fitur Asisten Perencana Otomatis',
           duration: 'Baca 6 menit',
-          description: 'Bagaimana AI memprediksi durasi dan menyusun jadwal harian Anda. Tips menuliskan draf kasar agar hasil AI lebih akurat.'
+          description: 'Bagaimana AI memecah tugas dan memprediksi durasinya. Tips menuliskan draf kasar agar hasil AI lebih akurat.'
         },
         {
           title: 'Meringkas Hasil Rapat ke Daftar Tugas',
