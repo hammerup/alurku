@@ -14,7 +14,7 @@ This document contains the complete visual identity, UI rules, brand message gui
   - **Colors:** "alur" is white/slate, and "ku" is Flat Yellow (`#FACC15`) to emphasize personal ownership ("my flow").
 - **PWA App Icon (Monogram):**
   - **Concept:** A lowercase "a" inside a squircle (rounded square).
-  - **Colors:** Deep Navy (`#111E38`) background with Flat Yellow (`#FACC15`) typography.
+  - **Colors:** Flat Yellow (`#FACC15`) background with Deep Navy (`#111E38`) typography.
 
 ---
 
