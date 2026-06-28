@@ -81,7 +81,7 @@ export default function LandingFooter({ setIsSupportAlertOpen, setIsPrivacyOpen,
             {/* Logo */}
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center">
-                <span className="text-[#111E38] font-black text-sm">a</span>
+                <span className="text-[#111E38] font-black text-[28px] leading-none pb-1">a</span>
               </div>
               <span className="font-black text-lg tracking-tight text-white select-none">
                 alur<span className="text-[#FACC15]">ku</span>.

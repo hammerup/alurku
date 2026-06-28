@@ -29,7 +29,7 @@ export default function LandingHeader({
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity select-none"
         >
           <div className="w-9 h-9 md:w-10 md:h-10 bg-[#FACC15] rounded-xl flex items-center justify-center shadow-sm shrink-0">
-            <span className="text-[#111E38] font-black text-lg leading-none">a</span>
+            <span className="text-[#111E38] font-black text-[32px] md:text-[36px] leading-none pb-1">a</span>
           </div>
           <span className="font-black text-2xl md:text-3xl tracking-tight text-white leading-none">
             alur<span className="text-[#FACC15]">ku</span>.
