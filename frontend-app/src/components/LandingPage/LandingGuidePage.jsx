@@ -1,67 +1,93 @@
 import React from 'react';
 
-export default function LandingGuidePage() {
+export default function LandingGuidePage({ language }) {
+  const tMsg = (en, id) => (language === 'id' ? id : en);
+
   const guides = [
     {
-      category: 'Panduan Memulai',
+      category: tMsg('Get Started', 'Panduan Memulai'),
       articles: [
         {
           topic: 'workspace',
-          title: 'Cara Membuat Proyek Pertama Anda',
-          duration: 'Baca 3 menit',
-          description: 'Langkah mudah untuk membuat papan proyek baru, menambahkan anggota tim, dan mengimpor tugas dari spreadsheet.'
+          title: tMsg('How to Create Your First Project', 'Cara Membuat Proyek Pertama Anda'),
+          duration: tMsg('3 min read', 'Baca 3 menit'),
+          description: tMsg(
+            'Easy steps to create a new project board, add team members, and import tasks from a spreadsheet.',
+            'Langkah mudah untuk membuat papan proyek baru, menambahkan anggota tim, dan mengimpor tugas dari spreadsheet.'
+          )
         },
         {
           topic: 'tasks',
-          title: 'Memahami Kolom Status & Prioritas',
-          duration: 'Baca 5 menit',
-          description: 'Pelajari cara terbaik untuk mengatur kolom alur kerja Kanban dan menetapkan tingkat prioritas tugas yang tepat.'
+          title: tMsg('Understanding Status & Priority Columns', 'Memahami Kolom Status & Prioritas'),
+          duration: tMsg('5 min read', 'Baca 5 menit'),
+          description: tMsg(
+            'Learn the best practices to organize Kanban workflow columns and assign correct task priority levels.',
+            'Pelajari cara terbaik untuk mengatur kolom alur kerja Kanban dan menetapkan tingkat prioritas tugas yang tepat.'
+          )
         },
         {
           topic: 'workspace',
-          title: 'Mengundang Anggota Tim ke Papan Proyek',
-          duration: 'Baca 2 menit',
-          description: 'Kolaborasi menjadi mudah. Panduan singkat tentang cara membagikan tautan proyek dan mengatur hak akses anggota tim.'
+          title: tMsg('Inviting Team Members to Project Boards', 'Mengundang Anggota Tim ke Papan Proyek'),
+          duration: tMsg('2 min read', 'Baca 2 menit'),
+          description: tMsg(
+            'Collaboration made easy. A short guide on how to share project links and manage team access permissions.',
+            'Kolaborasi menjadi mudah. Panduan singkat tentang cara membagikan tautan proyek dan mengatur hak akses anggota tim.'
+          )
         }
       ]
     },
     {
-      category: 'Bantuan Asisten AI',
+      category: tMsg('AI Assistant Help', 'Bantuan Asisten AI'),
       articles: [
         {
           topic: 'overview',
-          title: 'Menggunakan Fitur Asisten Perencana Otomatis',
-          duration: 'Baca 6 menit',
-          description: 'Bagaimana AI memecah tugas dan memprediksi durasinya. Tips menuliskan draf kasar agar hasil AI lebih akurat.'
+          title: tMsg('Using the Automated AI Planner Feature', 'Menggunakan Fitur Asisten Perencana Otomatis'),
+          duration: tMsg('6 min read', 'Baca 6 menit'),
+          description: tMsg(
+            'How AI breaks down tasks and predicts their durations. Tips on writing drafts to get more accurate AI results.',
+            'Bagaimana AI memecah tugas dan memprediksi durasinya. Tips menuliskan draf kasar agar hasil AI lebih akurat.'
+          )
         },
         {
           topic: 'tasks',
-          title: 'Meringkas Hasil Rapat ke Daftar Tugas',
-          duration: 'Baca 4 menit',
-          description: 'Panduan merekam poin rapat Anda secara real-time dan membiarkan AI Alurku memecahnya menjadi sub-tugas secara otomatis.'
+          title: tMsg('Summarizing Meeting Notes into Task Lists', 'Meringkas Hasil Rapat ke Daftar Tugas'),
+          duration: tMsg('4 min read', 'Baca 4 menit'),
+          description: tMsg(
+            "Guide to recording meeting minutes in real-time and letting alurku.'s AI automatically break them into subtasks.",
+            "Panduan merekam poin rapat Anda secara real-time dan membiarkan AI alurku. memecahnya menjadi sub-tugas secara otomatis."
+          )
         },
         {
           topic: 'tasks',
-          title: 'Menyematkan Konteks Proyek di Kolom Komentar',
-          duration: 'Baca 3 menit',
-          description: 'Cara memanggil AI dengan tag di thread tugas untuk menjawab pertanyaan teknis berdasarkan deskripsi dan lampiran.'
+          title: tMsg('Embedding Project Context in Comments', 'Menyematkan Konteks Proyek di Kolom Komentar'),
+          duration: tMsg('3 min read', 'Baca 3 menit'),
+          description: tMsg(
+            'How to invoke AI with tags in task threads to answer technical questions based on descriptions and attachments.',
+            'Cara memanggil AI dengan tag di thread tugas untuk menjawab pertanyaan teknis berdasarkan deskripsi dan lampiran.'
+          )
         }
       ]
     },
     {
-      category: 'Manajemen Beban Kerja',
+      category: tMsg('Workload Management', 'Manajemen Beban Kerja'),
       articles: [
         {
           topic: 'overview',
-          title: 'Cara Membaca Grafik Beban Kerja (Workload)',
-          duration: 'Baca 4 menit',
-          description: 'Memahami persentase kapasitas tim dan mengidentifikasi anggota yang mengalami kelebihan beban sebelum burnout terjadi.'
+          title: tMsg('How to Read Team Workload Charts', 'Cara Membaca Grafik Beban Kerja (Workload)'),
+          duration: tMsg('4 min read', 'Baca 4 menit'),
+          description: tMsg(
+            'Understand team capacity percentages and identify overloaded members before burnout occurs.',
+            'Memahami persentase kapasitas tim dan mengidentifikasi anggota yang mengalami kelebihan beban sebelum burnout terjadi.'
+          )
         },
         {
           topic: 'tasks',
-          title: 'Strategi Pembagian Tugas yang Adil',
-          duration: 'Baca 5 menit',
-          description: 'Metodologi manajemen beban kerja terbaik menggunakan Alurku untuk menjaga tim tetap produktif dan bahagia.'
+          title: tMsg('Strategies for Fair Task Distribution', 'Strategi Pembagian Tugas yang Adil'),
+          duration: tMsg('5 min read', 'Baca 5 menit'),
+          description: tMsg(
+            'Best practices for workload management using alurku. to keep teams productive and happy.',
+            'Metodologi manajemen beban kerja terbaik menggunakan alurku. untuk menjaga tim tetap produktif dan bahagia.'
+          )
         }
       ]
     }
@@ -73,10 +99,13 @@ export default function LandingGuidePage() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-20 reveal-on-scroll">
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[#111E38] dark:text-white mb-6">
-            Pusat Panduan & Dokumentasi Alurku
+            {tMsg('alurku. Help & Documentation Center', 'Pusat Panduan & Dokumentasi alurku.')}
           </h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-            Temukan panduan langkah demi langkah, tips produktivitas, dan dokumentasi bantuan lengkap untuk memaksimalkan penggunaan Alurku.
+            {tMsg(
+              'Find step-by-step guides, productivity tips, and comprehensive help documentation to maximize your use of alurku.',
+              'Temukan panduan langkah demi langkah, tips produktivitas, dan dokumentasi bantuan lengkap untuk memaksimalkan penggunaan alurku.'
+            )}
           </p>
         </div>
 
@@ -114,7 +143,7 @@ export default function LandingGuidePage() {
                       }}
                       className="text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-yellow-500 py-2 px-4 rounded-xl text-center mt-6 flex items-center justify-center gap-2 transition-colors w-max"
                     >
-                      Baca selengkapnya <span className="text-lg leading-none">→</span>
+                      {tMsg('Read more', 'Baca selengkapnya')} <span className="text-lg leading-none">→</span>
                     </a>
                   </div>
                 ))}
