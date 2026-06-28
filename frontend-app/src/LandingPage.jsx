@@ -16,6 +16,8 @@ import LandingPricingPage from './components/LandingPage/LandingPricingPage';
 import LandingGuidePage from './components/LandingPage/LandingGuidePage';
 import LandingAboutPage from './components/LandingPage/LandingAboutPage';
 import LandingDocumentationPage from './components/LandingPage/LandingDocumentationPage';
+import LandingArticlePage from './components/LandingPage/LandingArticlePage';
+
 
 export default function LandingPage({
   showAuthForm,
@@ -57,6 +59,7 @@ export default function LandingPage({
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isSupportAlertOpen, setIsSupportAlertOpen] = useState(false);
   const getTabFromPath = (path) => {
+    if (path.startsWith('/artikel')) return 'article';
     switch (path) {
       case '/fitur': return 'features';
       case '/harga': return 'pricing';
@@ -74,6 +77,7 @@ export default function LandingPage({
       case 'guide': return '/panduan';
       case 'about': return '/tentang';
       case 'documentation': return '/dokumentasi';
+      case 'article': return window.location.pathname;
       default: return '/';
     }
   };
@@ -222,6 +226,8 @@ export default function LandingPage({
           {currentTab === 'guide' && <LandingGuidePage language={language} />}
           {currentTab === 'about' && <LandingAboutPage language={language} />}
           {currentTab === 'documentation' && <LandingDocumentationPage language={language} />}
+          {currentTab === 'article' && <LandingArticlePage language={language} setCurrentTab={setCurrentTab} />}
+
 
           <LandingFooter
             setIsSupportAlertOpen={setIsSupportAlertOpen}
