@@ -66,16 +66,24 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Get Started', 'Mulai'),
       title: tMsg('Workspace & Projects', 'Ruang Kerja & Proyek'),
       desc: tMsg(
-        'Alurku is organized into secure, isolated project workspaces. Think of a Project as a folder that contains specific campaigns, tasks, and authorized team members.',
-        'Alurku diatur dalam ruang kerja proyek yang aman dan terisolasi. Pikirkan Proyek sebagai folder yang berisi kampanye spesifik, tugas, dan anggota tim yang berwenang.'
+        'Alurku is structured into Workspaces, Projects, and Tasks. Learn the difference between these concepts and how to organize your team workflow effectively.',
+        'Alurku disusun berdasarkan hirarki Ruang Kerja (Workspace), Proyek, dan Tugas. Pelajari perbedaan konsep ini untuk mengelola alur kerja tim Anda secara efektif.'
       ),
       sections: [
+        {
+          id: 'hierarchy',
+          title: tMsg('Understanding Workspaces, Projects, and Tasks', 'Memahami Ruang Kerja, Proyek, dan Tugas'),
+          content: tMsg(
+            "To keep your workflow organized, Alurku uses a three-tier hierarchy:<br /><br />1. **Workspace (Ruang Kerja)**: The highest organizational tier. A Workspace represents an entire organization or business department (e.g., 'Marketing Dept' or 'Personal'). Settings, billing, and team members are managed globally at the Workspace level. Workspaces are completely isolated from each other.<br />2. **Project (Proyek)**: Individual project boards within a Workspace (e.g., 'Website Redesign' or 'Q4 Campaign'). Each Project contains its own Kanban board, Gantt timeline, calendar, and team chat. Team members must be invited to a project to access its board.<br />3. **Task (Tugas)**: The smallest actionable work unit within a Project (e.g., 'Design homepage layout'). Tasks belong to a Project and can have subtasks, assignees, deadlines, and a comments feed.",
+            "Untuk menjaga alur kerja Anda tetap teratur, Alurku menggunakan hirarki tiga tingkat:<br /><br />1. **Workspace (Ruang Kerja)**: Tingkat organisasi tertinggi. Ruang Kerja mewakili seluruh organisasi atau departemen bisnis (misalnya, 'Dep. Pemasaran' atau 'Pribadi'). Pengaturan, tagihan, dan keanggotaan dikelola secara global di tingkat Ruang Kerja. Setiap Ruang Kerja terisolasi secara total satu sama lain.<br />2. **Project (Proyek)**: Papan proyek individu di dalam Ruang Kerja (misalnya, 'Desain Ulang Website' atau 'Kampanye Q4'). Setiap Proyek memiliki papan Kanban, lini masa Gantt, kalender, dan obrolan timnya sendiri. Anggota tim harus diundang ke proyek untuk dapat mengakses papannya.<br />3. **Task (Tugas)**: Unit kerja terkecil yang dapat ditindaklanjuti di dalam Proyek (misalnya, 'Desain tata letak beranda'). Tugas beraliansi dengan sebuah Proyek dan dapat memiliki sub-tugas, penanggung jawab, tenggat waktu, serta kolom komentar."
+          ),
+        },
         {
           id: 'creating-projects',
           title: tMsg('Creating Projects', 'Membuat Proyek'),
           content: tMsg(
-            "On the sidebar, click the 'New Project' button. You can choose to create a **Team Workspace** for collaboration or a **Private Workspace** (locked exclusively to you). The system prevents duplicate project names to keep your workspace organized. As the creator, you become the Project Owner.",
-            "Di bilah sisi (sidebar), klik tombol 'Proyek Baru'. Anda dapat memilih untuk membuat **Ruang Kerja Tim** untuk kolaborasi atau **Ruang Kerja Pribadi** (terkunci khusus untuk Anda). Sistem mencegah duplikasi nama proyek untuk menjaga ruang kerja teratur. Sebagai pembuat, Anda menjadi Pemilik Proyek."
+            "On the sidebar, click the 'New Project' button. You can choose to create a **Team Project** for team collaboration or a **Private Project** (locked exclusively to you). It is highly recommended to use unique project names within your list to keep your dashboard organized. As the creator, you automatically become the Project Owner.",
+            "Di bilah sisi (sidebar), klik tombol 'Proyek Baru'. Anda dapat memilih untuk membuat **Proyek Tim** untuk kolaborasi tim atau **Proyek Pribadi** (terkunci khusus untuk Anda). Sangat disarankan untuk menggunakan nama proyek yang unik dalam daftar Anda agar dasbor tetap teratur. Sebagai pembuat, Anda otomatis menjadi Pemilik Proyek."
           ),
         },
         {
