@@ -15,6 +15,7 @@ import LandingFeaturesPage from './components/LandingPage/LandingFeaturesPage';
 import LandingPricingPage from './components/LandingPage/LandingPricingPage';
 import LandingGuidePage from './components/LandingPage/LandingGuidePage';
 import LandingAboutPage from './components/LandingPage/LandingAboutPage';
+import LandingDocumentationPage from './components/LandingPage/LandingDocumentationPage';
 
 export default function LandingPage({
   showAuthForm,
@@ -61,6 +62,7 @@ export default function LandingPage({
       case '/harga': return 'pricing';
       case '/panduan': return 'guide';
       case '/tentang': return 'about';
+      case '/dokumentasi': return 'documentation';
       default: return 'home';
     }
   };
@@ -71,6 +73,7 @@ export default function LandingPage({
       case 'pricing': return '/harga';
       case 'guide': return '/panduan';
       case 'about': return '/tentang';
+      case 'documentation': return '/dokumentasi';
       default: return '/';
     }
   };
@@ -136,7 +139,7 @@ export default function LandingPage({
 
   return (
     <div className={!showAuthForm 
-      ? "bg-white dark:bg-black text-black dark:text-white font-sans transition-colors duration-200 overflow-x-hidden" 
+      ? "bg-white dark:bg-black text-black dark:text-white font-sans transition-colors duration-200 overflow-x-clip" 
       : "min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4 transition-colors duration-200 relative selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black"
     }>
       {!showAuthForm ? (
@@ -214,10 +217,11 @@ export default function LandingPage({
             </>
           )}
 
-          {currentTab === 'features' && <LandingFeaturesPage />}
-          {currentTab === 'pricing' && <LandingPricingPage />}
-          {currentTab === 'guide' && <LandingGuidePage />}
-          {currentTab === 'about' && <LandingAboutPage />}
+          {currentTab === 'features' && <LandingFeaturesPage language={language} />}
+          {currentTab === 'pricing' && <LandingPricingPage language={language} />}
+          {currentTab === 'guide' && <LandingGuidePage language={language} />}
+          {currentTab === 'about' && <LandingAboutPage language={language} />}
+          {currentTab === 'documentation' && <LandingDocumentationPage language={language} />}
 
           <LandingFooter
             setIsSupportAlertOpen={setIsSupportAlertOpen}

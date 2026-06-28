@@ -6,16 +6,19 @@ export default function LandingGuidePage() {
       category: 'Panduan Memulai',
       articles: [
         {
+          topic: 'workspace',
           title: 'Cara Membuat Proyek Pertama Anda',
           duration: 'Baca 3 menit',
           description: 'Langkah mudah untuk membuat papan proyek baru, menambahkan anggota tim, dan mengimpor tugas dari spreadsheet.'
         },
         {
+          topic: 'tasks',
           title: 'Memahami Kolom Status & Prioritas',
           duration: 'Baca 5 menit',
           description: 'Pelajari cara terbaik untuk mengatur kolom alur kerja Kanban dan menetapkan tingkat prioritas tugas yang tepat.'
         },
         {
+          topic: 'workspace',
           title: 'Mengundang Anggota Tim ke Papan Proyek',
           duration: 'Baca 2 menit',
           description: 'Kolaborasi menjadi mudah. Panduan singkat tentang cara membagikan tautan proyek dan mengatur hak akses anggota tim.'
@@ -26,16 +29,19 @@ export default function LandingGuidePage() {
       category: 'Bantuan Asisten AI',
       articles: [
         {
+          topic: 'overview',
           title: 'Menggunakan Fitur Asisten Perencana Otomatis',
           duration: 'Baca 6 menit',
           description: 'Bagaimana AI memecah tugas dan memprediksi durasinya. Tips menuliskan draf kasar agar hasil AI lebih akurat.'
         },
         {
+          topic: 'tasks',
           title: 'Meringkas Hasil Rapat ke Daftar Tugas',
           duration: 'Baca 4 menit',
           description: 'Panduan merekam poin rapat Anda secara real-time dan membiarkan AI Alurku memecahnya menjadi sub-tugas secara otomatis.'
         },
         {
+          topic: 'tasks',
           title: 'Menyematkan Konteks Proyek di Kolom Komentar',
           duration: 'Baca 3 menit',
           description: 'Cara memanggil AI dengan tag di thread tugas untuk menjawab pertanyaan teknis berdasarkan deskripsi dan lampiran.'
@@ -46,11 +52,13 @@ export default function LandingGuidePage() {
       category: 'Manajemen Beban Kerja',
       articles: [
         {
+          topic: 'overview',
           title: 'Cara Membaca Grafik Beban Kerja (Workload)',
           duration: 'Baca 4 menit',
           description: 'Memahami persentase kapasitas tim dan mengidentifikasi anggota yang mengalami kelebihan beban sebelum burnout terjadi.'
         },
         {
+          topic: 'tasks',
           title: 'Strategi Pembagian Tugas yang Adil',
           duration: 'Baca 5 menit',
           description: 'Metodologi manajemen beban kerja terbaik menggunakan Alurku untuk menjaga tim tetap produktif dan bahagia.'
@@ -96,9 +104,18 @@ export default function LandingGuidePage() {
                         {art.description}
                       </p>
                     </div>
-                    <button className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-left mt-6 flex items-center gap-1">
-                      Baca artikel selengkapnya <span>→</span>
-                    </button>
+                    <a 
+                      href={`/dokumentasi?topic=${art.topic}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.history.pushState({}, '', `/dokumentasi?topic=${art.topic}`);
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                        window.scrollTo({ top: 0 });
+                      }}
+                      className="text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-yellow-500 py-2 px-4 rounded-xl text-center mt-6 flex items-center justify-center gap-2 transition-colors w-max"
+                    >
+                      Baca selengkapnya <span className="text-lg leading-none">→</span>
+                    </a>
                   </div>
                 ))}
               </div>
