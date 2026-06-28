@@ -402,6 +402,8 @@ def check_board_access(db: Session, board_id: int, username: str):
         return False
     if board.owner_username == username:
         return True
+    if board.name == "System Feedback" and is_user_superadmin(db, username):
+        return True
     if getattr(board, "is_private", 0) == 1:
         return False
     member = (

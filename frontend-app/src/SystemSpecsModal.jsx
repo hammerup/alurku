@@ -6,7 +6,7 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
   const tMsg = (en, id) => (language === 'id' ? id : en);
   return (
     <div
-      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-[100] overflow-y-auto transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-100 overflow-y-auto transition-opacity duration-200 ${
         isClosing ? 'mac-exit opacity-0' : 'mac-animate opacity-100'
       }`}
     >
@@ -47,7 +47,7 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
             </div>
 
             <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[600px]">
+              <table className="w-full text-left border-collapse min-w-150">
                 <thead>
                   <tr className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
                     <th className="p-4 sm:p-6 text-[10px] sm:text-xs font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-400 w-1/3">

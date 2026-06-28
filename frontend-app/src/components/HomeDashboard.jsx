@@ -61,7 +61,7 @@ export default function HomeDashboard() {
   }, []);
 
   const openTaskInGlobal = (task) => {
-    setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+    setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
     setShowMyTasks(false);
     setShowOverdueOnly(false);
     setTimeout(() => {
@@ -267,7 +267,9 @@ export default function HomeDashboard() {
           <div className="absolute top-0 left-0 w-1.5 h-full bg-black dark:bg-white"></div>
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-              <span className="text-xl">✨</span>
+              <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+              </svg>
             </div>
             <div className="flex-1">
               <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between uppercase tracking-widest w-full">
@@ -308,61 +310,68 @@ export default function HomeDashboard() {
         </div>
 
         {/* My Capacity Meter */}
-        {myActiveWorkloadEtc > 0 && (
-          <div className="tour-my-capacity bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-                <span>⏳</span> {tMsg('My Capacity', 'Kapasitas Saya')}
-              </h3>
-              {(isWeeklyOverload || isMonthlyOverload) && (
-                <div className="flex items-center gap-2">
-                  {isWeeklyOverload && (
-                    <span className="text-[9px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-full border border-red-200 dark:border-red-800/50">
-                      ⚠️ {tMsg('Weekly Overload', 'Beban Mingguan Berlebih')}
-                    </span>
-                  )}
-                  {isMonthlyOverload && (
-                    <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
-                      ⚠️ {tMsg('Monthly Overload', 'Beban Bulanan Berlebih')}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
-                {Math.round(myActiveWorkloadEtc * 10) / 10}<span className="text-lg">h</span>
-              </div>
-              <div className="flex-1">
-                <div className="w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-2.5">
-                  <div 
-                    className="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" 
-                    style={{ width: `${myTotalWorkloadEtc > 0 ? (myWorkload.done_etc / myTotalWorkloadEtc) * 100 : 0}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium flex justify-between">
-                  <span>{tMsg('Remaining Work', 'Sisa Pekerjaan')}</span>
-                  <span>
-                    {Math.round(myWorkload.done_etc * 10) / 10}h / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Done', 'Selesai')}
+        <div className="tour-my-capacity bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
+              <svg className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              {tMsg('My Capacity', 'Kapasitas Saya')}
+            </h3>
+            {(isWeeklyOverload || isMonthlyOverload) && (
+              <div className="flex items-center gap-2">
+                {isWeeklyOverload && (
+                  <span className="text-[9px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-full border border-red-200 dark:border-red-800/50">
+                    ⚠️ {tMsg('Weekly Overload', 'Beban Mingguan Berlebih')}
                   </span>
-                </div>
+                )}
+                {isMonthlyOverload && (
+                  <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
+                    ⚠️ {tMsg('Monthly Overload', 'Beban Bulanan Berlebih')}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+              {Math.round(myActiveWorkloadEtc * 10) / 10}<span className="text-lg">h</span>
+            </div>
+            <div className="flex-1">
+              <div className="w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-2.5">
+                <div 
+                  className="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" 
+                  style={{ width: `${myTotalWorkloadEtc > 0 ? (myWorkload.done_etc / myTotalWorkloadEtc) * 100 : 0}%` }}
+                ></div>
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium flex justify-between">
+                <span>{tMsg('Remaining Work', 'Sisa Pekerjaan')}</span>
+                <span>
+                  {Math.round(myWorkload.done_etc * 10) / 10}h / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Done', 'Selesai')}
+                </span>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Quick Stats Grid */}
         <div className="tour-quick-stats grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(true);
               setShowOverdueOnly(false);
             }}
             className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm hover:shadow-lg hover:border-black dark:hover:border-white transition-all cursor-pointer group flex flex-col justify-between"
           >
             <div>
-              <div className="text-2xl mb-3 group-hover:scale-110 transition-transform origin-left">📋</div>
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform origin-left">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                </svg>
+              </div>
               <div className="text-4xl font-black text-black dark:text-white mb-1">
                 {isLoading ? (
                   <div className="w-12 h-10 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse my-0.5"></div>
@@ -376,7 +385,11 @@ export default function HomeDashboard() {
           
           <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
             <div>
-              <div className="text-2xl mb-3">📂</div>
+              <div className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
               <div className="text-4xl font-black text-black dark:text-white mb-1">
                 {isLoading ? (
                   <div className="w-12 h-10 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse my-0.5"></div>
@@ -390,7 +403,7 @@ export default function HomeDashboard() {
 
           <div 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
               setShowOverdueOnly(true);
               setShowMyTasks(false);
             }}
@@ -398,7 +411,13 @@ export default function HomeDashboard() {
           >
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/10 rounded-full blur-xl"></div>
             <div className="relative z-10">
-              <div className="text-2xl mb-3 relative z-10">⚠️</div>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-500 flex items-center justify-center mb-3 relative z-10">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
               <div className="text-4xl font-black text-amber-600 dark:text-amber-500 mb-1 relative z-10">
                 {isLoading ? (
                   <div className="w-12 h-10 bg-amber-200/50 dark:bg-amber-900/20 rounded animate-pulse my-0.5"></div>
@@ -413,7 +432,13 @@ export default function HomeDashboard() {
           <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-red-100 dark:border-red-900/30 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col justify-between">
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/10 rounded-full blur-xl"></div>
             <div className="relative z-10">
-              <div className="text-2xl mb-3 relative z-10">🚨</div>
+              <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-500 flex items-center justify-center mb-3 relative z-10">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
               <div className="text-4xl font-black text-red-600 dark:text-red-500 mb-1 relative z-10">
                 {isLoading ? (
                   <div className="w-12 h-10 bg-red-200/50 dark:bg-red-900/20 rounded animate-pulse my-0.5"></div>
@@ -431,7 +456,10 @@ export default function HomeDashboard() {
           {/* Top Queue Tasks */}
           <div className="tour-top-queue bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col h-full min-h-75">
             <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <span>⚡</span> {tMsg('My Top Queue', 'Antrean Teratas Saya')}
+              <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              {tMsg('My Top Queue', 'Antrean Teratas Saya')}
             </h3>
             <div className="flex-1 space-y-1 pr-2">
               {topQueueTasks.length > 0 ? topQueueTasks.map((task, index) => (

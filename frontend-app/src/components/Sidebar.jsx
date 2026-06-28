@@ -242,8 +242,11 @@ export default function Sidebar() {
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <span className={`text-sm truncate font-medium ${isActive ? 'font-bold' : ''}`}>{board.name}</span>
               {!!board.is_private && (
-                <span className="text-[10px] opacity-60 shrink-0" title={tMsg('Private Project', 'Proyek Privat')}>
-                  🔒
+                <span className="opacity-60 shrink-0" title={tMsg('Private Project', 'Proyek Privat')}>
+                  <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
                 </span>
               )}
             </div>
@@ -263,8 +266,8 @@ export default function Sidebar() {
                 }}
                 className={`p-1 rounded transition-opacity ${
                   favoriteBoards.includes(board.id)
-                    ? 'text-amber-500 opacity-100'
-                    : 'text-neutral-300 hover:text-amber-400 opacity-0 group-hover:opacity-100'
+                    ? 'opacity-100'
+                    : 'opacity-0 group-hover:opacity-100'
                 }`}
                 title={
                   favoriteBoards.includes(board.id)
@@ -272,7 +275,15 @@ export default function Sidebar() {
                     : tMsg('Pin Project', 'Sematkan Proyek')
                 }
               >
-                ★
+                {favoriteBoards.includes(board.id) ? (
+                  <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-neutral-300 hover:text-amber-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                )}
               </button>
               {(isSuperAdmin || board.owner_username === currentUser) && (
                 <button
@@ -369,7 +380,7 @@ export default function Sidebar() {
 
         {/* Workspace Switcher */}
         {!isCollapsed && workspaces && workspaces.length > 0 && (
-          <div className="px-4 pt-4 pb-1 shrink-0 relative z-50">
+          <div className="px-4 pt-4 pb-1 shrink-0 relative z-60">
             <button
               onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
               className="w-full flex items-center justify-between px-3 py-2 bg-slate-50/50 dark:bg-neutral-900 border border-slate-200/50 dark:border-neutral-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-left"
@@ -388,7 +399,7 @@ export default function Sidebar() {
             </button>
 
             {isWorkspaceMenuOpen && (
-              <div className="absolute left-4 right-4 mt-1.5 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 p-1.5">
+              <div className="absolute left-4 right-4 mt-1.5 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5">
                 <div className="max-h-48 overflow-y-auto space-y-0.5">
                   {workspaces.map((ws) => (
                     <button
@@ -454,7 +465,10 @@ export default function Sidebar() {
           <div className="px-4 pt-5 pb-2 shrink-0 relative">
             <div className="relative mb-3 group z-50">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors">
-                🔍
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </span>
               <input
                 type="text"
@@ -472,9 +486,12 @@ export default function Sidebar() {
                     setGlobalSearchQuery('');
                     closeGlobalSearch();
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white font-bold text-xs"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white flex items-center justify-center"
                 >
-                  ✖
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               )}
 
@@ -509,7 +526,9 @@ export default function Sidebar() {
                                 }}
                                 className="px-5 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-900 cursor-pointer border-b border-neutral-100 dark:border-neutral-800/50 transition-colors flex items-center gap-3"
                               >
-                                <span className="text-xl shrink-0">📂</span>
+                                <svg className="w-5 h-5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                                </svg>
                                 <div className="flex flex-col min-w-0">
                                   <span className="text-sm font-bold text-black dark:text-white truncate">
                                     <HighlightText text={b.name} query={globalSearchQuery} />
@@ -550,7 +569,7 @@ export default function Sidebar() {
                                 </div>
                                 <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-medium text-neutral-500">
                                   <span
-                                    className="truncate text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 hover:underline cursor-pointer transition-colors max-w-30"
+                                    className="truncate text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 hover:underline cursor-pointer transition-colors max-w-30 inline-flex items-center gap-1"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       const board = boards.find((b) => b.id === t.board_id);
@@ -561,7 +580,10 @@ export default function Sidebar() {
                                       }
                                     }}
                                   >
-                                    📂 <HighlightText text={t.board_name} query={globalSearchQuery} />
+                                    <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                                    </svg>
+                                    <HighlightText text={t.board_name} query={globalSearchQuery} />
                                   </span>
                                   {t.category && (
                                     <>
@@ -575,15 +597,25 @@ export default function Sidebar() {
                                     <>
                                       <span className="text-neutral-300 dark:text-neutral-700">&bull;</span>
                                       <span className="truncate flex items-center gap-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
-                                        👤 <HighlightText text={t.requester} query={globalSearchQuery} />
+                                        <svg className="w-3 h-3 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                          <circle cx="12" cy="7" r="4" />
+                                        </svg>
+                                        <HighlightText text={t.requester} query={globalSearchQuery} />
                                       </span>
                                     </>
                                   )}
                                   {t.deadline && (
                                     <>
                                       <span className="text-neutral-300 dark:text-neutral-700">&bull;</span>
-                                      <span className="text-neutral-500 dark:text-slate-400 text-[10px] font-medium">
-                                        📅 {formatDateMMM(t.deadline)}
+                                      <span className="text-neutral-500 dark:text-slate-400 text-[10px] font-medium flex items-center gap-1">
+                                        <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                          <line x1="16" y1="2" x2="16" y2="6" />
+                                          <line x1="8" y1="2" x2="8" y2="6" />
+                                          <line x1="3" y1="10" x2="21" y2="10" />
+                                        </svg>
+                                        {formatDateMMM(t.deadline)}
                                       </span>
                                     </>
                                   )}
@@ -665,7 +697,7 @@ export default function Sidebar() {
               onClick={() => {
                 setSelectedBoard({
                   id: 'global',
-                  name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`,
+                  name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`,
                   owner_username: currentUser,
                   role: 'owner',
                   isVirtual: true,
@@ -680,7 +712,13 @@ export default function Sidebar() {
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('See the Big Picture', 'Lihat Gambaran Besar')}
             >
-              <div className="w-6 h-6 flex items-center justify-center text-lg">🌍</div>
+              <div className="w-6 h-6 flex items-center justify-center">
+                <svg className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+              </div>
               {!isCollapsed && (
                 <span className="text-sm truncate">{tMsg('See the Big Picture', 'Lihat Gambaran Besar')}</span>
               )}
@@ -702,7 +740,12 @@ export default function Sidebar() {
                 } ${isCollapsed ? 'justify-center' : ''}`}
                 title={tMsg('My To-Do List', 'Daftar Tugas Saya')}
               >
-                <div className="w-6 h-6 flex items-center justify-center text-lg">📝</div>
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                  </svg>
+                </div>
                 {!isCollapsed && <span className="text-sm truncate">{tMsg('My To-Do List', 'Daftar Tugas Saya')}</span>}
               </button>
             </div>
@@ -766,7 +809,9 @@ export default function Sidebar() {
               className="flex-1 flex justify-center items-center py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors relative"
               title={tMsg('Chat', 'Obrolan')}
             >
-              <span className="text-sm">💬</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
               {totalUnreadChats > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-white dark:border-black scale-90 min-w-4 text-center leading-none">
                   {totalUnreadChats}
@@ -781,14 +826,21 @@ export default function Sidebar() {
               className="flex-1 flex justify-center items-center py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
               title={tMsg('Get All My Data', 'Dapatkan Semua Data')}
             >
-              <span className="text-sm">🌍</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
             </button>
             <button
               onClick={() => setIsNotifOpen(!isNotifOpen)}
               className="flex-1 flex justify-center items-center py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors relative"
               title={tMsg('Notifications', 'Notifikasi')}
             >
-              <span className="text-sm">🔔</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-white dark:border-black scale-90 min-w-4 text-center leading-none">
                   {unreadCount}
@@ -800,7 +852,10 @@ export default function Sidebar() {
               className="flex-1 flex justify-center items-center py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
               title={tMsg('Settings', 'Pengaturan')}
             >
-              <span className="text-sm">⚙️</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
             </button>
           </div>
 

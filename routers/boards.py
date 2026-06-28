@@ -74,6 +74,18 @@ def get_boards(
         if (b := db.query(Board).filter(Board.id == m.board_id, Board.workspace_id == workspace_id).first()) is not None
     ]
 
+    # Auto-access System Feedback board for superadmins
+    is_sa = db.query(User).filter(User.username == current_user, User.is_superadmin == 1).first()
+    if is_sa:
+        feedback_board = db.query(Board).filter(Board.owner_username == "admin", Board.name == "System Feedback").first()
+        if feedback_board:
+            if feedback_board.owner_username == current_user:
+                if not any(b.id == feedback_board.id for b in owned):
+                    owned.append(feedback_board)
+            else:
+                if not any(b.id == feedback_board.id for b in shared):
+                    shared.append(feedback_board)
+
     leave_dates = get_leave_dates(db)
     personal_leaves_db = (
         db.query(LeaveRecord.leave_date, LeaveRecord.username)
