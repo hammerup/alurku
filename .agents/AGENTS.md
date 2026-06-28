@@ -103,3 +103,16 @@ When designing features, translate system capabilities into user-centric benefit
   - **notion.com** (Global benchmark for customizable workflows, wikis, and doc databases).
 - **Core Objective:** To deliver and evolve features as powerful, customizable, and seamless as **notion.com**, while maintaining alurku.'s identity as a clean, automated, and workload-aware task assistant.
 
+---
+
+## 8. SEO & Crawler Compliance Standards
+Every public landing page (such as Features, Pricing, Guides, About Us, and Documentation/White Paper pages) must strictly implement the following SEO features:
+- **Dynamic Meta Headers:** Page-specific, unique, non-duplicate `<title>` and `<meta name="description">` must be injected on page mount.
+- **Structured Data:** Appropriate JSON-LD Schema markup (e.g. `WebPage`, `AboutPage`, `TechArticle`) must be registered in `<head>`.
+- **Hreflang Tags:** Alternate links for regional targeting must be provided (specifically targeting Indonesia region with both ID and EN versions):
+  - `id-ID` for Indonesian language targeting.
+  - `en-ID` for English language targeting.
+- **Canonical Self-References:** A `<link rel="canonical" href="...">` tag must be set pointing directly to the self-representative page path.
+- **Cleanup:** All injected header elements (LD-JSON script tags, hreflangs, canonical links) must be cleanly removed from DOM when the user navigates away or the page unmounts to prevent DOM bloat.
+
+

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useCloseAnimation, HighlightText } from '../../Utils';
+import { useSEO } from '../../hooks/useSEO';
 
 // Helper untuk menghasilkan cuplikan pencarian (snippet)
 const generateSnippet = (text, query) => {
@@ -811,6 +812,25 @@ const getDocData = (tMsg, isSuperAdmin) => {
 export default function LandingDocumentationPage({ language }) {
   const tMsgStr = (en, id) => (language === 'id' ? id : en);
   const tMsg = (en, id) => tMsgStr(en, id); // Teks murni untuk data
+
+  useSEO({
+    title: tMsg('Technical Documentation & White Paper', 'Dokumentasi Teknis & White Paper'),
+    description: tMsg(
+      'Explore the alurku. Platform White Paper. Understand our workspaces hierarchy, automated AI tasks breakdown, workload analytics, and security specs.',
+      'Pelajari White Paper Platform alurku. Pahami hirarki workspace, pemecahan tugas otomatis AI, analitik beban kerja, dan spesifikasi keamanan.'
+    ),
+    path: '/dokumentasi',
+    schemaData: {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": tMsg("Platform White Paper", "White Paper Platform"),
+      "description": tMsg("Comprehensive technical documentation for alurku.", "Dokumentasi teknis komprehensif untuk alurku."),
+      "publisher": {
+        "@type": "Organization",
+        "name": "alurku."
+      }
+    }
+  });
 
   const docData = useMemo(() => getDocData(tMsg, false), [language]);
   const [activePageId, setActivePageId] = useState(() => {

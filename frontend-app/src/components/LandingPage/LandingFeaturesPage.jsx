@@ -1,7 +1,26 @@
 import React from 'react';
+import { useSEO } from '../../hooks/useSEO';
 
 export default function LandingFeaturesPage({ language }) {
   const tMsg = (en, id) => (language === 'id' ? id : en);
+
+  useSEO({
+    title: tMsg('Key Features', 'Fitur Utama'),
+    description: tMsg(
+      'Discover alurku.\'s smart features: Automated AI planning, workload balancing, and seamless visual task management.',
+      'Jelajahi fitur cerdas alurku.: Perencana AI otomatis, keseimbangan beban kerja, dan manajemen tugas visual yang mulus.'
+    ),
+    path: '/fitur',
+    schemaData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": tMsg("alurku. Features", "Fitur alurku."),
+      "description": tMsg(
+        "Complete overview of alurku.\'s features including AI planning and workload analytics.",
+        "Ringkasan lengkap fitur-fitur alurku. termasuk perencanaan AI dan analitik beban kerja."
+      )
+    }
+  });
 
   const features = [
     {

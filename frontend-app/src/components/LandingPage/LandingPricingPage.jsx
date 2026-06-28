@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
+import { useSEO } from '../../hooks/useSEO';
 
 export default function LandingPricingPage({ language }) {
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' or 'annual'
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
+
+  useSEO({
+    title: tMsg('Pricing Plans', 'Daftar Harga & Paket'),
+    description: tMsg(
+      'Choose the best plan for your team. From Free tier to Pro and Business packages, alurku. offers scalable workload management.',
+      'Pilih paket terbaik untuk tim Anda. Dari tier Gratis hingga paket Pro dan Bisnis, alurku. menawarkan manajemen beban kerja yang terukur.'
+    ),
+    path: '/harga',
+    schemaData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": tMsg("alurku. Pricing Plans", "Daftar Paket Harga alurku."),
+      "description": tMsg(
+        "Compare pricing tiers and features of alurku. to find the right fit for your organization.",
+        "Bandingkan paket harga dan fitur alurku. untuk menemukan paket yang tepat bagi organisasi Anda."
+      )
+    }
+  });
 
   const pricingTiers = [
     {

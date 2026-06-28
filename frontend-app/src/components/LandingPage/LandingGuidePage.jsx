@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSEO } from '../../hooks/useSEO';
 
 export default function LandingGuidePage({ language }) {
   const [guides, setGuides] = useState([]);
@@ -7,6 +8,24 @@ export default function LandingGuidePage({ language }) {
   const [error, setError] = useState(null);
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
+
+  useSEO({
+    title: tMsg('Help & Guides', 'Pusat Panduan & Bantuan'),
+    description: tMsg(
+      'Find step-by-step guides, productivity tips, and comprehensive help documentation to maximize your use of alurku.',
+      'Temukan panduan langkah demi langkah, tips produktivitas, dan dokumentasi bantuan lengkap untuk memaksimalkan penggunaan alurku.'
+    ),
+    path: '/panduan',
+    schemaData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": tMsg("alurku. Guide Center", "Pusat Panduan alurku."),
+      "description": tMsg(
+        "A resource hub containing tutorial articles and user guides for alurku.",
+        "Pusat sumber daya yang berisi artikel tutorial dan panduan pengguna untuk alurku."
+      )
+    }
+  });
 
   // Fetch articles from the database on mount/language switch
   useEffect(() => {
