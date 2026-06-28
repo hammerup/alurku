@@ -47,8 +47,17 @@ def get_article_detail(category_slug: str, slug: str, db: Session = Depends(get_
         .first()
     )
     if not article:
-        raise HTTPException(status_code=404, detail="Article not found")
+      raise HTTPException(status_code=404, detail="Article not found")
         
+    # Query translations map
+    translations_query = db.query(Article).filter(Article.translation_key == article.translation_key).all()
+    translations_map = {}
+    for trans in translations_query:
+        translations_map[trans.language] = {
+            "slug": trans.slug,
+            "category_slug": trans.category_slug
+        }
+
     return {
         "id": article.id,
         "title": article.title,
@@ -60,5 +69,7 @@ def get_article_detail(category_slug: str, slug: str, db: Session = Depends(get_
         "content": article.content,
         "image_url": article.image_url,
         "language": article.language,
+        "translation_key": article.translation_key,
+        "translations": translations_map,
         "created_at": article.created_at.strftime("%Y-%m-%d %H:%M:%S") if article.created_at else None,
     }

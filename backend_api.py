@@ -43,6 +43,7 @@ from database import (
     Notification,
     DirectMessage,
     SessionLocal,
+    Article,
 )
 from utils import calculate_priority, create_notification, parse_raw_date, get_assignees
 from fastapi.encoders import ENCODERS_BY_TYPE
@@ -52,6 +53,45 @@ ENCODERS_BY_TYPE[datetime.datetime] = lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S"
 ENCODERS_BY_TYPE[datetime.date] = lambda d: d.strftime("%Y-%m-%d")
 
 app = FastAPI(title="Alurku API")
+
+from fastapi.responses import PlainTextResponse
+
+@app.get("/llm.txt", response_class=PlainTextResponse)
+def get_llm_txt(db: Session = Depends(get_db)):
+    """
+    Returns all system guide articles and documentation in a single clean text file
+    optimized for LLMs (Large Language Models) crawlers and context injectors.
+    """
+    articles = db.query(Article).order_by(Article.language.asc(), Article.id.asc()).all()
+    
+    lines = []
+    lines.append("# alurku. Platform Guides & Documentation Reference")
+    lines.append("This file contains the structured reference documentation and user guides for alurku., ")
+    lines.append("compiled in a clean markdown format for Large Language Models (LLMs) consumption.")
+    lines.append("\\n" + "="*50 + "\\n")
+    
+    current_lang = ""
+    for art in articles:
+        if art.language != current_lang:
+            current_lang = art.language
+            lines.append(f"\\n# LANGUAGE: {current_lang.upper()}\\n")
+            
+        lines.append(f"## [{art.category}] {art.title}")
+        lines.append(f"**Slug**: {art.slug}")
+        lines.append(f"**Description**: {art.description}")
+        lines.append("\\n**Content**:")
+        # Convert simple HTML from database to clean markdown-like text
+        content_md = art.content
+        content_md = content_md.replace("<p>", "").replace("</p>", "\\n\\n")
+        content_md = content_md.replace("<h2>", "### ").replace("</h2>", "\\n\\n")
+        content_md = content_md.replace("<strong>", "**").replace("</strong>", "**")
+        content_md = content_md.replace("<ul>", "").replace("</ul>", "\\n")
+        content_md = content_md.replace("<li>", "* ").replace("</li>", "\\n")
+        content_md = content_md.replace("<em>", "*").replace("</em>", "*")
+        lines.append(content_md.strip())
+        lines.append("\\n" + "-"*40 + "\\n")
+        
+    return "\\n".join(lines)
 
 # Jalankan inisialisasi DB awal (tanpa alter migrations manual)
 setup_db()
