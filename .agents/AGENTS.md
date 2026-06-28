@@ -93,3 +93,13 @@ When designing features, translate system capabilities into user-centric benefit
 - **Accent Contrast:** All CTA buttons must use the Flat Yellow (`#FACC15`) accent color with Deep Navy (`#111E38`) text for maximum contrast on the Light Theme background. The text must be action-oriented and inviting.
 - **Primary CTA (Hero Section):** `"Mulai Rapikan alurku."` (or `"Mulai Rapikan Alurku"`)
 - **Secondary CTA (Header/Navbar):** `"Coba Gratis"`
+
+---
+
+## 7. Competitive Analysis & Strategic Objectives
+- **Competitors:**
+  - **satutim.id** (Direct competitor with Indonesian localized target and package benchmarks).
+  - **kanal.work** (Indonesian team/workflow collaboration competitor).
+  - **notion.com** (Global benchmark for customizable workflows, wikis, and doc databases).
+- **Core Objective:** To deliver and evolve features as powerful, customizable, and seamless as **notion.com**, while maintaining alurku.'s identity as a clean, automated, and workload-aware task assistant.
+
