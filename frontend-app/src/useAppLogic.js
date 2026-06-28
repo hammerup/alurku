@@ -238,7 +238,13 @@ export default function useAppLogic() {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) return '';
     return localStorage.getItem('alurku_username') || '';
   });
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLoginMode, setIsLoginMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/daftar') return false;
+    }
+    return true;
+  });
   const [showAuthForm, setShowAuthForm] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -249,7 +255,8 @@ export default function useAppLogic() {
         params.get('task') ||
         params.get('board') ||
         path.startsWith('/task/') ||
-        path.startsWith('/project/')
+        path.startsWith('/project/') ||
+        ['/masuk', '/daftar', '/lupa-sandi'].includes(path)
       )
         return true;
     }
@@ -266,7 +273,13 @@ export default function useAppLogic() {
     return null;
   });
   const [isResetMode, setIsResetMode] = useState(!!resetToken);
-  const [isForgotMode, setIsForgotMode] = useState(false);
+  const [isForgotMode, setIsForgotMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path === '/lupa-sandi') return true;
+    }
+    return false;
+  });
   const [forgotEmail, setForgotEmail] = useState('');
 
   const [tasks, setTasks] = useState([]);

@@ -92,20 +92,175 @@ export default function LandingPage({
   // Listen to popstate changes (browser back/forward buttons)
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentTab(getTabFromPath(window.location.pathname));
+      const path = window.location.pathname;
+      if (path === '/masuk') {
+        setShowAuthForm(true);
+        setIsLoginMode(true);
+        setIsForgotMode(false);
+      } else if (path === '/daftar') {
+        setShowAuthForm(true);
+        setIsLoginMode(false);
+        setIsForgotMode(false);
+      } else if (path === '/lupa-sandi') {
+        setShowAuthForm(true);
+        setIsLoginMode(true);
+        setIsForgotMode(true);
+      } else if (['/', '/fitur', '/harga', '/panduan', '/tentang', '/dokumentasi'].includes(path) || path.startsWith('/artikel/')) {
+        setShowAuthForm(false);
+        setCurrentTab(getTabFromPath(path));
+      } else {
+        setCurrentTab(getTabFromPath(path));
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [setShowAuthForm, setIsLoginMode, setIsForgotMode]);
 
-  // Update URL pathname and scroll to top when tab changes programmatically
+  // Sync URL path with authentication form modes (masuk, daftar, lupa-sandi)
   useEffect(() => {
-    const newPath = getPathFromTab(currentTab);
-    if (window.location.pathname !== newPath) {
-      window.history.pushState({}, '', newPath);
+    if (showAuthForm) {
+      let targetPath = '/masuk';
+      if (isResetMode) {
+        return; // maintain current reset/verify parameters in URL
+      }
+      if (isForgotMode) {
+        targetPath = '/lupa-sandi';
+      } else if (!isLoginMode) {
+        targetPath = '/daftar';
+      }
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({}, '', targetPath);
+      }
+    } else {
+      const currentTabPath = getPathFromTab(currentTab);
+      if (window.location.pathname !== currentTabPath && !['/masuk', '/daftar', '/lupa-sandi'].includes(window.location.pathname)) {
+        window.history.pushState({}, '', currentTabPath);
+      }
     }
-    window.scrollTo({ top: 0 });
-  }, [currentTab]);
+  }, [showAuthForm, isLoginMode, isForgotMode, isResetMode, currentTab]);
+
+  // Handle SEO & Crawler Compliance Standards (with GEO / LLM optimization)
+  useEffect(() => {
+    let title = "alurku. — Kuasai Waktumu, Lancarkan Alurmu.";
+    let description = "alurku. adalah asisten cerdas yang mengubah tumpukan rencana kerjamu menjadi alur eksekusi yang rapi. Fokus pada hasil, biarkan AI kami yang mengatur jadwalnya.";
+    let pageUrl = window.location.origin + window.location.pathname;
+    let schemaType = "WebPage";
+
+    if (showAuthForm) {
+      if (isResetMode) {
+        title = "Atur Ulang Kata Sandi | alurku.";
+        description = "Atur ulang kata sandi akun alurku. Anda dengan aman.";
+      } else if (isForgotMode) {
+        title = "Pulihkan Kata Sandi | alurku.";
+        description = "Pulihkan kata sandi akun alurku. Anda yang hilang.";
+      } else if (isLoginMode) {
+        title = "Masuk | alurku.";
+        description = "Masuk ke workspace alurku. Anda untuk mengelola rencana kerja harian secara cerdas.";
+      } else {
+        title = "Daftar Akun Baru | alurku.";
+        description = "Buat akun alurku. baru secara gratis dan mulailah menyusun jadwal harian otomatis berbasis AI.";
+      }
+    } else {
+      switch (currentTab) {
+        case 'features':
+          title = "Fitur Cerdas | alurku.";
+          description = "Jelajahi asisten perencana otomatis, visualisasi beban kerja, Kanban dan Gantt chart interaktif di alurku.";
+          break;
+        case 'pricing':
+          title = "Harga Layanan | alurku.";
+          description = "Daftar harga dan paket langganan alurku. yang terjangkau untuk kebutuhan personal hingga enterprise.";
+          break;
+        case 'guide':
+          title = "Panduan Pengguna | alurku.";
+          description = "Panduan lengkap penggunaan asisten cerdas alurku. untuk mengoptimalkan alur kerja harian Anda.";
+          break;
+        case 'about':
+          title = "Tentang Kami | alurku.";
+          description = "Misi dan visi alurku. dalam menghadirkan asisten cerdas pengatur beban kerja untuk produktivitas seimbang.";
+          break;
+        case 'documentation':
+          title = "Dokumentasi Lengkap | alurku.";
+          description = "Dokumentasi teknis, API, dan petunjuk integrasi alurku. untuk pengembang.";
+          break;
+        case 'article':
+          title = "Artikel & Edukasi | alurku.";
+          description = "Kumpulan artikel edukatif mengenai produktivitas, manajemen tugas, dan kecerdasan buatan.";
+          break;
+        default:
+          title = "alurku. — Kuasai Waktumu, Lancarkan Alurmu.";
+          description = "Berhenti mengingat semua tugasmu, mulailah menyelesaikannya. Asisten cerdas pengatur beban kerja otomatis.";
+          break;
+      }
+    }
+
+    // Set Document Title
+    document.title = title;
+
+    // Set Meta Description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = "description";
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = description;
+
+    // Set Hreflang Tags
+    const cleanUpElements = [];
+    
+    const idHreflang = document.createElement('link');
+    idHreflang.rel = 'alternate';
+    idHreflang.hreflang = 'id-ID';
+    idHreflang.href = pageUrl;
+    document.head.appendChild(idHreflang);
+    cleanUpElements.push(idHreflang);
+
+    const enHreflang = document.createElement('link');
+    enHreflang.rel = 'alternate';
+    enHreflang.hreflang = 'en-ID';
+    enHreflang.href = pageUrl;
+    document.head.appendChild(enHreflang);
+    cleanUpElements.push(enHreflang);
+
+    // Set Canonical Self-Reference
+    const canonicalLink = document.createElement('link');
+    canonicalLink.rel = 'canonical';
+    canonicalLink.href = pageUrl;
+    document.head.appendChild(canonicalLink);
+    cleanUpElements.push(canonicalLink);
+
+    // Structured Data (JSON-LD) for SEO and GEO (Generative Engine Optimization)
+    const jsonLdScript = document.createElement('script');
+    jsonLdScript.type = 'application/ld+json';
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": schemaType,
+      "name": title,
+      "description": description,
+      "url": pageUrl,
+      "inLanguage": ["id-ID", "en-ID"],
+      "publisher": {
+        "@type": "Organization",
+        "name": "alurku.",
+        "logo": {
+          "@type": "ImageObject",
+          "url": window.location.origin + "/favicon.png"
+        }
+      }
+    };
+    jsonLdScript.text = JSON.stringify(schemaData);
+    document.head.appendChild(jsonLdScript);
+    cleanUpElements.push(jsonLdScript);
+
+    // Cleanup on unmount or state change
+    return () => {
+      cleanUpElements.forEach(el => {
+        if (el && el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      });
+    };
+  }, [showAuthForm, isLoginMode, isForgotMode, isResetMode, currentTab]);
 
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -144,7 +299,7 @@ export default function LandingPage({
   return (
     <div className={!showAuthForm 
       ? "bg-white dark:bg-black text-black dark:text-white font-sans transition-colors duration-200 overflow-x-clip" 
-      : "min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center p-4 transition-colors duration-200 relative selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black"
+      : ""
     }>
       {!showAuthForm ? (
         <>
@@ -288,13 +443,6 @@ export default function LandingPage({
               animation: form-fade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             }
           `}</style>
-          <button
-            onClick={() => setShowAuthForm(false)}
-            className="absolute top-8 left-8 text-neutral-400 hover:text-black dark:hover:text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors"
-          >
-            ← Back
-          </button>
-
           <AuthForms
             isLoginMode={isLoginMode}
             setIsLoginMode={setIsLoginMode}
@@ -326,6 +474,9 @@ export default function LandingPage({
             loginWithGoogle={loginWithGoogle}
             setIsPrivacyOpen={setIsPrivacyOpen}
             setIsTermsOpen={setIsTermsOpen}
+            setShowAuthForm={setShowAuthForm}
+            language={language}
+            setLanguage={setLanguage}
           />
           {isPrivacyOpen && <PrivacyPolicyModal setIsPrivacyOpen={setIsPrivacyOpen} />}
           {isTermsOpen && <TermsOfServiceModal setIsTermsOpen={setIsTermsOpen} />}

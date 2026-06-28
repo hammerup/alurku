@@ -19,7 +19,7 @@ This document contains the complete visual identity, UI rules, brand message gui
 ---
 
 ## 2. Global Development Directives
-- **Default Language:** Indonesian (ID). All copy, buttons, and placeholders must default to Indonesian. Multilingual switching is supported but the initial load must be Indonesian.
+- **Default Language & Bilingual Support:** All pages must support 2 languages: Indonesian (ID) and English (EN). The application defaults to Indonesian on first load, with accessible switches to toggle between ID and EN.
 - **Default Theme:** Light Theme. The application must render in Light Theme upon first load.
 - **Homepage Base Styling:** The homepage design must utilize the Light Theme color palette (Calm Gray `#F3F4F6` background, Deep Navy `#111E38` primary text, Flat Yellow `#FACC15` accents).
 
@@ -31,9 +31,10 @@ This document contains the complete visual identity, UI rules, brand message gui
   - **Simple & Flat:** Avoid heavy gradients, soft-blurry shadows, or skeuomorphic effects. Use solid color blocks, crisp borders, and ample whitespace.
   - **Dynamic & Contrasting:** Combine stable Navy and energetic Yellow to create high contrast, ideal for distinguishing main workspaces and proactive AI-driven action elements.
   - **Calm & Eye-Friendly:** Use soft, calm backgrounds in light mode to prevent eye strain during prolonged use, eliminating harsh bright whites.
+- **Mobile Friendly Optimization:** Every page, view, and form component must be optimized for mobile devices (using responsive design, touch-friendly layouts, and fluid grids).
 - **Iconography Rule:** Always use **modern, simple, inline SVG icons** instead of old-fashioned/raw emojis for list elements, buttons, feature badges, and indicators. Emojis should be completely avoided in professional feature layouts.
 - **Contrast & Legibility:** Never render light or yellow text on light backgrounds. Ensure a high-contrast dark color (like dark navy `#111E38` or slate-800) is used for maximum readability in Light Mode.
-- **Capitalization:** Avoid overuse of capital letters. Do not use full `uppercase` text styling on main section headlines.
+- **Capitalization:** Writing casing must be normal (e.g. Sentence case or Capitalize Each Word), avoiding overuse of full uppercase or dominant capitalization across page sections and headlines. Label text should use normal casing.
 
 ---
 
@@ -112,6 +113,7 @@ Every public landing page (such as Features, Pricing, Guides, About Us, and Docu
 - **Hreflang Tags:** Alternate links for regional targeting must be provided (specifically targeting Indonesia region with both ID and EN versions):
   - `id-ID` for Indonesian language targeting.
   - `en-ID` for English language targeting.
+- **GEO (Generative Engine Optimization):** Every public landing page must be optimized for AI search engines and LLM crawlers (e.g. Perplexity, ChatGPT Search, Gemini) by utilizing clean, authoritative structured content, semantic HTML5 tags, clear hierarchies, and rich JSON-LD structured data schema to maximize the likelihood of AI summaries and citations.
 - **Canonical Self-References:** A `<link rel="canonical" href="...">` tag must be set pointing directly to the self-representative page path.
 - **Cleanup:** All injected header elements (LD-JSON script tags, hreflangs, canonical links) must be cleanly removed from DOM when the user navigates away or the page unmounts to prevent DOM bloat.
 
