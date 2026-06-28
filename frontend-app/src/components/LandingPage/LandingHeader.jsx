@@ -21,7 +21,7 @@ export default function LandingHeader({
   ];
 
   return (
-    <header className="sticky top-0 z-[100] w-full bg-[#111E38] text-white border-b border-slate-900/50 shadow-md">
+    <header className="sticky top-0 z-100 w-full bg-[#111E38] text-white border-b border-slate-900/50 shadow-md">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
         {/* Logo — squircle monogram badge matching footer style */}
         <div
@@ -31,9 +31,14 @@ export default function LandingHeader({
           <div className="w-9 h-9 md:w-10 md:h-10 bg-[#FACC15] rounded-xl flex items-center justify-center shadow-sm shrink-0">
             <span className="text-[#111E38] font-black text-[32px] md:text-[36px] leading-none pb-1">a</span>
           </div>
-          <span className="font-black text-2xl md:text-3xl tracking-tight text-white leading-none">
-            alur<span className="text-[#FACC15]">ku</span>.
-          </span>
+          <div className="flex flex-col justify-center leading-none">
+            <span className="font-black text-2xl md:text-3xl tracking-tight text-white leading-none">
+              alur<span className="text-[#FACC15]">ku</span>.
+            </span>
+            <span className="text-[9px] text-white/80 font-bold self-end mt-0.5 leading-none pr-1">
+              Beta
+            </span>
+          </div>
         </div>
 
         {/* Desktop Navigation with pathname permalinks */}
