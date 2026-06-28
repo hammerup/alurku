@@ -119,10 +119,10 @@ export default function LandingPage({
   // Sync URL path with authentication form modes (masuk, daftar, lupa-sandi)
   useEffect(() => {
     if (showAuthForm) {
-      let targetPath = '/masuk';
       if (isResetMode) {
         return; // maintain current reset/verify parameters in URL
       }
+      let targetPath = '/masuk';
       if (isForgotMode) {
         targetPath = '/lupa-sandi';
       } else if (!isLoginMode) {
@@ -132,10 +132,12 @@ export default function LandingPage({
         window.history.pushState({}, '', targetPath);
       }
     } else {
+      // Always restore the landing tab URL when auth form is closed
       const currentTabPath = getPathFromTab(currentTab);
-      if (window.location.pathname !== currentTabPath && !['/masuk', '/daftar', '/lupa-sandi'].includes(window.location.pathname)) {
+      if (window.location.pathname !== currentTabPath) {
         window.history.pushState({}, '', currentTabPath);
       }
+      window.scrollTo({ top: 0 });
     }
   }, [showAuthForm, isLoginMode, isForgotMode, isResetMode, currentTab]);
 

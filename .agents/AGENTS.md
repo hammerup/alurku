@@ -22,6 +22,10 @@ This document contains the complete visual identity, UI rules, brand message gui
 - **Default Language & Bilingual Support:** All pages must support 2 languages: Indonesian (ID) and English (EN). The application defaults to Indonesian on first load, with accessible switches to toggle between ID and EN.
 - **Default Theme:** Light Theme. The application must render in Light Theme upon first load.
 - **Homepage Base Styling:** The homepage design must utilize the Light Theme color palette (Calm Gray `#F3F4F6` background, Deep Navy `#111E38` primary text, Flat Yellow `#FACC15` accents).
+- **Permalink & URL Ownership:** Every page (including auth pages like login, register, and password recovery) must own a dedicated, persistent permalink. Pages must only be rendered when the browser path matches their assigned permalink. Navigating away from a page must always restore the correct URL of the destination page. Refreshing the browser must never redirect the user to a different page than the one currently being viewed.
+  - **Auth Page Permalinks (Indonesian):** `/masuk` (login), `/daftar` (register), `/lupa-sandi` (forgot password).
+  - **Landing Page Permalinks (Indonesian):** `/` (homepage/beranda), `/fitur`, `/harga`, `/panduan`, `/tentang`, `/dokumentasi`.
+  - **URL sync is bidirectional:** URL changes (popstate / browser back-forward) must update the UI state, and UI state changes (tab switch, auth form open/close) must update the URL.
 
 ---
 
