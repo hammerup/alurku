@@ -82,10 +82,21 @@ export default function SmartAssistant({
   };
 
   useEffect(() => {
+    // Auto-submit planner when redirected from chat with a pre-filled prompt
+    if (assistantMode === 'planner' && plannerPrompt.trim() && !isPlanning && plannedTasks.length === 0) {
+      // Small delay to let the planner UI render first
+      const timer = setTimeout(() => handlePlannerSubmit(null), 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assistantMode]);
+
+  useEffect(() => {
     if (assistantMode === 'planner' && plannedTasks.length > 0) {
       plannerEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, [plannedTasks]);
+
 
   // Mencegah user me-refresh halaman saat memiliki keranjang To-do cepat atau Draf Planner
   useEffect(() => {
@@ -918,6 +929,44 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           return;
         }
 
+        // --- Bulk Task / Task Planner Intent Detection ---
+        // Detects if user wants to create/extract MULTIPLE tasks and redirects to AI Task Planner.
+        const bulkTaskKeywordsEN = [
+          'create tasks', 'make tasks', 'add tasks', 'generate tasks', 'build tasks',
+          'extract tasks', 'list of tasks', 'multiple tasks', 'several tasks', 'bunch of tasks',
+          'task list', 'task plan', 'project plan', 'plan for', 'plan a project',
+          'buatkan tasks', 'buat tasks', 'buat beberapa', 'buatkan beberapa',
+          'buatkan task-task', 'bikin tasks', 'bikin beberapa task',
+          'ekstrak task', 'ekstraksi task', 'buatkan rencana', 'buat rencana',
+          'buat task untuk', 'buatkan task untuk', 'bikin task untuk',
+          'task-task', 'tugas-tugas', 'beberapa tugas', 'sejumlah tugas',
+          'create multiple', 'add multiple', 'generate multiple', 'plan project',
+          'breakdown task', 'break down task', 'break down the', 'break it down',
+          'pecah task', 'pecah tugas', 'rincikan task', 'rincikan tugas',
+        ];
+        const isBulkTaskKeyword = bulkTaskKeywordsEN.some((kw) => textLower.includes(kw));
+
+        // Pattern: user mentions 2+ @mentions in one message (e.g. "buat task @catyak report, @batman research")
+        const atMentionMatches = (data.match(/@[\w.]+/g) || []);
+        const hasMultipleMentions = atMentionMatches.length >= 2;
+
+        // Pattern: message contains 2+ comma-separated items that look like task descriptions
+        // e.g. "monthly report seo, keywords research, marketing plan"
+        const commaSegments = data.split(',').map(s => s.trim()).filter(s => s.length > 2);
+        const hasMultipleCommaItems = commaSegments.length >= 3;
+
+        // Pattern: message contains numbered or bulleted list items
+        const hasListPattern = /[\n,;]\s*(?:\d+[.)\s]|[-•*]\s)/.test(data);
+
+        const isBulkTaskIntent = isBulkTaskKeyword || hasMultipleMentions || hasMultipleCommaItems || hasListPattern;
+
+        if (isBulkTaskIntent) {
+          // Pre-fill the planner prompt with the user's message and redirect
+          setPlannerPrompt(data);
+          setAssistantMode('planner');
+          return;
+        }
+
         // --- General AI Conversation & Command Executor Fallback ---
         addBotMessage(tMsg('Thinking... 🤔', 'Berpikir... 🤔'));
         const todayStr = getLocalToday();
@@ -964,6 +1013,52 @@ If it's a general question or conversation related to project/task management, o
                 .replace(/```json/gi, '')
                 .replace(/```/g, '')
                 .trim();
+
+              // --- Detect MULTIPLE create_task JSON objects (AI hallucination pattern) ---
+              // When AI returns multiple JSON objects instead of redirecting to planner,
+              // we catch them here and convert them into planner tasks.
+              const multiJsonMatches = cleanJson.match(/\{[^{}]*"action"\s*:\s*"create_task"[^{}]*\}/g);
+              if (multiJsonMatches && multiJsonMatches.length >= 2) {
+                // Parse all valid JSON objects from the response
+                const parsedTasks = [];
+                for (const jsonStr of multiJsonMatches) {
+                  try {
+                    const t = JSON.parse(jsonStr);
+                    if (t.action === 'create_task' && t.project_name) {
+                      parsedTasks.push(t);
+                    }
+                  } catch (_) { /* skip malformed */ }
+                }
+
+                if (parsedTasks.length >= 2) {
+                  // Convert to planner tasks format and redirect
+                  const defaultBoardId = !selectedBoard || selectedBoard.id === 'global'
+                    ? (boards[0]?.id || '')
+                    : selectedBoard.id;
+
+                  const plannerReadyTasks = parsedTasks.map((t) => ({
+                    id: Math.random().toString(),
+                    project_name: t.project_name,
+                    requester: t.requester || `@${currentUser}`,
+                    category: t.category || 'Other',
+                    deadline: t.deadline || '',
+                    etc: Number(t.etc) || 2,
+                    impact: t.impact || 'Medium',
+                    description: t.description || '',
+                    subtasks: Array.isArray(t.subtasks) ? t.subtasks : [],
+                    auto_nudge: false,
+                    target_board_id: defaultBoardId,
+                    selected: true,
+                  }));
+
+                  setMessages((prev) => prev.filter((m) => m.text !== tMsg('Thinking... 🤔', 'Berpikir... 🤔')));
+                  setPlannerTargetBoardId(defaultBoardId);
+                  setPlannedTasks(plannerReadyTasks);
+                  setAssistantMode('planner');
+                  return;
+                }
+              }
+              // --- End multi-JSON detection ---
 
               const startIdx = cleanJson.indexOf('{');
               const endIdx = cleanJson.lastIndexOf('}');
@@ -2129,6 +2224,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
 
   const handlePlannerSubmit = async (e) => {
     e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!plannerPrompt.trim()) return;
     setIsPlanning(true);
     setPlannedTasks([]);
