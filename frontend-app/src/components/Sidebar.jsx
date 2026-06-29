@@ -410,13 +410,13 @@ export default function Sidebar() {
                       }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
                         ws.id === activeWorkspace?.id
-                          ? 'bg-[#FACC15]/10 text-black dark:text-[#FACC15] font-bold'
-                          : 'hover:bg-slate-50 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
+                          ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
+                          : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
                       }`}
                     >
                       <span className="truncate">{ws.name}</span>
                       {ws.id === activeWorkspace?.id && (
-                        <span className="text-xs text-[#FACC15]">✓</span>
+                        <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
                       )}
                     </button>
                   ))}
@@ -435,7 +435,7 @@ export default function Sidebar() {
                       />
                       <button
                         type="submit"
-                        className="px-2.5 py-1.5 bg-[#FACC15] text-[#111E38] text-xs font-bold rounded-lg hover:bg-yellow-500 transition-colors"
+                        className="px-2.5 py-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:bg-[#1a2d52] dark:hover:bg-yellow-400 transition-colors"
                       >
                         +
                       </button>
@@ -450,7 +450,7 @@ export default function Sidebar() {
                   ) : (
                     <button
                       onClick={() => setIsCreatingWs(true)}
-                      className="w-full text-center py-1.5 bg-[#FACC15]/10 hover:bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] text-xs font-bold rounded-lg transition-colors"
+                      className="w-full text-center py-1.5 bg-[#111E38]/8 hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/20 dark:text-[#FACC15] text-xs font-bold rounded-lg transition-all border border-[#111E38]/15 dark:border-transparent"
                     >
                       + {tMsg('Create Workspace', 'Buat Workspace')}
                     </button>

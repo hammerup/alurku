@@ -1125,13 +1125,14 @@ function App() {
         color: #d1d5db !important;
       }
       .driver-popover-next-btn {
-        background-color: #4f46e5 !important;
-        color: #ffffff !important;
+        background-color: #111E38 !important;
+        color: #FACC15 !important;
+        font-weight: 900 !important;
       }
       .driver-popover-next-btn:hover {
-        background-color: #4338ca !important;
+        background-color: #1a2d52 !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.1) !important;
       }
       .driver-popover-close-btn {
         top: 1rem !important;
@@ -1200,8 +1201,8 @@ function App() {
             className="fixed inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-neutral-950/80 backdrop-blur-sm transition-all duration-300"
             style={{ zIndex: 9999 }}
           >
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 dark:border-indigo-400 border-t-transparent mb-4 shadow-sm"></div>
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 animate-pulse uppercase tracking-widest">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#111E38] dark:border-[#FACC15] border-t-transparent mb-4 shadow-sm"></div>
+            <p className="text-sm font-bold text-[#111E38] dark:text-[#FACC15] animate-pulse uppercase tracking-widest">
               Loading...
             </p>
           </div>

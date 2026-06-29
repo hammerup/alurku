@@ -5,35 +5,93 @@ export default function AppThemes({ appTheme }) {
     <>
       {(!appTheme || appTheme === 'default') && (
         <style>{`
-          /* Default Alurku Theme Colors */
-          
-          /* Light Mode */
-          html:not(.dark) body { 
-            background-color: #F3F4F6 !important; 
-            color: #111E38 !important; 
+          /* ============================================================
+             alurku. Default Theme — Light & Dark
+             Brand Palette:
+               Deep Navy  #111E38  — primary text, sidebar bg
+               Flat Yellow #FACC15 — accent (dark mode buttons/icons)
+               Calm Gray  #F3F4F6  — page background (light)
+               Off White  #FAFAFA  — card/surface background (light)
+               Dark Navy  #090D16  — page background (dark)
+               Navy Surface #121B2D — card/surface background (dark)
+          ============================================================ */
+
+          /* ── LIGHT MODE BASE ──────────────────────────────────────── */
+          html:not(.dark) body {
+            background-color: #F3F4F6 !important;
+            color: #111E38 !important;
           }
+          /* Page-level background containers */
           html:not(.dark) body .bg-neutral-50,
           html:not(.dark) body .bg-slate-50,
-          html:not(.dark) body .bg-neutral-100\\/50,
           html:not(.dark) body .min-h-screen.bg-neutral-50 {
             background-color: #F3F4F6 !important;
           }
+          /* Card / surface (panels, modals, sidebar) */
           html:not(.dark) body .bg-white,
-          html:not(.dark) body .bg-card,
-          html:not(.dark) body .tour-board-title { 
-            background-color: #FAFAFA !important; 
+          html:not(.dark) body .tour-board-title {
+            background-color: #FAFAFA !important;
             border-color: #E5E7EB !important;
           }
+          /* Subtle chip / hover background */
           html:not(.dark) body .bg-neutral-100,
           html:not(.dark) body .bg-slate-100 {
-            background-color: #E5E7EB !important;
-            border-color: #E5E7EB !important;
+            background-color: #EAECF0 !important;
           }
 
-          /* Dark Mode */
-          .dark body { 
-            background-color: #090D16 !important; 
-            color: #F3F4F6 !important; 
+          /* ── LIGHT MODE TEXT ──────────────────────────────────────── */
+          html:not(.dark) body .text-black,
+          html:not(.dark) body .text-slate-900,
+          html:not(.dark) body .text-slate-800 {
+            color: #111E38 !important;
+          }
+          html:not(.dark) body .text-neutral-600,
+          html:not(.dark) body .text-slate-600,
+          html:not(.dark) body .text-neutral-500,
+          html:not(.dark) body .text-slate-500 {
+            color: #4B5563 !important;
+          }
+          html:not(.dark) body .text-neutral-400,
+          html:not(.dark) body .text-slate-400 {
+            color: #9CA3AF !important;
+          }
+
+          /* ── LIGHT MODE ACCENT ────────────────────────────────────── 
+             Yellow on white = INVISIBLE. Use Deep Navy for accent text.
+             Buttons use Navy bg + Yellow text for brand punch.
+          ────────────────────────────────────────────────────────────── */
+          html:not(.dark) body .text-indigo-600,
+          html:not(.dark) body .text-blue-600 {
+            color: #111E38 !important;
+          }
+          html:not(.dark) body .bg-indigo-600,
+          html:not(.dark) body .bg-blue-600 {
+            background-color: #111E38 !important;
+            color: #FACC15 !important;
+            font-weight: 800 !important;
+          }
+          html:not(.dark) body .bg-indigo-600:hover,
+          html:not(.dark) body .bg-blue-600:hover {
+            background-color: #1a2d52 !important;
+          }
+          html:not(.dark) body .bg-indigo-50,
+          html:not(.dark) body .bg-blue-50 {
+            background-color: #EFF6FF !important;
+            border-color: #DBEAFE !important;
+          }
+          html:not(.dark) body .border-indigo-500,
+          html:not(.dark) body .border-blue-500 {
+            border-color: #111E38 !important;
+          }
+          html:not(.dark) body .focus\\:border-indigo-500:focus,
+          html:not(.dark) body .focus-within\\:ring-indigo-500\\/20:focus-within {
+            border-color: #111E38 !important;
+          }
+
+          /* ── DARK MODE BASE ───────────────────────────────────────── */
+          .dark body {
+            background-color: #090D16 !important;
+            color: #F3F4F6 !important;
           }
           .dark .dark\\:bg-neutral-950,
           .dark .dark\\:bg-slate-950,
@@ -52,22 +110,32 @@ export default function AppThemes({ appTheme }) {
             background-color: #1E293B !important;
           }
 
-          /* Accent & Buttons (Flat Yellow #FACC15) */
-          .bg-indigo-600, .bg-blue-600 {
+          /* ── DARK MODE ACCENT (Flat Yellow #FACC15) ───────────────── 
+             Yellow is readable on dark navy surfaces.
+          ────────────────────────────────────────────────────────────── */
+          .dark .text-indigo-600,
+          .dark .dark\\:text-indigo-400,
+          .dark .text-blue-600,
+          .dark .dark\\:text-blue-400 {
+            color: #FACC15 !important;
+          }
+          .dark .bg-indigo-600,
+          .dark .bg-blue-600 {
             background-color: #FACC15 !important;
             color: #111E38 !important;
             font-weight: 800 !important;
           }
-          .bg-indigo-600:hover, .bg-blue-600:hover {
+          .dark .bg-indigo-600:hover,
+          .dark .bg-blue-600:hover {
             background-color: #EAB308 !important;
           }
-          .text-indigo-600, .dark\\:text-indigo-400, .text-blue-600, .dark\\:text-blue-400 {
-            color: #FACC15 !important;
+          .dark .dark\\:bg-indigo-900\\/30,
+          .dark .dark\\:bg-blue-900\\/30 {
+            background-color: rgba(250, 204, 21, 0.12) !important;
+            border-color: rgba(250, 204, 21, 0.25) !important;
           }
-          .border-indigo-500, .border-blue-500 {
-            border-color: #FACC15 !important;
-          }
-          .focus\\:border-indigo-500:focus, .focus\\:ring-indigo-500\\/20:focus-within {
+          .dark .border-indigo-500,
+          .dark .border-blue-500 {
             border-color: #FACC15 !important;
           }
         `}</style>
