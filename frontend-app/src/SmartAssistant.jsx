@@ -2223,7 +2223,6 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
   };
 
   const handlePlannerSubmit = async (e) => {
-    e.preventDefault();
     if (e && e.preventDefault) e.preventDefault();
     if (!plannerPrompt.trim()) return;
     setIsPlanning(true);
