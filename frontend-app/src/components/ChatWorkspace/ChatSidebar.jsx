@@ -340,7 +340,7 @@ export default function ChatSidebar({
           .filter((b) => b.id !== 'global')
           .map((board) => {
             const unreadBoardTotal = notifications?.filter(
-              (n) => !n.is_read && String(n.related_board_id) === String(board.id)
+              (n) => !n.is_read && String(n.board_id) === String(board.id)
             ).length || 0;
 
             return (
@@ -398,15 +398,16 @@ export default function ChatSidebar({
                     {(boardTasks[board.id] || []).filter((t) => {
                       if (showMyTasksFilter && !t.is_involved) return false;
                       if (showUnreadFilter) {
+                         // Match ANY unread notification for this task (consistent with board badge)
                         const unreadTask = notifications?.filter(
-                          (n) => !n.is_read && (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email') && String(n.related_task_id) === String(t.id)
+                           (n) => !n.is_read && String(n.related_task_id) === String(t.id)
                         ).length || 0;
                         if (unreadTask === 0) return false;
                       }
                       return true;
                     }).map((t) => {
                       const unreadTask = notifications?.filter(
-                        (n) => !n.is_read && (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email') && String(n.related_task_id) === String(t.id)
+                        (n) => !n.is_read && String(n.related_task_id) === String(t.id)
                       ).length || 0;
                       return (
                         <button

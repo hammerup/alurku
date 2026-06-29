@@ -242,6 +242,26 @@ export default function ChatWorkspaceModal({
     return result;
   }, [boards, showMyTasksFilter, showUnreadFilter, notifications]);
 
+  // Auto-expand boards and fetch their tasks when the unread filter is activated
+  useEffect(() => {
+    if (!showUnreadFilter) return;
+    if (filteredAndSortedBoards.length === 0) return;
+
+    const newExpanded = { ...expandedBoards };
+    filteredAndSortedBoards.forEach((b) => {
+      if (b.id === 'global' || b.id === 'undefined') return;
+      newExpanded[b.id] = true;
+      // Always re-fetch to ensure tasks are populated and up-to-date
+      axios
+        .get(`/api/boards/${b.id}/tasks/light`)
+        .then((res) => {
+          setBoardTasks((prev) => ({ ...prev, [b.id]: res.data.tasks || [] }));
+        })
+        .catch(() => {});
+    });
+    setExpandedBoards(newExpanded);
+  }, [showUnreadFilter, filteredAndSortedBoards.length]);
+  
   // Expand / Collapse Board Sidebar
   const toggleBoard = (boardId) => {
     const isExpanded = expandedBoards[boardId];
