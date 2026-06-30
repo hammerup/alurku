@@ -408,7 +408,7 @@ USER REQUEST:
 
   return (
     <div
-      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-[200] overflow-y-auto lg:overflow-hidden font-sans ${
+      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-200 overflow-y-auto lg:overflow-hidden font-sans ${
         isClosing ? 'mac-exit' : ''
       }`}
     >
@@ -607,7 +607,7 @@ USER REQUEST:
                     </button>
                   </div>
                   {isMentioning && (
-                    <div className="absolute left-0 top-full mt-2 w-full min-w-[200px] bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
+                    <div className="absolute left-0 top-full mt-2 w-full min-w-50 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
                       {(() => {
                         const mentionOptions = (userDirectory || [])
                           .filter((u) => u.is_connected && u.username !== 'admin')
@@ -633,7 +633,7 @@ USER REQUEST:
                     </div>
                   )}
                   {isBoardMentioning && (
-                    <div className="absolute left-0 top-full mt-2 w-full min-w-[200px] bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
+                    <div className="absolute left-0 top-full mt-2 w-full min-w-50 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
                       {(() => {
                         const boardOptions = boards.filter((b) => b.id !== 'global').map((b) => b.name);
                         const filtered = boardOptions.filter((m) => m.toLowerCase().includes(boardMentionQuery));
@@ -769,7 +769,7 @@ USER REQUEST:
                                   prev.map((item) => (item.id === t.id ? { ...item, target_board_id: newId } : item))
                                 );
                               }}
-                              className="text-[9px] font-bold bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded text-amber-700 dark:text-amber-400 inline-block uppercase tracking-wider outline-none cursor-pointer max-w-[140px] truncate [&>option]:bg-white dark:[&>option]:bg-neutral-900 [&>option]:text-black dark:[&>option]:text-white"
+                              className="text-[9px] font-bold bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded text-amber-700 dark:text-amber-400 inline-block uppercase tracking-wider outline-none cursor-pointer max-w-35 truncate [&>option]:bg-white dark:[&>option]:bg-neutral-900 [&>option]:text-black dark:[&>option]:text-white"
                             >
                               {boards
                                 .filter((b) => b.id !== 'global')
@@ -856,18 +856,18 @@ USER REQUEST:
                   >
                     <div className="flex justify-between items-center mb-2.5 pb-1 pr-6">
                       <div className="flex items-center gap-1.5 overflow-hidden">
-                        <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-1 rounded-md truncate max-w-[100px] border border-indigo-100 dark:border-indigo-800/50">
+                        <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 px-2 py-1 rounded-md truncate max-w-25 border border-indigo-100 dark:border-indigo-800/50">
                           📁 {t.target_board_name || 'Project'}
                         </span>
                         <span className="text-neutral-300 dark:text-neutral-700 font-bold text-[10px]">/</span>
-                        <span className="text-[9px] font-bold text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 px-2 py-1 rounded-md truncate max-w-[80px] border border-neutral-200 dark:border-neutral-700">
+                        <span className="text-[9px] font-bold text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 px-2 py-1 rounded-md truncate max-w-20 border border-neutral-200 dark:border-neutral-700">
                           {t.category || 'Other'}
                         </span>
                       </div>
                     </div>
 
                     <div className="mb-2">
-                      <div className="font-bold text-sm text-black dark:text-white break-words uppercase tracking-wider leading-snug line-clamp-2">
+                      <div className="font-bold text-sm text-black dark:text-white wrap-break-word uppercase tracking-wider leading-snug line-clamp-2">
                         {t.project_name}
                       </div>
                       {t.description && (
@@ -960,7 +960,7 @@ USER REQUEST:
       </div>
 
       {cancelConfirmOpen && (
-        <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[300] p-4">
+        <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-300 p-4">
           <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl text-center mac-animate">
             <div className="w-20 h-20 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border border-red-200 dark:border-red-800/50">
               🗑️
@@ -993,7 +993,7 @@ USER REQUEST:
       )}
 
       {privateWarningOpen && (
-        <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[300] p-4">
+        <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-300 p-4">
           <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl text-center mac-animate">
             <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/30 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border border-amber-200 dark:border-amber-800/50">
               ⚠️
