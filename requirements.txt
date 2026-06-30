@@ -10,3 +10,4 @@ google-genai
 apscheduler
 alembic
 websockets
+pytz

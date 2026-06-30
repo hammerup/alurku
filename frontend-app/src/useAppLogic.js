@@ -2459,6 +2459,14 @@ export default function useAppLogic() {
           .then(() => fetchNotifications())
           .catch(console.error);
       }
+      
+      // Also mark localStorage last_read for this task so unread badges in
+      // ChatSidebar and HomeDashboard disappear immediately regardless of how the task was opened.
+      // We use the current timestamp as a "read up to now" marker; if the task later
+      // gets a new comment it will correctly show as unread again.
+      const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      localStorage.setItem(`innocean_last_read_task_${selectedTask.id}_${currentUser}`, nowStr);
+
     } else {
       setSubtasks([]);
       setComments([]);

@@ -823,7 +823,7 @@ USER REQUEST:
                       {isSaving ? <LoadingSpinner /> : '🚀'}
                       {isSaving
                         ? tMsg('Processing...', 'Memproses...')
-                        : tMsg('Add to Task Cart', 'Tambahkan ke Keranjang')}
+                        : tMsg('Add to Inbox', 'Tambahkan ke Kotak Masuk')}
                     </button>
                   </div>
                 </div>
@@ -838,7 +838,7 @@ USER REQUEST:
                 <span className="text-2xl">🛒</span>
                 <div>
                   <h2 className="font-black text-base sm:text-lg text-black dark:text-white uppercase tracking-tight">
-                    {tMsg('Task Cart', 'Keranjang Tugas')}
+                    {tMsg('Inbox', 'Kotak Masuk')}
                   </h2>
                   <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">
                     {tMsg('Ready to dispatch', 'Siap untuk dikirim')}

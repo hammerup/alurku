@@ -148,6 +148,19 @@ export default function HomeDashboard() {
         return `Message from @${chat.latest_sender} in ${place}`;
       }).join('; ');
 
+      // Only count chats the user has NOT yet read for the AI
+      const trulyUnreadCount = visibleChatsForKey.filter(chat => {
+        if (chat.latest_sender === currentUser) return false;
+        if (chat.is_dm) return (chat.unread_count || 0) > 0;
+        if (chat.is_project_chat) {
+          const lastRead = localStorage.getItem(`innocean_last_read_board_${chat.board_id}_${currentUser}`);
+          return !lastRead || chat.timestamp > lastRead;
+        } else {
+          const lastRead = localStorage.getItem(`innocean_last_read_task_${chat.task_id}_${currentUser}`);
+          return !lastRead || chat.timestamp > lastRead;
+        }
+      }).length;
+
       const workloadInfo = `The user's current active workload is ${Math.round(myActiveWorkloadEtc)} hours out of a total of ${Math.round(myTotalWorkloadEtc)} hours. `;
       const weeklyOverloadWarning = isWeeklyOverload ? tMsg('The user is currently experiencing a weekly overload. ', 'Pengguna saat ini mengalami kelebihan beban kerja mingguan. ') : '';
       const monthlyOverloadWarning = isMonthlyOverload ? tMsg("The user's total assigned work for this period indicates a monthly overload. ", 'Total pekerjaan yang ditugaskan pada pengguna untuk periode ini menunjukkan kelebihan beban bulanan. ') : '';
@@ -155,7 +168,8 @@ export default function HomeDashboard() {
       const prompt = `As an AI assistant, provide a super brief (max 2 sentences) executive summary of the user's workload. Address the user directly (e.g., "You have..."). Use markdown bold syntax (**text**) to highlight key numbers, statuses, or action items (like overdue tasks or overload warnings). Here's the data: The user has ${myTasks.length} tasks, ${overdueTasksCount} overdue tasks, and is involved in ${activeProjectsCount} active projects. ` +
         workloadInfo + weeklyOverloadWarning + monthlyOverloadWarning +
         (topQueue ? `Their top queue priorities are: ${topQueue}. ` : '') +
-        (recentComments ? `Their recent unread comments are: ${recentComments}. ` : '') +
+        (recentComments ? `Their recent chat activity (may already be read): ${recentComments}. ` : '') +
+        (trulyUnreadCount > 0 ? `They have ${trulyUnreadCount} unread message(s) that still need a response. ` : `All recent messages have been read. `) +
         `Use a professional, motivating tone. If there are overload warnings, mention them directly. Reply in ${language === 'id' ? 'Indonesian' : 'English'}.`;
       
       const response = await axios.post('/api/ai/generate', {
