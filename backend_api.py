@@ -7,6 +7,11 @@ from pydantic import BaseModel
 from schemas import *
 from datetime import datetime
 from datetime import timedelta
+import pytz
+
+# Timezone Indonesia Barat (WIB = UTC+7)
+WIB = pytz.timezone("Asia/Jakarta")
+
 import bcrypt
 import jwt
 
@@ -503,76 +508,123 @@ def submit_feedback(
 def run_auto_nudge():
     db = SessionLocal()
     try:
+        now_wib = datetime.now(WIB)
+        today_wib = now_wib.replace(hour=0, minute=0, second=0, microsecond=0)
+        now_str = now_wib.strftime("%Y-%m-%d")
+
+        print(f"[Auto Nudge] ▶ Run dimulai pada {now_wib.strftime('%Y-%m-%d %H:%M:%S')} WIB")
+        
         tasks = db.query(Request).filter(
             Request.auto_nudge == True,
             Request.status.notin_(["Done", "Rejected"]),
             Request.deadline != None
         ).all()
 
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        now_str = datetime.now().strftime("%Y-%m-%d")
+        print(f"[Auto Nudge] 📋 Total task dengan auto_nudge aktif & belum selesai: {len(tasks)}")
+
+        nudge_sent = 0
+        nudge_skipped_dup = 0
+        nudge_skipped_no_date = 0
+        nudge_skipped_no_target = 0
 
         for task in tasks:
             deadline_date = parse_raw_date(task.deadline)
             if not deadline_date:
+                nudge_skipped_no_date += 1
+                print(f"[Auto Nudge] ⚠️  Task ID={task.id} '{task.project_name}' — deadline tidak bisa di-parse, skip.")                
                 continue
             
+
             deadline_date = deadline_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            days_diff = (deadline_date - today).days
+            # Pastikan deadline_date tidak punya timezone info (naive datetime)
+            if hasattr(deadline_date, 'tzinfo') and deadline_date.tzinfo is not None:
+                deadline_date = deadline_date.replace(tzinfo=None)
+            today_naive = today_wib.replace(tzinfo=None)
+            days_diff = (deadline_date - today_naive).days
 
-            # Kirim peringatan pada H-7, H-3, H-2, H-1, Hari H, dan keterlambatan hingga 7 hari
-            if days_diff in [7, 3, 2, 1, 0] or (-7 <= days_diff < 0):
-                assignees = get_assignees(task.requester)
-                targets = assignees.copy()
-                if task.owner_username:
-                    targets.add(task.owner_username)
-                    
-                pending_subtasks = db.query(Subtask).filter(Subtask.request_id == task.id, Subtask.is_done == 0).all()
-                for st in pending_subtasks:
-                    if st.assignee:
-                        targets.add(st.assignee)
-                        
-                mention_str = " ".join([f"@{m}" for m in targets])
+            # Kirim peringatan pada H-7, H-3, H-2, H-1, Hari H
+            # DAN semua hari overdue tanpa batas (sampai task Done/Rejected)
+            is_pre_deadline = days_diff in [7, 3, 2, 1, 0]
+            is_overdue = days_diff < 0  # Tidak terbatas — semua hari setelah deadline
 
-                if days_diff > 0:
-                    msg = f"🔔 **Auto Nudge:** {mention_str}\nThis task is due in **{days_diff} day(s)**. Please ensure everything is on track!"
-                elif days_diff == 0:
-                    msg = f"🚨 **Auto Nudge:** {mention_str}\nThis task is due **TODAY**. Please complete it as soon as possible."
-                else:
-                    msg = f"🔴 **Auto Nudge:** {mention_str}\nThis task is **OVERDUE** by {abs(days_diff)} day(s). Immediate action is required!"
+            if not (is_pre_deadline or is_overdue):
+                print(f"[Auto Nudge] ⏭️  Task ID={task.id} '{task.project_name}' — days_diff={days_diff}, tidak dalam jadwal nudge hari ini.")
+                continue
 
-                # Mencegah spam komentar di hari yang sama
-                tomorrow = today + timedelta(days=1)
-                last_nudge = db.query(Comment).filter(
-                    Comment.request_id == task.id,
-                    Comment.username == "Smart Assistant 🤖",
-                    Comment.timestamp >= today,
-                    Comment.timestamp < tomorrow,
-                    Comment.text.like("%**Auto Nudge:**%")
-                ).first()
+            assignees = get_assignees(task.requester)
+            targets = assignees.copy()
+            if task.owner_username:
+                targets.add(task.owner_username)
 
-                if not last_nudge:
-                    now_full = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    new_comment = Comment(
-                        request_id=task.id,
-                        username="Smart Assistant 🤖",
-                        text=msg,
-                        timestamp=now_full
-                    )
-                    db.add(new_comment)
-                    db.commit()
-                    
-                    for m in targets:
-                        create_notification(
-                            db, m, f"Auto Nudge: {task.project_name} is {'overdue' if days_diff < 0 else 'due soon'}.", "auto_nudge", task.id
-                        )
-        
-        # Log successful run today
+            pending_subtasks = db.query(Subtask).filter(
+                Subtask.request_id == task.id, Subtask.is_done == 0
+            ).all()
+            for st in pending_subtasks:
+                if st.assignee:
+                    targets.add(st.assignee)
+
+            if not targets:
+                nudge_skipped_no_target += 1
+                print(f"[Auto Nudge] ⚠️  Task ID={task.id} '{task.project_name}' — tidak ada target assignee, skip.")
+                continue
+
+            mention_str = " ".join([f"@{m}" for m in targets])
+
+            if days_diff > 0:
+                msg = f"🔔 **Auto Nudge:** {mention_str}\nThis task is due in **{days_diff} day(s)**. Please ensure everything is on track!"
+            elif days_diff == 0:
+                msg = f"🚨 **Auto Nudge:** {mention_str}\nThis task is due **TODAY**. Please complete it as soon as possible."
+            else:
+                msg = f"🔴 **Auto Nudge:** {mention_str}\nThis task is **OVERDUE** by {abs(days_diff)} day(s). Immediate action is required!"
+
+            # Anti-spam: cek apakah sudah ada nudge hari ini
+            tomorrow_naive = today_naive + timedelta(days=1)
+            last_nudge = db.query(Comment).filter(
+                Comment.request_id == task.id,
+                Comment.username == "Smart Assistant 🤖",
+                Comment.timestamp >= today_naive,
+                Comment.timestamp < tomorrow_naive,
+                Comment.text.like("%**Auto Nudge:**%")
+            ).first()
+            
+            if last_nudge:
+                nudge_skipped_dup += 1
+                print(f"[Auto Nudge] 🔁 Task ID={task.id} '{task.project_name}' — sudah di-nudge hari ini, skip duplikat.")
+                continue
+
+            now_full = now_wib.strftime("%Y-%m-%d %H:%M:%S")
+            new_comment = Comment(
+                request_id=task.id,
+                username="Smart Assistant 🤖",
+                text=msg,
+                timestamp=now_full
+            )
+            db.add(new_comment)
+            db.commit()
+
+            for m in targets:
+                create_notification(
+                    db, m,
+                    f"Auto Nudge: {task.project_name} is {'overdue' if days_diff < 0 else 'due soon'}.",
+                    "auto_nudge", task.id
+                )
+
+            nudge_sent += 1
+            status_label = f"OVERDUE +{abs(days_diff)}d" if days_diff < 0 else f"H-{days_diff}"
+            print(f"[Auto Nudge] ✅ Nudge terkirim — Task ID={task.id} '{task.project_name}' ({status_label}) → {', '.join(targets)}")
+
+        print(f"[Auto Nudge] 📊 Selesai: {nudge_sent} terkirim, {nudge_skipped_dup} skip duplikat, {nudge_skipped_no_date} skip no-date, {nudge_skipped_no_target} skip no-target.")
+
+        # Log tanggal run terakhir
         from database import set_security_log
         set_security_log(db, "auto_nudge_last_run_date", now_str)
+        print(f"[Auto Nudge] 💾 Last run date disimpan: {now_str}")
+        
         
     except Exception as e:
-        print(f"Auto Nudge Error: {e}")
+        print(f"[Auto Nudge] ❌ ERROR: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         db.close()
 
@@ -598,21 +650,30 @@ app.include_router(articles_router)
 
 
 def run_startup_auto_nudge():
-    # Only run if current local time is past 08:00 AM
-    now = datetime.now()
-    if now.hour < 8:
+    # Gunakan waktu WIB (Asia/Jakarta = UTC+7)
+    now_wib = datetime.now(WIB)
+    print(f"[Auto Nudge Startup] Waktu server WIB saat ini: {now_wib.strftime('%Y-%m-%d %H:%M:%S')} WIB")
+
+    # Hanya jalankan jika sudah lewat jam 08:00 WIB
+    if now_wib.hour < 8:
+        print(f"[Auto Nudge Startup] Belum jam 08:00 WIB (sekarang {now_wib.hour:02d}:{now_wib.minute:02d}), skip.")
         return
         
     db = SessionLocal()
     try:
         from database import get_security_log
-        today_str = now.strftime("%Y-%m-%d")
+        today_str = now_wib.strftime("%Y-%m-%d")
         last_run = get_security_log(db, "auto_nudge_last_run_date", "")
+        print(f"[Auto Nudge Startup] Last run tercatat: '{last_run}', hari ini: '{today_str}'")        
         if last_run != today_str:
-            # Haven't run today yet (missed due to cold start), let's run it
+            print(f"[Auto Nudge Startup] Belum run hari ini, menjalankan auto nudge...")
             run_auto_nudge()
+        else:
+            print(f"[Auto Nudge Startup] Sudah run hari ini ({last_run}), skip.")            
     except Exception as e:
-        print(f"Startup Auto Nudge error: {e}")
+        print(f"[Auto Nudge Startup] ERROR: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         db.close()
 
