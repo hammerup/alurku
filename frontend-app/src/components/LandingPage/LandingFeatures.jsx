@@ -359,8 +359,10 @@ export default function LandingFeatures({ showAuthForm, language }) {
               </p>
             </div>
 
-            <div className="space-y-32">              {/* Pillar 1: Automated AI Planning */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">                {/* Visual Mockup (Left) */}
+            <div className="space-y-32">
+              {/* Pillar 1: Automated AI Planning */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
+                {/* Visual Mockup (Left) */}
                 <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-0 shadow-xl overflow-hidden order-2 md:order-1 min-h-95 flex">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
                   
@@ -371,57 +373,56 @@ export default function LandingFeatures({ showAuthForm, language }) {
                         {/* Heading */}
                         <div>
                           <h4 className="font-bold text-slate-800 dark:text-white text-xs leading-none">
-                            {t("What do you want to achieve today?", "Apa yang ingin Anda capai hari ini?")}
+                            {t("Project goal", "Tujuan proyek")}
                           </h4>
-                          <span className="text-[8px] text-slate-400 font-bold block mt-1">
-                            {t("AI will structure your goals into actionable items.", "AI akan menyusun tujuan Anda menjadi daftar tugas.")}
+                          <span className="text-[8px] text-slate-400 font-medium block mt-1">
+                            {t("AI will break this down for you.", "AI akan menguraikan ini untuk Anda.")}
                           </span>
                         </div>
 
                         {/* Input Box */}
-                        <div className="border border-slate-200 dark:border-slate-850 rounded-xl p-2.5 bg-slate-50 dark:bg-neutral-950/40 flex justify-between items-center">
-                          <span className="text-[9px] text-slate-500 dark:text-slate-450 font-medium truncate flex-1 pr-2">
-                            {t("I need to plan a marketing campaign for next week...", "Saya perlu merencanakan kampanye pemasaran untuk minggu depan...")}
+                        <div className="border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 bg-slate-50 dark:bg-neutral-950/40 flex justify-between items-center shadow-inner">
+                          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium truncate flex-1 pr-2">
+                            {t("Plan marketing campaign...", "Rencanakan kampanye pemasaran...")}
                           </span>
-                          <span className="w-5 h-5 rounded bg-slate-200 dark:bg-slate-800 text-[9px] flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0 font-bold">
-                            ▲
+                          <span className="w-5 h-5 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-[9px] flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 font-bold shadow-sm">
+                            ✨
                           </span>
                         </div>
 
                         {/* Generated Tasks list */}
                         <div className="space-y-2">
                           <div className="flex justify-between items-center text-[9px] font-bold text-slate-400">
-                            <span className="uppercase tracking-wider text-slate-800 dark:text-slate-300">{t("Generated Tasks", "Tugas yang Dihasilkan")}</span>
-                            <span className="hover:underline cursor-pointer">{t("Deselect All", "Batal Semua")}</span>
+                            <span className="text-slate-700 dark:text-slate-300">{t("Generated tasks", "Tugas dihasilkan")}</span>
+                            <span className="hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer font-medium">{t("Deselect all", "Batal semua")}</span>
                           </div>
-                                                  {/* Task items */}
+                          
+                          {/* Task items */}
                           <div className="space-y-2">
-                            <div className="bg-slate-50/50 dark:bg-slate-800/40 border border-slate-150 dark:border-slate-800 rounded-xl p-2.5 shadow-sm flex items-start gap-2">
-                              <input type="checkbox" readOnly checked className="rounded text-indigo-600 mt-0.5" />
-                              <div className="flex-1 space-y-1">
+                            <div className="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 shadow-sm flex items-start gap-2 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors">
+                              <input type="checkbox" readOnly checked className="rounded-sm text-indigo-500 focus:ring-indigo-500 mt-0.5" />
+                              <div className="flex-1 space-y-1.5">
                                 <span className="font-bold text-[9px] text-slate-800 dark:text-slate-200 leading-tight block">
-                                  2. Channel Selection and Budget Allocation
+                                  Channel selection & budget
                                 </span>
-                                <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
-                                <div className="flex gap-1.5 text-[7px] font-bold text-slate-400 pt-0.5">
-                                  <span className="bg-slate-100 dark:bg-slate-800 px-1 rounded text-slate-500">MARKETING</span>
-                                  <span className="text-blue-500 font-black">@budi</span>
-                                  <span className="bg-amber-50/50 text-amber-600 dark:bg-amber-950/20 px-1 rounded flex items-center gap-0.5">📁 TO-DO LIST (PRI...</span>
+                                <div className="h-1.5 bg-slate-200 dark:bg-slate-700/60 rounded w-5/6"></div>
+                                <div className="flex gap-1.5 text-[7px] font-semibold text-slate-400 pt-1">
+                                  <span className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-md text-slate-500">Marketing</span>
+                                  <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded-md">@budi</span>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="bg-slate-50/50 dark:bg-slate-800/40 border border-slate-150 dark:border-slate-800 rounded-xl p-2.5 shadow-sm flex items-start gap-2">
-                              <input type="checkbox" readOnly checked className="rounded text-indigo-600 mt-0.5" />
-                              <div className="flex-1 space-y-1">
+                            <div className="bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl p-2.5 shadow-sm flex items-start gap-2 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors">
+                              <input type="checkbox" readOnly checked className="rounded-sm text-indigo-500 focus:ring-indigo-500 mt-0.5" />
+                              <div className="flex-1 space-y-1.5">
                                 <span className="font-bold text-[9px] text-slate-800 dark:text-slate-200 leading-tight block">
-                                  3. Content Creation and Distribution
+                                  Content creation & distribution
                                 </span>
-                                <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
-                                <div className="flex gap-1.5 text-[7px] font-bold text-slate-400 pt-0.5">
-                                  <span className="bg-slate-100 dark:bg-slate-800 px-1 rounded text-slate-500">MARKETING</span>
-                                  <span className="text-blue-500 font-black">@budi</span>
-                                  <span className="bg-amber-50/50 text-amber-600 dark:bg-amber-950/20 px-1 rounded flex items-center gap-0.5">📁 TO-DO LIST (PRI...</span>
+                                <div className="h-1.5 bg-slate-200 dark:bg-slate-700/60 rounded w-2/3"></div>
+                                <div className="flex gap-1.5 text-[7px] font-semibold text-slate-400 pt-1">
+                                  <span className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-md text-slate-500">Marketing</span>
+                                  <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded-md">@budi</span>
                                 </div>
                               </div>
                             </div>
@@ -430,45 +431,57 @@ export default function LandingFeatures({ showAuthForm, language }) {
                       </div>
 
                       {/* Add to Inbox Action */}
-                      <div className="flex justify-end pt-2 border-t dark:border-slate-800 mt-2">
-                        <button className="bg-black dark:bg-white text-white dark:text-black font-extrabold text-[8px] sm:text-[9px] py-1.5 px-3 rounded-full shadow-md flex items-center gap-1 hover:scale-105 transition-all">
-                          📌 {t("ADD TO INBOX", "TAMBAH KE INBOX")}
+                      <div className="flex justify-end pt-2 mt-2">
+                        <button className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-[8px] sm:text-[9px] py-1.5 px-3.5 rounded-lg shadow-sm flex items-center gap-1.5 hover:shadow-md transition-all">
+                          <span>+</span> {t("Add to inbox", "Tambah ke inbox")}
                         </button>
                       </div>
                     </div>
 
                     {/* Right Panel: Inbox Sidebar (1/3 width) */}
-                    <div className="p-4 bg-slate-50/80 dark:bg-neutral-950/40 flex flex-col justify-between h-full min-h-55">
-                      <div className="space-y-3">
+                    <div className="p-4 bg-slate-50/50 dark:bg-neutral-950/20 flex flex-col justify-between h-full min-h-55">
+                      <div className="space-y-4">
                         {/* Inbox Header */}
-                        <div className="flex items-center gap-1.5 border-b pb-2 dark:border-slate-800">
-                          <span className="text-xs">📥</span>
-                          <div>
-                            <span className="font-black text-[9px] text-slate-800 dark:text-white block uppercase tracking-wider leading-none">INBOX</span>
-                            <span className="text-[6px] text-slate-400 font-bold block uppercase tracking-widest leading-none mt-1">READY TO DISPATCH</span>
+                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700">
+                              <span className="text-[10px]">📥</span>
+                            </div>
+                            <div>
+                              <span className="font-black text-[10px] text-slate-800 dark:text-white block leading-none">Inbox</span>
+                              <span className="text-[7px] text-slate-400 font-semibold block mt-1">Ready to dispatch</span>
+                            </div>
                           </div>
+                          <span className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[8px] font-bold px-1.5 py-0.5 rounded-full">3</span>
                         </div>
 
                         {/* Inbox Card */}
-                        <div className="bg-white dark:bg-neutral-900 border border-slate-150 dark:border-slate-800 rounded-xl p-2.5 shadow-sm space-y-1.5">
-                          <div className="flex gap-1 text-[6px] font-bold">
-                            <span className="bg-amber-50 text-amber-600 dark:bg-amber-950/40 px-1 rounded">📁 To-do List</span>
-                            <span className="text-slate-400 dark:text-slate-500">/ Marketing</span>
+                        <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm hover:shadow-md transition-all cursor-default space-y-2 relative group">
+                          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 text-[10px]">⋮</div>
+                          <div className="flex gap-1.5 text-[7px] font-semibold">
+                            <span className="bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/40 dark:border-amber-900/50 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                              <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                              To-do list
+                            </span>
                           </div>
-                          <span className="font-bold text-[9px] text-slate-800 dark:text-slate-200 leading-tight block">
-                            [NEW PRODUCT] 1. CAMPAIGN OBJECTIVE
+                          <span className="font-bold text-[10px] text-slate-800 dark:text-slate-200 leading-tight block pr-4">
+                            Campaign objective
                           </span>
-                          <div className="h-1.5 bg-slate-250 dark:bg-slate-700 rounded w-5/6"></div>
-                          <div className="flex gap-1 text-[6px] font-bold pt-0.5">
-                            <span className="bg-red-50 text-red-500 dark:bg-red-950/30 px-1 rounded">🔥 HIGH</span>
-                            <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 px-1 rounded">⏳ 4.0H</span>
+                          <div className="h-1.5 bg-slate-100 dark:bg-slate-800/80 rounded w-5/6"></div>
+                          <div className="flex gap-1.5 text-[7px] font-bold pt-1">
+                            <span className="bg-red-50 text-red-600 border border-red-100 dark:bg-red-950/30 dark:border-red-900/50 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span> High priority
+                            </span>
+                            <span className="bg-slate-50 border border-slate-200 text-slate-500 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 px-1.5 py-0.5 rounded-md">
+                              4h
+                            </span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Dispatch button */}
-                      <button className="w-full bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] font-extrabold text-[8px] sm:text-[9px] py-2 rounded-xl shadow-md uppercase tracking-wider mt-4 hover:opacity-90 transition-all">
-                        {t("FINISH & GO TO PROJECT", "SELESAI & BUKA PROYEK")}
+                      <button className="w-full bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] font-bold text-[9px] py-2.5 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex justify-center items-center gap-1.5 mt-4">
+                        {t("Dispatch to project", "Kirim ke proyek")}
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                       </button>
                     </div>
                   </div>
