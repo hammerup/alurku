@@ -638,7 +638,7 @@ export default function TableList({
                   {/* Assignee Input */}
                   <div className="relative group">
                     <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
-                      <span className="text-[10px] uppercase font-bold text-neutral-400">👤</span>
+                      <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                       <input
                         type="text"
                         value={quickAddData.requester}
@@ -711,14 +711,13 @@ export default function TableList({
                     onChange={(e) => setQuickAddData({ ...quickAddData, impact: e.target.value })}
                     className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 ring-indigo-500/50 cursor-pointer"
                   >
-                    <option value="High">🔥 High Impact</option>
-                    <option value="Medium">⚡ Med Impact</option>
-                    <option value="Low">🧊 Low Impact</option>
+                    <option value="High">High Impact</option>
+                    <option value="Medium">Medium Impact</option>
+                    <option value="Low">Low Impact</option>
                   </select>
 
-                  {/* Deadline Input */}
-                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
-                    <span className="text-[10px] uppercase font-bold text-neutral-400">📅</span>
+                  {/* Dea                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
+                    <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     <input
                       type="date"
                       value={quickAddData.deadline}
@@ -726,10 +725,10 @@ export default function TableList({
                       className="bg-transparent border-none focus:ring-0 outline-none text-xs font-bold text-slate-700 dark:text-slate-300"
                     />
                   </div>
-
+ 
                   {/* ETC Input */}
                   <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
-                    <span className="text-[10px] uppercase font-bold text-neutral-400">⏱️</span>
+                    <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <input
                       type="number"
                       step="0.5"
@@ -900,7 +899,7 @@ export default function TableList({
                             : task.status === 'In Progress' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'
                             : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
                           }`}>
-                            {task.status}
+                            {task.status === 'Pending' ? 'To do' : task.status}
                           </span>
 
                           {/* Impact Badge */}
@@ -1006,7 +1005,10 @@ export default function TableList({
                 onClick={() => setShowCompletedMobile(!showCompletedMobile)}
                 className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-slate-800 dark:text-white uppercase tracking-widest hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
               >
-                <span className="flex items-center gap-2">✅ Completed Tasks <span className="bg-neutral-200 dark:bg-neutral-700 px-2 py-0.5 rounded-full text-[10px]">{doneTasks.length}</span></span>
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Completed Tasks <span className="bg-neutral-200 dark:bg-neutral-700 px-2 py-0.5 rounded-full text-[10px]">{doneTasks.length}</span>
+                </span>
                 <span className="text-lg leading-none">{showCompletedMobile ? '▾' : '▸'}</span>
               </button>
               
@@ -1155,7 +1157,8 @@ export default function TableList({
         <div className="hidden xl:flex flex-col w-80 shrink-0">
           <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-3xl flex flex-col flex-1 min-h-0">
             <h3 className="p-6 text-base font-black text-slate-800 dark:text-white border-b border-neutral-200 dark:border-neutral-800 shrink-0 flex items-center gap-2">
-              ✅ Completed Tasks
+              <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Completed Tasks
             </h3>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-neutral-50/30 dark:bg-neutral-950/30">
               {visibleDoneTasks.length > 0 ? (

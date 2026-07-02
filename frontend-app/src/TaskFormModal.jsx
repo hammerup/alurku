@@ -215,7 +215,7 @@ Format:
         }`}
       >
         <div className="flex justify-between items-center p-5 sm:p-8 md:px-12 md:py-8 border-b border-neutral-200 dark:border-neutral-800 shrink-0 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl z-20">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-black dark:text-white uppercase tracking-tight flex items-center gap-2 sm:gap-3">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-black dark:text-white tracking-tight flex items-center gap-2 sm:gap-3">
             {formMode === 'ai' ? '✨' : <IconPlus className="w-6 h-6 sm:w-8 sm:h-8" />}
             {formMode === 'ai' ? tMsg('Smart Assistant', 'Asisten Pintar') : tMsg('Add Task', 'Tugas Baru')}
           </h2>
@@ -265,7 +265,7 @@ Format:
               {isGeneratingTask && (
                 <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center">
                   <LoadingSpinner />
-                  <span className="text-xs font-bold text-indigo-600 mt-3 uppercase tracking-widest animate-pulse">
+                  <span className="text-xs font-bold text-indigo-600 mt-3 animate-pulse">
                     {tMsg('Drafting Task...', 'Menyusun Tugas...')}
                   </span>
                 </div>
@@ -280,7 +280,7 @@ Format:
                   if (handleManualFormClick) handleManualFormClick();
                 }}
                 disabled={isGeneratingTask}
-                className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 font-bold py-4 rounded-full uppercase tracking-widest text-xs hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors shadow-sm disabled:opacity-50 tour-form-manual-btn"
+                className="flex-1 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 font-bold py-4 rounded-full text-xs hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors shadow-sm disabled:opacity-50 tour-form-manual-btn"
               >
                 {tMsg('Just Fill Manually', 'Isi Manual Saja')}
               </button>
@@ -288,7 +288,7 @@ Format:
                 type="button"
                 onClick={handleAiSubmit}
                 disabled={!aiPrompt.trim() || isGeneratingTask}
-                className="flex-1 bg-indigo-600 text-white font-bold py-4 rounded-full uppercase tracking-widest text-xs hover:bg-indigo-700 transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-indigo-600 text-white font-bold py-4 rounded-full text-xs hover:bg-indigo-700 transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ✨ {tMsg('Draft with AI', 'Buat dengan AI')}
               </button>
@@ -312,10 +312,11 @@ Format:
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-6 mb-6 relative z-50">
                   <div className="sm:col-span-2 group tour-form-requester relative z-50">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-                      <span className="text-base">👤</span> {tMsg('Assignee / Requester', 'Pekerja / Peminta')}
+                    <label className="flex items-center gap-2 mb-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      {tMsg('Assignee / Requester', 'Pekerja / Peminta')}
                     </label>
-                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center relative h-[46px] sm:h-[50px]">
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center relative h-11.5 sm:h-12.5">
                       <input
                         type="text"
                         value={formData.requester}
@@ -368,15 +369,15 @@ Format:
                                 >
                                   <span>@{m}</span>
                                   {!teamMembers.includes(m) && (
-                                    <span className="text-[8px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest ml-auto">
+                                    <span className="text-[8px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold ml-auto">
                                       + Auto-Invite
                                     </span>
                                   )}
                                 </div>
                               ))
                           ) : (
-                            <div className="px-4 py-3 text-xs text-neutral-400 uppercase tracking-widest font-bold">
-                              {tMsg('NO MEMBERS FOUND', 'TIDAK ADA ANGGOTA DITEMUKAN')}
+                            <div className="px-4 py-3 text-xs text-neutral-400 font-bold">
+                              {tMsg('No members found', 'Tidak ada anggota ditemukan')}
                             </div>
                           )}
                         </div>
@@ -385,15 +386,16 @@ Format:
                   </div>
 
                   <div className="sm:col-span-2 group">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-                      <span className="text-base">📂</span> {tMsg('Category', 'Kategori')}
+                    <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                      {tMsg('Category', 'Kategori')}
                     </label>
                     <div className="flex gap-1.5 sm:gap-2">
-                      <div className="flex-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center min-w-0 h-[46px] sm:h-[50px]">
+                      <div className="flex-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center min-w-0 h-11.5 sm:h-12.5">
                         <select
                           value={formData.category || categories[0] || ''}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                          className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                         >
                           {categories.map((c) => (
                             <option key={c} value={c}>
@@ -409,27 +411,28 @@ Format:
                       <button
                         type="button"
                         onClick={() => handleOpenAddBoard('Category')}
-                        className="bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 px-3 sm:px-4 rounded-2xl transition-colors text-sm font-bold flex items-center justify-center shrink-0 shadow-sm h-[46px] sm:h-[50px]"
+                        className="bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 px-3 sm:px-4 rounded-2xl transition-colors text-sm font-bold flex items-center justify-center shrink-0 shadow-sm h-11.5 sm:h-12.5"
                         title={tMsg('Add New Category', 'Tambah Kategori Baru')}
                       >
-                        ➕
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                       </button>
                     </div>
                   </div>
 
                   <div className="sm:col-span-1 group">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2 min-h-[16px]">
-                      <span className="text-base">💥</span> {tMsg('Impact', 'Dampak')}
+                    <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                      {tMsg('Impact', 'Dampak')}
                     </label>
-                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-[46px] sm:h-[50px]">
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-11.5 sm:h-12.5">
                       <select
                         value={formData.impact || 'Medium'}
                         onChange={(e) => setFormData({ ...formData, impact: e.target.value })}
-                        className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                        className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                       >
-                        <option value="High">🔥 High</option>
-                        <option value="Medium">⚡ Medium</option>
-                        <option value="Low">🧊 Low</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
                       </select>
                     </div>
                   </div>
@@ -437,42 +440,45 @@ Format:
 
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   <div className="group">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2 min-h-[16px]">
-                      <span className="text-base">🗓️</span> {tMsg('Start Date', 'Tanggal Mulai')}
+                    <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      {tMsg('Start Date', 'Tanggal Mulai')}
                     </label>
-                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-[46px] sm:h-[50px]">
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-11.5 sm:h-12.5">
                       <input
                         type="date"
                         value={formData.start_date}
                         onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                        className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider h-full"
+                        className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none h-full"
                         required
                       />
                     </div>
                   </div>
                   <div className="group tour-form-deadline">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2 min-h-[16px]">
-                      <span className="text-base">📅</span> {tMsg('Deadline', 'Tenggat Waktu')}
+                    <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      {tMsg('Deadline', 'Tenggat Waktu')}
                     </label>
-                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-[46px] sm:h-[50px]">
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-11.5 sm:h-12.5">
                       <input
                         type="date"
                         value={formData.deadline}
                         onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                        className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider h-full"
+                        className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none h-full"
                         required
                       />
                     </div>
                   </div>
                   <div className="group">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2 min-h-[16px]">
-                      <span className="text-base">🔁</span> {tMsg('Recurring', 'Berulang')}
+                    <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                      {tMsg('Recurring', 'Berulang')}
                     </label>
-                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-[46px] sm:h-[50px]">
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-11.5 sm:h-12.5">
                       <select
                         value={formData.recurring || 'none'}
                         onChange={(e) => setFormData({ ...formData, recurring: e.target.value })}
-                        className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                        className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                       >
                         <option value="none">{tMsg('None', 'Tidak')}</option>
                         <option value="daily">{tMsg('Daily', 'Harian')}</option>
@@ -482,10 +488,11 @@ Format:
                     </div>
                   </div>
                   <div className="group">
-                    <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2 min-h-[16px]">
-                      <span className="text-base">⏳</span> {tMsg('ETC (Hrs)', 'ETC (Jam)')}
+                    <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      {tMsg('ETC (Hrs)', 'ETC (Jam)')}
                     </label>
-                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center p-1.5 h-[46px] sm:h-[50px]">
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center p-1.5 h-11.5 sm:h-12.5">
                       <button
                         type="button"
                         onClick={() =>
@@ -525,8 +532,9 @@ Format:
                 </div>
 
                 <div className="group pt-2">
-                  <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <span className="text-base">📝</span> {tMsg('Description', 'Deskripsi')}
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                    <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    {tMsg('Description', 'Deskripsi')}
                   </label>
                   <div className="bg-neutral-100 dark:bg-neutral-900 rounded-3xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all p-2">
                     <div className="flex gap-2 mb-2 px-2 pb-2 border-b border-neutral-200 dark:border-neutral-800">
@@ -578,7 +586,7 @@ Format:
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-sm font-medium text-black dark:text-white min-h-[100px] resize-y outline-none placeholder-neutral-400 leading-relaxed"
+                      className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-sm font-medium text-black dark:text-white min-h-25 resize-y outline-none placeholder-neutral-400 leading-relaxed"
                       placeholder={tMsg('Add details or notes...', 'Tambahkan detail atau catatan...')}
                     ></textarea>
                   </div>
@@ -591,8 +599,8 @@ Format:
                 </div>
 
                 <div className="group pt-2">
-                  <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <span className="text-base">🔗</span>{' '}
+                  <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                    <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     {tMsg('External Links / Supporting Access', 'Tautan Eksternal / Akses Pendukung')}
                   </label>
                   <div className="flex flex-col gap-2 w-full min-w-0">
@@ -634,17 +642,19 @@ Format:
                         const arr = formData.supporting_access ? formData.supporting_access.split('\n') : [''];
                         setFormData({ ...formData, supporting_access: [...arr, ''].join('\n') });
                       }}
-                      className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 self-start mt-1 flex items-center gap-1.5 uppercase tracking-widest transition-colors bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg"
+                      className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 self-start mt-1 flex items-center gap-1.5 transition-colors bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg"
                     >
-                      <span>➕</span> {tMsg('Add Another Link', 'Tambah Tautan Lainnya')}
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                      {tMsg('Add Another Link', 'Tambah Tautan Lainnya')}
                     </button>
                   </div>
                 </div>
               </div>
 
               <div className="group pt-8 mt-8 border-t border-neutral-200 dark:border-neutral-800 tour-form-checklist">
-                <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <span className="text-base">📋</span> {tMsg('Sub-task Checklist', 'Daftar Periksa Sub-tugas')}
+                <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-4">
+                  <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                  {tMsg('Sub-task Checklist', 'Daftar Periksa Sub-tugas')}
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2 mb-4">
                   <input
@@ -675,9 +685,9 @@ Format:
                   <button
                     type="button"
                     onClick={handleAddFormSubtask}
-                    className="bg-black dark:bg-white text-white dark:text-black hover:opacity-80 px-6 py-3.5 rounded-xl text-xs font-bold transition-all uppercase tracking-widest shadow-md hover:-translate-y-0.5"
+                    className="bg-black dark:bg-white text-white dark:text-black hover:opacity-80 px-6 py-3.5 rounded-xl text-xs font-bold transition-all shadow-md hover:-translate-y-0.5"
                   >
-                    {tMsg('ADD', 'TAMBAH')}
+                    {tMsg('Add', 'Tambah')}
                   </button>
                 </div>
 
@@ -688,7 +698,7 @@ Format:
                         key={i}
                         className="flex items-center justify-between bg-neutral-50 dark:bg-neutral-900 px-5 py-3 rounded-2xl border border-neutral-100 dark:border-neutral-800 group/item transition-colors"
                       >
-                        <div className="flex items-center gap-4 flex-1 break-words">
+                        <div className="flex items-center gap-4 flex-1 wrap-break-word">
                           <span className="w-4 h-4 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-black shrink-0"></span>
                           <span className="text-sm font-medium text-black dark:text-white">{st.task_name}</span>
                           {st.assignee && (
@@ -714,14 +724,14 @@ Format:
               <button
                 type="button"
                 onClick={handleCancel}
-                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors uppercase tracking-widest text-xs"
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors text-xs"
               >
                 {tMsg('Cancel', 'Batal')}
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full sm:w-auto px-10 py-4 rounded-full font-bold text-white transition-all uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-lg border border-black dark:border-white ${
+                className={`w-full sm:w-auto px-10 py-4 rounded-full font-bold text-white transition-all text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-lg border border-black dark:border-white ${
                   isSubmitting
                     ? 'bg-neutral-600 dark:bg-neutral-400 dark:text-neutral-900 border-neutral-600 dark:border-neutral-400'
                     : 'bg-black dark:bg-white dark:text-black hover:opacity-80 hover:-translate-y-0.5 tour-form-submit'

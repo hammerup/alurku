@@ -214,7 +214,9 @@ export default function MainToolbar() {
           <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <div className="relative flex-1 md:flex-initial">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10 pointer-events-none">
-                🔍
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </span>
               <input
                 type="text"

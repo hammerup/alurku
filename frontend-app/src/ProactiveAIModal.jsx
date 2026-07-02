@@ -747,20 +747,20 @@ USER REQUEST:
                         <div className="flex-1">
                           <h4 className="font-bold text-black dark:text-white text-sm mb-1">{t.project_name}</h4>
                           <div className="flex flex-wrap gap-2 mb-2">
-                            <span className="text-[9px] font-bold bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-600 dark:text-neutral-400 inline-block uppercase tracking-wider">
+                            <span className="text-[9px] font-bold bg-neutral-200 dark:bg-neutral-800 px-2 py-0.5 rounded text-neutral-600 dark:text-neutral-400 inline-block">
                               {t.category}
                             </span>
-                            <span className="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-indigo-700 dark:text-indigo-400 inline-block uppercase tracking-wider">
+                            <span className="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-indigo-700 dark:text-indigo-400 inline-block">
                               {t.requester || `@${currentUser}`}
                             </span>
                             {t.deadline && (
-                              <span className="text-[9px] font-bold bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded text-rose-700 dark:text-rose-400 inline-block uppercase tracking-wider">
+                              <span className="text-[9px] font-bold bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded text-rose-700 dark:text-rose-400 inline-block">
                                 📅 {formatDateMMM(t.deadline)}
                               </span>
                             )}
                             {t.auto_nudge && (
-                              <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded text-purple-700 dark:text-purple-400 inline-block uppercase tracking-wider">
-                                🔔 Auto Nudge ON
+                              <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded text-purple-700 dark:text-purple-400 inline-block">
+                                🔔 Auto nudge on
                               </span>
                             )}
                             <select
@@ -771,7 +771,7 @@ USER REQUEST:
                                   prev.map((item) => (item.id === t.id ? { ...item, target_board_id: newId } : item))
                                 );
                               }}
-                              className="text-[9px] font-bold bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded text-amber-700 dark:text-amber-400 inline-block uppercase tracking-wider outline-none cursor-pointer max-w-35 truncate [&>option]:bg-white dark:[&>option]:bg-neutral-900 [&>option]:text-black dark:[&>option]:text-white"
+                              className="text-[9px] font-bold bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded text-amber-700 dark:text-amber-400 inline-block outline-none cursor-pointer max-w-35 truncate [&>option]:bg-white dark:[&>option]:bg-neutral-900 [&>option]:text-black dark:[&>option]:text-white"
                             >
                               {boards
                                 .filter((b) => b.id !== 'global')
@@ -820,7 +820,7 @@ USER REQUEST:
                     <button
                       onClick={handleSaveSelected}
                       disabled={isSaving || isProcessing || !generatedTasks.some((t) => t.selected)}
-                      className="w-full sm:w-auto bg-black dark:bg-white text-white dark:text-black px-8 py-3.5 rounded-full font-bold uppercase tracking-widest text-xs shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 pointer-events-auto"
+                      className="w-full sm:w-auto bg-black dark:bg-white text-white dark:text-black px-8 py-3.5 rounded-full font-bold text-xs shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 pointer-events-auto"
                     >
                       {isSaving ? <LoadingSpinner /> : '🚀'}
                       {isSaving
@@ -837,12 +837,16 @@ USER REQUEST:
           {(isCartVisible || inboxTasks.length > 0) && (
             <div className="w-full lg:w-80 flex flex-col shrink-0 bg-neutral-50 dark:bg-neutral-900/50 rounded-3xl p-4 md:p-5 border border-neutral-200 dark:border-neutral-800 shadow-sm animate-slide-in-right lg:h-full lg:overflow-hidden mt-4 lg:mt-0 mb-8 lg:mb-0">
               <div className="flex items-center gap-3 mb-4 md:mb-6 shrink-0">
-                <span className="text-2xl">🛒</span>
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-sm shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0H4m16 0v1a2 2 0 01-2 2H6a2 2 0 01-2-2v-1m2 4h12" />
+                  </svg>
+                </div>
                 <div>
-                  <h2 className="font-black text-base sm:text-lg text-black dark:text-white uppercase tracking-tight">
+                  <h2 className="font-black text-base sm:text-lg text-black dark:text-white tracking-tight">
                     {tMsg('Inbox', 'Kotak Masuk')}
                   </h2>
-                  <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest">
+                  <p className="text-[9px] font-bold text-neutral-500">
                     {tMsg('Ready to dispatch', 'Siap untuk dikirim')}
                   </p>
                 </div>
@@ -869,7 +873,7 @@ USER REQUEST:
                     </div>
 
                     <div className="mb-2">
-                      <div className="font-bold text-sm text-black dark:text-white wrap-break-word uppercase tracking-wider leading-snug line-clamp-2">
+                      <div className="font-bold text-sm text-black dark:text-white wrap-break-word leading-snug line-clamp-2">
                         {t.project_name}
                       </div>
                       {t.description && (
@@ -879,7 +883,7 @@ USER REQUEST:
                       )}
                       <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                         <span
-                          className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm ${
+                          className={`text-[9px] font-bold px-2 py-1 rounded-md shadow-sm ${
                             t.impact === 'High'
                               ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'
                               : t.impact === 'Low'
@@ -889,17 +893,17 @@ USER REQUEST:
                         >
                           {t.impact === 'High' ? '🔥 High' : t.impact === 'Low' ? '🧊 Low' : '⚡ Med'}
                         </span>
-                        <span className="text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                        <span className="text-[9px] font-bold px-2 py-1 rounded-md shadow-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                           ⏳ {t.etc || 2}h
                         </span>
                         {t.auto_nudge && (
-                          <span className="text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                            🔔 Auto Nudge ON
+                          <span className="text-[9px] font-bold px-2 py-1 rounded-md shadow-sm bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                            🔔 Auto nudge on
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 mt-2.5 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/50 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">
+                    <div className="flex flex-col gap-2 mt-2.5 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/50 text-[9px] font-bold text-neutral-500 dark:text-neutral-400">
                       <div className="flex justify-between items-center">
                         <span title="Created At">✨ AI Draft</span>
                         <span className="text-black dark:text-white">
@@ -948,7 +952,7 @@ USER REQUEST:
                 <button
                   onClick={handleFinish}
                   disabled={isFinishing}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-full font-bold uppercase tracking-widest text-xs shadow-md transition-colors pointer-events-auto flex items-center justify-center gap-2"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-4 rounded-full font-bold text-xs shadow-md transition-colors pointer-events-auto flex items-center justify-center gap-2"
                 >
                   {isFinishing ? <LoadingSpinner /> : null}
                   {isFinishing

@@ -103,12 +103,12 @@ export default function KanbanBoard({
                         : 'bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 transition-all duration-300'
                     } ${
                       isOriginalBeingDragged
-                        ? '!opacity-0 !shadow-none !border-transparent !bg-transparent'
+                        ? 'opacity-0! shadow-none! border-transparent! bg-transparent!'
                         : snapshot.isDragging && isTrashHovered
-                        ? 'cursor-grabbing z-[99999] !opacity-0 !bg-transparent !border-transparent !shadow-none'
+                        ? 'cursor-grabbing z-99999 opacity-0! bg-transparent! border-transparent! shadow-none!'
                         : snapshot.isDragging
-                        ? 'shadow-2xl cursor-grabbing z-[99999] border-indigo-500 dark:border-indigo-400 ring-4 ring-indigo-500/30'
-                        : 'shadow-sm cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700 transition-shadow transition-colors duration-200'
+                        ? 'shadow-2xl cursor-grabbing z-99999 border-indigo-500 dark:border-indigo-400 ring-4 ring-indigo-500/30'
+                        : 'shadow-sm cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700 transition-shadow duration-200'
                     } ${task.status === 'Done' || task.status === 'Rejected' ? 'opacity-50 hover:opacity-100' : ''} ${
                       isClone ? 'rotate-3 scale-105' : ''
                     }`}
@@ -139,7 +139,7 @@ export default function KanbanBoard({
                         {task.board_name && task.board_name !== 'Unknown' && (
                           <>
                             <span
-                              className="text-[9px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-2 py-1 rounded-md cursor-pointer flex items-center gap-1 truncate max-w-[100px] transition-colors border border-indigo-100 dark:border-indigo-800/50"
+                              className="text-[9px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-2 py-1 rounded-md cursor-pointer flex items-center gap-1 truncate max-w-25 transition-colors border border-indigo-100 dark:border-indigo-800/50"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (boards && setSelectedBoard) {
@@ -149,30 +149,60 @@ export default function KanbanBoard({
                               }}
                               title={`Go to Project: ${task.board_name}`}
                             >
-                              📂 {task.board_name}
+                              <svg className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                              {task.board_name}
                             </span>
                             <span className="text-neutral-300 dark:text-neutral-700 font-bold text-[10px]">/</span>
                           </>
                         )}
                         <span
-                          className="text-[9px] font-bold text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 px-2 py-1 rounded-md truncate max-w-[80px] border border-neutral-200 dark:border-neutral-700"
+                          className="text-[9px] font-bold text-neutral-600 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-300 px-2 py-1 rounded-md truncate max-w-20 border border-neutral-200 dark:border-neutral-700"
                           title={task.category}
                         >
                           {task.category || 'Task'}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span
-                          className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest shrink-0 ml-2 flex items-center gap-1"
+                          className="text-[9px] font-bold text-neutral-400 shrink-0 flex items-center gap-1"
                           title="Date Created"
                         >
-                          📅 {formatDateMMM(task.timestamp)}
+                          <svg className="w-3 h-3 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          {formatDateMMM(task.timestamp)}
                         </span>
                       </div>
                     </div>
 
                     <div className="mb-2">
-                      <div className="font-bold text-sm text-black dark:text-white break-words uppercase tracking-wider leading-snug">
+                      <div className="font-bold text-sm text-slate-800 dark:text-white wrap-break-word leading-snug">
+                        {(() => {
+                          const isGlobal = !selectedBoard || selectedBoard.id === 'global';
+                          const queuePos = isGlobal ? task.queue_global_number : task.queue_project_number;
+                          const totalQueue = isGlobal ? task.total_global_queue : task.total_project_queue;
+                          const queueLabel = isGlobal
+                            ? tMsg('Overall Queue', 'Antrean Total')
+                            : tMsg('Queue', 'Antrean');
+                          const queueType = isGlobal ? 'overall' : tMsg('project', 'proyek');
+
+                          if (queuePos && totalQueue && task.status !== 'Done' && task.status !== 'Rejected') {
+                            return (
+                              <span
+                                className="inline-block text-[9px] font-black bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800/50 cursor-help mr-1.5 align-middle select-none"
+                                title={tMsg(
+                                  `This task is number ${queuePos} out of ${totalQueue} in ${
+                                    task.main_assignee || 'their'
+                                  }'s current ${queueType} queue.`,
+                                  `Tugas ini berada di urutan ke-${queuePos} dari ${totalQueue} dalam antrean ${queueType} ${
+                                    task.main_assignee || 'mereka'
+                                  } saat ini.`
+                                )}
+                              >
+                                #{queuePos}/{totalQueue}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
                         <HighlightText text={task.project_name} query={searchQuery} />
                       </div>
                       {task.status !== 'Done' &&
@@ -181,7 +211,7 @@ export default function KanbanBoard({
                           <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                             {task.priority_lvl && (
                               <span
-                                className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm ${
+                                className={`text-[9px] font-bold px-2 py-1 rounded-md shadow-sm ${
                                   task.priority_lvl === 'critical'
                                     ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'
                                     : task.priority_lvl === 'warning'
@@ -193,7 +223,7 @@ export default function KanbanBoard({
                               </span>
                             )}
                             <span
-                              className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm ${
+                              className={`text-[9px] font-bold px-2 py-1 rounded-md shadow-sm ${
                                 task.impact === 'High'
                                   ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'
                                   : task.impact === 'Low'
@@ -202,58 +232,32 @@ export default function KanbanBoard({
                               }`}
                               title={`Impact: ${task.impact}`}
                             >
-                              {task.impact === 'High' ? '🔥 High' : task.impact === 'Low' ? '🧊 Low' : '⚡ Med'}
+                              {task.impact === 'High' ? 'High' : task.impact === 'Low' ? 'Low' : 'Med'}
                             </span>
                             <span
-                              className="text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 cursor-help"
+                              className="text-[9px] font-bold px-2 py-1 rounded-md shadow-sm bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 cursor-help flex items-center gap-1"
                               title="Estimated Time Consumption"
                             >
-                              ⏳ {task.etc || 2}h
+                              <svg className="w-3 h-3 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              {task.etc || 2}h
                             </span>
                             {((task.recurring && task.recurring !== 'none') || isNewClone) && (
                               <span
-                                className={`text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-widest shadow-sm ${
+                                className={`text-[9px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1 ${
                                   isNewClone
                                     ? 'bg-indigo-500 dark:bg-indigo-600 text-white animate-pulse shadow-indigo-500/50'
                                     : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                                 }`}
                                 title={isNewClone ? 'Newly Cloned Task' : 'Recurring Task'}
                               >
-                                🔁 {isNewClone ? 'NEW CLONE' : task.recurring}
+                                <svg className="w-3 h-3 text-blue-600 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                                {isNewClone ? 'NEW CLONE' : task.recurring}
                               </span>
                             )}
-                            {(() => {
-                              const isGlobal = !selectedBoard || selectedBoard.id === 'global';
-                              const queuePos = isGlobal ? task.queue_global_number : task.queue_project_number;
-                              const totalQueue = isGlobal ? task.total_global_queue : task.total_project_queue;
-                              const queueLabel = isGlobal
-                                ? tMsg('Overall Queue', 'Antrean Total')
-                                : tMsg('Queue', 'Antrean');
-                              const queueType = isGlobal ? 'overall' : tMsg('project', 'proyek');
-
-                              if (queuePos && totalQueue && task.status !== 'Done' && task.status !== 'Rejected') {
-                                return (
-                                  <span
-                                    className="text-[9px] font-black bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-800/50 cursor-help w-max"
-                                    title={tMsg(
-                                      `This task is number ${queuePos} out of ${totalQueue} in ${
-                                        task.main_assignee || 'their'
-                                      }'s current ${queueType} queue.`,
-                                      `Tugas ini berada di urutan ke-${queuePos} dari ${totalQueue} dalam antrean ${queueType} ${
-                                        task.main_assignee || 'mereka'
-                                      } saat ini.`
-                                    )}
-                                  >
-                                    {queueLabel} #{queuePos} of {totalQueue}
-                                  </span>
-                                );
-                              }
-                              return null;
-                            })()}
                           </div>
                         )}
                     </div>
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-3 line-clamp-2 break-words font-medium leading-relaxed">
+                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-3 line-clamp-2 wrap-break-word font-medium leading-relaxed">
                       {task.description
                         ? String(task.description)
                             .replace(/<[^>]+>/g, '')
@@ -261,17 +265,22 @@ export default function KanbanBoard({
                         : 'No description provided.'}
                     </div>
                     {task.owner_username !== currentUser && (
-                      <div className="mb-3 text-[9px] font-bold text-white bg-black dark:bg-white dark:text-black px-2 py-1 rounded-full uppercase tracking-widest w-max shadow-sm">
-                        🤝 SHARED BY {task.owner_username}
+                      <div className="mb-3 text-[9px] font-bold text-white bg-black dark:bg-white dark:text-black px-2 py-1 rounded-full w-max shadow-sm flex items-center gap-1">
+                        <svg className="w-3 h-3 text-white dark:text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        Shared by {task.owner_username}
                       </div>
                     )}
-                    <div className="flex flex-col gap-2 mt-2.5 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/50 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest min-w-0">
+                    <div className="flex flex-col gap-2 mt-2.5 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/50 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 min-w-0">
                       <div className="flex justify-between items-center gap-2 min-w-0">
                         <span
                           className="flex items-center gap-1.5 truncate text-black dark:text-white min-w-0"
                           title={task.requester.includes('@') ? 'Assigned To' : 'Requester'}
                         >
-                          {task.requester.includes('@') ? '👉' : <IconPerson className="w-4 h-4 shrink-0" />}
+                          {task.requester.includes('@') ? (
+                            <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                          ) : (
+                            <IconPerson className="w-4 h-4 shrink-0" />
+                          )}
                           <Avatar
                             name={task.requester}
                             url={avatarsMap[task.requester.replace('@', '').trim()]}
@@ -294,7 +303,8 @@ export default function KanbanBoard({
                                   className="flex items-center gap-1.5 text-white bg-red-500 px-2 py-0.5 rounded-md shadow-sm text-[9px] font-black animate-pulse"
                                   title={`${unreadComments} unread messages`}
                                 >
-                                  💬 {unreadComments} New
+                                  <svg className="w-3.5 h-3.5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                  {unreadComments} New
                                 </span>
                               );
                             }
@@ -302,25 +312,37 @@ export default function KanbanBoard({
                           })()}
                           {task.subtask_total > 0 && (
                             <span
-                              className={`flex items-center gap-1.5 whitespace-nowrap ${
+                              className={`flex items-center gap-1 whitespace-nowrap ${
                                 task.subtask_done === task.subtask_total ? 'text-black dark:text-white' : ''
                               }`}
                               title="Sub-tasks"
                             >
-                              📋 {task.subtask_done}/{task.subtask_total}
+                              <svg className="w-3 h-3 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                              {task.subtask_done}/{task.subtask_total}
                             </span>
                           )}
                         </div>
                       </div>
                       <div className="flex justify-between items-center flex-wrap gap-1.5">
-                        <span title="Created At">📅 {formatDateMMM(task.timestamp)}</span>
+                        <span title="Created At" className="flex items-center gap-1">
+                          <svg className="w-3 h-3 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          {formatDateMMM(task.timestamp)}
+                        </span>
                         <span
                           title={task.status === 'Done' ? 'Completed At' : 'Deadline'}
-                          className={task.status === 'Done' ? 'text-black dark:text-white' : ''}
+                          className={`flex items-center gap-1 ${task.status === 'Done' ? 'text-black dark:text-white' : ''}`}
                         >
-                          {task.status === 'Done'
-                            ? `✅ ${formatDateMMM(task.completed_time)}`
-                            : `⏳ ${formatDateMMM(task.deadline)}`}
+                          {task.status === 'Done' ? (
+                            <>
+                              <svg className="w-3 h-3 text-emerald-500 shrink-0 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              {formatDateMMM(task.completed_time)}
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 text-neutral-500 shrink-0 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              {formatDateMMM(task.deadline)}
+                            </>
+                          )}
                         </span>
                       </div>
                     </div>
@@ -339,7 +361,7 @@ export default function KanbanBoard({
                     <div
                       ref={providedCol.innerRef}
                       {...providedCol.draggableProps}
-                      className={`group/col bg-neutral-100/50 dark:bg-neutral-900/50 rounded-2xl w-[85vw] sm:w-[340px] flex-shrink-0 border border-neutral-200 dark:border-neutral-800 transition-all flex flex-col h-fit sm:h-full min-h-[400px] max-h-none sm:max-h-full ${
+                      className={`group/col bg-neutral-100/50 dark:bg-neutral-900/50 rounded-2xl w-[85vw] sm:w-85 shrink-0 border border-neutral-200 dark:border-neutral-800 transition-all flex flex-col h-fit sm:h-full min-h-100 max-h-none sm:max-h-full ${
                         snapshotCol.isDragging ? 'shadow-2xl -rotate-2 bg-white dark:bg-neutral-800 z-50' : 'shadow-sm'
                       }`}
                       style={providedCol.draggableProps.style}
@@ -356,7 +378,7 @@ export default function KanbanBoard({
                             (groupBy === 'Status' || groupBy === 'Category') && handleOpenRenameBoard(groupBy, colName)
                           }
                         >
-                          {colName}
+                          {colName === 'Pending' ? 'To do' : colName}
                           <span className="bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 rounded-full text-[9px] shrink-0 shadow-sm">
                             {columnTasks.length}
                           </span>
@@ -401,7 +423,7 @@ export default function KanbanBoard({
                               {...providedTask.droppableProps}
                               className={`kanban-column-scroll flex flex-col flex-1 overflow-y-visible ${
                                 isKanbanDragging ? 'sm:overflow-y-visible' : 'sm:overflow-y-auto'
-                              } custom-scrollbar px-3 sm:px-4 pt-4 pb-3 sm:pb-4 transition-colors rounded-b-2xl h-fit sm:h-full min-h-[150px] ${
+                              } custom-scrollbar px-3 sm:px-4 pt-4 pb-3 sm:pb-4 transition-colors rounded-b-2xl h-fit sm:h-full min-h-37.5 ${
                                 snapshotTask.isDraggingOver
                                   ? 'bg-neutral-200/50 dark:bg-neutral-800/50 ring-2 ring-indigo-500/20'
                                   : ''
@@ -447,7 +469,7 @@ export default function KanbanBoard({
       {(groupBy === 'Status' || groupBy === 'Category') && accountStatus !== 'suspended' && (
         <div
           onClick={() => handleOpenAddBoard(groupBy)}
-          className="bg-transparent border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl w-80 h-[56px] flex-shrink-0 flex items-center justify-center text-neutral-500 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white cursor-pointer transition-all uppercase tracking-widest text-xs font-bold"
+          className="bg-transparent border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl w-80 h-14 shrink-0 flex items-center justify-center text-neutral-500 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white cursor-pointer transition-all uppercase tracking-widest text-xs font-bold"
         >
           <IconPlus className="w-5 h-5 mr-2" />
           <span className="font-bold">Add {groupBy}</span>
