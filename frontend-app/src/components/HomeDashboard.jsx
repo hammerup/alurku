@@ -527,8 +527,8 @@ export default function HomeDashboard() {
           {/* Top Queue Tasks */}
           <div className="tour-top-queue bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col h-full min-h-75">
             <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
               </svg>
               {tMsg('My Top Queue', 'Antrean Teratas Saya')}
             </h3>
@@ -630,7 +630,10 @@ export default function HomeDashboard() {
           {/* Recent Comments */}
           <div className="tour-recent-comments bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col h-full min-h-75">
             <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <span>💬</span> {tMsg('Recent Comments', 'Komentar Terbaru')}
+              <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              {tMsg('Recent Comments', 'Komentar Terbaru')}
             </h3>
             <div className="flex-1 space-y-3 pr-2">
               {isInboxLoading ? (
