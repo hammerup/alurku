@@ -201,7 +201,7 @@ export default function SettingsPage({
 
   return (
     <div
-      className={`fixed inset-0 bg-neutral-50 dark:bg-[#0e1116] overflow-y-auto z-[100] ${
+      className={`fixed inset-0 bg-neutral-50 dark:bg-[#0e1116] overflow-y-auto z-100 ${
         isClosing ? 'mac-exit' : 'mac-animate'
       }`}
     >

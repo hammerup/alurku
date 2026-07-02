@@ -1822,6 +1822,7 @@ function App() {
                                   <div
                                     dangerouslySetInnerHTML={{ __html: renderChatMessageContent(c.text, isMe) }}
                                     className="wrap-break-word space-y-1 select-text"
+                                    style={{ fontWeight: 400 }}
                                   />
                                 </div>
                                 <div

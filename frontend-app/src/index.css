@@ -21,3 +21,12 @@
   text-transform: none !important;
   letter-spacing: normal !important;
 }
+
+/* Fix chat message text font weight override */
+html body .chat-msg-bubble,
+html:not(.dark) body .chat-msg-bubble,
+.dark body .chat-msg-bubble,
+html:not(.dark) body div.bg-indigo-600.chat-msg-bubble,
+.dark body div.bg-indigo-600.chat-msg-bubble {
+  font-weight: 400 !important;
+}
