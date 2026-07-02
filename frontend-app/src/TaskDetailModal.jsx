@@ -507,23 +507,29 @@ export default function TaskDetailModal({
         >
           <button
             onClick={() => setMobileTab('details')}
-            className={`flex-1 py-3 text-[10px] sm:text-xs uppercase tracking-wider transition-colors ${
+            className={`flex-1 py-3 text-[10px] sm:text-xs tracking-wider transition-colors ${
               mobileTab === 'details'
                 ? 'font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10'
                 : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
             }`}
           >
-            📝 {tMsg('Details', 'Detail')}
+            <span className="flex items-center justify-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              <span>{tMsg('Details', 'Detail')}</span>
+            </span>
           </button>
           <button
             onClick={() => setMobileTab('activity')}
-            className={`flex-1 py-3 text-[10px] sm:text-xs uppercase tracking-wider transition-colors ${
+            className={`flex-1 py-3 text-[10px] sm:text-xs tracking-wider transition-colors ${
               mobileTab === 'activity'
                 ? 'font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10'
                 : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
             }`}
           >
-            💬 {tMsg('Activity', 'Aktivitas')}
+            <span className="flex items-center justify-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+              <span>{tMsg('Activity', 'Aktivitas')}</span>
+            </span>
           </button>
         </div>
 
@@ -554,22 +560,22 @@ export default function TaskDetailModal({
 
                   <div className="flex flex-col sm:flex-row gap-6 mb-8">
                     <div className="flex-1 bg-neutral-50 dark:bg-neutral-900 p-5 border border-neutral-100 dark:border-neutral-800 rounded-2xl flex flex-col justify-center">
-                      <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400 mb-1">
+                      <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">
                         {tMsg('Created At', 'Dibuat Pada')}
                       </p>
-                      <p className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
+                      <p className="text-xs font-bold text-black dark:text-white tracking-wider">
                         {formatDateMMM(selectedTask.timestamp)}
                       </p>
                     </div>
 
                     <div className="flex-1 bg-neutral-50 dark:bg-neutral-900 p-5 border border-neutral-100 dark:border-neutral-800 rounded-2xl group focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all flex flex-col justify-center relative">
-                      <label className="block text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400 mb-1">
+                      <label className="block text-[10px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">
                         {tMsg('Project', 'Proyek')}
                       </label>
                       <select
                         value={editFormData.board_id || ''}
                         onChange={(e) => setEditFormData({ ...editFormData, board_id: parseInt(e.target.value) })}
-                        className="w-full bg-transparent border-0 focus:ring-0 p-0 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950 appearance-none z-10 relative"
+                        className="w-full bg-transparent border-0 focus:ring-0 p-0 text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950 appearance-none z-10 relative"
                       >
                         {boards.map((b) => (
                           <option key={b.id} value={b.id}>
@@ -584,10 +590,10 @@ export default function TaskDetailModal({
 
                     {selectedTask.completed_time && (
                       <div className="flex-1 bg-black dark:bg-white p-5 rounded-2xl shadow-lg">
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 dark:text-neutral-500 mb-1">
+                        <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 mb-1">
                           {tMsg('Completed At', 'Selesai Pada')}
                         </p>
-                        <p className="text-xs font-bold text-white dark:text-black uppercase tracking-wider">
+                        <p className="text-xs font-bold text-white dark:text-black tracking-wider">
                           {formatDateMMM(selectedTask.completed_time)}
                         </p>
                       </div>
@@ -605,7 +611,11 @@ export default function TaskDetailModal({
                               : tMsg('Requester', 'Peminta')
                           }
                         >
-                          {editFormData.requester?.includes('@') ? '👉' : <IconPerson className="w-6 h-6" />}
+                          {editFormData.requester?.includes('@') ? (
+                            <svg className="w-5 h-5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                          ) : (
+                            <IconPerson className="w-6 h-6" />
+                          )}
                         </span>
                         <div className="flex-1 min-w-0 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center relative">
                           <input
@@ -659,7 +669,7 @@ export default function TaskDetailModal({
                                     >
                                       <span>@{m}</span>
                                       {!teamMembers.includes(m) && (
-                                        <span className="text-[8px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest ml-auto">
+                                        <span className="text-[8px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold tracking-widest ml-auto">
                                           + Auto-Invite
                                         </span>
                                       )}
@@ -680,7 +690,7 @@ export default function TaskDetailModal({
                           className="text-neutral-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors w-8 flex justify-center text-xl"
                           title="Status"
                         >
-                          📌
+                          <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         </span>
                         <div
                           className={`flex-1 min-w-0 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 transition-all flex items-center ${
@@ -691,11 +701,11 @@ export default function TaskDetailModal({
                             value={editFormData.status}
                             onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
                             disabled={isSubtasksLoading}
-                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950 [&>option]:text-black dark:[&>option]:text-white disabled:cursor-not-allowed"
+                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950 [&>option]:text-black dark:[&>option]:text-white disabled:cursor-not-allowed"
                           >
                             {columns.map((c) => (
                               <option key={c} value={c}>
-                                {c}
+                                {c === 'Pending' ? 'To do' : c}
                               </option>
                             ))}
                           </select>
@@ -706,8 +716,9 @@ export default function TaskDetailModal({
                     <div className="grid grid-cols-2 gap-4 sm:gap-6 mt-2 sm:mt-6">
                       <div className="group">
                         <div className="flex justify-between items-center mb-2">
-                          <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest items-center gap-2">
-                            <span className="text-base">🗓️</span> {tMsg('Start Date', 'Tanggal Mulai')}
+                          <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest flex items-center gap-2">
+                            <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span>{tMsg('Start Date', 'Tanggal Mulai')}</span>
                           </label>
                           <span className="text-[9px] font-bold text-indigo-500">
                             {formatDateMMM(editFormData.start_date)}
@@ -718,15 +729,16 @@ export default function TaskDetailModal({
                             type="date"
                             value={editFormData.start_date}
                             onChange={(e) => setEditFormData({ ...editFormData, start_date: e.target.value })}
-                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider"
+                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider"
                             required
                           />
                         </div>
                       </div>
                       <div className="group">
                         <div className="flex justify-between items-center mb-2">
-                          <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest items-center gap-2">
-                            <span className="text-base">📅</span> {tMsg('Deadline', 'Tenggat Waktu')}
+                          <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest flex items-center gap-2">
+                            <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span>{tMsg('Deadline', 'Tenggat Waktu')}</span>
                           </label>
                           <span className="text-[9px] font-bold text-indigo-500">
                             {formatDateMMM(editFormData.deadline)}
@@ -737,7 +749,7 @@ export default function TaskDetailModal({
                             type="date"
                             value={editFormData.deadline}
                             onChange={(e) => setEditFormData({ ...editFormData, deadline: e.target.value })}
-                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider"
+                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider"
                             required
                           />
                         </div>
@@ -746,15 +758,16 @@ export default function TaskDetailModal({
 
                     <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-2 sm:mt-6">
                       <div className="group">
-                        <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 items-center gap-2">
-                          <span className="text-base">📂</span> {tMsg('Category', 'Kategori')}
+                        <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2">
+                          <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                          <span>{tMsg('Category', 'Kategori')}</span>
                         </label>
                         <div className="flex gap-1.5 sm:gap-2">
                           <div className="flex-1 bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center min-w-0">
                             <select
-                              value={editFormData.category || categories[0] || ''}
+                               value={editFormData.category || categories[0] || ''}
                               onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                              className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                              className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                             >
                               {categories.map((c) => (
                                 <option key={c} value={c}>
@@ -777,14 +790,15 @@ export default function TaskDetailModal({
 
                     <div className="grid grid-cols-3 gap-3 sm:gap-6 mt-2 sm:mt-6">
                       <div className="group min-w-0">
-                        <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 items-center gap-2 truncate">
-                          <span className="text-base hidden sm:inline">🔁</span> {tMsg('Recurring', 'Berulang')}
+                        <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2 truncate">
+                          <svg className="w-3.5 h-3.5 text-neutral-500 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                          <span>{tMsg('Recurring', 'Berulang')}</span>
                         </label>
                         <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center">
                           <select
                             value={editFormData.recurring || 'none'}
                             onChange={(e) => setEditFormData({ ...editFormData, recurring: e.target.value })}
-                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                           >
                             <option value="none">{tMsg('None', 'Tidak')}</option>
                             <option value="daily">{tMsg('Daily', 'Harian')}</option>
@@ -794,26 +808,28 @@ export default function TaskDetailModal({
                         </div>
                       </div>
                       <div className="group col-span-1">
-                        <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 items-center gap-2 min-h-4 truncate">
-                          <span className="text-base hidden sm:inline">💥</span> {tMsg('Impact', 'Dampak')}
+                        <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2 min-h-4 truncate">
+                          <svg className="w-3.5 h-3.5 text-neutral-500 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                          <span>{tMsg('Impact', 'Dampak')}</span>
                         </label>
                         <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center">
                           <select
                             value={editFormData.impact || 'Medium'}
                             onChange={(e) => setEditFormData({ ...editFormData, impact: e.target.value })}
-                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                            className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                           >
-                            <option value="High">🔥 High</option>
-                            <option value="Medium">⚡ Medium</option>
-                            <option value="Low">🧊 Low</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
                           </select>
                         </div>
                       </div>
                       <div className="group col-span-1">
-                        <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 items-center gap-2 min-h-4 truncate">
-                          <span className="text-base hidden sm:inline">⏳</span> {tMsg('ETC (Hrs)', 'ETC (Jam)')}
+                        <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2 min-h-4 truncate">
+                          <svg className="w-3.5 h-3.5 text-neutral-500 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <span>{tMsg('ETC (Hrs)', 'ETC (Jam)')}</span>
                           <span
-                            className="cursor-help text-neutral-400 font-normal normal-case tracking-normal"
+                            className="cursor-help text-neutral-400 font-normal tracking-normal"
                             title="Estimated Time Consumption"
                           >
                             🛈
@@ -826,7 +842,7 @@ export default function TaskDetailModal({
                             step="0.5"
                             value={editFormData.etc}
                             onChange={(e) => setEditFormData({ ...editFormData, etc: parseFloat(e.target.value) || 2 })}
-                            className="w-full min-w-0 text-center sm:text-left bg-transparent border-0 focus:ring-0 p-2.5 sm:p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none uppercase tracking-wider"
+                            className="w-full min-w-0 text-center sm:text-left bg-transparent border-0 focus:ring-0 p-2.5 sm:p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider"
                             required
                           />
                           <button
@@ -850,8 +866,9 @@ export default function TaskDetailModal({
                     </div>
 
                     <div className="group pt-2">
-                      <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 items-center gap-2">
-                        <span className="text-base">📝</span> {tMsg('Description', 'Deskripsi')}
+                      <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                        <span>{tMsg('Description', 'Deskripsi')}</span>
                       </label>
                       <div className="bg-neutral-100 dark:bg-neutral-900 rounded-3xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all p-2">
                         <div className="flex gap-2 mb-2 px-2 pb-2 border-b border-neutral-200 dark:border-neutral-800">
@@ -928,9 +945,9 @@ export default function TaskDetailModal({
                     </div>
 
                     <div className="group pt-2">
-                      <label className="block text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white uppercase tracking-widest mb-2 items-center gap-2">
-                        <span className="text-base">🔗</span>{' '}
-                        {tMsg('External Links / Supporting Access', 'Tautan Eksternal / Akses Pendukung')}
+                      <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                        <span>{tMsg('External Links / Supporting Access', 'Tautan Eksternal / Akses Pendukung')}</span>
                       </label>
                       <div className="flex flex-col gap-2 w-full min-w-0">
                         {(editFormData.supporting_access ? editFormData.supporting_access.split('\n') : ['']).map(
@@ -973,9 +990,10 @@ export default function TaskDetailModal({
                               : [''];
                             setEditFormData({ ...editFormData, supporting_access: [...arr, ''].join('\n') });
                           }}
-                          className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 self-start mt-1 flex items-center gap-1.5 uppercase tracking-widest transition-colors bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg"
+                          className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 self-start mt-1 flex items-center gap-1.5 transition-colors bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg"
                         >
-                          <span>➕</span> {tMsg('Add Another Link', 'Tambah Tautan Lainnya')}
+                          <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                          <span>{tMsg('Add Another Link', 'Tambah Tautan Lainnya')}</span>
                         </button>
                       </div>
                     </div>
@@ -990,14 +1008,14 @@ export default function TaskDetailModal({
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="w-full sm:w-auto px-6 py-4 sm:py-3 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors uppercase tracking-widest text-xs"
+                    className="w-full sm:w-auto px-6 py-4 sm:py-3 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors text-xs"
                   >
                     {tMsg('Cancel', 'Batal')}
                   </button>
                   <button
                     type="submit"
                     disabled={isSubtasksLoading || isSubmitting}
-                    className={`w-full sm:w-auto px-8 py-4 sm:py-3 rounded-full font-bold text-white transition-all uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-lg border border-black dark:border-white ${
+                    className={`w-full sm:w-auto px-8 py-4 sm:py-3 rounded-full font-bold text-white transition-all text-xs disabled:opacity-50 disabled:cursor-not-allowed shadow-lg border border-black dark:border-white ${
                       isSubmitting
                         ? 'bg-neutral-600 dark:bg-neutral-400 dark:text-neutral-900 border-neutral-600 dark:border-neutral-400'
                         : 'bg-black dark:bg-white dark:text-black hover:opacity-80 hover:-translate-y-0.5'
@@ -1022,9 +1040,9 @@ export default function TaskDetailModal({
                 >
                   <div>
                     <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-3 sm:gap-0 mb-3 pb-3 pt-1 border-b border-neutral-100 dark:border-neutral-800/50">
-                      <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-neutral-500 dark:text-neutral-400 min-w-0">
                         <span
-                          className="bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-2 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shrink-0 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                          className="bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 px-2 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 shrink-0 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors flex items-center gap-1"
                           title={tMsg('Copy Task Link', 'Salin Tautan Tugas')}
                           onClick={() => {
                             const slug = (selectedTask.project_name || '')
@@ -1040,7 +1058,8 @@ export default function TaskDetailModal({
                               );
                           }}
                         >
-                          #{selectedTask.id} 🔗
+                          <span>#{selectedTask.id}</span>
+                          <svg className="w-2.5 h-2.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                         </span>
                         <span className="text-neutral-300 dark:text-neutral-700 shrink-0">/</span>
                         {selectedTask.board_name && selectedTask.board_name !== 'Unknown' && (
@@ -1058,7 +1077,8 @@ export default function TaskDetailModal({
                               }}
                               title={`Go to Project: ${selectedTask.board_name}`}
                             >
-                              <span className="truncate">📂 {selectedTask.board_name}</span>
+                              <svg className="w-3 h-3 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                              <span className="truncate">{selectedTask.board_name}</span>
                             </span>
                             <span className="text-neutral-300 dark:text-neutral-700 shrink-0">/</span>
                           </>
@@ -1079,10 +1099,11 @@ export default function TaskDetailModal({
                         </span>
                       </div>
                       <span
-                        className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-1 shrink-0 sm:ml-2"
+                        className="text-[10px] font-bold text-neutral-400 flex items-center gap-1 shrink-0 sm:ml-2"
                         title="Date Created"
                       >
-                        📅 {formatDateMMM(selectedTask.timestamp)}
+                        <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        {formatDateMMM(selectedTask.timestamp)}
                       </span>
                     </div>
                     <p className="text-lg font-extrabold wrap-break-word">{selectedTask.project_name || 'Untitled Task'}</p>
@@ -1110,7 +1131,7 @@ export default function TaskDetailModal({
                     showNotification={showNotification}
                   />
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400 mb-2">
+                    <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 mb-2">
                       {tMsg('Description', 'Deskripsi')}
                     </p>
                     {isPreviewMode ? (
@@ -1122,8 +1143,8 @@ export default function TaskDetailModal({
                           voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="bg-black/80 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-widest shadow-xl backdrop-blur-md text-center">
-                            🔒{' '}
+                          <span className="bg-black/80 text-white font-bold px-4 py-2 rounded-xl text-xs tracking-widest shadow-xl backdrop-blur-md text-center flex items-center gap-1.5 justify-center">
+                            <svg className="w-3.5 h-3.5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                             {currentUser
                               ? tMsg('Project Members Only', 'Khusus Anggota Proyek')
                               : tMsg('Login to View Description', 'Login untuk Melihat Deskripsi')}
@@ -1138,15 +1159,16 @@ export default function TaskDetailModal({
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <p className="text-[10px] uppercase tracking-widest font-bold text-neutral-500 dark:text-neutral-400">
+                      <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400">
                         {tMsg('Supporting Access', 'Akses Pendukung')}
                       </p>
                       {isTaskAdmin && accountStatus !== 'suspended' && !isAddingLink && !isPreviewMode && (
                         <button
                           onClick={() => setIsAddingLink(true)}
-                          className="text-[9px] font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 uppercase tracking-widest"
+                          className="text-[9px] font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1"
                         >
-                          <span>➕</span> {tMsg('Add Link', 'Tambah Tautan')}
+                          <svg className="w-3 h-3 text-indigo-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                          <span>{tMsg('Add Link', 'Tambah Tautan')}</span>
                         </button>
                       )}
                     </div>
@@ -1314,9 +1336,10 @@ export default function TaskDetailModal({
                   accountStatus !== 'suspended' ? (
                     <button
                       onClick={() => setIsDeleteConfirmOpen(true)}
-                      className="px-5 py-3.5 w-full sm:w-auto rounded-full font-bold text-red-500 hover:text-white bg-transparent hover:bg-red-500 border border-transparent hover:border-red-500 transition-all uppercase tracking-widest text-xs"
+                      className="px-5 py-3.5 w-full sm:w-auto rounded-full font-bold text-red-500 hover:text-white bg-transparent hover:bg-red-500 border border-transparent hover:border-red-500 transition-all text-xs flex items-center justify-center gap-1.5"
                     >
-                      🗑️ {tMsg('Delete Task', 'Hapus Tugas')}
+                      <svg className="w-3.5 h-3.5 text-red-500 shrink-0 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      {tMsg('Delete Task', 'Hapus Tugas')}
                     </button>
                   ) : (
                     <div></div>
@@ -1325,14 +1348,15 @@ export default function TaskDetailModal({
                     {accountStatus !== 'suspended' && isTaskAdmin && !isPreviewMode && (
                       <button
                         onClick={startEditing}
-                        className="w-full sm:w-auto px-6 py-4 sm:py-3.5 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors uppercase tracking-widest text-xs"
+                        className="w-full sm:w-auto px-6 py-4 sm:py-3.5 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors text-xs flex items-center justify-center gap-1.5"
                       >
-                        ✏️ {tMsg('Edit', 'Edit')}
+                        <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        {tMsg('Edit', 'Edit')}
                       </button>
                     )}
                     <button
                       onClick={close}
-                      className="w-full sm:w-auto px-8 py-4 sm:py-3.5 rounded-full font-bold text-white bg-black hover:opacity-80 dark:bg-white dark:text-black border border-black dark:border-white shadow-lg transition-all uppercase tracking-widest text-xs hover:-translate-y-0.5"
+                      className="w-full sm:w-auto px-8 py-4 sm:py-3.5 rounded-full font-bold text-white bg-black hover:opacity-80 dark:bg-white dark:text-black border border-black dark:border-white shadow-lg transition-all text-xs hover:-translate-y-0.5"
                     >
                       {tMsg('Close', 'Tutup')}
                     </button>
@@ -1426,23 +1450,29 @@ export default function TaskDetailModal({
                     <div className="flex flex-1">
                       <button
                         onClick={() => setActiveTab('comments')}
-                        className={`flex-1 py-4 text-[10px] sm:text-xs uppercase tracking-wider transition-colors ${
+                        className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
                           activeTab === 'comments'
                             ? 'font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10'
                             : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
                         }`}
                       >
-                        💬 {tMsg('Comments', 'Komentar')} ({regularComments.length})
+                        <span className="flex items-center justify-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                          <span>{tMsg('Comments', 'Komentar')} ({regularComments.length})</span>
+                        </span>
                       </button>
                       <button
                         onClick={() => setActiveTab('activity')}
-                        className={`flex-1 py-4 text-[10px] sm:text-xs uppercase tracking-wider transition-colors ${
+                        className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
                           activeTab === 'activity'
                             ? 'font-black text-black dark:text-white border-b-2 border-black dark:border-white bg-neutral-100/50 dark:bg-neutral-800/50'
                             : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
                         }`}
                       >
-                        📜 {tMsg('Activity', 'Aktivitas')}
+                        <span className="flex items-center justify-center gap-1.5">
+                          <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                          <span>{tMsg('Activity', 'Aktivitas')}</span>
+                        </span>
                       </button>
                     </div>
                     {activeTab === 'comments' && (
@@ -1469,7 +1499,7 @@ export default function TaskDetailModal({
                         <button
                           type="button"
                           onClick={handleStartTaskMeet}
-                          className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors uppercase tracking-widest"
+                          className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path

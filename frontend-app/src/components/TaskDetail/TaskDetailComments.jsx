@@ -53,7 +53,7 @@ export default function TaskDetailComments({
         <div className="flex justify-center my-2 relative">
           <button
             onClick={loadMoreComments}
-            className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-4 py-2 rounded-full transition-colors border border-indigo-200 dark:border-indigo-800/50 shadow-sm z-10"
+            className="text-[10px] font-bold tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-4 py-2 rounded-full transition-colors border border-indigo-200 dark:border-indigo-800/50 shadow-sm z-10"
           >
             {tMsg('Load older comments', 'Muat komentar lama')}
           </button>
@@ -109,11 +109,11 @@ export default function TaskDetailComments({
       })}
       {isAiReplying && (
         <div className="flex gap-3 w-full p-1.5 -mx-1.5 flex-row chat-animate group/bubble">
-          <Avatar name="Smart Assistant 🤖" url="" size="w-8 h-8 shrink-0" textClass="text-[10px]" />
+          <Avatar name="Smart Assistant" url="" size="w-8 h-8 shrink-0" textClass="text-[10px]" />
           <div className="flex flex-col items-start min-w-0 max-w-[92%]">
             <div className="flex items-baseline gap-2 mb-1 flex-row">
               <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
-                @Smart Assistant 🤖
+                @Smart Assistant
               </span>
             </div>
             <div className="p-3 text-sm font-medium leading-relaxed shadow-sm shrink min-w-0 bg-white dark:bg-neutral-800 text-black dark:text-white border border-neutral-100 dark:border-neutral-700 rounded-2xl rounded-tl-sm flex gap-1.5 items-center h-10">

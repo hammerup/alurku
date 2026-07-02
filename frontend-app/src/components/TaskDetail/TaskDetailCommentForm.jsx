@@ -49,7 +49,7 @@ export default function TaskDetailCommentForm({
               </button>
             </div>
           )}
-          <div className="absolute bottom-[90px] right-6 flex flex-col gap-2 z-40 pointer-events-none [&>button]:pointer-events-auto">
+          <div className="absolute bottom-22.5 right-6 flex flex-col gap-2 z-40 pointer-events-none [&>button]:pointer-events-auto">
             {taskLatestMentionId && (
               <button
                 type="button"
@@ -122,7 +122,7 @@ export default function TaskDetailCommentForm({
               onChange={(e) => handleCommentChange(e.target.value)}
               disabled={accountStatus === 'suspended'}
               placeholder={tMsg('Write a comment... (@AI to ask)', 'Tulis komentar... (@AI untuk tanya)')}
-              className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-[120px]"
+              className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-30"
               style={{ minHeight: '44px' }}
               rows="1"
               onInput={(e) => {
@@ -206,7 +206,7 @@ export default function TaskDetailCommentForm({
                           </span>
                         )}
                         {m !== 'all' && !m.startsWith('AI') && !teamMembers.includes(m) && (
-                          <span className="text-[8px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest ml-auto">
+                          <span className="text-[8px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold tracking-widest ml-auto">
                             + Auto-Invite
                           </span>
                         )}
@@ -224,7 +224,7 @@ export default function TaskDetailCommentForm({
             <button
               type="submit"
               disabled={accountStatus === 'suspended' || !newComment.trim()}
-              className="bg-indigo-600 text-white hover:bg-indigo-700 w-12 h-[48px] rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 shrink-0"
+              className="bg-indigo-600 text-white hover:bg-indigo-700 w-12 h-12 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 shrink-0"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -233,8 +233,8 @@ export default function TaskDetailCommentForm({
           </form>
         </>
       ) : (
-        <div className="p-4 text-center text-xs font-bold text-neutral-500 uppercase tracking-widest bg-neutral-100/50 dark:bg-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-800">
-          🔒{' '}
+        <div className="p-4 text-center text-xs font-bold text-neutral-500 bg-neutral-100/50 dark:bg-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-800 flex items-center justify-center gap-1.5">
+          <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
           {tMsg(
             'Only involved members can comment',
             'Hanya anggota yang terlibat yang dapat berkomentar'

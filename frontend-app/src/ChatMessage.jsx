@@ -82,7 +82,7 @@ export default function ChatMessage({
       {showDivider && (
         <div className="flex justify-center my-2 relative">
           <div className="absolute top-1/2 left-0 w-full h-px bg-neutral-200 dark:bg-neutral-800 z-0"></div>
-          <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest z-10 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+          <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest z-10 border border-neutral-200 dark:border-neutral-700 shadow-sm">
             {dividerDisplay}
           </span>
         </div>
@@ -90,7 +90,7 @@ export default function ChatMessage({
       {isFirstUnread && (
         <div className="flex justify-center my-4 relative chat-animate">
           <div className="absolute top-1/2 left-0 w-full h-px bg-red-200 dark:bg-red-800/50 z-0"></div>
-          <span className="bg-red-50 dark:bg-red-900/30 text-red-500 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest z-10 border border-red-200 dark:border-red-800/50 shadow-sm">
+          <span className="bg-red-50 dark:bg-red-900/30 text-red-500 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest z-10 border border-red-200 dark:border-red-800/50 shadow-sm">
             {tMsg ? tMsg('Unread Messages', 'Pesan Belum Dibaca') : 'Unread Messages'}
           </span>
         </div>
@@ -109,15 +109,16 @@ export default function ChatMessage({
               {new Date(c.timestamp.replace(/-/g, '/')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
             {c.isPrivate && (
-              <span className="text-[8px] font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded uppercase tracking-widest ml-1 shadow-sm">
-                🔒 Private
+              <span className="text-[8px] font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded tracking-widest ml-1 shadow-sm flex items-center gap-1">
+                <svg className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                <span>Private</span>
               </span>
             )}
           </div>
 
           <div className={`flex items-center gap-2 max-w-full ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
             <div
-              className={`p-3 text-sm font-medium leading-relaxed shadow-sm shrink min-w-0 ${
+              className={`p-3 text-sm font-normal leading-relaxed shadow-sm shrink min-w-0 ${
                 isMe
                   ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-sm'
                   : 'bg-white dark:bg-neutral-800 text-black dark:text-white border border-neutral-100 dark:border-neutral-700 rounded-2xl rounded-tl-sm'
@@ -125,7 +126,7 @@ export default function ChatMessage({
             >
               <div
                 dangerouslySetInnerHTML={{ __html: renderChatMessageContent(c.text, isMe) }}
-                className="break-words space-y-1 select-text"
+                className="wrap-break-word space-y-1 select-text"
               />
               {children}
             </div>

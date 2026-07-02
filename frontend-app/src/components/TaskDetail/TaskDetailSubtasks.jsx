@@ -22,10 +22,11 @@ export default function TaskDetailSubtasks({
   return (
     <div className="mt-10 pt-8 border-t border-neutral-200 dark:border-neutral-800">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-black uppercase tracking-wider text-black dark:text-white">
-          📋 {tMsg('Sub-task Checklist', 'Daftar Periksa Sub-tugas')}
+        <h3 className="text-sm font-black text-black dark:text-white flex items-center gap-1.5">
+          <svg className="w-4 h-4 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+          {tMsg('Sub-task Checklist', 'Daftar Periksa Sub-tugas')}
         </h3>
-        <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest">
+        <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400 tracking-widest">
           {isPreviewMode ? selectedTask.subtask_done : subtasks.filter((s) => s.is_done).length}/
           {isPreviewMode ? selectedTask.subtask_total : subtasks.length} (
           {(isPreviewMode ? selectedTask.subtask_total : subtasks.length) > 0
@@ -62,7 +63,7 @@ export default function TaskDetailSubtasks({
 
       {isPreviewMode ? (
         <div className="relative mb-8">
-          <div className="space-y-3 filter blur-[4px] select-none opacity-50 pointer-events-none">
+          <div className="space-y-3 filter blur-xs select-none opacity-50 pointer-events-none">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
@@ -74,8 +75,8 @@ export default function TaskDetailSubtasks({
             ))}
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="bg-black/80 text-white font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-widest shadow-xl backdrop-blur-md text-center">
-              🔒{' '}
+            <span className="bg-black/80 text-white font-bold px-4 py-2 rounded-xl text-xs tracking-widest shadow-xl backdrop-blur-md text-center flex items-center gap-1.5 justify-center">
+              <svg className="w-3.5 h-3.5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
               {currentUser
                 ? tMsg('Project Members Only', 'Khusus Anggota Proyek')
                 : tMsg('Login to View Checklists', 'Login untuk Melihat Daftar Periksa')}
@@ -128,7 +129,7 @@ export default function TaskDetailSubtasks({
                           }`}
                         />
                         <div
-                          className={`flex-1 flex flex-col sm:flex-row sm:items-center gap-2 break-words ${
+                          className={`flex-1 flex flex-col sm:flex-row sm:items-center gap-2 wrap-break-word ${
                             st.is_done
                               ? 'line-through text-neutral-400 dark:text-neutral-500'
                               : 'text-black dark:text-white'
@@ -173,7 +174,7 @@ export default function TaskDetailSubtasks({
               })}
               {provided.placeholder}
               {subtasks.length === 0 && (
-                <p className="text-[10px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-bold ml-2">
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold ml-2">
                   {tMsg('No sub-tasks yet. Add one below!', 'Belum ada sub-tugas. Tambahkan di bawah!')}
                 </p>
               )}
@@ -205,9 +206,9 @@ export default function TaskDetailSubtasks({
           </select>
           <button
             type="submit"
-            className="bg-black dark:bg-white text-white dark:text-black px-6 py-3.5 rounded-xl font-bold hover:opacity-80 transition-all text-xs uppercase tracking-widest shadow-md hover:-translate-y-0.5"
+            className="bg-black dark:bg-white text-white dark:text-black px-6 py-3.5 rounded-xl font-bold hover:opacity-80 transition-all text-xs shadow-md hover:-translate-y-0.5"
           >
-            {tMsg('ADD', 'TAMBAH')}
+            {tMsg('Add', 'Tambah')}
           </button>
         </form>
       )}
