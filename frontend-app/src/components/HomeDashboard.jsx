@@ -50,6 +50,7 @@ export default function HomeDashboard() {
     inboxChats,
     isInboxLoading,
     fetchInboxChats,
+    sortBy,
   } = useAppContext();
 
   // Refs to manage API call state and caching to prevent race conditions and spamming.
@@ -69,13 +70,69 @@ export default function HomeDashboard() {
     }, 100);
   };
 
-  // Ambil langsung dari urutan global (filteredTasks) tanpa sort ulang
-  const topQueueTasks = (filteredTasks || tasks)
-    .filter(t => {
+  // Urutkan tugas aktif user berdasarkan aturan Master View secara global (semua project)
+  const sortedUserTasks = React.useMemo(() => {
+    const userActiveTasks = (tasks || []).filter(t => {
       const status = (t.status || '').toLowerCase();
       return status !== 'done' && status !== 'rejected' && isUserAssigned(t, currentUser);
-    })
-    .slice(0, 5);
+    });
+
+    const prioWeight = { critical: 1, warning: 2, normal: 3 };
+    const impactWeightDefault = { High: 1, Medium: 2, Low: 3 };
+    const impactWeightCustom = { High: 3, Medium: 2, Low: 1 };
+
+    return [...userActiveTasks].sort((a, b) => {
+      // Urutkan berdasarkan nomor antrean global terlebih dahulu (agar sesuai dengan definisi "My Top Queue")
+      const qa = a.queue_global_number || 999999;
+      const qb = b.queue_global_number || 999999;
+      if (qa !== qb) return qa - qb;
+
+      const currentSort = sortBy || 'Default';
+      if (currentSort === 'Default') {
+        const wa = prioWeight[a.priority_lvl || 'normal'] || 3;
+        const wb = prioWeight[b.priority_lvl || 'normal'] || 3;
+        if (wa !== wb) return wa - wb;
+
+        const impA = impactWeightDefault[a.impact || 'Medium'] || 2;
+        const impB = impactWeightDefault[b.impact || 'Medium'] || 2;
+        if (impA !== impB) return impA - impB;
+
+        const da = a.deadline
+          ? new Date(a.deadline.replace(/-/g, '/')).getTime()
+          : new Date(a.timestamp.replace(/-/g, '/')).getTime();
+        const db = b.deadline
+          ? new Date(b.deadline.replace(/-/g, '/')).getTime()
+          : new Date(b.timestamp.replace(/-/g, '/')).getTime();
+        if (da !== db) return da - db;
+        return a.id - b.id;
+      }
+      if (currentSort === 'Impact') {
+        const wa = impactWeightCustom[a.impact || 'Medium'] || 0;
+        const wb = impactWeightCustom[b.impact || 'Medium'] || 0;
+        if (wa !== wb) return wb - wa;
+        if (a.etc !== b.etc) return (b.etc || 2) - (a.etc || 2);
+        const da = a.deadline ? new Date(a.deadline.replace(/-/g, '/')).getTime() : Infinity;
+        const db = b.deadline ? new Date(b.deadline.replace(/-/g, '/')).getTime() : Infinity;
+        if (da !== db) return da - db;
+        return a.id - b.id;
+      }
+      if (currentSort === 'Due Date') {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        const da = new Date(a.deadline.replace(/-/g, '/')).getTime();
+        const db = new Date(b.deadline.replace(/-/g, '/')).getTime();
+        return da - db;
+      }
+      if (currentSort === 'Date Created') {
+        const da = new Date(a.timestamp.replace(/-/g, '/')).getTime();
+        const db = new Date(b.timestamp.replace(/-/g, '/')).getTime();
+        return db - da;
+      }
+      return a.id - b.id;
+    });
+  }, [tasks, currentUser, sortBy]);
+
+  const topQueueTasks = sortedUserTasks.slice(0, 5);
 
   const recentComments = (notifications || [])
     .filter(n => n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
