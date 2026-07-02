@@ -61,6 +61,12 @@ export default function ChatSidebar({
     }).length;
   }, [inboxChats, notifications, currentUser]);
 
+  const availableDmUsers = React.useMemo(() => {
+    return (filteredUsers || []).filter(
+      (u) => u.username !== currentUser && u.username !== 'admin' && u.is_connected
+    );
+  }, [filteredUsers, currentUser]);
+
   return (
     <div
       className={`bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col h-full transition-all duration-300 ease-in-out ${
@@ -120,9 +126,8 @@ export default function ChatSidebar({
               .slice(0, 5);
 
             // 4. Filter Users (Workspace directory for new DMs)
-            const matchingUsers = (filteredUsers || [])
+            const matchingUsers = (availableDmUsers || [])
               .filter(u => {
-                if (u.username.toLowerCase() === currentUser?.toLowerCase()) return false;
                 const combined = u.username.toLowerCase();
                 return keywords.every(kw => combined.includes(kw));
               })
@@ -460,26 +465,39 @@ export default function ChatSidebar({
               onKeyDown={(e) => {
                 if (e.key === 'ArrowDown') { e.preventDefault(); /* handle nav */ }
                 if (e.key === 'ArrowUp') { e.preventDefault(); /* handle nav */ }
-                if (e.key === 'Enter') { e.preventDefault(); handleNewDmSelect(filteredUsers[newDmSearchIndex]); }
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const matches = availableDmUsers.filter(u =>
+                    u.username.toLowerCase().includes(newDmSearch.toLowerCase())
+                  );
+                  if (matches.length > 0) {
+                    handleNewDmSelect(matches[newDmSearchIndex] || matches[0]);
+                  }
+                }
               }}
               className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-md py-1 px-2 text-xs focus:ring-1 focus:ring-indigo-500 outline-none"
             />
-            {newDmSearch && (
-              <div className="absolute left-0 right-0 bottom-full mb-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg max-h-48 overflow-y-auto z-50">
-                {filteredUsers.filter(u => u.username.toLowerCase().includes(newDmSearch.toLowerCase())).map((u, idx) => (
-                  <button
-                    key={u.username}
-                    onClick={() => handleNewDmSelect(u)}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 ${
-                      idx === newDmSearchIndex ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''
-                    }`}
-                  >
-                    <Avatar name={u.username} url={avatarsMap[u.username]} size="w-5 h-5" />
-                    <span>@{u.username}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            {newDmSearch && (() => {
+              const matches = availableDmUsers.filter(u =>
+                u.username.toLowerCase().includes(newDmSearch.toLowerCase())
+              );
+              return (
+                <div className="absolute left-0 right-0 bottom-full mb-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg max-h-48 overflow-y-auto z-50">
+                  {matches.map((u, idx) => (
+                    <button
+                      key={u.username}
+                      onClick={() => handleNewDmSelect(u)}
+                      className={`w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 ${
+                        idx === newDmSearchIndex ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''
+                      }`}
+                    >
+                      <Avatar name={u.username} url={avatarsMap[u.username]} size="w-5 h-5" />
+                      <span>@{u.username}</span>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
         <div className="space-y-0.5 max-h-40 overflow-y-auto custom-scrollbar pr-1">
