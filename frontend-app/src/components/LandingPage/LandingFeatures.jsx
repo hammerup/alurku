@@ -239,8 +239,8 @@ export default function LandingFeatures({ showAuthForm, language }) {
       case 'analytics':
         return (
           <div className="flex gap-4 sm:gap-6 h-full p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/50 items-center justify-center">
-            <div className="w-1/3 aspect-square rounded-full border-[8px] sm:border-[12px] border-indigo-100 dark:border-indigo-900/40 relative flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[8px] sm:border-[12px] border-indigo-500 border-r-transparent border-b-transparent rotate-45"></div>
+            <div className="w-1/3 aspect-square rounded-full border-8 sm:border-12 border-slate-200 dark:border-neutral-800 relative flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-8 sm:border-12 border-t-emerald-500 border-r-emerald-500 border-l-emerald-500 border-b-transparent rotate-45"></div>
               <span className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">76%</span>
             </div>
             <div className="flex-1 flex flex-col gap-3 sm:gap-4">
@@ -323,8 +323,8 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 ))}
               </div>
 
-              <div className="relative h-[400px] sm:h-[450px] lg:h-[500px] w-full rounded-[2rem] bg-white dark:bg-[#0e1116] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/20 dark:to-slate-900/20"></div>
+              <div className="relative h-100 sm:h-112.5 lg:h-125 w-full rounded-4xl bg-white dark:bg-[#0e1116] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group">
+                <div className="absolute inset-0 bg-linear-to-br from-slate-100 to-slate-50 dark:from-slate-800/20 dark:to-slate-900/20"></div>
                 <div className="absolute inset-x-0 top-0 h-12 bg-white/50 dark:bg-black/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/50 flex items-center px-4 gap-2 z-10">
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-red-400"></div>
@@ -359,52 +359,117 @@ export default function LandingFeatures({ showAuthForm, language }) {
               </p>
             </div>
 
-            <div className="space-y-32">
-              {/* Pillar 1: Automated AI Planning */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
-                {/* Visual Mockup (Left) */}
-                <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
+            <div className="space-y-32">              {/* Pillar 1: Automated AI Planning */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">                {/* Visual Mockup (Left) */}
+                <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-0 shadow-xl overflow-hidden order-2 md:order-1 min-h-95 flex">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('AI Task Breakdown', 'Pemecahan Tugas AI')}</span>
-                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 py-0.5 px-2 rounded-full font-bold">{t('Auto', 'Otomatis')}</span>
-                  </div>
-                  <div className="space-y-3 text-xs">
-                    <div className="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/50 dark:border-indigo-900/40 rounded-xl">
-                      <span className="text-indigo-500">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                        </svg>
-                      </span>
-                      <div className="flex-1">
-                        <div className="font-bold text-slate-800 dark:text-slate-200">{t('Arrange Work Plan', 'Menyusun Rencana Kerja')}</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500">{t('Predicted duration: 2.5h', 'Durasi diprediksi: 2.5 jam')}</div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 w-full h-full">
+                    {/* Left Panel: Goal & Generated Tasks (2/3 width) */}
+                    <div className="sm:col-span-2 p-5 flex flex-col gap-4 justify-between h-full bg-white dark:bg-neutral-900 border-r border-slate-100 dark:border-slate-800">
+                      <div className="space-y-4">
+                        {/* Heading */}
+                        <div>
+                          <h4 className="font-bold text-slate-800 dark:text-white text-xs leading-none">
+                            {t("What do you want to achieve today?", "Apa yang ingin Anda capai hari ini?")}
+                          </h4>
+                          <span className="text-[8px] text-slate-400 font-bold block mt-1">
+                            {t("AI will structure your goals into actionable items.", "AI akan menyusun tujuan Anda menjadi daftar tugas.")}
+                          </span>
+                        </div>
+
+                        {/* Input Box */}
+                        <div className="border border-slate-200 dark:border-slate-850 rounded-xl p-2.5 bg-slate-50 dark:bg-neutral-950/40 flex justify-between items-center">
+                          <span className="text-[9px] text-slate-500 dark:text-slate-450 font-medium truncate flex-1 pr-2">
+                            {t("I need to plan a marketing campaign for next week...", "Saya perlu merencanakan kampanye pemasaran untuk minggu depan...")}
+                          </span>
+                          <span className="w-5 h-5 rounded bg-slate-200 dark:bg-slate-800 text-[9px] flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0 font-bold">
+                            ▲
+                          </span>
+                        </div>
+
+                        {/* Generated Tasks list */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center text-[9px] font-bold text-slate-400">
+                            <span className="uppercase tracking-wider text-slate-800 dark:text-slate-300">{t("Generated Tasks", "Tugas yang Dihasilkan")}</span>
+                            <span className="hover:underline cursor-pointer">{t("Deselect All", "Batal Semua")}</span>
+                          </div>
+                                                  {/* Task items */}
+                          <div className="space-y-2">
+                            <div className="bg-slate-50/50 dark:bg-slate-800/40 border border-slate-150 dark:border-slate-800 rounded-xl p-2.5 shadow-sm flex items-start gap-2">
+                              <input type="checkbox" readOnly checked className="rounded text-indigo-600 mt-0.5" />
+                              <div className="flex-1 space-y-1">
+                                <span className="font-bold text-[9px] text-slate-800 dark:text-slate-200 leading-tight block">
+                                  2. Channel Selection and Budget Allocation
+                                </span>
+                                <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
+                                <div className="flex gap-1.5 text-[7px] font-bold text-slate-400 pt-0.5">
+                                  <span className="bg-slate-100 dark:bg-slate-800 px-1 rounded text-slate-500">MARKETING</span>
+                                  <span className="text-blue-500 font-black">@budi</span>
+                                  <span className="bg-amber-50/50 text-amber-600 dark:bg-amber-950/20 px-1 rounded flex items-center gap-0.5">📁 TO-DO LIST (PRI...</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="bg-slate-50/50 dark:bg-slate-800/40 border border-slate-150 dark:border-slate-800 rounded-xl p-2.5 shadow-sm flex items-start gap-2">
+                              <input type="checkbox" readOnly checked className="rounded text-indigo-600 mt-0.5" />
+                              <div className="flex-1 space-y-1">
+                                <span className="font-bold text-[9px] text-slate-800 dark:text-slate-200 leading-tight block">
+                                  3. Content Creation and Distribution
+                                </span>
+                                <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded w-2/3"></div>
+                                <div className="flex gap-1.5 text-[7px] font-bold text-slate-400 pt-0.5">
+                                  <span className="bg-slate-100 dark:bg-slate-800 px-1 rounded text-slate-500">MARKETING</span>
+                                  <span className="text-blue-500 font-black">@budi</span>
+                                  <span className="bg-amber-50/50 text-amber-600 dark:bg-amber-950/20 px-1 rounded flex items-center gap-0.5">📁 TO-DO LIST (PRI...</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-[10px] text-slate-500 font-bold">27 Jun</span>
+
+                      {/* Add to Inbox Action */}
+                      <div className="flex justify-end pt-2 border-t dark:border-slate-800 mt-2">
+                        <button className="bg-black dark:bg-white text-white dark:text-black font-extrabold text-[8px] sm:text-[9px] py-1.5 px-3 rounded-full shadow-md flex items-center gap-1 hover:scale-105 transition-all">
+                          📌 {t("ADD TO INBOX", "TAMBAH KE INBOX")}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                      <span className="text-slate-500">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
-                        </svg>
-                      </span>
-                      <div className="flex-1">
-                        <div className="font-bold text-slate-800 dark:text-slate-200">{t('Review Mockup Design', 'Review Desain Mockup')}</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500">{t('Duration: 1h', 'Durasi: 1 jam')}</div>
+
+                    {/* Right Panel: Inbox Sidebar (1/3 width) */}
+                    <div className="p-4 bg-slate-50/80 dark:bg-neutral-950/40 flex flex-col justify-between h-full min-h-55">
+                      <div className="space-y-3">
+                        {/* Inbox Header */}
+                        <div className="flex items-center gap-1.5 border-b pb-2 dark:border-slate-800">
+                          <span className="text-xs">📥</span>
+                          <div>
+                            <span className="font-black text-[9px] text-slate-800 dark:text-white block uppercase tracking-wider leading-none">INBOX</span>
+                            <span className="text-[6px] text-slate-400 font-bold block uppercase tracking-widest leading-none mt-1">READY TO DISPATCH</span>
+                          </div>
+                        </div>
+
+                        {/* Inbox Card */}
+                        <div className="bg-white dark:bg-neutral-900 border border-slate-150 dark:border-slate-800 rounded-xl p-2.5 shadow-sm space-y-1.5">
+                          <div className="flex gap-1 text-[6px] font-bold">
+                            <span className="bg-amber-50 text-amber-600 dark:bg-amber-950/40 px-1 rounded">📁 To-do List</span>
+                            <span className="text-slate-400 dark:text-slate-500">/ Marketing</span>
+                          </div>
+                          <span className="font-bold text-[9px] text-slate-800 dark:text-slate-200 leading-tight block">
+                            [NEW PRODUCT] 1. CAMPAIGN OBJECTIVE
+                          </span>
+                          <div className="h-1.5 bg-slate-250 dark:bg-slate-700 rounded w-5/6"></div>
+                          <div className="flex gap-1 text-[6px] font-bold pt-0.5">
+                            <span className="bg-red-50 text-red-500 dark:bg-red-950/30 px-1 rounded">🔥 HIGH</span>
+                            <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 px-1 rounded">⏳ 4.0H</span>
+                          </div>
+                        </div>
                       </div>
-                      <span className="text-[10px] text-slate-500">28 Jun</span>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                      <span className="text-slate-400">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </span>
-                      <div className="flex-1">
-                        <div className="font-bold text-slate-400 dark:text-slate-550 line-through">{t('Final Testing', 'Pengujian Akhir')}</div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 line-through">{t('Duration: 3h', 'Durasi: 3 jam')}</div>
-                      </div>
-                      <span className="text-[10px] text-slate-400 line-through">29 Jun</span>
+
+                      {/* Dispatch button */}
+                      <button className="w-full bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] font-extrabold text-[8px] sm:text-[9px] py-2 rounded-xl shadow-md uppercase tracking-wider mt-4 hover:opacity-90 transition-all">
+                        {t("FINISH & GO TO PROJECT", "SELESAI & BUKA PROYEK")}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -413,7 +478,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 <div className="space-y-6 order-1 md:order-2">
                   <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-sm border border-indigo-100 dark:border-indigo-800/50">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
                   <h3 className="font-black text-slate-900 dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
@@ -421,19 +486,19 @@ export default function LandingFeatures({ showAuthForm, language }) {
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
                     {t(
-                      "Not sure how long a project will take? alurku. AI will automatically predict the duration and organize your daily schedule, so you don't have to guess anymore.",
-                      "Tidak yakin butuh waktu berapa lama untuk sebuah proyek? AI alurku. akan memecah proyek besar menjadi subtugas dan memprediksi durasinya secara otomatis."
+                      "Not sure how to structure a project? Describe your goal to alurku. AI, and it will instantly generate a structured project plan with checkable tasks, subtasks, and duration estimates (ETCs).",
+                      "Tidak yakin bagaimana memulai suatu proyek? Jelaskan tujuan besarmu pada AI alurku., dan sistem akan otomatis menyusun rencana proyek terstruktur lengkap dengan sub-tugas dan estimasi waktu."
                     )}
                   </p>
                   <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> {t('AI-based task duration estimation', 'Estimasi durasi pengerjaan berbasis AI')}
+                      <span className="text-emerald-500">✓</span> {t('Broad objective breakdown into tasks', 'Pemecahan tujuan besar menjadi daftar tugas')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> {t('Automatic task breakdown', 'Pemecahan tugas otomatis')}
+                      <span className="text-emerald-500">✓</span> {t('Automatic subtasks & duration estimation', 'Penyusunan sub-tugas & estimasi waktu otomatis')}
                     </li>
                     <li className="flex items-center gap-2.5">
-                      <span className="text-emerald-500">✓</span> {t('Intelligent adjustment to blockers', 'Penyesuaian cerdas terhadap hambatan kerja')}
+                      <span className="text-emerald-500">✓</span> {t('Instant project routing and placement', 'Penyaluran instan ke proyek tujuan')}
                     </li>
                   </ul>
                 </div>
@@ -473,36 +538,63 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 {/* Visual Mockup (Right) */}
                 <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="text-xs font-bold text-slate-800 dark:text-white">{t('Team Workload', 'Beban Kerja Tim')}</span>
-                    <span className="text-[10px] text-emerald-600 font-bold">{t('Normal', 'Normal')}</span>
+                  
+                  {/* Header */}
+                  <div className="flex justify-between items-center border-b pb-2.5 dark:border-slate-800 mb-4">
+                    <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1">
+                      {t('Team Workload', 'Beban Kerja Tim')}
+                      <span className="text-[10px] text-slate-400 cursor-help">ⓘ</span>
+                    </span>
+                    <div className="flex gap-2 text-[8px] font-bold tracking-wider uppercase">
+                      <span className="text-emerald-500 dark:text-emerald-400">● DONE</span>
+                      <span className="text-blue-500 dark:text-blue-400">● ACTIVE</span>
+                      <span className="text-amber-500 dark:text-amber-400">● WAIT</span>
+                    </div>
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
-                        <span>Adit Pratama (UI Developer)</span>
-                        <span className="text-emerald-600">{t('80% Capacity', '80% Kapasitas')}</span>
+
+                  {/* Workload List */}
+                  <div className="space-y-4 text-[10px] sm:text-xs">
+                    {/* User siti (Overloaded) */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 rounded-full bg-slate-250 dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                            👤
+                          </div>
+                          <span className="font-bold text-slate-750 dark:text-slate-200">siti</span>
+                        </div>
+                        <div className="text-right text-[8px] sm:text-[9px] leading-tight font-black">
+                          <span className="text-red-500 block">50h ACTIVE ⚠️ / WEEK</span>
+                          <span className="text-red-400 block mt-0.5">180H TOTAL ⚠️ / MONTH</span>
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-emerald-500 h-full w-[80%] rounded-full"></div>
+                      {/* Segmented Progress Bar */}
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                        <div className="bg-emerald-500 h-full w-[10%]" title="Done: 10%"></div>
+                        <div className="bg-blue-500 h-full w-[15%]" title="Active: 15%"></div>
+                        <div className="bg-amber-500 h-full w-[75%]" title="Wait: 75%"></div>
                       </div>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
-                        <span>Jane Smith (Backend Eng)</span>
-                        <span className="text-rose-600 dark:text-rose-400">{t('95% Capacity', '95% Kapasitas')}</span>
+
+                    {/* User budi (Healthy) */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 rounded-full bg-slate-250 dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                            👤
+                          </div>
+                          <span className="font-bold text-slate-750 dark:text-slate-200">budi</span>
+                        </div>
+                        <div className="text-right text-[8px] sm:text-[9px] leading-tight font-black">
+                          <span className="text-[#2563eb] dark:text-[#38bdf8] block">35h ACTIVE / WEEK</span>
+                          <span className="text-slate-500 dark:text-slate-400 block mt-0.5">145H TOTAL / MONTH</span>
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-rose-500 h-full w-[95%] rounded-full"></div>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5">
-                        <span>David Miller (Project Manager)</span>
-                        <span className="text-sky-500">{t('45% Capacity', '45% Kapasitas')}</span>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                        <div className="bg-sky-400 h-full w-[45%] rounded-full"></div>
+                      {/* Segmented Progress Bar */}
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                        <div className="bg-emerald-500 h-full w-[40%]" title="Done: 40%"></div>
+                        <div className="bg-blue-500 h-full w-[25%]" title="Active: 25%"></div>
+                        <div className="bg-amber-500 h-full w-[35%]" title="Wait: 35%"></div>
                       </div>
                     </div>
                   </div>

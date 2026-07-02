@@ -5,7 +5,7 @@ export default function LandingAISection({ showAuthForm, language }) {
   const [typedText, setTypedText] = useState('');
   
   // States for Live Playable Mockup
-  const [selectedScenario, setSelectedScenario] = useState('tasks'); // 'tasks', 'capacity', 'summary'
+  const [selectedScenario, setSelectedScenario] = useState('tasks'); // 'tasks', 'planner', 'summary'
   const [chatStatus, setChatStatus] = useState('typing'); // 'typing', 'thinking', 'complete'
   const [typedUserPrompt, setTypedUserPrompt] = useState('');
   const typingTimerRef = useRef(null);
@@ -27,22 +27,31 @@ export default function LandingAISection({ showAuthForm, language }) {
         ],
       }
     },
-    capacity: {
-      name: 'Estimasi Waktu',
-      nameEn: 'Time Estimate',
-      userPrompt: 'Hitung estimasi waktu (ETC) untuk pengerjaan modul integrasi API pembayaran.',
-      userPromptEn: 'Calculate the time estimate (ETC) for payment API integration.',
+    planner: {
+      name: 'Perencana AI',
+      nameEn: 'AI Planner',
+      userPrompt: 'Buat rencana proyek peluncuran aplikasi mobile baru.',
+      userPromptEn: 'Create a project plan for launching a new mobile app.',
       aiResponse: {
-        title: 'Berikut adalah hasil analisis kapasitas kerja:',
-        titleEn: 'Here is the workload capacity analysis:',
-        capacityCard: {
-          estimation: '8 Jam Kerja (1.0 ETC)',
-          estimationEn: '8 Work Hours (1.0 ETC)',
-          risk: 'Sedang',
-          riskEn: 'Medium',
-          recommendation: 'Rekomendasi: Mulai Senin pagi untuk koordinasi tim maksimal.',
-          recommendationEn: 'Recommendation: Start Monday morning for optimal alignment.'
-        }
+        title: 'Tentu, berikut draf rencana proyek alurku. yang disiapkan:',
+        titleEn: 'Certainly! Here is the drafted alurku. project plan:',
+        phases: [
+          {
+            title: 'Fase 1: Riset & Desain',
+            titleEn: 'Phase 1: Research & Design',
+            tasks: [
+              { text: 'Riset Pengguna & Wireframe', textEn: 'User Research & Wireframing', duration: '3 Hari / 3 Days', assignee: 'Budi' },
+              { text: 'Desain Antarmuka (UI/UX)', textEn: 'UI/UX Interface Design', duration: '4 Hari / 4 Days', assignee: 'Budi' }
+            ]
+          },
+          {
+            title: 'Fase 2: Backend & Database',
+            titleEn: 'Phase 2: Backend & Database',
+            tasks: [
+              { text: 'Setup Database & API Utama', textEn: 'Setup Database & Main API', duration: '5 Hari / 5 Days', assignee: 'Siti' }
+            ]
+          }
+        ]
       }
     },
     summary: {
@@ -73,9 +82,9 @@ export default function LandingAISection({ showAuthForm, language }) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
       </svg>
     ),
-    capacity: (
+    planner: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>
     ),
     summary: (
@@ -256,8 +265,8 @@ export default function LandingAISection({ showAuthForm, language }) {
 
             {/* Right Side: Live Playable Chatbot Mockup */}
             <div className="relative reveal-on-scroll" style={{ animationDelay: '200ms' }}>
-              <div className="relative w-full aspect-square lg:aspect-auto lg:h-[650px] bg-gradient-to-tr from-slate-100 to-slate-50 dark:from-slate-800/30 dark:to-slate-900/30 rounded-[2.5rem] border border-slate-200 dark:border-slate-800/50 shadow-2xl overflow-hidden flex items-center justify-center p-6 lg:p-10">
-                <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:20px_20px] opacity-50"></div>
+              <div className="relative w-full aspect-square lg:aspect-auto lg:h-162.5 bg-linear-to-tr from-slate-100 to-slate-50 dark:from-slate-800/30 dark:to-slate-900/30 rounded-[2.5rem] border border-slate-200 dark:border-slate-800/50 shadow-2xl overflow-hidden flex items-center justify-center p-6 lg:p-10">
+                <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] bg-size-[20px_20px] opacity-50"></div>
                 
                 <div className="relative w-full max-w-sm bg-white/95 dark:bg-[#0e1116]/95 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 shadow-2xl rounded-3xl p-5 space-y-5 transform-gpu hover:scale-[1.02] transition-transform duration-300">
                   {/* Chat Mockup Header */}
@@ -278,13 +287,13 @@ export default function LandingAISection({ showAuthForm, language }) {
 
                   {/* Chat User Input Bubble */}
                   <div className="flex gap-3 items-start">
-                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                       👤
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-800/80 p-3 rounded-2xl rounded-tl-sm text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-350 w-3/4 leading-relaxed shadow-sm">
                       {typedUserPrompt}
                       {chatStatus === 'typing' && (
-                        <span className="inline-block w-[2px] h-3 bg-slate-500 animate-pulse ml-1 align-middle"></span>
+                        <span className="inline-block w-0.5 h-3 bg-slate-500 animate-pulse ml-1 align-middle"></span>
                       )}
                     </div>
                   </div>
@@ -292,7 +301,7 @@ export default function LandingAISection({ showAuthForm, language }) {
                   {/* AI Response Bubble */}
                   {chatStatus !== 'typing' && (
                     <div className="flex gap-3 items-start flex-row-reverse">
-                      <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-black shadow-md flex-shrink-0">
+                      <div className="w-7 h-7 rounded-xl bg-linear-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-black shadow-md shrink-0">
                         AI
                       </div>
                       
@@ -337,25 +346,36 @@ export default function LandingAISection({ showAuthForm, language }) {
                             </div>
                           )}
 
-                          {/* Scenario 2 Output: Capacity Estimations */}
-                          {selectedScenario === 'capacity' && (
+                          {/* Scenario 2 Output: AI Planner Roadmap */}
+                          {selectedScenario === 'planner' && (
                             <div className="space-y-3">
-                              <div className="bg-white dark:bg-neutral-900 border border-slate-150 dark:border-slate-800 rounded-xl p-3 shadow-sm flex flex-col gap-2">
-                                <span className="text-[10px] text-slate-400 font-bold block">{t('ESTIMATED TIME', 'ESTIMASI DURASI')}</span>
-                                <div className="text-sm font-black text-slate-800 dark:text-slate-100">
-                                  {t(scenarios.capacity.aiResponse.capacityCard.estimationEn, scenarios.capacity.aiResponse.capacityCard.estimation)}
+                              {scenarios.planner.aiResponse.phases.map((phase, idx) => (
+                                <div key={idx} className="space-y-1.5">
+                                  <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block">
+                                    {t(phase.titleEn, phase.title)}
+                                  </span>
+                                  <div className="space-y-2">
+                                    {phase.tasks.map((task, tIdx) => (
+                                      <div key={tIdx} className="bg-white dark:bg-neutral-900 border border-slate-150 dark:border-slate-850 rounded-xl p-2.5 shadow-sm flex items-center justify-between">
+                                        <div className="flex flex-col">
+                                          <span className="font-bold text-[10px] text-slate-850 dark:text-slate-200">
+                                            {t(task.textEn, task.text)}
+                                          </span>
+                                          <span className="text-[8px] text-slate-400 font-bold mt-0.5">
+                                            ⏳ {t(task.duration, task.duration)}
+                                          </span>
+                                        </div>
+                                        <span className="text-[9px] font-black text-slate-500 bg-slate-100 dark:bg-slate-800 py-0.5 px-2 rounded-full">
+                                          @{task.assignee}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
-                                  <div className="bg-emerald-500 h-full w-[60%]"></div>
-                                </div>
-                                <div className="flex justify-between text-[9px] font-bold text-slate-400 mt-1">
-                                  <span>{t('Risk: ', 'Risiko: ')}{t(scenarios.capacity.aiResponse.capacityCard.riskEn, scenarios.capacity.aiResponse.capacityCard.risk)}</span>
-                                  <span className="text-emerald-500">Aman / Safe</span>
-                                </div>
-                              </div>
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold leading-relaxed">
-                                {t(scenarios.capacity.aiResponse.capacityCard.recommendationEn, scenarios.capacity.aiResponse.capacityCard.recommendation)}
-                              </p>
+                              ))}
+                              <button className="w-full bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] hover:opacity-90 transition-all py-2.5 rounded-xl text-[10px] font-extrabold shadow-md flex items-center justify-center gap-1 border border-slate-900 mt-2">
+                                🚀 {t('Terapkan Rencana Proyek', 'Apply Project Plan')}
+                              </button>
                             </div>
                           )}
 
@@ -373,7 +393,7 @@ export default function LandingAISection({ showAuthForm, language }) {
                                   </span>
                                 </div>
                                 {/* Circular success widget */}
-                                <div className="w-12 h-12 rounded-full border-4 border-emerald-500 border-t-slate-100 dark:border-t-neutral-800 flex items-center justify-center font-black text-[10px] text-slate-800 dark:text-white shadow-sm shrink-0">
+                                <div className="w-12 h-12 rounded-full border-4 border-slate-250 dark:border-neutral-800 border-t-emerald-500 border-r-emerald-500 border-l-emerald-500 flex items-center justify-center font-black text-[10px] text-slate-800 dark:text-white shadow-sm shrink-0">
                                   92%
                                 </div>
                               </div>
@@ -495,8 +515,8 @@ export default function LandingAISection({ showAuthForm, language }) {
             </div>
 
             {/* Right Side: Interactive Simulation */}
-            <div className="relative h-[350px] sm:h-[450px] w-full rounded-[2rem] bg-white dark:bg-[#0e1116] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group flex items-center justify-center p-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800/20 dark:to-slate-900/20"></div>
+            <div className="relative h-87.5 sm:h-112.5 w-full rounded-4xl bg-white dark:bg-[#0e1116] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group flex items-center justify-center p-6">
+              <div className="absolute inset-0 bg-linear-to-br from-slate-100 to-slate-50 dark:from-slate-800/20 dark:to-slate-900/20"></div>
 
               {/* Step 0: Typing */}
               <div
@@ -518,7 +538,7 @@ export default function LandingAISection({ showAuthForm, language }) {
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
                     {typedText}
-                    <span className="inline-block w-[2px] h-4 bg-indigo-500 animate-pulse ml-1 align-middle"></span>
+                    <span className="inline-block w-0.5 h-4 bg-indigo-500 animate-pulse ml-1 align-middle"></span>
                   </div>
                 </div>
               </div>
@@ -631,16 +651,38 @@ export default function LandingAISection({ showAuthForm, language }) {
                     </svg>
                     <span className="text-xs font-black text-slate-850 dark:text-white">{t('Redesign Homepage - Discussion', 'Desain Ulang Beranda - Diskusi')}</span>
                   </div>
-                  <div className="space-y-3 text-[10px] sm:text-xs">
-                    <div className="flex gap-2">
-                      <span className="font-bold text-[#111E38] dark:text-slate-200">@budi:</span>
-                      <span className="text-slate-500 dark:text-slate-350">{t("I've started the wireframes.", 'Saya sudah mulai merancang wireframe.')}</span>
+                  <div className="space-y-3.5 text-[10px] sm:text-xs">
+                    {/* @budi (Right-aligned as current user "situ") */}
+                    <div className="flex gap-2 items-start flex-row-reverse">
+                      <div className="w-6 h-6 rounded-full bg-[#111E38] text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm">
+                        B
+                      </div>
+                      <div className="bg-slate-100 dark:bg-slate-800/80 p-2.5 rounded-2xl rounded-tr-sm text-[10px] sm:text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed max-w-[80%] shadow-sm">
+                        <span className="font-bold text-slate-900 dark:text-white block mb-0.5 text-[9px] text-right">@budi</span>
+                        {t("I've started the wireframes. @alurku_ai what color should we use?", "Saya mulai merancang wireframe. @alurku_ai pakai warna apa ya?")}
+                      </div>
                     </div>
-                    <div className="flex gap-2 bg-indigo-50/50 dark:bg-indigo-950/20 p-2.5 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
-                      <span className="font-bold text-purple-600">@alurku_ai:</span>
-                      <span className="text-indigo-900 dark:text-indigo-300 font-medium">
-                        {t('Tip: Make sure the brand color matches #FACC15.', 'Tip: Pastikan warna logo menggunakan kode warna #FACC15.')}
-                      </span>
+
+                    {/* @alurku_ai (Left-aligned AI reply) */}
+                    <div className="flex gap-2 items-start">
+                      <div className="w-6 h-6 rounded-lg bg-linear-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[8px] font-black shrink-0 shadow-sm">
+                        AI
+                      </div>
+                      <div className="bg-indigo-50 dark:bg-indigo-950/30 p-2.5 rounded-2xl rounded-tl-sm text-[10px] sm:text-xs text-indigo-900 dark:text-indigo-200 font-medium leading-relaxed max-w-[80%] border border-indigo-100 dark:border-indigo-900/30 shadow-sm">
+                        <span className="font-bold text-indigo-600 dark:text-indigo-400 block mb-0.5 text-[9px]">@alurku_ai</span>
+                        {t("Always use Flat Yellow (#FACC15) for accents, Budi!", "Gunakan Flat Yellow (#FACC15) untuk aksennya, Budi!")}
+                      </div>
+                    </div>
+
+                    {/* @siti (Left-aligned other user comment) */}
+                    <div className="flex gap-2 items-start">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-[#111E38] dark:text-slate-200 flex items-center justify-center text-[10px] font-bold shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm">
+                        S
+                      </div>
+                      <div className="bg-slate-100 dark:bg-slate-800/80 p-2.5 rounded-2xl rounded-tl-sm text-[10px] sm:text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed max-w-[80%] shadow-sm">
+                        <span className="font-bold text-slate-900 dark:text-white block mb-0.5 text-[9px]">@siti</span>
+                        {t("Looking good, Budi! Let's follow the brand guidelines.", "Keren, Budi! Mari kita ikuti panduan warna brand kita.")}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -648,41 +690,57 @@ export default function LandingAISection({ showAuthForm, language }) {
 
               {/* Step 4: Insights */}
               <div
-                className={`absolute inset-0 p-8 flex flex-col justify-center transition-all duration-700 ${
+                className={`absolute inset-0 p-6 flex flex-col justify-center transition-all duration-700 ${
                   simStep === 4 ? 'opacity-100 translate-y-0 z-20' : 'opacity-0 translate-y-8 z-0 pointer-events-none'
                 }`}
               >
-                <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-3">
-                  <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1.5 border-b pb-2 shrink-0">
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    {t('alurku. Workload Insights', 'alurku. Analisis Beban Kerja')}
-                  </span>
-                  <div className="space-y-3 text-[10px] sm:text-xs">
-                    <div>
-                      <div className="flex justify-between font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        <span>Budi (Frontend)</span>
-                        <span>0.8 ETC</span>
+                <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col gap-4 w-full">
+                  {/* Header */}
+                  <div className="flex justify-between items-center border-b pb-2.5 dark:border-slate-800">
+                    <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1">
+                      Team Workload
+                      <span className="text-[10px] text-slate-400 cursor-help">ⓘ</span>
+                    </span>
+                    <div className="flex gap-2 text-[8px] font-bold tracking-wider uppercase">
+                      <span className="text-emerald-500 dark:text-emerald-400">● DONE</span>
+                      <span className="text-blue-500 dark:text-blue-400">● ACTIVE</span>
+                      <span className="text-amber-500 dark:text-amber-400">● WAIT</span>
+                    </div>
+                  </div>
+
+                  {/* Workload List */}
+                  <div className="space-y-4 text-[10px] sm:text-xs">
+                    {/* User budi */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 rounded-full bg-slate-250 dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                            👤
+                          </div>
+                          <span className="font-bold text-slate-750 dark:text-slate-200">budi</span>
+                        </div>
+                        <div className="text-right text-[8px] sm:text-[9px] leading-tight font-black">
+                          <span className="text-[#2563eb] dark:text-[#38bdf8] block">35h ACTIVE / WEEK</span>
+                          <span className="text-slate-500 dark:text-slate-400 block mt-0.5">145H TOTAL / MONTH</span>
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div className="bg-emerald-500 h-full w-[80%]"></div>
+                      {/* Segmented Progress Bar */}
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                        <div className="bg-emerald-500 h-full w-[40%]" title="Done: 40%"></div>
+                        <div className="bg-blue-500 h-full w-[25%]" title="Active: 25%"></div>
+                        <div className="bg-amber-500 h-full w-[35%]" title="Wait: 35%"></div>
                       </div>
                     </div>
-                    <div>
-                      <div className="flex justify-between font-bold text-slate-600 dark:text-slate-300 mb-1">
-                        <span>Siti (Backend)</span>
-                        <span>1.4 ETC</span>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div className="bg-rose-500 h-full w-[95%] animate-pulse"></div>
-                      </div>
-                    </div>
-                    <div className="text-[9px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-950/20 p-2 rounded-lg border border-rose-100 dark:border-rose-900/30 flex items-center gap-1.5">
-                      <svg className="w-3.5 h-3.5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      <span>{t('Warning: Siti is over-allocated. Balance workload.', 'Peringatan: Beban kerja Siti berlebih. Seimbangkan tugas.')}</span>
+
+                    {/* AI Insight Box */}
+                    <div className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/30 flex items-start gap-1.5">
+                      <span className="shrink-0 text-xs">✓</span>
+                      <span>
+                        {t(
+                          "AI Analysis: Budi's workload is healthy (35h active this week). Task distribution is well-balanced and within limits.",
+                          "Analisis AI: Beban kerja Budi seimbang (35 jam aktif minggu ini). Distribusi tugas berjalan dengan baik dan dalam batas wajar."
+                        )}
+                      </span>
                     </div>
                   </div>
                 </div>
