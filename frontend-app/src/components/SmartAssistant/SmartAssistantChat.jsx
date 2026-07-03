@@ -76,7 +76,7 @@ export default function SmartAssistantChat({
           >
             <option value="auto">✨ {aiProvider === 'Smart Assistant' ? 'AUTO AI' : aiProvider.toUpperCase()}</option>
             <option value="gemini">⚡ GOOGLE GEMINI</option>
-            <option value="llama">🦙 META LLAMA 3</option>
+            <option value="llama">GPT-OSS 120B</option>
           </select>
           <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest hidden sm:block">
             • {tMsg('Your Private AI', 'AI Pribadi Anda')}
@@ -284,7 +284,7 @@ export default function SmartAssistantChat({
                 }
               }}
               placeholder={language === 'id' ? 'Ketik pesan...' : 'Type a message...'}
-              className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent rounded-xl text-sm font-medium text-black dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all disabled:opacity-50 resize-none max-h-[300px] custom-scrollbar"
+              className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent rounded-xl text-sm font-medium text-black dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all disabled:opacity-50 resize-none max-h-75 custom-scrollbar"
               style={{ minHeight: '44px' }}
               rows="1"
               onInput={(e) => {
@@ -295,7 +295,7 @@ export default function SmartAssistantChat({
             />
           )}
           {isMentioning && accountStatus !== 'suspended' && (
-            <div className="absolute left-0 bottom-full mb-2 w-full min-w-[200px] bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
+            <div className="absolute left-0 bottom-full mb-2 w-full min-w-50 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
               {(() => {
                 const allOptions = [...globalMentionOptions];
                 const filteredOptions = allOptions.filter((m) => m.toLowerCase().includes(mentionQuery));

@@ -95,12 +95,12 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
                       {tMsg('AI Auto-Fallback Architecture', 'Arsitektur Auto-Fallback AI')}
                     </td>
                     <td className="p-4 sm:p-6 text-indigo-600 dark:text-indigo-400 font-black">
-                      {tMsg('Gemini ➔ Llama', 'Gemini ➔ Llama')}
+                      {tMsg('Gemini ➔ GPT-OSS', 'Gemini ➔ GPT-OSS')}
                     </td>
                     <td className="p-4 sm:p-6 text-neutral-500 dark:text-neutral-400 leading-relaxed">
                       {tMsg(
-                        'Automatically routes AI requests to Llama 3 if Google Gemini reaches API limits or experiences downtime.',
-                        'Otomatis merutekan permintaan AI ke Llama 3 jika Google Gemini mencapai batas API atau mengalami gangguan.'
+                        'Automatically routes AI requests to GPT-OSS 120B if Google Gemini reaches API limits or experiences downtime.',
+                        'Otomatis merutekan permintaan AI ke GPT-OSS 120B jika Google Gemini mencapai batas API atau mengalami gangguan.'
                       )}
                     </td>
                   </tr>
@@ -429,11 +429,11 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
                     <td className="p-4 sm:p-6 text-slate-800 dark:text-slate-200 font-bold">
                       {tMsg('Multi-AI Smart Assistant', 'Asisten Pintar Multi-AI')}
                     </td>
-                    <td className="p-4 sm:p-6 text-indigo-600 dark:text-indigo-400 font-black">Llama 3 / Gemini</td>
+                    <td className="p-4 sm:p-6 text-indigo-600 dark:text-indigo-400 font-black">GPT-OSS 120B / Gemini</td>
                     <td className="p-4 sm:p-6 text-neutral-500 dark:text-neutral-400 leading-relaxed">
                       {tMsg(
-                        'Intelligent chat assistant powered by Meta Llama 3.3 70B (via Groq) or Google Gemini 2.5 Flash.',
-                        'Asisten obrolan cerdas yang ditenagai oleh Meta Llama 3.3 70B atau Google Gemini 2.5 Flash.'
+                        'Intelligent chat assistant powered by GPT-OSS 120B (via Groq) or Google Gemini 2.5 Flash.',
+                        'Asisten obrolan cerdas yang ditenagai oleh GPT-OSS 120B atau Google Gemini 2.5 Flash.'
                       )}
                     </td>
                   </tr>
@@ -773,7 +773,7 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
                       Gemini 2.5 Flash
                     </span>
                     <span className="text-xs font-bold px-2.5 py-1 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-md border border-rose-200 dark:border-rose-800/50 shadow-sm">
-                      Llama 3.3 70B
+                      GPT-OSS 120B
                     </span>
                   </div>
                 </div>

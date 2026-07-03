@@ -1996,7 +1996,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             'Account: Manage profile, export CSV data globally or per project, toggle Dark Mode, submit feedback, or view system specs from the top right Account menu.';
         else if (data === 'Assistant')
           baseContext =
-            'Assistant: Smart Assistant is a Multi-AI helper (Gemini/Llama 3) that can draft tasks, summarize notes, answer docs, and extract meeting notes into actionable tasks.';
+            'Assistant: Smart Assistant is a Multi-AI helper (Gemini/GPT-OSS) that can draft tasks, summarize notes, answer docs, and extract meeting notes into actionable tasks.';
         else if (data === 'Tickets')
           baseContext =
             "Tickets: Users can submit System Feedback or Contact Support via the Account menu. These auto-generate a ticket ID (e.g. TKT-0001) which can be tracked in the 'My Tickets' panel.";

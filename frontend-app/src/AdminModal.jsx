@@ -241,7 +241,7 @@ export default function AdminModal({
 
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[80] p-2 sm:p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-80 p-2 sm:p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -738,7 +738,7 @@ export default function AdminModal({
               )}
             </div>
             {deleteConfirmOpen && (
-              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-4 mac-animate">
+              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-100 flex flex-col items-center justify-center p-4 mac-animate">
                 <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-md border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center flex flex-col items-center">
                   <div className="w-20 h-20 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border border-red-200 dark:border-red-800">
                     ⚠️
@@ -791,7 +791,7 @@ export default function AdminModal({
               </div>
             )}
             {boardToTransfer && (
-              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-4 mac-animate">
+              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-100 flex flex-col items-center justify-center p-4 mac-animate">
                 <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-md border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center flex flex-col items-center">
                   <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border border-indigo-200 dark:border-indigo-800">
                     🔄
@@ -865,7 +865,7 @@ export default function AdminModal({
             )}
 
             {bulkUserConfirmOpen && (
-              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-4 mac-animate">
+              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-100 flex flex-col items-center justify-center p-4 mac-animate">
                 <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-md border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center flex flex-col items-center">
                   <div
                     className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border ${
@@ -1143,7 +1143,7 @@ export default function AdminModal({
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1.5">
-                      Groq API Key (Llama 3)
+                      Groq API Key (GPT-OSS 120B)
                     </label>
                     <div className="relative">
                       <input
@@ -1196,7 +1196,7 @@ export default function AdminModal({
 
         {/* Delete Choice Modal */}
         {showDeleteChoice && deleteChoiceUser && (
-          <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-4 mac-animate">
+          <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-100 flex flex-col items-center justify-center p-4 mac-animate">
             <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-md border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center flex flex-col items-center">
               <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border bg-red-50 dark:bg-red-900/30 text-red-500 border-red-200 dark:border-red-800">
                 🗑️
@@ -1372,7 +1372,7 @@ export default function AdminModal({
             }
 
             return (
-              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-4 mac-animate">
+              <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-100 flex flex-col items-center justify-center p-4 mac-animate">
                 <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-md border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center flex flex-col items-center">
                   <div
                     className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border ${iconColor}`}
@@ -1495,7 +1495,7 @@ export default function AdminModal({
           })()}
 
         {showSudoModal && (
-          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-sm z-[60] flex flex-col items-center justify-center p-8 mac-animate">
+          <div className="absolute inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-sm z-60 flex flex-col items-center justify-center p-8 mac-animate">
             <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border border-indigo-200 dark:border-indigo-800">
               🔐
             </div>

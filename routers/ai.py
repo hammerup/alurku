@@ -49,7 +49,7 @@ def generate_ai_text(
             error_str = str(e)
             if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
                 raise Exception(
-                    "Gemini API free tier limit reached. Please wait a moment or switch to Llama 3."
+                    "Gemini API free tier limit reached. Please wait a moment or switch to GPT-OSS 120B."
                 )
             raise Exception(error_str)
 
@@ -61,7 +61,7 @@ def generate_ai_text(
             "Content-Type": "application/json",
         }
         data = {
-            "model": "llama-3.3-70b-versatile",
+            "model": "openai/gpt-oss-120b",
             "messages": [{"role": "user", "content": final_prompt}],
         }
         response = requests.post(
@@ -74,7 +74,7 @@ def generate_ai_text(
         response.raise_for_status()
         return {
             "text": response.json()["choices"][0]["message"]["content"],
-            "provider": "Meta Llama 3",
+            "provider": "GPT-OSS 120B",
         }
 
     # Strict User Selection
@@ -87,7 +87,7 @@ def generate_ai_text(
         try:
             return call_llama()
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Llama Error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"GPT-OSS Error: {str(e)}")
 
     # Default Fallback Logic (Auto)
     if gemini_api_key:

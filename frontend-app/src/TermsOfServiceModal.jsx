@@ -7,7 +7,7 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-[100] overflow-y-auto transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-100 overflow-y-auto transition-opacity duration-200 ${
         isClosing ? 'mac-exit opacity-0' : 'mac-animate opacity-100'
       }`}
     >
@@ -130,8 +130,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'The Platform integrates advanced Large Language Models (including Google Gemini and Meta Llama 3) to automate workflows. AI-generated content—including but not limited to task drafts, meeting summaries, and code snippets—is provided strictly on an "AS IS" and "AS AVAILABLE" basis. You acknowledge that AI may occasionally produce inaccurate, biased, or incomplete information ("Hallucinations"). You must independently verify all AI outputs before utilizing them in production workflows. Alurku assumes zero liability for business damages resulting from reliance on AI-generated content.',
-                  'Platform ini mengintegrasikan Model Bahasa Besar tingkat lanjut (termasuk Google Gemini dan Meta Llama 3) untuk mengotomatiskan alur kerja. Konten yang dihasilkan AI disediakan secara ketat "SEBAGAIMANA ADANYA" dan "SEBAGAIMANA TERSEDIA". Anda mengakui bahwa AI sesekali dapat menghasilkan informasi yang tidak akurat, bias, atau tidak lengkap ("Halusinasi"). Anda harus memverifikasi secara independen semua keluaran AI sebelum menggunakannya. Alurku tidak memikul tanggung jawab apa pun atas kerugian bisnis yang diakibatkan oleh ketergantungan pada konten AI.'
+                  'The Platform integrates advanced Large Language Models (including Google Gemini and GPT-OSS 120B) to automate workflows. AI-generated content—including but not limited to task drafts, meeting summaries, and code snippets—is provided strictly on an "AS IS" and "AS AVAILABLE" basis. You acknowledge that AI may occasionally produce inaccurate, biased, or incomplete information ("Hallucinations"). You must independently verify all AI outputs before utilizing them in production workflows. Alurku assumes zero liability for business damages resulting from reliance on AI-generated content.',
+                  'Platform ini mengintegrasikan Model Bahasa Besar tingkat lanjut (termasuk Google Gemini dan GPT-OSS 120B) untuk mengotomatiskan alur kerja. Konten yang dihasilkan AI disediakan secara ketat "SEBAGAIMANA ADANYA" dan "SEBAGAIMANA TERSEDIA". Anda mengakui bahwa AI sesekali dapat menghasilkan informasi yang tidak akurat, bias, atau tidak lengkap ("Halusinasi"). Anda harus memverifikasi secara independen semua keluaran AI sebelum menggunakannya. Alurku tidak memikul tanggung jawab apa pun atas kerugian bisnis yang diakibatkan oleh ketergantungan pada konten AI.'
                 )}
               </p>
             </div>

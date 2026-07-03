@@ -318,8 +318,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
           id: 'ai-summary',
           title: tMsg('Executive AI Summary', 'Ringkasan Eksekutif AI'),
           content: tMsg(
-            "Click the 'Generate Insight' button to have Google Gemini or Meta Llama 3 read your dashboard stats and provide a professional, natural language summary of your project health and bottlenecks.",
-            "Klik tombol 'Buat Wawasan' untuk meminta Google Gemini atau Meta Llama 3 membaca statistik dasbor Anda dan memberikan ringkasan bahasa alami yang profesional."
+            "Click the 'Generate Insight' button to have Google Gemini or GPT-OSS 120B read your dashboard stats and provide a professional, natural language summary of your project health and bottlenecks.",
+            "Klik tombol 'Buat Wawasan' untuk meminta Google Gemini atau GPT-OSS 120B membaca statistik dasbor Anda dan memberikan ringkasan bahasa alami yang profesional."
           ),
         },
         {
@@ -554,8 +554,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Team & AI', 'Tim & AI'),
       title: tMsg('Smart Assistant', 'Asisten Pintar AI'),
       desc: tMsg(
-        'Accelerate your workflow by using the Smart Assistant, powered by Google Gemini or Meta Llama 3. Click the floating ✨ button to start a conversation.',
-        'Percepat alur kerja Anda dengan menggunakan Asisten Pintar yang didukung oleh Google Gemini atau Meta Llama 3.'
+        'Accelerate your workflow by using the Smart Assistant, powered by Google Gemini or GPT-OSS 120B. Click the floating ✨ button to start a conversation.',
+        'Percepat alur kerja Anda dengan menggunakan Asisten Pintar yang didukung oleh Google Gemini atau GPT-OSS 120B.'
       ),
       sections: [
         {
@@ -650,8 +650,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
           id: 'ai-fallback',
           title: tMsg('AI Auto-Fallback System', 'Sistem Cadangan AI Otomatis'),
           content: tMsg(
-            'The Smart Assistant is powered by a dual-engine architecture. If the primary AI (Google Gemini) is busy or reaches its API limit, the system instantly and silently routes your request to a secondary AI (Meta Llama 3) so your workflow is never interrupted.',
-            'Asisten Pintar didukung oleh arsitektur mesin ganda. Jika AI utama (Google Gemini) sibuk atau mencapai batas API-nya, sistem akan secara instan merutekan permintaan Anda ke AI cadangan (Meta Llama 3) sehingga alur kerja Anda tidak pernah terputus.'
+            'The Smart Assistant is powered by a dual-engine architecture. If the primary AI (Google Gemini) is busy or reaches its API limit, the system instantly and silently routes your request to a secondary AI (GPT-OSS 120B) so your workflow is never interrupted.',
+            'Asisten Pintar didukung oleh arsitektur mesin ganda. Jika AI utama (Google Gemini) sibuk atau mencapai batas API-nya, sistem akan secara instan merutekan permintaan Anda ke AI cadangan (GPT-OSS 120B) sehingga alur kerja Anda tidak pernah terputus.'
           ),
         },
       ],

@@ -7,7 +7,7 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
 
   return (
     <div
-      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-[100] overflow-y-auto transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white dark:bg-neutral-950 z-100 overflow-y-auto transition-opacity duration-200 ${
         isClosing ? 'mac-exit opacity-0' : 'mac-animate opacity-100'
       }`}
     >
@@ -136,8 +136,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
                 <li>
                   <strong className="text-black dark:text-white">Third-Party LLM Processors:</strong>{' '}
                   {tMsg(
-                    'Task contexts and prompts are sent to our authorized AI infrastructure partners (Google Gemini API and Groq Inc. for Meta Llama) strictly for natural language generation. (See Section 5).',
-                    'Konteks tugas dan prompt dikirim ke mitra infrastruktur AI resmi kami (Google Gemini API dan Groq Inc. untuk Meta Llama) secara ketat untuk pembuatan bahasa alami. (Lihat Bagian 5).'
+                    'Task contexts and prompts are sent to our authorized AI infrastructure partners (Google Gemini API and Groq Inc. for GPT-OSS 120B) strictly for natural language generation. (See Section 5).',
+                    'Konteks tugas dan prompt dikirim ke mitra infrastruktur AI resmi kami (Google Gemini API dan Groq Inc. untuk GPT-OSS 120B) secara ketat untuk pembuatan bahasa alami. (Lihat Bagian 5).'
                   )}
                 </li>
               </ul>
@@ -177,8 +177,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Our Smart Assistant relies on advanced language models (Google Gemini and Meta Llama 3 via Groq) to process conversational queries and extract meeting notes. We guarantee the following enterprise privacy protections:',
-                  'Asisten Pintar kami mengandalkan model bahasa lanjutan (Google Gemini dan Meta Llama 3 via Groq) untuk memproses kueri percakapan dan mengekstrak catatan rapat. Kami menjamin perlindungan privasi perusahaan berikut:'
+                  'Our Smart Assistant relies on advanced language models (Google Gemini and GPT-OSS 120B via Groq) to process conversational queries and extract meeting notes. We guarantee the following enterprise privacy protections:',
+                  'Asisten Pintar kami mengandalkan model bahasa lanjutan (Google Gemini dan GPT-OSS 120B via Groq) untuk memproses kueri percakapan dan mengekstrak catatan rapat. Kami menjamin perlindungan privasi perusahaan berikut:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
