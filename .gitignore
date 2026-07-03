@@ -47,3 +47,10 @@ htmlcov/
 # Local Git reflog backup / notes
 how *
 how e68f24b
+
+# Konfigurasi AI Lokal & Memori Sesi (Antigravity / ECC)
+.agent/session-data/
+.agent/metrics/
+.agent/session-aliases.json
+.agent/**/*.log
+.agent/temp/
