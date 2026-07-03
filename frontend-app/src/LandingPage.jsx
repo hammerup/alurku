@@ -300,7 +300,7 @@ export default function LandingPage({
 
   return (
     <div className={!showAuthForm 
-      ? "bg-white dark:bg-black text-black dark:text-white font-sans transition-colors duration-200 overflow-x-clip" 
+      ? "bg-[#F3F4F6] dark:bg-[#090D16] text-[#111E38] dark:text-white font-sans transition-colors duration-200 overflow-x-clip" 
       : ""
     }>
       {!showAuthForm ? (
@@ -414,10 +414,12 @@ export default function LandingPage({
           {isSupportAlertOpen && (
             <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-100 p-4 transition-opacity duration-200">
               <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center mac-animate">
-                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm border border-blue-200 dark:border-blue-800/50">
-                  🎧
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-blue-200 dark:border-blue-800/50">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 18v-6a9 9 0 0118 0v6M4 16H3a1 1 0 00-1 1v3a1 1 0 001 1h1a1 1 0 001-1v-3a1 1 0 00-1-1zm16 0h1a1 1 0 011 1v3a1 1 0 01-1 1h-1a1 1 0 01-1-1v-3a1 1 0 011-1z" />
+                  </svg>
                 </div>
-                <h3 className="text-xl font-black text-black dark:text-white mb-4 uppercase tracking-tighter">
+                <h3 className="text-xl font-black text-black dark:text-white mb-4 tracking-tighter">
                   Coming Soon
                 </h3>
                 <p className="text-neutral-600 dark:text-neutral-400 mb-8 text-sm font-medium leading-relaxed">
@@ -426,7 +428,7 @@ export default function LandingPage({
                 </p>
                 <button
                   onClick={() => setIsSupportAlertOpen(false)}
-                  className="w-full px-4 py-4 rounded-full font-bold text-white bg-black dark:bg-white dark:text-black hover:opacity-80 shadow-md transition-all uppercase tracking-widest text-xs hover:-translate-y-0.5"
+                  className="w-full px-4 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:opacity-90 shadow-md transition-all tracking-widest text-xs hover:-translate-y-0.5"
                 >
                   Understood
                 </button>
