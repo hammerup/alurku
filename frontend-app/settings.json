@@ -9,5 +9,24 @@
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "command": "node .agent/scripts/guard-size.js",
+        "description": "Block writes that exceed 800 lines"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "node -e \"console.log('SessionEnded')\"",
+        "description": "Verify session integrity"
+      }
+    ]
   }
 }
