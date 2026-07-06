@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DoubleBezel from './components/DoubleBezel';
 
 export default function AuthForms({
   isLoginMode,
@@ -39,7 +40,7 @@ export default function AuthForms({
   const isIndo = language === 'id';
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#F3F4F6] dark:bg-[#090D16] font-sans selection:bg-[#111E38] selection:text-[#FACC15] dark:selection:bg-[#FACC15] dark:selection:text-[#111E38] overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-glass-bg dark:bg-[#090D16] font-sans selection:bg-[#111E38] selection:text-[#FACC15] dark:selection:bg-[#FACC15] dark:selection:text-[#111E38] overflow-hidden">
       
       {/* Sisi Kiri (Desktop/Tablet Layout) */}
       <div className="hidden md:flex md:w-1/2 relative flex-col justify-between p-16 text-[#111E38] dark:text-white overflow-hidden">
@@ -68,9 +69,9 @@ export default function AuthForms({
           {/* Core Brand Value Messages (Teks Dibuat Lebih Besar & Bilingual) */}
           <div className="space-y-8 max-w-xl my-auto">
             {/* Tagline Capitalized & formatted nicely */}
-            <span className="inline-block px-4 py-2 bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] border border-[#FACC15]/30 text-sm font-extrabold rounded-full tracking-wide">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] border border-[#FACC15]/30 text-sm font-extrabold rounded-full tracking-wide">
               {isIndo ? 'Kuasai Waktumu, Lancarkan Alurmu.' : 'Master Your Time, Smooth Your Flow.'}
-            </span>
+            </div>
             <h2 className="text-5xl md:text-6xl font-black leading-tight text-[#111E38] dark:text-white tracking-tight">
               {isIndo 
                 ? 'Berhenti mengingat semua tugasmu, mulailah menyelesaikannya.' 
@@ -121,9 +122,9 @@ export default function AuthForms({
       </div>
 
       {/* Sisi Kanan (Form Layout) */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-16 bg-[#F3F4F6] dark:bg-[#090D16]">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-16 bg-glass-bg dark:bg-[#090D16]">
         
-        <div className="w-full max-w-md bg-white dark:bg-[#121B2D] p-8 sm:p-10 shadow-md border border-neutral-200/60 dark:border-neutral-800/80 rounded-2xl relative mac-animate overflow-hidden">
+        <DoubleBezel className="w-full max-w-md bg-white dark:bg-[#121B2D] p-8 sm:p-10 shadow-md border border-neutral-200/60 dark:border-neutral-800/80 rounded-2xl relative mac-animate overflow-hidden">
           
           {/* Back to Home Button & Language Switcher */}
           <div className="flex items-center justify-between mb-6">
@@ -645,7 +646,7 @@ export default function AuthForms({
               )}
             </p>
           )}
-        </div>
+        </DoubleBezel>
       </div>
     </div>
   );

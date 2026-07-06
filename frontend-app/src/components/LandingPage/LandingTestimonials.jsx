@@ -149,7 +149,7 @@ export default function LandingTestimonials({ language }) {
 
         {/* Bottom trust indicator */}
         <div className="mt-12 text-center reveal-on-scroll" style={{ animationDelay: '200ms' }}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#F3F4F6] dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 text-[11px] font-black text-slate-500 dark:text-slate-400 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-glass-bg dark:bg-neutral-900 border border-slate-200/50 dark:border-slate-800 text-[11px] font-black text-slate-500 dark:text-slate-400 tracking-wide">
             <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
             </svg>

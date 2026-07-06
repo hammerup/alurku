@@ -5,18 +5,14 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
 
   return (
     <>
-      <div className="min-h-screen flex flex-col relative z-10">
-        {/* Happy Team Background Stock Photo with light overlays for high readability */}
+      <div className="relative z-10 py-12 lg:py-20">
+        {/* Abstract Elegant Mesh Gradient & Grid Background */}
         <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden">
-          <img 
-            src="/happy_team.webp" 
-            alt="Happy Indonesian Team Collaboration" 
-            className="w-full h-full object-cover opacity-25 dark:opacity-[0.08]" 
-          />
-          {/* Grid pattern overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:20px_20px] opacity-40"></div>
-          {/* Vertical fading gradient to blend with features section */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white dark:via-neutral-950/50 dark:to-neutral-950"></div>
+          {/* Subtle geometric glowing spheres */}
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-400/10 blur-[120px] dark:bg-yellow-400/5"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-500/10 blur-[150px] dark:bg-blue-500/5"></div>
+          {/* Grid lines pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] [background-size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30"></div>
         </div>
 
         {/* Hero Section Main Body */}
@@ -60,7 +56,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                     setIsLoginMode(false);
                     setShowAuthForm(true);
                   }}
-                  className="bg-[#111E38] hover:bg-[#1a2e54] dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-slate-900 dark:border-white"
+                  className="bg-[#FACC15] hover:bg-[#EAB308] dark:bg-[#FACC15] dark:hover:bg-[#EAB308] text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-[#111E38] dark:border-[#111E38]"
                 >
                   {t('Try Free Now', 'Coba Gratis Sekarang')}
                 </button>

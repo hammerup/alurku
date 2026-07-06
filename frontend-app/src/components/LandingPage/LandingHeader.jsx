@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DoubleBezel from '../DoubleBezel';
 
 export default function LandingHeader({
   currentTab,
@@ -21,7 +22,7 @@ export default function LandingHeader({
   ];
 
   return (
-    <header className="sticky top-0 z-100 w-full bg-[#111E38] text-white border-b border-slate-900/50 shadow-md">
+    <header className="sticky top-0 z-50 w-full bg-[#111E38]/90 dark:bg-[#090D16]/90 backdrop-blur-md border-b border-neutral-200/20 dark:border-neutral-800/20 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
         {/* Logo — squircle monogram badge matching footer style */}
         <div

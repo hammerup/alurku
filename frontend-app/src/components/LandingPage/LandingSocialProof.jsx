@@ -50,7 +50,7 @@ export default function LandingSocialProof({ language }) {
   const allLogos = [...logos, ...logos];
 
   return (
-    <section className="py-14 bg-[#F3F4F6] dark:bg-neutral-950 border-t border-b border-slate-200 dark:border-slate-800 relative z-10 overflow-hidden">
+    <section className="py-14 bg-glass-bg dark:bg-[#090D16] border-t border-b border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 text-center mb-8">
         <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600">
           {t('Trusted by teams across industries', 'Dipercaya oleh tim dari berbagai industri')}
@@ -60,8 +60,8 @@ export default function LandingSocialProof({ language }) {
       {/* Scrolling logo strip */}
       <div className="relative overflow-hidden">
         {/* Left & right fade masks */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-[#F3F4F6] dark:from-neutral-950 to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#F3F4F6] dark:from-neutral-950 to-transparent z-10" />
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-[#F3F4F6]/80 dark:from-[#090D16]/80 to-transparent z-10" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#F3F4F6]/80 dark:from-[#090D16]/80 to-transparent z-10" />
 
         <div className="flex gap-8 items-center animate-scroll-x whitespace-nowrap">
           {allLogos.map((logo, idx) => (

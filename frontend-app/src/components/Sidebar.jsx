@@ -325,12 +325,12 @@ export default function Sidebar() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-90 md:z-50 md:relative bg-white/95 dark:bg-neutral-950/95 backdrop-blur-2xl border-r border-neutral-200/50 dark:border-neutral-800/50 flex flex-col transition-all duration-300 ease-in-out transform shadow-2xl md:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-90 md:z-50 md:relative bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95 backdrop-blur-xl border-r border-neutral-200/50 dark:border-neutral-800/50 flex flex-col transition-all duration-300 ease-in-out transform ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } ${isCollapsed ? 'w-16' : 'w-64 md:w-72'}`}
       >
         <div
-          className={`h-16 hidden md:flex items-center shrink-0 bg-white dark:bg-neutral-950 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
+          className={`h-16 hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
             isCollapsed ? 'px-3 justify-center' : 'px-6'
           }`}
         >

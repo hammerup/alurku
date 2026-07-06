@@ -5,6 +5,8 @@ import AuthForms from './AuthForms';
 import LandingHeader from './components/LandingPage/LandingHeader';
 import LandingFooter from './components/LandingPage/LandingFooter';
 import LandingHero from './components/LandingPage/LandingHero';
+import LandingHeroGlass from './components/LandingPage/LandingHeroGlass';
+import DoubleBezel from './components/DoubleBezel';
 import LandingAISection from './components/LandingPage/LandingAISection';
 import LandingFeatures from './components/LandingPage/LandingFeatures';
 import LandingFAQ from './components/LandingPage/LandingFAQ';
@@ -299,10 +301,7 @@ export default function LandingPage({
   }, [showAuthForm, currentTab]);
 
   return (
-    <div className={!showAuthForm 
-      ? "bg-[#F3F4F6] dark:bg-[#090D16] text-[#111E38] dark:text-white font-sans transition-colors duration-200 overflow-x-clip" 
-      : ""
-    }>
+    <div className={!showAuthForm ? "bg-glass-bg backdrop-blur-xs text-[#111E38] dark:text-slate-100 font-sans transition-colors duration-200 selection:bg-blue-500/20" : ""}>
       {!showAuthForm ? (
         <>
           <style>{`
@@ -361,14 +360,21 @@ export default function LandingPage({
           />
 
           {currentTab === 'home' && (
+            <div className="relative w-full">
+              <DoubleBezel className="w-full bg-white dark:bg-[#121B2D]/40 backdrop-blur-md overflow-hidden rounded-none border-x-0">
+                <LandingHero
+                  setIsLoginMode={setIsLoginMode}
+                  setShowAuthForm={setShowAuthForm}
+                  isInstallable={isInstallable}
+                  handleInstallClick={handleInstallClick}
+                  language={language}
+                />
+              </DoubleBezel>
+            </div>
+          )}
+
+          {currentTab === 'home' && (
             <>
-              <LandingHero
-                setIsLoginMode={setIsLoginMode}
-                setShowAuthForm={setShowAuthForm}
-                isInstallable={isInstallable}
-                handleInstallClick={handleInstallClick}
-                language={language}
-              />
               <LandingSocialProof language={language} />
               <LandingAISection showAuthForm={showAuthForm} language={language} />
               <LandingFeatures showAuthForm={showAuthForm} language={language} />
