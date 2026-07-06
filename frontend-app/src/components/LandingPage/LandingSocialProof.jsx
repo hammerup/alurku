@@ -50,7 +50,7 @@ export default function LandingSocialProof({ language }) {
   const allLogos = [...logos, ...logos];
 
   return (
-    <section className="py-14 bg-glass-bg dark:bg-[#090D16] border-t border-b border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden">
+    <section className="py-14 bg-[#F3F4F6] dark:bg-[#090D16] border-t border-b border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden">
       <div className="max-w-5xl mx-auto px-6 text-center mb-8">
         <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600">
           {t('Trusted by teams across industries', 'Dipercaya oleh tim dari berbagai industri')}

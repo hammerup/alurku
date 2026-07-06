@@ -70,7 +70,7 @@ export default function LandingTestimonials({ language }) {
   return (
     <section
       id="testimonials-section"
-      className="py-24 md:py-32 bg-glass-bg dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden"
+      className="py-24 md:py-32 bg-[#F3F4F6] dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden"
     >
       {/* Subtle grid line background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px)] [background-size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />

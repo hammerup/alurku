@@ -500,7 +500,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
       {/* Feature Highlight Section */}
       <section
         id="features-section"
-        className="py-24 md:py-32 bg-glass-bg dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10"
+        className="py-24 md:py-32 bg-[#F3F4F6] dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16 reveal-on-scroll">
