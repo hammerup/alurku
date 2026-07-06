@@ -67,16 +67,16 @@ export default function LandingSocialProof({ language }) {
           {allLogos.map((logo, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm shrink-0 select-none grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+              className="flex items-center gap-3.5 px-6 py-3.5 bg-white/60 dark:bg-[#121B2D]/40 backdrop-blur-md border border-white/20 dark:border-neutral-800/40 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.02)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.15)] shrink-0 select-none grayscale opacity-60 hover:grayscale-0 hover:opacity-100 hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-default"
             >
               {/* Logo monogram badge */}
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-black text-[10px] shrink-0"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 shadow-sm"
                 style={{ backgroundColor: logo.color }}
               >
                 {logo.abbr}
               </div>
-              <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 tracking-tight">
+              <span className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tight">
                 {logo.name}
               </span>
             </div>

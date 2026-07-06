@@ -513,36 +513,36 @@ export default function LandingFeatures({ showAuthForm, language }) {
           </div>
 
           <div
-            className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center reveal-on-scroll"
+            className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll"
             style={{ animationDelay: '100ms' }}
           >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               {features.map((feature) => (
                 <button
                   key={feature.id}
                   onClick={() => setActiveFeatureTab(feature.id)}
-                  className={`text-left p-6 rounded-2xl border transition-all duration-300 ${
+                  className={`text-left p-6 rounded-[2rem] border transition-all duration-500 ease-out transform ${
                     activeFeatureTab === feature.id
-                      ? 'bg-white dark:bg-[#0e1116] border-[#111E38] dark:border-slate-100 shadow-xl scale-[1.01]'
-                      : 'bg-transparent border-transparent hover:bg-slate-200/50 dark:hover:bg-neutral-900/50'
+                      ? 'bg-white dark:bg-[#121B2D]/80 border-[#FACC15] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(250,204,21,0.08)] scale-[1.02] -translate-y-1'
+                      : 'bg-[#FAFAFA]/40 dark:bg-neutral-900/10 border-neutral-200/40 dark:border-neutral-800/20 hover:bg-white dark:hover:bg-[#121B2D]/30 hover:border-neutral-300 dark:hover:border-neutral-700 hover:scale-[1.01]'
                   }`}
                 >
                   <h3
-                    className={`text-xl font-bold mb-2 flex items-center gap-3 ${
+                    className={`text-xl font-black mb-2.5 flex items-center gap-3.5 transition-colors duration-300 ${
                       activeFeatureTab === feature.id
-                        ? 'text-black dark:text-white'
-                        : 'text-slate-500 dark:text-slate-355'
+                        ? 'text-[#111E38] dark:text-white'
+                        : 'text-slate-500 dark:text-slate-400'
                     }`}
                   >
-                    <span className={activeFeatureTab === feature.id ? 'text-[#111E38] dark:text-[#FACC15]' : 'text-slate-400 dark:text-slate-500'}>
+                    <span className={`p-2.5 rounded-xl transition-all duration-300 ${activeFeatureTab === feature.id ? 'bg-[#FACC15]/20 text-[#EAB308] dark:text-[#FACC15] scale-110' : 'bg-neutral-100 dark:bg-neutral-800 text-slate-400 dark:text-slate-500'}`}>
                       {featureIcons[feature.id]}
                     </span>{' '}
                     {feature.title}
                   </h3>
                   <p
-                    className={`text-sm leading-relaxed font-medium ${
+                    className={`text-sm leading-relaxed font-semibold transition-colors duration-300 ${
                       activeFeatureTab === feature.id
-                        ? 'text-slate-600 dark:text-slate-200'
+                        ? 'text-slate-700 dark:text-slate-200'
                         : 'text-slate-500 dark:text-slate-400'
                     }`}
                   >
@@ -552,38 +552,38 @@ export default function LandingFeatures({ showAuthForm, language }) {
               ))}
             </div>
 
-            <div className="relative h-100 sm:h-112.5 lg:h-125 w-full rounded-4xl bg-white dark:bg-[#0e1116] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group">
-              <div className="absolute inset-0 bg-linear-to-br from-slate-100 to-slate-50 dark:from-slate-800/20 dark:to-slate-900/20"></div>
-              <div className="absolute inset-x-0 top-0 h-12 bg-white/50 dark:bg-black/50 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/50 flex items-center px-4 gap-2 z-10">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+            <div className="relative h-100 sm:h-112.5 lg:h-[500px] w-full rounded-[2.5rem] bg-white dark:bg-[#121B2D]/60 border border-neutral-200/50 dark:border-neutral-800/40 shadow-[0_25px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.25)] overflow-hidden group backdrop-blur-md">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-[#FAFAFA]/50 dark:from-[#121B2D]/10 dark:to-neutral-900/10"></div>
+              <div className="absolute inset-x-0 top-0 h-14 bg-white/40 dark:bg-[#090D16]/40 backdrop-blur-md border-b border-neutral-200/30 dark:border-neutral-800/30 flex items-center px-6 gap-2.5 z-10">
+                <div className="flex gap-2">
+                  <div className="w-3.5 h-3.5 rounded-full bg-red-400/90 shadow-sm shadow-red-500/20"></div>
+                  <div className="w-3.5 h-3.5 rounded-full bg-amber-400/90 shadow-sm shadow-amber-500/20"></div>
+                  <div className="w-3.5 h-3.5 rounded-full bg-emerald-400/90 shadow-sm shadow-emerald-500/20"></div>
                 </div>
-                <div className="text-[9px] font-extrabold text-slate-400 mx-auto select-none tracking-wider">
+                <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 mx-auto select-none tracking-widest uppercase">
                   alurku.app - interactive_workspace
                 </div>
               </div>
-              <div className="absolute inset-x-0 top-12 bottom-0">{renderFeatureMockup()}</div>
+              <div className="absolute inset-x-0 top-14 bottom-0">{renderFeatureMockup()}</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Spesifikasi / Enterprise Architecture Section */}
+      {/* Spesifikasi / Enterprise Architecture Section (Bento Layout) */}
       <section
         id="specs-section"
         className="py-24 md:py-32 bg-glass-bg dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10"
       >
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16 reveal-on-scroll">
-            <span className="text-neutral-500 font-bold tracking-widest uppercase text-xs mb-3 block">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-20 reveal-on-scroll">
+            <span className="text-[#FACC15] font-extrabold tracking-widest uppercase text-xs mb-3.5 block bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-[#FACC15]/20">
               {t('Key Features', 'Fitur Unggulan')}
             </span>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-6">
+            <h2 className="text-3xl md:text-5.5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-6 leading-tight">
               {t('Smart Features to Elevate Your Workflow', 'Fitur Cerdas untuk Menemani Alur Kerjamu')}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl mx-auto text-lg leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 font-semibold max-w-2xl mx-auto text-lg leading-relaxed">
               {t(
                 'More than just a to-do list. Designed intuitively to help you and your team hit targets faster — without the stress.',
                 'Lebih dari sekadar daftar tugas biasa. Dirancang secara intuitif untuk membantu Anda dan tim mencapai target lebih cepat tanpa stres.'
@@ -591,11 +591,30 @@ export default function LandingFeatures({ showAuthForm, language }) {
             </p>
           </div>
 
-          <div className="space-y-32">
-            {/* Pillar 1: Automated AI Planning */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
-              {/* Visual Mockup (Left) */}
-              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-0 shadow-xl overflow-hidden order-2 md:order-1 min-h-95 flex">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Bento Card 1: Automated AI Planning (Span 2 Columns) */}
+            <div className="lg:col-span-2 relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col justify-between group min-h-[500px]">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]"></div>
+              
+              <div className="space-y-4 max-w-xl">
+                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-650 dark:text-indigo-400 rounded-2xl flex items-center justify-center border border-indigo-100 dark:border-indigo-850 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="font-black text-[#111E38] dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
+                  {t('Automated AI Planning', 'Asisten Perencana Otomatis')}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">
+                  {t(
+                    "Not sure how to structure a project? Describe your goal to alurku. AI, and it will instantly generate a structured project plan with checkable tasks, subtasks, and duration estimates (ETCs).",
+                    "Tidak yakin bagaimana memulai suatu proyek? Jelaskan tujuan besarmu pada AI alurku., dan sistem akan otomatis menyusun rencana proyek terstruktur lengkap dengan sub-tugas dan estimasi waktu."
+                  )}
+                </p>
+              </div>
+
+              {/* Visual Mockup inside Bento Card */}
+              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-0 shadow-xl overflow-hidden min-h-[260px] flex mt-8">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 w-full h-full">
@@ -711,49 +730,17 @@ export default function LandingFeatures({ showAuthForm, language }) {
                       </div>
                     </div>
 
-                    <button className="w-full bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] font-bold text-[9px] py-2.5 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex justify-center items-center gap-1.5 mt-4">
-                      {t("Dispatch to project", "Kirim ke proyek")}
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </button>
                   </div>
                 </div>
               </div>
-
-              {/* Text Content (Right) */}
-              <div className="space-y-6 order-1 md:order-2">
-                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center shadow-sm border border-indigo-100 dark:border-indigo-850">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <h3 className="font-black text-[#111E38] dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
-                  {t('Automated AI Planning', 'Asisten Perencana Otomatis')}
-                </h3>
-                <p className="text-slate-650 dark:text-slate-400 font-medium leading-relaxed">
-                  {t(
-                    "Not sure how to structure a project? Describe your goal to alurku. AI, and it will instantly generate a structured project plan with checkable tasks, subtasks, and duration estimates (ETCs).",
-                    "Tidak yakin bagaimana memulai suatu proyek? Jelaskan tujuan besarmu pada AI alurku., dan sistem akan otomatis menyusun rencana proyek terstruktur lengkap dengan sub-tugas dan estimasi waktu."
-                  )}
-                </p>
-                <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Broad objective breakdown into tasks', 'Pemecahan tujuan besar menjadi daftar tugas')}
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Automatic subtasks & duration estimation', 'Penyusunan sub-tugas & estimasi waktu otomatis')}
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Instant project routing and placement', 'Penyaluran instan ke proyek tujuan')}
-                  </li>
-                </ul>
-              </div>
             </div>
 
-            {/* Pillar 2: Workload Analytics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
-              {/* Text Content (Left) */}
-              <div className="space-y-6">
-                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shadow-sm border border-emerald-100 dark:border-emerald-850">
+            {/* Bento Card 2: Workload Analytics (1 Column) */}
+            <div className="relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col justify-between group min-h-[500px]">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]"></div>
+              
+              <div className="space-y-4">
+                <div className="w-12 h-12 bg-emerald-50 dark:bg-indigo-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center border border-emerald-100 dark:border-emerald-850 shadow-sm group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5" />
                   </svg>
@@ -761,39 +748,26 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 <h3 className="font-black text-[#111E38] dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
                   {t('Work-Life Balance, Anti-Burnout', 'Kerja Seimbang, Anti-Kewalahan')}
                 </h3>
-                <p className="text-slate-650 dark:text-slate-400 font-medium leading-relaxed">
+                <p className="text-slate-650 dark:text-slate-400 font-semibold leading-relaxed">
                   {t(
-                    "Know the capacity limits of yourself and your team. alurku. visualizes workload in real-time so you can distribute tasks fairly, prevent burnout, and rest on time.",
-                    "Ketahui batas kapasitasmu dan timmu. alurku. memvisualisasikan beban kerja secara real time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu."
+                    "Know the capacity limits of yourself and your team. alurku. visualizes workload in real-time to prevent burnout.",
+                    "Ketahui batas kapasitasmu dan timmu. alurku. memvisualisasikan beban kerja secara real time untuk mencegah burnout."
                   )}
                 </p>
-                <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Real-time team workload visualization', 'Visualisasi grafik beban kerja tim secara langsung')}
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Fair automated task distribution', 'Distribusi tugas otomatis yang adil')}
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Early detection of burnout potential', 'Deteksi dini potensi kelelahan (burnout)')}
-                  </li>
-                </ul>
               </div>
 
-              {/* Visual Mockup (Right) */}
-              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-805 rounded-3xl p-6 shadow-xl overflow-hidden">
+              {/* Workload Visualizer inside Bento Card */}
+              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-xl overflow-hidden mt-8">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl"></div>
                 
                 {/* Header */}
                 <div className="flex justify-between items-center border-b pb-2.5 dark:border-slate-800 mb-4">
-                  <span className="text-xs font-black text-slate-800 dark:text-white flex items-center gap-1">
+                  <span className="text-[10px] font-black text-slate-800 dark:text-white flex items-center gap-1">
                     {t('Team Workload', 'Beban Kerja Tim')}
-                    <span className="text-[10px] text-slate-400 cursor-help">ⓘ</span>
                   </span>
-                  <div className="flex gap-2 text-[8px] font-bold tracking-wider uppercase">
-                    <span className="text-emerald-500 dark:text-emerald-400">● DONE</span>
-                    <span className="text-blue-500 dark:text-blue-400">● ACTIVE</span>
-                    <span className="text-amber-500 dark:text-amber-400">● WAIT</span>
+                  <div className="flex gap-2 text-[7px] font-extrabold tracking-wider uppercase">
+                    <span className="text-emerald-500">● DONE</span>
+                    <span className="text-blue-500">● ACTIVE</span>
                   </div>
                 </div>
 
@@ -803,20 +777,19 @@ export default function LandingFeatures({ showAuthForm, language }) {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full bg-[#F3F4F6] dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                        <div className="w-5 h-5 rounded-full bg-glass-bg dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
                           👤
                         </div>
                         <span className="font-bold text-[#111E38] dark:text-slate-250">siti</span>
                       </div>
-                      <div className="text-right text-[8px] sm:text-[9px] leading-tight font-black">
-                        <span className="text-red-500 block">50h ACTIVE ⚠️ / WEEK</span>
-                        <span className="text-red-400 block mt-0.5">180H TOTAL ⚠️ / MONTH</span>
+                      <div className="text-right text-[8px] leading-tight font-black">
+                        <span className="text-red-500 block">50h ACTIVE / WEEK</span>
                       </div>
                     </div>
                     {/* Segmented Progress Bar */}
-                    <div className="w-full bg-[#F3F4F6] dark:bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                    <div className="w-full bg-glass-bg dark:bg-slate-800 h-2 rounded-full overflow-hidden flex">
                       <div className="bg-emerald-500 h-full w-[10%]" title="Done: 10%"></div>
-                      <div className="bg-blue-500 h-full w-[15%]" title="Active: 15%"></div>
+                      <div className="bg-blue-500 h-full w-[15%]" title="Active: 15% z-10"></div>
                       <div className="bg-amber-500 h-full w-[75%]" title="Wait: 75%"></div>
                     </div>
                   </div>
@@ -825,18 +798,17 @@ export default function LandingFeatures({ showAuthForm, language }) {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full bg-[#F3F4F6] dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                        <div className="w-5 h-5 rounded-full bg-glass-bg dark:bg-slate-700 flex items-center justify-center text-[10px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
                           👤
                         </div>
                         <span className="font-bold text-[#111E38] dark:text-slate-250">budi</span>
                       </div>
-                      <div className="text-right text-[8px] sm:text-[9px] leading-tight font-black">
+                      <div className="text-right text-[8px] leading-tight font-black">
                         <span className="text-[#2563eb] dark:text-[#38bdf8] block">35h ACTIVE / WEEK</span>
-                        <span className="text-slate-500 dark:text-slate-400 block mt-0.5">145H TOTAL / MONTH</span>
                       </div>
                     </div>
                     {/* Segmented Progress Bar */}
-                    <div className="w-full bg-[#F3F4F6] dark:bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                    <div className="w-full bg-glass-bg dark:bg-slate-800 h-2 rounded-full overflow-hidden flex">
                       <div className="bg-emerald-500 h-full w-[40%]" title="Done: 40%"></div>
                       <div className="bg-blue-500 h-full w-[25%]" title="Active: 25%"></div>
                       <div className="bg-amber-500 h-full w-[35%]" title="Wait: 35%"></div>
@@ -846,34 +818,12 @@ export default function LandingFeatures({ showAuthForm, language }) {
               </div>
             </div>
 
-            {/* Pillar 3: Visual Workflow */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center reveal-on-scroll">
-              {/* Visual Mockup (Left) */}
-              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-805 rounded-3xl p-6 shadow-xl overflow-hidden order-2 md:order-1">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-xs font-bold text-slate-805 dark:text-white">{t('Kanban Flow', 'Alur Kanban')}</span>
-                  <span className="text-[10px] bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 py-0.5 px-2 rounded-full font-bold">{t('1 New Task', '1 Tugas Baru')}</span>
-                </div>
-                <div className="bg-[#F3F4F6] dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200/60 dark:border-slate-805 shadow-sm flex flex-col gap-2 border-l-4 border-l-amber-500">
-                    <span className="text-xs font-bold text-slate-805 dark:text-slate-200 leading-tight">{t('Kanban Feature Development', 'Pengembangan Fitur Kanban')}</span>
-                    <div className="flex justify-between items-center text-[10px] text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
-                        </svg>
-                        {t('Workflow', 'Alur Kerja')}
-                      </span>
-                      <span className="text-[9px] font-black bg-amber-50 dark:bg-amber-955/40 text-amber-700 dark:text-amber-400 py-0.5 px-2 rounded-full">{t('New', 'Baru Masuk')}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Text Content (Right) */}
-              <div className="space-y-6 order-1 md:order-2">
-                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center shadow-sm border border-amber-100 dark:border-amber-850">
+            {/* Bento Card 3: Visual Workflow (Span 3 Columns) */}
+            <div className="lg:col-span-3 relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col md:flex-row gap-12 items-center justify-between group min-h-[400px]">
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px]"></div>
+              
+              <div className="space-y-4 max-w-xl">
+                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center border border-amber-100 dark:border-amber-850 shadow-sm group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
@@ -881,23 +831,40 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 <h3 className="font-black text-[#111E38] dark:text-white tracking-tight text-2xl lg:text-3xl leading-tight">
                   {t('One Screen for All Progress', 'Satu Layar untuk Semua Progres')}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">
                   {t(
                     "Track your story from project start to finish. With a clean and dynamic view, you always know what is being done, who is doing it, and what needs to be completed next.",
                     "Pantau jalan ceritamu dari awal hingga akhir proyek. Dengan tampilan yang bersih dan dinamis, kamu selalu tahu apa yang sedang dikerjakan, siapa yang mengerjakan, dan apa yang harus diselesaikan selanjutnya."
                   )}
                 </p>
-                <ul className="space-y-3 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm font-semibold text-slate-500 dark:text-slate-400 pt-2">
                   <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Intuitive drag-and-drop between columns', 'Drag-and-drop antar kolom yang intuitif')}
+                    <span className="text-emerald-505 font-bold">✓</span> {t('Intuitive drag-and-drop', 'Drag-and-drop antar kolom yang intuitif')}
                   </li>
                   <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Interactive timeline (Gantt Chart)', 'Garis waktu interaktif (Gantt Chart)')}
-                  </li>
-                  <li className="flex items-center gap-2.5">
-                    <span className="text-emerald-500">✓</span> {t('Real-time sync across team members', 'Sinkronisasi real-time antar anggota tim')}
+                    <span className="text-emerald-505 font-bold">✓</span> {t('Interactive timeline (Gantt)', 'Garis waktu interaktif (Gantt Chart)')}
                   </li>
                 </ul>
+              </div>
+
+              {/* Visual Mockup inside Bento Card */}
+              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-805 rounded-3xl p-6 shadow-xl overflow-hidden w-full md:w-[350px] shrink-0">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
+                <div className="flex justify-between items-center mb-6">
+                  <span className="text-xs font-bold text-slate-805 dark:text-white">{t('Kanban Flow', 'Alur Kanban')}</span>
+                  <span className="text-[10px] bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 py-0.5 px-2 rounded-full font-bold">{t('1 New Task', '1 Tugas Baru')}</span>
+                </div>
+                <div className="bg-glass-bg dark:bg-slate-800/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col gap-2.5">
+                  <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200/60 dark:border-slate-805 shadow-sm flex flex-col gap-2 border-l-4 border-l-amber-500">
+                    <span className="text-xs font-bold text-slate-850 dark:text-slate-200 leading-tight">{t('Kanban Feature Development', 'Pengembangan Fitur Kanban')}</span>
+                    <div className="flex justify-between items-center text-[10px] text-slate-400">
+                      <span className="flex items-center gap-1">
+                        Workflow
+                      </span>
+                      <span className="text-[9px] font-black bg-amber-50 dark:bg-amber-955/40 text-amber-700 dark:text-amber-400 py-0.5 px-2 rounded-full">{t('New', 'Baru Masuk')}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
