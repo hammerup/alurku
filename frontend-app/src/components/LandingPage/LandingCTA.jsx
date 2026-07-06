@@ -13,7 +13,10 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FACC15]/10 dark:bg-[#FACC15]/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       
       <div className="max-w-5xl mx-auto px-6 relative z-10">
-        <DoubleBezel className="w-full bg-[#111E38] dark:bg-[#121B2D]/40 backdrop-blur-md overflow-hidden border border-neutral-200/40 dark:border-neutral-800/30 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+        <DoubleBezel 
+          className="w-full border border-neutral-200/40 dark:border-neutral-800/30 rounded-[3rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)]"
+          innerClassName="bg-[#111E38] dark:bg-[#121B2D]/40 backdrop-blur-md"
+        >
           <div className="py-16 px-8 sm:px-16 text-center space-y-8 relative">
             {/* Grid pattern overlay */}
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.03] dark:opacity-[0.1] pointer-events-none"></div>

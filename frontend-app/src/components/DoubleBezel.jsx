@@ -6,10 +6,10 @@ import React from 'react';
  * Inner core: white (light mode) or neutral‑950 (dark mode) with rounded corners.
  * Accepts additional className to customise size / layout.
  */
-export default function DoubleBezel({ children, className = '' }) {
+export default function DoubleBezel({ children, className = '', innerClassName = '' }) {
   return (
     <div className={`relative rounded-[2rem] bg-black/20 backdrop-blur-xs ${className}`}>
-      <div className="relative bg-white dark:bg-neutral-950 rounded-[calc(2rem-0.375rem)] p-4 h-full w-full">
+      <div className={`relative rounded-[calc(2rem-0.375rem)] p-4 h-full w-full bg-white dark:bg-neutral-950 ${innerClassName}`}>
         {children}
       </div>
     </div>
