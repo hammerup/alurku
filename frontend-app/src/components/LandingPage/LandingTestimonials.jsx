@@ -98,7 +98,7 @@ export default function LandingTestimonials({ language }) {
             <div
               key={idx}
               onClick={() => setActiveIdx(idx)}
-              className={`relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border rounded-[2rem] p-8 flex flex-col gap-6 cursor-pointer transition-all duration-500 ease-out transform ${
+              className={`relative bg-white/40 dark:bg-[#121B2D]/40 backdrop-blur-lg border rounded-[2rem] p-8 flex flex-col gap-6 cursor-pointer transition-all duration-500 ease-out transform ${
                 activeIdx === idx
                   ? 'border-[#111E38] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(17,30,56,0.06)] dark:shadow-[0_20px_50px_rgba(250,204,21,0.06)] scale-[1.02] -translate-y-1'
                   : 'border-neutral-200/40 dark:border-neutral-800/30 hover:border-neutral-300 dark:hover:border-neutral-700 hover:scale-[1.01]'

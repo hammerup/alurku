@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        "glass-bg": "rgba(0,0,0,0.2)",
+        "glass-bg": "rgba(243, 244, 246, 0.4)", // light semi-transparent gray to support backdrop-blur on light mode
         "brand-yellow": "#FACC15",
         "brand-navy": "#111E38",
         "calm-gray": "#F3F4F6",

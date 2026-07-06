@@ -523,8 +523,8 @@ export default function LandingFeatures({ showAuthForm, language }) {
                   onClick={() => setActiveFeatureTab(feature.id)}
                   className={`text-left p-6 rounded-[2rem] border transition-all duration-500 ease-out transform ${
                     activeFeatureTab === feature.id
-                      ? 'bg-white dark:bg-[#121B2D]/80 border-[#FACC15] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(250,204,21,0.08)] scale-[1.02] -translate-y-1'
-                      : 'bg-[#FAFAFA]/40 dark:bg-neutral-900/10 border-neutral-200/40 dark:border-neutral-800/20 hover:bg-white dark:hover:bg-[#121B2D]/30 hover:border-neutral-300 dark:hover:border-neutral-700 hover:scale-[1.01]'
+                      ? 'bg-white dark:bg-[#121B2D]/80 border-[#111E38] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(17,30,56,0.06)] dark:shadow-[0_20px_50px_rgba(250,204,21,0.08)] scale-[1.02] -translate-y-1'
+                      : 'bg-[#FAFAFA]/40 dark:bg-neutral-900/10 border-neutral-200/40 dark:border-neutral-800/20 hover:bg-white/60 dark:hover:bg-[#121B2D]/30 hover:border-neutral-350 dark:hover:border-neutral-700 hover:scale-[1.01]'
                   }`}
                 >
                   <h3
