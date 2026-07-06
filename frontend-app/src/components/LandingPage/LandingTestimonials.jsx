@@ -73,7 +73,7 @@ export default function LandingTestimonials({ language }) {
       className="py-24 md:py-32 bg-[#F3F4F6] dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden"
     >
       {/* Subtle grid line background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px)] [background-size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
         {/* Header */}
@@ -98,7 +98,7 @@ export default function LandingTestimonials({ language }) {
             <div
               key={idx}
               onClick={() => setActiveIdx(idx)}
-              className={`relative bg-white/40 dark:bg-[#121B2D]/40 backdrop-blur-lg border rounded-[2rem] p-8 flex flex-col gap-6 cursor-pointer transition-all duration-500 ease-out transform ${
+              className={`relative bg-white/40 dark:bg-[#121B2D]/40 backdrop-blur-lg border rounded-4xl p-8 flex flex-col gap-6 cursor-pointer transition-all duration-500 ease-out transform ${
                 activeIdx === idx
                   ? 'border-[#111E38] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(17,30,56,0.06)] dark:shadow-[0_20px_50px_rgba(250,204,21,0.06)] scale-[1.02] -translate-y-1'
                   : 'border-neutral-200/40 dark:border-neutral-800/30 hover:border-neutral-300 dark:hover:border-neutral-700 hover:scale-[1.01]'

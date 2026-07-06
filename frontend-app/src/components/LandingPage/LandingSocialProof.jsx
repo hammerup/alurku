@@ -60,8 +60,8 @@ export default function LandingSocialProof({ language }) {
       {/* Scrolling logo strip */}
       <div className="relative overflow-hidden">
         {/* Left & right fade masks */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-[#F3F4F6]/80 dark:from-[#090D16]/80 to-transparent z-10" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-[#F3F4F6]/80 dark:from-[#090D16]/80 to-transparent z-10" />
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-24 bg-linear-to-r from-[#F3F4F6]/80 dark:from-[#090D16]/80 to-transparent z-10" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-24 bg-linear-to-l from-[#F3F4F6]/80 dark:from-[#090D16]/80 to-transparent z-10" />
 
         <div className="flex gap-8 items-center animate-scroll-x whitespace-nowrap">
           {allLogos.map((logo, idx) => (

@@ -12,7 +12,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-400/10 blur-[120px] dark:bg-yellow-400/5"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-500/10 blur-[150px] dark:bg-blue-500/5"></div>
           {/* Grid lines pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] [background-size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30"></div>
         </div>
 
         {/* Hero Section Main Body */}
@@ -84,7 +84,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
               className="relative hidden lg:block lg:h-full lg:w-full perspective-[1000px] reveal-on-scroll"
               style={{ animationDelay: '400ms' }}
             >
-              <div className="absolute inset-0 bg-gradient-to-tr from-neutral-300/40 to-neutral-400/40 dark:from-neutral-700/40 dark:to-neutral-800/40 rounded-[2.5rem] transform rotate-3 scale-105 blur-lg"></div>
+              <div className="absolute inset-0 bg-linear-to-tr from-neutral-300/40 to-neutral-400/40 dark:from-neutral-700/40 dark:to-neutral-800/40 rounded-[2.5rem] transform rotate-3 scale-105 blur-lg"></div>
 
               <div className="relative w-[120%] -right-10 bg-white dark:bg-[#0e1116] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden animate-float">
                 {/* Mockup Header */}
@@ -100,7 +100,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                 </div>
 
                 {/* Mockup Body */}
-                <div className="flex h-[400px]">
+                <div className="flex h-100">
                   {/* Mockup Sidebar */}
                   <div className="w-1/4 border-r border-slate-100 dark:border-slate-800 p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
                     <div className="flex items-center gap-2 mb-6">

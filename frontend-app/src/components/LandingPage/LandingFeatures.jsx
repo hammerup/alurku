@@ -521,7 +521,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
                 <button
                   key={feature.id}
                   onClick={() => setActiveFeatureTab(feature.id)}
-                  className={`text-left p-6 rounded-[2rem] border transition-all duration-500 ease-out transform ${
+                  className={`text-left p-6 rounded-4xl border transition-all duration-500 ease-out transform ${
                     activeFeatureTab === feature.id
                       ? 'bg-white dark:bg-[#121B2D]/80 border-[#111E38] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(17,30,56,0.06)] dark:shadow-[0_20px_50px_rgba(250,204,21,0.08)] scale-[1.02] -translate-y-1'
                       : 'bg-[#FAFAFA]/40 dark:bg-neutral-900/10 border-neutral-200/40 dark:border-neutral-800/20 hover:bg-white/60 dark:hover:bg-[#121B2D]/30 hover:border-neutral-350 dark:hover:border-neutral-700 hover:scale-[1.01]'
@@ -552,8 +552,8 @@ export default function LandingFeatures({ showAuthForm, language }) {
               ))}
             </div>
 
-            <div className="relative h-100 sm:h-112.5 lg:h-[500px] w-full rounded-[2.5rem] bg-white dark:bg-[#121B2D]/60 border border-neutral-200/50 dark:border-neutral-800/40 shadow-[0_25px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.25)] overflow-hidden group backdrop-blur-md">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-[#FAFAFA]/50 dark:from-[#121B2D]/10 dark:to-neutral-900/10"></div>
+            <div className="relative h-100 sm:h-112.5 lg:h-125 w-full rounded-[2.5rem] bg-white dark:bg-[#121B2D]/60 border border-neutral-200/50 dark:border-neutral-800/40 shadow-[0_25px_60px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.25)] overflow-hidden group backdrop-blur-md">
+              <div className="absolute inset-0 bg-linear-to-br from-white/80 to-[#FAFAFA]/50 dark:from-[#121B2D]/10 dark:to-neutral-900/10"></div>
               <div className="absolute inset-x-0 top-0 h-14 bg-white/40 dark:bg-[#090D16]/40 backdrop-blur-md border-b border-neutral-200/30 dark:border-neutral-800/30 flex items-center px-6 gap-2.5 z-10">
                 <div className="flex gap-2">
                   <div className="w-3.5 h-3.5 rounded-full bg-red-400/90 shadow-sm shadow-red-500/20"></div>
@@ -593,7 +593,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Bento Card 1: Automated AI Planning (Span 2 Columns) */}
-            <div className="lg:col-span-2 relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col justify-between group min-h-[500px]">
+            <div className="lg:col-span-2 relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col justify-between group min-h-125">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]"></div>
               
               <div className="space-y-4 max-w-xl">
@@ -614,7 +614,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
               </div>
 
               {/* Visual Mockup inside Bento Card */}
-              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-0 shadow-xl overflow-hidden min-h-[260px] flex mt-8">
+              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-0 shadow-xl overflow-hidden min-h-65 flex mt-8">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 w-full h-full">
@@ -736,7 +736,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
             </div>
 
             {/* Bento Card 2: Workload Analytics (1 Column) */}
-            <div className="relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col justify-between group min-h-[500px]">
+            <div className="relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col justify-between group min-h-125">
               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px]"></div>
               
               <div className="space-y-4">
@@ -819,7 +819,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
             </div>
 
             {/* Bento Card 3: Visual Workflow (Span 3 Columns) */}
-            <div className="lg:col-span-3 relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col md:flex-row gap-12 items-center justify-between group min-h-[400px]">
+            <div className="lg:col-span-3 relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border border-neutral-200/40 dark:border-neutral-800/30 rounded-[2.5rem] p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col md:flex-row gap-12 items-center justify-between group min-h-100">
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px]"></div>
               
               <div className="space-y-4 max-w-xl">
@@ -848,7 +848,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
               </div>
 
               {/* Visual Mockup inside Bento Card */}
-              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-805 rounded-3xl p-6 shadow-xl overflow-hidden w-full md:w-[350px] shrink-0">
+              <div className="relative bg-white dark:bg-neutral-900 border border-slate-200 dark:border-slate-805 rounded-3xl p-6 shadow-xl overflow-hidden w-full md:w-87.5 shrink-0">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-xs font-bold text-slate-805 dark:text-white">{t('Kanban Flow', 'Alur Kanban')}</span>

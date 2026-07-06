@@ -10,7 +10,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
       className="py-24 md:py-32 bg-glass-bg dark:bg-[#090D16] relative z-10 overflow-hidden border-t border-slate-200/50 dark:border-slate-800/50"
     >
       {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#FACC15]/10 dark:bg-[#FACC15]/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#FACC15]/10 dark:bg-[#FACC15]/5 rounded-full blur-[120px] pointer-events-none -z-10"></div>
       
       <div className="max-w-5xl mx-auto px-6 relative z-10">
         <DoubleBezel 
@@ -19,7 +19,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
         >
           <div className="py-16 px-8 sm:px-16 text-center space-y-8 relative">
             {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.03] dark:opacity-[0.1] pointer-events-none"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] bg-size-[32px_32px] opacity-[0.03] dark:opacity-[0.1] pointer-events-none"></div>
             
             <div className="relative z-10 max-w-3xl mx-auto space-y-6">
               <span className="text-[#FACC15] dark:text-[#FACC15] font-extrabold tracking-widest uppercase text-xs block bg-white/10 dark:bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-white/20 dark:border-[#FACC15]/20">

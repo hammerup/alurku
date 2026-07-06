@@ -64,7 +64,7 @@ export default function LandingFAQ({ language }) {
           {faqs.map((faq, idx) => (
             <div
               key={idx}
-              className={`border border-neutral-200/60 dark:border-neutral-800/30 rounded-[1.5rem] overflow-hidden bg-white/75 dark:bg-[#121B2D]/40 backdrop-blur-md transition-all duration-500 ease-out ${
+              className={`border border-neutral-200/60 dark:border-neutral-800/30 rounded-3xl overflow-hidden bg-white/75 dark:bg-[#121B2D]/40 backdrop-blur-md transition-all duration-500 ease-out ${
                 activeFaq === idx
                   ? 'shadow-[0_15px_35px_rgba(0,0,0,0.02)] border-[#FACC15] dark:border-[#FACC15]'
                   : 'hover:border-neutral-300 dark:hover:border-neutral-700'
@@ -91,7 +91,7 @@ export default function LandingFAQ({ language }) {
               </button>
               <div
                 className={`px-6 overflow-hidden transition-all duration-500 ease-in-out ${
-                  activeFaq === idx ? 'max-h-[800px] pb-6 opacity-100' : 'max-h-0 opacity-0'
+                  activeFaq === idx ? 'max-h-200 pb-6 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
                 <p className="text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">{faq.a}</p>
