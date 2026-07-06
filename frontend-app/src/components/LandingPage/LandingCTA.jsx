@@ -19,13 +19,13 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.03] dark:opacity-[0.1] pointer-events-none"></div>
             
             <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-              <span className="text-[#FACC15] font-extrabold tracking-widest uppercase text-xs block bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-[#FACC15]/20">
+              <span className="text-[#111E38] dark:text-[#FACC15] font-extrabold tracking-widest uppercase text-xs block bg-white/10 dark:bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-white/20 dark:border-[#FACC15]/20">
                 {t('Get Started', 'Mulai Sekarang')}
               </span>
-              <h2 className="text-4xl md:text-5.5xl font-black text-white tracking-tighter leading-none">
+              <h2 className="text-4xl md:text-5.5xl font-black text-white dark:text-white tracking-tighter leading-none">
                 {t("Ready to boost your team's productivity?", 'Siap meningkatkan produktivitas tim Anda?')}
               </h2>
-              <p className="text-slate-350 dark:text-slate-400 text-lg md:text-xl font-semibold leading-relaxed max-w-2xl mx-auto">
+              <p className="text-slate-200 dark:text-slate-350 text-lg md:text-xl font-semibold leading-relaxed max-w-2xl mx-auto">
                 {t(
                   'Join now and experience the simplicity of modern, AI-powered workflow management.',
                   'Bergabunglah sekarang dan rasakan kemudahan manajemen alur kerja modern yang didukung kecerdasan AI.'

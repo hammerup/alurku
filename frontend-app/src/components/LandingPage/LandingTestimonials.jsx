@@ -78,7 +78,7 @@ export default function LandingTestimonials({ language }) {
       <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-20 reveal-on-scroll">
-          <span className="text-[#FACC15] font-extrabold tracking-widest uppercase text-xs mb-3.5 block bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-[#FACC15]/20">
+          <span className="text-[#111E38] dark:text-[#FACC15] font-extrabold tracking-widest uppercase text-xs mb-3.5 block bg-slate-100 dark:bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-slate-200 dark:border-[#FACC15]/20">
             {t('What our users say', 'Apa kata pengguna kami')}
           </span>
           <h2 className="text-3xl md:text-5.5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-5 leading-tight">
@@ -100,7 +100,7 @@ export default function LandingTestimonials({ language }) {
               onClick={() => setActiveIdx(idx)}
               className={`relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border rounded-[2rem] p-8 flex flex-col gap-6 cursor-pointer transition-all duration-500 ease-out transform ${
                 activeIdx === idx
-                  ? 'border-[#FACC15] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(250,204,21,0.06)] scale-[1.02] -translate-y-1'
+                  ? 'border-[#111E38] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(17,30,56,0.06)] dark:shadow-[0_20px_50px_rgba(250,204,21,0.06)] scale-[1.02] -translate-y-1'
                   : 'border-neutral-200/40 dark:border-neutral-800/30 hover:border-neutral-300 dark:hover:border-neutral-700 hover:scale-[1.01]'
               }`}
             >

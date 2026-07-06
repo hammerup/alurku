@@ -577,7 +577,7 @@ export default function LandingFeatures({ showAuthForm, language }) {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-20 reveal-on-scroll">
-            <span className="text-[#FACC15] font-extrabold tracking-widest uppercase text-xs mb-3.5 block bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-[#FACC15]/20">
+            <span className="text-[#111E38] dark:text-[#FACC15] font-extrabold tracking-widest uppercase text-xs mb-3.5 block bg-slate-100 dark:bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-slate-200 dark:border-[#FACC15]/20">
               {t('Key Features', 'Fitur Unggulan')}
             </span>
             <h2 className="text-3xl md:text-5.5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-6 leading-tight">
