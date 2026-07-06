@@ -70,21 +70,21 @@ export default function LandingTestimonials({ language }) {
   return (
     <section
       id="testimonials-section"
-      className="py-24 md:py-32 bg-white dark:bg-neutral-950 border-t border-slate-200 dark:border-slate-800 relative z-10 overflow-hidden"
+      className="py-24 md:py-32 bg-glass-bg dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10 overflow-hidden"
     >
-      {/* Subtle dot background */}
-      <div className="absolute inset-0 bg-[radial-gradient(#f1f5f9_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:28px_28px] opacity-60" />
+      {/* Subtle grid line background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px)] [background-size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-16 reveal-on-scroll">
-          <span className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-3 block">
+        <div className="text-center mb-20 reveal-on-scroll">
+          <span className="text-[#FACC15] font-extrabold tracking-widest uppercase text-xs mb-3.5 block bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-[#FACC15]/20">
             {t('What our users say', 'Apa kata pengguna kami')}
           </span>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-5 leading-tight">
+          <h2 className="text-3xl md:text-5.5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-5 leading-tight">
             {t('Teams that have felt the difference', 'Tim-tim yang sudah merasakan perbedaannya')}
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xl mx-auto text-lg leading-relaxed">
+          <p className="text-slate-500 dark:text-slate-400 font-semibold max-w-xl mx-auto text-lg leading-relaxed">
             {t(
               'Real stories from real teams — not marketing copy.',
               'Cerita nyata dari tim nyata — bukan teks marketing.'
@@ -93,53 +93,53 @@ export default function LandingTestimonials({ language }) {
         </div>
 
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 reveal-on-scroll" style={{ animationDelay: '100ms' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 reveal-on-scroll" style={{ animationDelay: '100ms' }}>
           {testimonials.map((item, idx) => (
             <div
               key={idx}
               onClick={() => setActiveIdx(idx)}
-              className={`relative bg-[#FAFAFA] dark:bg-neutral-900 border rounded-2xl p-7 flex flex-col gap-5 cursor-pointer transition-all duration-300 ${
+              className={`relative bg-white/70 dark:bg-[#121B2D]/40 backdrop-blur-md border rounded-[2rem] p-8 flex flex-col gap-6 cursor-pointer transition-all duration-500 ease-out transform ${
                 activeIdx === idx
-                  ? 'border-[#111E38] dark:border-[#FACC15] shadow-lg ring-1 ring-[#111E38]/10 dark:ring-[#FACC15]/10'
-                  : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md'
+                  ? 'border-[#FACC15] dark:border-[#FACC15] shadow-[0_20px_50px_rgba(250,204,21,0.06)] scale-[1.02] -translate-y-1'
+                  : 'border-neutral-200/40 dark:border-neutral-800/30 hover:border-neutral-300 dark:hover:border-neutral-700 hover:scale-[1.01]'
               }`}
             >
               {/* Quote icon top-right */}
-              <div className="absolute top-5 right-5">
+              <div className="absolute top-6 right-6 opacity-40">
                 <QuoteIcon />
               </div>
 
               {/* 5-star rating */}
-              <div className="flex gap-0.5">
+              <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => <StarIcon key={i} />)}
               </div>
 
               {/* Quote text */}
-              <p className="text-slate-700 dark:text-slate-300 font-medium leading-relaxed text-sm flex-1">
+              <p className="text-slate-700 dark:text-slate-200 font-semibold leading-relaxed text-sm flex-1">
                 {t(item.quote.en, item.quote.id)}
               </p>
 
               {/* Author Row */}
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-4 pt-5 border-t border-slate-100/50 dark:border-slate-800/50">
                 {/* Avatar monogram */}
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-[11px] shrink-0 shadow-sm"
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 shadow-md"
                   style={{ backgroundColor: item.avatarColor }}
                 >
                   {item.avatar}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="font-extrabold text-sm text-[#111E38] dark:text-white truncate">
+                  <div className="font-black text-sm text-[#111E38] dark:text-white truncate">
                     {item.name}
                   </div>
-                  <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                  <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate mt-0.5">
                     {t(item.role.en, item.role.id)} · {t(item.company.en, item.company.id)}
                   </div>
                 </div>
 
                 {/* Tag badge */}
-                <span className="shrink-0 text-[10px] font-black bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                <span className="shrink-0 text-[10px] font-black bg-glass-bg dark:bg-slate-800 text-slate-600 dark:text-slate-350 px-3.5 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-700">
                   {t(item.tag.en, item.tag.id)}
                 </span>
               </div>

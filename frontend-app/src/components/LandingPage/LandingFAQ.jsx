@@ -53,10 +53,10 @@ export default function LandingFAQ({ language }) {
   return (
     <section
       id="faq-section"
-      className="py-24 md:py-32 bg-white dark:bg-neutral-950 border-t border-slate-200 dark:border-slate-800 relative z-10"
+      className="py-24 md:py-32 bg-glass-bg dark:bg-[#090D16] border-t border-slate-200/50 dark:border-slate-800/50 relative z-10"
     >
       <div className="max-w-4xl mx-auto px-6 lg:px-8">
-        <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-12 text-center reveal-on-scroll">
+        <h2 className="text-3xl md:text-5.5xl font-black tracking-tighter text-[#111E38] dark:text-white mb-12 text-center reveal-on-scroll">
           {t('Frequently Asked Questions', 'Pertanyaan yang Sering Diajukan')}
         </h2>
         
@@ -64,34 +64,37 @@ export default function LandingFAQ({ language }) {
           {faqs.map((faq, idx) => (
             <div
               key={idx}
-              className={`border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-[#0e1116] transition-all duration-300 ${
+              className={`border border-neutral-200/60 dark:border-neutral-800/30 rounded-[1.5rem] overflow-hidden bg-white/75 dark:bg-[#121B2D]/40 backdrop-blur-md transition-all duration-500 ease-out ${
                 activeFaq === idx
-                  ? 'shadow-lg ring-2 ring-indigo-500/10'
-                  : 'hover:border-indigo-300 dark:hover:border-indigo-800'
+                  ? 'shadow-[0_15px_35px_rgba(0,0,0,0.02)] border-[#FACC15] dark:border-[#FACC15]'
+                  : 'hover:border-neutral-300 dark:hover:border-neutral-700'
               }`}
             >
               <button
                 onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                className="w-full px-6 py-5 flex items-center justify-between font-bold text-left text-slate-800 dark:text-white focus:outline-none"
+                className="w-full px-6 py-5 flex items-center justify-between font-black text-left text-[#111E38] dark:text-white focus:outline-none"
               >
                 <span className="text-base sm:text-lg pr-4">{faq.q}</span>
-                <svg
-                  className={`w-5 h-5 text-indigo-500 transform transition-transform duration-300 shrink-0 ${
-                    activeFaq === idx ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                </svg>
+                <span className={`p-2 rounded-xl transition-all duration-300 ${activeFaq === idx ? 'bg-[#FACC15] text-[#111E38]' : 'bg-neutral-100 dark:bg-neutral-800 text-slate-400 dark:text-slate-500'}`}>
+                  <svg
+                    className={`w-4 h-4 transform transition-transform duration-500 ${
+                      activeFaq === idx ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
               </button>
               <div
-                className={`px-6 overflow-hidden transition-all duration-300 ${
-                  activeFaq === idx ? 'max-h-[800px] pb-5 opacity-100' : 'max-h-0 opacity-0'
+                className={`px-6 overflow-hidden transition-all duration-500 ease-in-out ${
+                  activeFaq === idx ? 'max-h-[800px] pb-6 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
-                <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{faq.a}</p>
+                <p className="text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">{faq.a}</p>
               </div>
             </div>
           ))}
