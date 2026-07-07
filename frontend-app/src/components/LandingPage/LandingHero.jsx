@@ -56,7 +56,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                     setIsLoginMode(false);
                     setShowAuthForm(true);
                   }}
-                  className="bg-[#FACC15] hover:bg-[#EAB308] dark:bg-[#FACC15] dark:hover:bg-[#EAB308] text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-[#111E38] dark:border-[#111E38]"
+                  className="bg-[#FACC15] hover:bg-[#EAB308] dark:bg-[#FACC15] dark:hover:bg-[#EAB308] text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-transparent"
                 >
                   {t('Try Free Now', 'Coba Gratis Sekarang')}
                 </button>
@@ -209,11 +209,11 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
               </div>
 
               {/* Decorative floating element */}
-              <div className="absolute -bottom-10 -left-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-2xl animate-float-reverse flex items-center gap-4">
-                <div className="text-3xl">✨</div>
+              <div className="absolute -bottom-6 left-12 bg-white/95 dark:bg-[#121B2D]/95 backdrop-blur-md border border-neutral-200/50 dark:border-neutral-800/30 p-3.5 px-4.5 rounded-[1.25rem] shadow-2xl animate-float-reverse flex items-center gap-3.5 z-20">
+                <div className="text-xl bg-[#FACC15]/20 p-2 rounded-xl text-[#EAB308] dark:text-[#FACC15]">✨</div>
                 <div>
-                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded w-20 mb-2"></div>
-                  <div className="h-2 bg-black dark:bg-white rounded w-32"></div>
+                  <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded w-16 mb-1.5"></div>
+                  <div className="h-2 bg-[#111E38] dark:bg-white rounded w-24"></div>
                 </div>
               </div>
             </div>

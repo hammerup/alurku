@@ -22,7 +22,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] dark:bg-[radial-gradient(#1f2937_1px,transparent_1px)] bg-size-[32px_32px] opacity-[0.03] dark:opacity-[0.1] pointer-events-none"></div>
             
             <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-              <span className="text-[#FACC15] dark:text-[#FACC15] font-extrabold tracking-widest uppercase text-xs block bg-white/10 dark:bg-[#FACC15]/10 px-4 py-1.5 rounded-full w-fit mx-auto border border-white/20 dark:border-[#FACC15]/20">
+              <span className="text-[#FACC15] dark:text-[#FACC15] font-extrabold tracking-widest uppercase text-xs block bg-[#FACC15]/10 dark:bg-[#FACC15]/15 px-4 py-1.5 rounded-full w-fit mx-auto border border-[#FACC15]/20 dark:border-[#FACC15]/30">
                 {t('Get Started', 'Mulai Sekarang')}
               </span>
               <h2 className="text-4xl md:text-5.5xl font-black text-white dark:text-white tracking-tighter leading-none">
