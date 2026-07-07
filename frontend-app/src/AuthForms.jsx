@@ -40,78 +40,73 @@ export default function AuthForms({
   const isIndo = language === 'id';
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row bg-glass-bg dark:bg-[#090D16] font-sans selection:bg-[#111E38] selection:text-[#FACC15] dark:selection:bg-[#FACC15] dark:selection:text-[#111E38] overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col md:flex-row bg-[#F3F4F6] dark:bg-[#090D16] font-sans selection:bg-[#111E38] selection:text-[#FACC15] dark:selection:bg-[#FACC15] dark:selection:text-[#111E38] overflow-hidden">
       
       {/* Sisi Kiri (Desktop/Tablet Layout) */}
-      <div className="hidden md:flex md:w-1/2 relative flex-col justify-between p-16 text-[#111E38] dark:text-white overflow-hidden">
-        {/* Background Photo */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/happy_office_workers.png" 
-            alt="Happy young professionals working together" 
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-          {/* White overlay like hero image / calm gray background in dark mode */}
-          <div className="absolute inset-0 bg-white/85 dark:bg-[#090D16]/90 backdrop-blur-[2px]" />
+      <div className="hidden md:flex md:w-1/2 relative flex-col justify-between p-16 md:pl-24 md:pr-12 text-[#111E38] dark:text-white overflow-hidden bg-[#F3F4F6] dark:bg-[#090D16]">
+        {/* Abstract Elegant Mesh Gradient & Grid Background matching LandingHero */}
+        <div className="absolute inset-0 z-0 h-full w-full overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-[#FACC15]/20 blur-[130px] dark:bg-[#FACC15]/10 pointer-events-none"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[80%] h-[80%] rounded-full bg-blue-500/20 blur-[160px] dark:bg-blue-500/10 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1.5px,transparent_1.5px),linear-gradient(to_bottom,#e2e8f0_1.5px,transparent_1.5px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-35 pointer-events-none"></div>
         </div>
-
+        
         {/* Content Overlay */}
-        <div className="relative z-10 flex flex-col justify-between h-full">
-          {/* Logo & Wordmark (Dibuat Lebih Besar) */}
+        <div className="relative z-10 flex flex-col justify-between h-full pl-8 md:pl-16">
+          {/* Logo & Wordmark */}
           <div className="flex items-center gap-1 select-none">
-            <h1 className="text-5xl font-black tracking-tighter">
+            <h1 className="text-4xl font-black tracking-tighter">
               <span className="text-[#111E38] dark:text-white">alur</span>
               <span className="text-[#FACC15]">ku</span>
               <span className="text-[#FACC15]">.</span>
             </h1>
           </div>
-
-          {/* Core Brand Value Messages (Teks Dibuat Lebih Besar & Bilingual) */}
-          <div className="space-y-8 max-w-xl my-auto">
-            {/* Tagline Capitalized & formatted nicely */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] border border-[#FACC15]/30 text-sm font-extrabold rounded-full tracking-wide">
+ 
+          {/* Core Brand Value Messages (Pillars Centered Vertically) */}
+          <div className="space-y-8 max-w-xl my-auto text-left py-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#111E38]/5 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] border border-[#111E38]/10 dark:border-[#FACC15]/20 text-sm font-extrabold rounded-full tracking-wide">
               {isIndo ? 'Kuasai Waktumu, Lancarkan Alurmu.' : 'Master Your Time, Smooth Your Flow.'}
             </div>
-            <h2 className="text-5xl md:text-6xl font-black leading-tight text-[#111E38] dark:text-white tracking-tight">
+            <h2 className="text-4.5xl md:text-5.5xl font-black leading-tight text-[#111E38] dark:text-white tracking-tight">
               {isIndo 
                 ? 'Berhenti mengingat semua tugasmu, mulailah menyelesaikannya.' 
                 : 'Stop remembering all your tasks, start completing them.'}
             </h2>
-            <p className="text-neutral-600 dark:text-neutral-300 text-lg font-medium leading-relaxed">
+            <p className="text-neutral-500 dark:text-neutral-300 text-base font-semibold leading-relaxed">
               {isIndo
                 ? 'alurku. adalah asisten cerdas yang mengubah tumpukan rencana kerjamu menjadi alur eksekusi yang rapi. Fokus pada hasil, biarkan AI kami yang mengatur jadwalnya.'
                 : 'alurku. is an intelligent assistant that transforms your pile of work plans into a neat execution flow. Focus on results, let our AI organize the schedule.'}
             </p>
-
+ 
             {/* Subtle Pillars Display */}
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-neutral-300/50 dark:border-white/10">
+            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-neutral-200 dark:border-white/10">
               <div>
                 <h4 className="text-[#111E38] dark:text-[#FACC15] font-extrabold text-base flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg className="w-5 h-5 text-[#111E38] dark:text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   {isIndo ? 'Perencana Otomatis' : 'Automated Planner'}
                 </h4>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-semibold">
                   {isIndo ? 'Estimasi & penjadwalan otomatis berbasis AI.' : 'AI-based automated estimation & scheduling.'}
                 </p>
               </div>
               <div>
                 <h4 className="text-[#111E38] dark:text-[#FACC15] font-extrabold text-base flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <svg className="w-5 h-5 text-[#111E38] dark:text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                   {isIndo ? 'Beban Kerja Seimbang' : 'Balanced Workload'}
                 </h4>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 font-semibold">
                   {isIndo ? 'Visualisasi kapasitas agar tetap produktif bebas burnout.' : 'Capacity visualization to stay productive and burnout-free.'}
                 </p>
               </div>
             </div>
           </div>
-
+ 
           {/* Footer Info */}
-          <div className="text-xs text-[#111E38]/60 dark:text-neutral-400 flex justify-between">
+          <div className="text-xs font-semibold text-neutral-450 dark:text-neutral-500 flex justify-between">
             <span>&copy; 2026 alurku. {isIndo ? 'Semua hak dilindungi undang-undang.' : 'All rights reserved.'}</span>
             <div className="flex gap-4">
               <button onClick={() => setIsPrivacyOpen?.(true)} className="hover:text-[#111E38] dark:hover:text-white transition-colors">{isIndo ? 'Kebijakan Privasi' : 'Privacy Policy'}</button>
@@ -120,9 +115,9 @@ export default function AuthForms({
           </div>
         </div>
       </div>
-
+ 
       {/* Sisi Kanan (Form Layout) */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-16 bg-glass-bg dark:bg-[#090D16]">
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-16 bg-[#F3F4F6] dark:bg-[#090D16]">
         
         <DoubleBezel className="w-full max-w-md bg-white dark:bg-[#121B2D] p-8 sm:p-10 shadow-md border border-neutral-200/60 dark:border-neutral-800/80 rounded-2xl relative mac-animate overflow-hidden">
           
