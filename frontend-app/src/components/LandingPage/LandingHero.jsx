@@ -47,35 +47,42 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, isInstall
                   'alurku. merapikan daftar rencana kerjamu menjadi prioritas harian yang jelas, lengkap dengan estimasi kapasitas, serta visualisasi progres tim secara real-time.'
                 )}
               </p>
-              <div
-                className="flex flex-col sm:flex-row gap-4 justify-start items-stretch sm:items-center reveal-on-scroll"
-                style={{ animationDelay: '400ms' }}
-              >
-                <button
-                  onClick={() => {
-                    setIsLoginMode(false);
-                    setShowAuthForm(true);
-                  }}
-                  className="bg-[#FACC15] hover:bg-[#EAB308] dark:bg-[#FACC15] dark:hover:bg-[#EAB308] text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-transparent"
+              <div className="space-y-3.5">
+                <div
+                  className="flex flex-col sm:flex-row gap-4 justify-start items-stretch sm:items-center reveal-on-scroll"
+                  style={{ animationDelay: '400ms' }}
                 >
-                  {t('Try Free Now', 'Coba Gratis Sekarang')}
-                </button>
-                {isInstallable && (
                   <button
-                    onClick={handleInstallClick}
-                    className="bg-white hover:bg-slate-50 text-slate-800 font-extrabold py-4 px-10 rounded-full border border-slate-200 shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                    onClick={() => {
+                      setIsLoginMode(false);
+                      setShowAuthForm(true);
+                    }}
+                    className="bg-[#FACC15] hover:bg-[#EAB308] dark:bg-[#FACC15] dark:hover:bg-[#EAB308] text-[#111E38] font-extrabold py-4 px-10 rounded-full shadow-2xl transition-all hover:-translate-y-1 text-center text-sm sm:text-base border border-transparent"
                   >
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2.5"
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"
-                      ></path>
-                    </svg>{' '}
-                    {t('Install App', 'Pasang Aplikasi')}
+                    {t('Try Free Now', 'Coba Gratis Sekarang')}
                   </button>
-                )}
+                  {isInstallable && (
+                    <button
+                      onClick={handleInstallClick}
+                      className="bg-white hover:bg-slate-50 text-slate-800 font-extrabold py-4 px-10 rounded-full border border-slate-200 shadow-lg hover:-translate-y-1 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                    >
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2.5"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-3 3m0 0l-3-3m3 3V4"
+                        ></path>
+                      </svg>{' '}
+                      {t('Install App', 'Pasang Aplikasi')}
+                    </button>
+                  )}
+                </div>
+                <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 pl-4 flex items-center gap-3 reveal-on-scroll" style={{ animationDelay: '450ms' }}>
+                  <span>✦ {t('Free forever', 'Gratis selamanya')}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-350 dark:bg-slate-700"></span>
+                  <span>✦ {t('No credit card', 'Tanpa kartu kredit')}</span>
+                </div>
               </div>
             </div>
 

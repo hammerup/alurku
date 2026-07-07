@@ -36,7 +36,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
               </p>
             </div>
 
-            <div className="relative z-10 pt-4">
+            <div className="relative z-10 pt-4 space-y-4">
               <button
                 onClick={() => {
                   setIsLoginMode(false);
@@ -49,6 +49,11 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>
+              <div className="text-[11px] font-bold text-slate-300 dark:text-slate-400 flex items-center justify-center gap-3">
+                <span>✦ {t('Free forever', 'Gratis selamanya')}</span>
+                <span className="w-1 h-1 rounded-full bg-slate-500"></span>
+                <span>✦ {t('No credit card', 'Tanpa kartu kredit')}</span>
+              </div>
             </div>
           </div>
         </DoubleBezel>
