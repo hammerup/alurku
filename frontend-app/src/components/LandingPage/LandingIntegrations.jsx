@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import integrationsImg from '../../assets/integrations.png';
 
 export default function LandingIntegrations({ language }) {
   const isId = language === 'id';
@@ -89,7 +90,7 @@ export default function LandingIntegrations({ language }) {
             <img
               alt="Integrations visual"
               className="w-full h-auto transform hover:scale-102 transition-transform duration-500"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPl7nVXVgGHRVR6rWlwIJtXigRnz_QQBpNQJe4sCPAqUfQGdIQgjOaWEQsT1NVybaIrAHx0YDXSrIWe1z_i068G8FSfCHv5IHw_aE2fhQ-_ktihANzdUiZqQYVatNzU9E6i9J3_3rq06uoULTsw0zczy6Yp0PX_Gev08Rl3ELtLJpoBtnkWhSR8gjyfXY3WnOFGM7aRdBpFXp_qpLAFCRjpws0eAHSQWSGaR9o1TFwYKs1ZfC9xTgmynfDgmDOhMGpbqr_v0um8VVd"
+              src={integrationsImg}
             />
           </div>
         </motion.div>
