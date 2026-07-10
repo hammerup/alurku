@@ -15,6 +15,10 @@ import LandingGuidePage from './components/LandingPage/LandingGuidePage';
 import LandingAboutPage from './components/LandingPage/LandingAboutPage';
 import LandingDocumentationPage from './components/LandingPage/LandingDocumentationPage';
 import LandingArticlePage from './components/LandingPage/LandingArticlePage';
+import LandingIntegrations from './components/LandingPage/LandingIntegrations';
+import LandingStats from './components/LandingPage/LandingStats';
+import LandingFAQ from './components/LandingPage/LandingFAQ';
+import LandingCTA from './components/LandingPage/LandingCTA';
 
 
 export default function LandingPage({
@@ -366,7 +370,15 @@ export default function LandingPage({
               />
               <LandingSocialProof language={language} />
               <LandingFeatures language={language} />
+              <LandingIntegrations language={language} />
               <LandingDetailedFeature language={language} />
+              <LandingStats language={language} />
+              <LandingFAQ language={language} />
+              <LandingCTA
+                setIsLoginMode={setIsLoginMode}
+                setShowAuthForm={setShowAuthForm}
+                language={language}
+              />
               <LandingTestimonials language={language} />
             </div>
           )}
