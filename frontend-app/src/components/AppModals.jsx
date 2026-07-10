@@ -30,6 +30,7 @@ import DocumentationModal from '../DocumentationModal';
 import ProactiveAIModal from '../ProactiveAIModal';
 import ChatWorkspaceModal from '../ChatWorkspaceModal';
 import SystemSpecsModal from '../SystemSpecsModal';
+import MoMNotepadModal from './SmartAssistant/MoMNotepadModal';
 
 export default function AppModals() {
   const context = useAppContext();
@@ -199,6 +200,8 @@ export default function AppModals() {
     handleSupportSubmit,
     isDocsOpen,
     setIsDocsOpen,
+    isMomNotepadOpen,
+    setIsMomNotepadOpen,    
     isMyTicketsModalOpen,
     setIsMyTicketsModalOpen,
     myTickets,
@@ -643,6 +646,18 @@ export default function AppModals() {
       {isDocsOpen && (
         <DocumentationModal setIsDocsOpen={setIsDocsOpen} isSuperAdmin={isSuperAdmin} language={language} />
       )}
+      {isMomNotepadOpen && (
+        <MoMNotepadModal
+          onClose={() => setIsMomNotepadOpen(false)}
+          currentUser={currentUser}
+          boards={boards}
+          categories={categories}
+          fetchTasks={fetchTasks}
+          showNotification={showNotification}
+          userDirectory={userDirectory}
+          isSuperAdmin={isSuperAdmin}
+        />
+      )}      
       {isMyTicketsOpen && (
         <MyTicketsModal
           setIsMyTicketsOpen={setIsMyTicketsOpen}

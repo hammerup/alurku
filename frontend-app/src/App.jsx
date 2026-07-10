@@ -318,6 +318,8 @@ function App() {
     handleChatScroll,
     isDocsOpen,
     setIsDocsOpen,
+    isMomNotepadOpen,
+    setIsMomNotepadOpen,
     isMyTicketsOpen,
     setIsMyTicketsOpen,
     isMobileMenuOpen,
@@ -2155,6 +2157,7 @@ function App() {
               setIsProactiveAIOpen={setIsProactiveAIOpen}
               userDirectory={userDirectory}
               formatDateMMM={formatDateMMM}
+              setIsMomNotepadOpen={setIsMomNotepadOpen}              
             />
           </div>
         </div>

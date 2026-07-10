@@ -38,6 +38,7 @@ export default function SmartAssistant({
   avatarsMap,
   userDirectory,
   formatDateMMM,
+  setIsMomNotepadOpen,  
   chatBg,
 }) {
   const [messages, setMessages] = useState([]);
@@ -254,18 +255,8 @@ export default function SmartAssistant({
   };
 
   const startQuickNote = (isFromChat = false) => {
-    setAssistantMode('chat');
-    if (!isFromChat) setMessages([]);
-    setTaskData({});
-    setStep('ask_meeting_context');
-
-    addBotMessage(
-      tMsg(
-        `Let's process your meeting notes! 📝\n\nFirst, who attended this meeting, and what is your role? (e.g., "With Budi and Siti, I am the Project Manager"). This helps me assign tasks accurately.`,
-        `Mari proses catatan rapat Anda! 📝\n\nPertama, siapa saja yang hadir dalam rapat ini, dan apa peran Anda? (contoh: "Bersama Budi dan Siti, saya sebagai Project Manager"). Ini membantu saya menugaskan orang dengan tepat.`
-      ),
-      [tMsg('Skip this step', 'Lewati langkah ini'), optCancel]
-    );
+    setIsMomNotepadOpen(true);
+    closeDrawer();
   };
 
   const handleUserReply = (text) => {

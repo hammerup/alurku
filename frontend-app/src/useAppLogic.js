@@ -187,6 +187,8 @@ export default function useAppLogic() {
     setIsSupportOpen,
     isDocsOpen,
     setIsDocsOpen,
+    isMomNotepadOpen,
+    setIsMomNotepadOpen,    
     isMyTicketsOpen,
     setIsMyTicketsOpen,
     isMobileMenuOpen,
@@ -519,6 +521,10 @@ export default function useAppLogic() {
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('alurku_docs_open', isDocsOpen);
   }, [isDocsOpen]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('alurku_mom_notepad_open', isMomNotepadOpen);
+  }, [isMomNotepadOpen]);  
 
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('alurku_chat_ws_open', isChatWorkspaceOpen);
@@ -4576,6 +4582,7 @@ export default function useAppLogic() {
     isSupportOpen,
     supportText,
     isDocsOpen,
+    isMomNotepadOpen,    
     isMobileMenuOpen,
     isLogoutConfirmOpen,
     isPrivacyOpen,
@@ -4681,6 +4688,7 @@ export default function useAppLogic() {
     setIsSupportOpen,
     setSupportText,
     setIsDocsOpen,
+    setIsMomNotepadOpen,    
     setIsMobileMenuOpen,
     isMobileProfileOpen,
     setIsMobileProfileOpen,

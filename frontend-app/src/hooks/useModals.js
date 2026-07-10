@@ -19,6 +19,10 @@ export function useModals() {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_docs_open') === 'true';
     return false;
   });
+  const [isMomNotepadOpen, setIsMomNotepadOpen] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('alurku_mom_notepad_open') === 'true';
+    return false;
+  });  
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
@@ -73,6 +77,7 @@ export function useModals() {
     isFeedbackOpen, setIsFeedbackOpen,
     isSupportOpen, setIsSupportOpen,
     isDocsOpen, setIsDocsOpen,
+    isMomNotepadOpen, setIsMomNotepadOpen,    
     isMyTicketsOpen, setIsMyTicketsOpen,
     isMobileMenuOpen, setIsMobileMenuOpen,
     isMobileProfileOpen, setIsMobileProfileOpen,
