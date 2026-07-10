@@ -1875,7 +1875,9 @@ export default function useAppLogic() {
 
   const fetchInboxChats = () => {
     if (!isAuthenticated) return;
-    setIsInboxLoading(true);
+    setIsInboxLoading(true);    if (inboxChats.length === 0) {
+      setIsInboxLoading(true);
+    }
     axios
       .get('/api/my-chats')
       .then((res) => {
