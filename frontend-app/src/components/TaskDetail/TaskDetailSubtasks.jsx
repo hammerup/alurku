@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 export default function TaskDetailSubtasks({
@@ -12,6 +13,7 @@ export default function TaskDetailSubtasks({
   isSystemTicket,
   handleToggleSubtask,
   teamMembers,
+  handleUpdateSubtaskAssignee,
   handleDeleteSubtask,
   handleAddSubtask,
   newSubtaskName,
@@ -90,6 +92,79 @@ export default function TaskDetailSubtasks({
               {subtasks.map((st, index) => {
                 const canEditSt =
                   isTaskAdmin || (!isSystemTicket && (!st.assignee || st.assignee === currentUser));
+                const subtaskItem = (providedDrag, snapshot) => (
+                  <div
+                    ref={providedDrag.innerRef}
+                    {...providedDrag.draggableProps}
+                    className={`flex items-start gap-3 group bg-white dark:bg-neutral-950 p-2 -ml-2 rounded-xl mb-2.5 ${
+                      snapshot.isDragging
+                        ? 'shadow-lg border border-indigo-500 dark:border-indigo-400 scale-[1.02] z-9999'
+                        : 'transition-all duration-200 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800'
+                    }`}
+                  >
+                    <div
+                      {...providedDrag.dragHandleProps}
+                      className={`mt-1 cursor-grab active:cursor-grabbing text-neutral-300 hover:text-black dark:hover:text-white transition-colors ${
+                        !isTaskAdmin || accountStatus === 'suspended'
+                          ? 'opacity-0 pointer-events-none w-0 -mr-2'
+                          : ''
+                      }`}
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM16 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM16 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM16 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={st.is_done === 1}
+                      disabled={!canEditSt || accountStatus === 'suspended'}
+                      onChange={() => handleToggleSubtask(st.id, st.is_done, st.assignee)}
+                      className={`mt-0.5 w-5 h-5 text-black dark:text-white bg-transparent border-2 border-neutral-300 dark:border-neutral-600 rounded transition-colors ${
+                        canEditSt ? 'cursor-pointer focus:ring-0' : 'cursor-not-allowed opacity-50'
+                      }`}
+                    />
+                    <div
+                      className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 wrap-break-word"
+                    >
+                      <span className={`text-sm font-medium flex-1 ${
+                        st.is_done
+                          ? 'line-through text-neutral-400 dark:text-neutral-500'
+                          : 'text-black dark:text-white'
+                      }`}>{st.task_name}</span>
+                      <select
+                        value={st.assignee || ''}
+                        onChange={(e) =>
+                          handleUpdateSubtaskAssignee(st.id, st.is_done, e.target.value)
+                        }
+                        className={`text-xs font-medium px-2 py-1 rounded-md outline-none normal-case tracking-normal transition-colors text-black dark:text-white ${
+                          st.is_done
+                            ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40'
+                        } [&>option]:bg-white dark:[&>option]:bg-neutral-950 [&>option]:text-black dark:[&>option]:text-white ${
+                          isTaskAdmin && !st.is_done ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'
+                        }`}
+                        disabled={st.is_done || !isTaskAdmin || accountStatus === 'suspended'}
+                      >
+                        <option value="">{tMsg('Unassigned', 'Belum Ditugaskan')}</option>
+                        {teamMembers.map((m) => (
+                          <option key={m} value={m}>
+                            @{m}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {isTaskAdmin && accountStatus !== 'suspended' && (
+                      <button
+                        onClick={() => handleDeleteSubtask(st.id)}
+                        className="text-neutral-400 hover:text-red-500 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity text-sm md:text-xs font-bold mt-0.5 md:mt-1 px-2 py-1 md:p-0"
+                        title="Delete Subtask"
+                      >
+                        ✖
+                      </button>
+                    )}
+                  </div>
+                );
+
                 return (
                   <Draggable
                     key={`subtask-${st.id}`}
@@ -97,78 +172,11 @@ export default function TaskDetailSubtasks({
                     index={index}
                     isDragDisabled={!isTaskAdmin || accountStatus === 'suspended'}
                   >
-                    {(providedDrag, snapshot) => (
-                      <div
-                        ref={providedDrag.innerRef}
-                        {...providedDrag.draggableProps}
-                        className={`flex items-start gap-3 group bg-white dark:bg-neutral-950 p-2 -ml-2 rounded-xl mb-2.5 ${
-                          snapshot.isDragging
-                            ? 'shadow-lg border border-indigo-500 dark:border-indigo-400 scale-[1.02] z-50'
-                            : 'transition-all duration-200 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800'
-                        }`}
-                      >
-                        <div
-                          {...providedDrag.dragHandleProps}
-                          className={`mt-1 cursor-grab active:cursor-grabbing text-neutral-300 hover:text-black dark:hover:text-white transition-colors ${
-                            !isTaskAdmin || accountStatus === 'suspended'
-                              ? 'opacity-0 pointer-events-none w-0 -mr-2'
-                              : ''
-                          }`}
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM16 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM16 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM16 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
-                          </svg>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={st.is_done === 1}
-                          disabled={!canEditSt || accountStatus === 'suspended'}
-                          onChange={() => handleToggleSubtask(st.id, st.is_done, st.assignee)}
-                          className={`mt-0.5 w-5 h-5 text-black dark:text-white bg-transparent border-2 border-neutral-300 dark:border-neutral-600 rounded transition-colors ${
-                            canEditSt ? 'cursor-pointer focus:ring-0' : 'cursor-not-allowed opacity-50'
-                          }`}
-                        />
-                        <div
-                          className={`flex-1 flex flex-col sm:flex-row sm:items-center gap-2 wrap-break-word ${
-                            st.is_done
-                              ? 'line-through text-neutral-400 dark:text-neutral-500'
-                              : 'text-black dark:text-white'
-                          }`}
-                        >
-                          <span className="text-sm font-medium flex-1">{st.task_name}</span>
-                          <select
-                            value={st.assignee || ''}
-                            onChange={(e) =>
-                              handleToggleSubtask(st.id, st.is_done === 1 ? 1 : 0, e.target.value)
-                            }
-                            className={`text-xs font-medium px-2 py-1 rounded-md outline-none normal-case tracking-normal transition-colors ${
-                              st.is_done
-                                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
-                                : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40'
-                            } [&>option]:bg-white dark:[&>option]:bg-neutral-950 [&>option]:text-black dark:[&>option]:text-white ${
-                              isTaskAdmin && !st.is_done ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'
-                            }`}
-                            disabled={st.is_done || !isTaskAdmin || accountStatus === 'suspended'}
-                          >
-                            <option value="">{tMsg('Unassigned', 'Belum Ditugaskan')}</option>
-                            {teamMembers.map((m) => (
-                              <option key={m} value={m}>
-                                @{m}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        {isTaskAdmin && accountStatus !== 'suspended' && (
-                          <button
-                            onClick={() => handleDeleteSubtask(st.id)}
-                            className="text-neutral-400 hover:text-red-500 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity text-sm md:text-xs font-bold mt-0.5 md:mt-1 px-2 py-1 md:p-0"
-                            title="Delete Subtask"
-                          >
-                            ✖
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    {(providedDrag, snapshot) =>
+                      snapshot.isDragging
+                        ? ReactDOM.createPortal(subtaskItem(providedDrag, snapshot), document.body)
+                        : subtaskItem(providedDrag, snapshot)
+                    }
                   </Draggable>
                 );
               })}

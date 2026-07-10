@@ -88,6 +88,7 @@ export default function AppModals() {
     accountStatus,
     subtasks,
     handleToggleSubtask,
+    handleUpdateSubtaskAssignee,    
     handleDeleteSubtask,
     handleSubtaskDragEnd,
     newSubtaskName,
@@ -391,6 +392,7 @@ export default function AppModals() {
           accountStatus={accountStatus}
           subtasks={subtasks}
           handleToggleSubtask={handleToggleSubtask}
+          handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}          
           handleDeleteSubtask={handleDeleteSubtask}
           handleSubtaskDragEnd={handleSubtaskDragEnd}
           newSubtaskName={newSubtaskName}
@@ -736,6 +738,7 @@ export default function AppModals() {
               accountStatus={accountStatus}
               subtasks={subtasks}
               handleToggleSubtask={handleToggleSubtask}
+              handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}              
               handleDeleteSubtask={handleDeleteSubtask}
               handleSubtaskDragEnd={handleSubtaskDragEnd}
               newSubtaskName={newSubtaskName}

@@ -2517,14 +2517,45 @@ export default function useAppLogic() {
   };
 
   const handleToggleSubtask = (subtaskId, currentStatus, currentAssignee) => {
+    const newStatus = currentStatus === 1 ? 0 : 1;
+    // Optimistic update — ubah UI langsung tanpa tunggu server
+    const prevSubtasks = subtasks;
+    setSubtasks((prev) =>
+      prev.map((st) => (st.id === subtaskId ? { ...st, is_done: newStatus } : st))
+    );    
     axios
-      .put(`/api/subtasks/${subtaskId}`, { is_done: currentStatus === 1 ? 0 : 1, assignee: currentAssignee })
+      .put(`/api/subtasks/${subtaskId}`, { is_done: newStatus, assignee: currentAssignee })
       .then(() => {
         fetchSubtasks(selectedTask.id);
         fetchComments(selectedTask.id);
         fetchTasks();
       })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to update sub-task!', 'error'));
+      .catch((err) => {
+        // Rollback jika gagal
+        setSubtasks(prevSubtasks);
+        showNotification(err.response?.data?.detail || 'Failed to update sub-task!', 'error');
+      });
+  };
+
+  const handleUpdateSubtaskAssignee = (subtaskId, currentIsDone, newAssignee) => {
+    const keepStatus = currentIsDone === 1 ? 1 : 0;
+    // Optimistic update — ubah assignee langsung di UI
+    const prevSubtasks = subtasks;
+    setSubtasks((prev) =>
+      prev.map((st) => (st.id === subtaskId ? { ...st, assignee: newAssignee } : st))
+    );
+    axios
+      .put(`/api/subtasks/${subtaskId}`, { is_done: keepStatus, assignee: newAssignee })
+      .then(() => {
+        fetchSubtasks(selectedTask.id);
+        fetchComments(selectedTask.id);
+        fetchTasks();
+      })
+      .catch((err) => {
+        // Rollback jika gagal
+        setSubtasks(prevSubtasks);
+        showNotification(err.response?.data?.detail || 'Failed to update sub-task assignee!', 'error');
+      });
   };
 
   const handleDeleteSubtask = (subtaskId) => {
@@ -4733,6 +4764,7 @@ export default function useAppLogic() {
     handleColSubmit,
     handleAddSubtask,
     handleToggleSubtask,
+    handleUpdateSubtaskAssignee,    
     handleDeleteSubtask,
     handleSubtaskDragEnd,
     handleCommentChange,

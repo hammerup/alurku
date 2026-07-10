@@ -36,6 +36,7 @@ export default function TaskDetailModal({
   selectedBoard,
   subtasks,
   handleToggleSubtask,
+  handleUpdateSubtaskAssignee,  
   handleDeleteSubtask,
   newSubtaskName,
   setNewSubtaskName,
@@ -1304,7 +1305,7 @@ export default function TaskDetailModal({
                     )}
                   </div>
 
-                  <TaskDetailSubtasks
+                   <TaskDetailSubtasks
                     tMsg={tMsg}
                     selectedTask={selectedTask}
                     isPreviewMode={isPreviewMode}
@@ -1314,6 +1315,7 @@ export default function TaskDetailModal({
                     accountStatus={accountStatus}
                     isSystemTicket={isSystemTicket}
                     handleToggleSubtask={handleToggleSubtask}
+                    handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}                    
                     teamMembers={teamMembers}
                     handleDeleteSubtask={handleDeleteSubtask}
                     handleAddSubtask={handleAddSubtask}
