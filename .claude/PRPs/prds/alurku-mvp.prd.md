@@ -30,6 +30,7 @@ We'll know we're right when **tim dapat berkolaborasi menyelesaikan prioritas ha
 | Task Completion Rate | > 70% | Rasio tugas yang diselesaikan dibanding tugas yang dibuat per minggu |
 | Active Collaboration | > 2 user | Rata-rata anggota tim yang berinteraksi dalam satu *workspace* |
 | AI Adoption | > 50% | Persentase pengguna yang menggunakan *AI Task Planner* untuk menyusun jadwal |
+| UI Accessibility | > 90% | Skor Lighthouse Accessibility, memastikan UI ramah mata & kontras tinggi |
 
 ## Open Questions
 
@@ -64,6 +65,7 @@ Perusahaan *Enterprise* raksasa di Indonesia yang membutuhkan *on-premise deploy
 | Must | **Kanban Board** | Visualisasi alur progres (To Do, In Progress, Done) |
 | Must | **AI Task Planner** | Membantu mengatur prioritas dan estimasi pengerjaan otomatis |
 | Must | **Kalender Lokal ID** | *Smart deadline engine* yang mengenali tanggal merah & libur nasional Indonesia |
+| Should | **Workload Analytics** | Indikator visual sederhana untuk kapasitas beban kerja setiap anggota |
 | Should | **Role/Visibility** | Atasan bisa melihat analitik, bawahan melihat UI sederhana |
 | Could | **App Integrations** | Integrasi Slack, GitHub, Google Workspace |
 | Won't | **Surveillance Tools**| Melanggar visi produk yang berpusat pada kenyamanan pengguna |
@@ -75,6 +77,7 @@ Rilis versi pertama (1-2 bulan pengembangan) dibatasi pada:
 2. Kanban Board (Kolaboratif)
 3. AI Task Planner
 4. Deteksi Kalender/Tanggal Merah Lokal
+5. Workload Analytics (Indikator Beban Kerja)
 
 ### User Flow
 
@@ -108,7 +111,7 @@ Daftar/Masuk -> Buat Workspace -> AI menyusun rencana awal / User membuat tugas 
 | 1 | **Foundation & Auth** | Setup DB Schema, Autentikasi User (Login/Register), dan Workspace Routing | pending | - | - | - |
 | 2 | **Core Task Engine** | CRUD Task (List To-do) & *Drag-and-Drop* Kanban Board logic | pending | - | 1 | - |
 | 3 | **AI & Smart Engine** | Integrasi Google AI API (Task Planner) & Modul Kalender Lokal ID | pending | with 4 | 2 | - |
-| 4 | **UI/UX Polish** | Menerapkan UI *glassmorphism* & *brand-guidelines* ke dalam *Dashboard* | pending | with 3 | 2 | - |
+| 4 | **UI/UX Polish** | Menerapkan UI *Flat Design* & *brand-guidelines* ke dalam *Dashboard* | pending | with 3 | 2 | - |
 | 5 | **Launch MVP** | E2E Testing, Bug fixing, & Final Deployment | pending | - | 3, 4 | - |
 
 ---

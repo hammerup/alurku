@@ -39,6 +39,9 @@ This document contains the complete visual identity, UI rules, brand message gui
 - **Iconography Rule:** Always use **modern, simple, inline SVG icons** instead of old-fashioned/raw emojis for list elements, buttons, feature badges, and indicators. Emojis should be completely avoided in professional feature layouts.
 - **Contrast & Legibility:** Never render light or yellow text on light backgrounds. Ensure a high-contrast dark color (like dark navy `#111E38` or slate-800) is used for maximum readability in Light Mode.
 - **Capitalization:** Writing casing must be normal (e.g. Sentence case or Capitalize Each Word), avoiding overuse of full uppercase or dominant capitalization across page sections and headlines. Label text should use normal casing.
+- **AI Persona & Tone of Voice:** The AI Assistant must communicate in a **casual, supportive, and friendly** tone. It acts as a helpful personal assistant, not a strict manager or robotic system.
+  - **Pronouns:** Use "Aku" to refer to the AI and "Kamu" for the user (to build a personal, less formal connection in Indonesian).
+  - **Microcopy:** Error messages, empty states, and AI suggestions should be encouraging (e.g., "Belum ada tugas nih, yuk buat satu!" instead of "No tasks found.").
 
 ---
 

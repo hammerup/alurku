@@ -5,13 +5,9 @@ import AuthForms from './AuthForms';
 import LandingHeader from './components/LandingPage/LandingHeader';
 import LandingFooter from './components/LandingPage/LandingFooter';
 import LandingHero from './components/LandingPage/LandingHero';
-import LandingHeroGlass from './components/LandingPage/LandingHeroGlass';
-import DoubleBezel from './components/DoubleBezel';
-import LandingAISection from './components/LandingPage/LandingAISection';
-import LandingFeatures from './components/LandingPage/LandingFeatures';
-import LandingFAQ from './components/LandingPage/LandingFAQ';
-import LandingCTA from './components/LandingPage/LandingCTA';
 import LandingSocialProof from './components/LandingPage/LandingSocialProof';
+import LandingFeatures from './components/LandingPage/LandingFeatures';
+import LandingDetailedFeature from './components/LandingPage/LandingDetailedFeature';
 import LandingTestimonials from './components/LandingPage/LandingTestimonials';
 import LandingFeaturesPage from './components/LandingPage/LandingFeaturesPage';
 import LandingPricingPage from './components/LandingPage/LandingPricingPage';
@@ -360,28 +356,19 @@ export default function LandingPage({
           />
 
           {currentTab === 'home' && (
-            <div className="relative w-full">
-              <DoubleBezel className="w-full bg-white dark:bg-[#121B2D]/40 backdrop-blur-md overflow-hidden rounded-none border-x-0">
-                <LandingHero
-                  setIsLoginMode={setIsLoginMode}
-                  setShowAuthForm={setShowAuthForm}
-                  isInstallable={isInstallable}
-                  handleInstallClick={handleInstallClick}
-                  language={language}
-                />
-              </DoubleBezel>
-            </div>
-          )}
-
-          {currentTab === 'home' && (
-            <>
+            <div className="w-full flex flex-col items-center">
+              <LandingHero
+                setIsLoginMode={setIsLoginMode}
+                setShowAuthForm={setShowAuthForm}
+                isInstallable={isInstallable}
+                handleInstallClick={handleInstallClick}
+                language={language}
+              />
               <LandingSocialProof language={language} />
-              <LandingAISection showAuthForm={showAuthForm} language={language} />
-              <LandingFeatures showAuthForm={showAuthForm} language={language} />
+              <LandingFeatures language={language} />
+              <LandingDetailedFeature language={language} />
               <LandingTestimonials language={language} />
-              <LandingFAQ language={language} />
-              <LandingCTA setIsLoginMode={setIsLoginMode} setShowAuthForm={setShowAuthForm} language={language} />
-            </>
+            </div>
           )}
 
           {currentTab === 'features' && <LandingFeaturesPage language={language} />}
