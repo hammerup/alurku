@@ -16,22 +16,23 @@ export default function MoMNotepadModal({
 }) {
   const [activeTab, setActiveTab] = useState('editor');
   const [textWrap, setTextWrap] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile sidebar toggle
 
   // Meeting Details
   const [meetingDate, setMeetingDate] = useState(() => {
     const today = new Date();
-    return localStorage.getItem('innocean_mom_date') || today.toISOString().split('T')[0];
+    return localStorage.getItem('alurku_mom_date') || today.toISOString().split('T')[0];
   });
   const [meetingTime, setMeetingTime] = useState(() => {
     const now = new Date();
-    return localStorage.getItem('innocean_mom_time') || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return localStorage.getItem('alurku_mom_time') || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   });
-  const [meetingLocation, setMeetingLocation] = useState(() => localStorage.getItem('innocean_mom_location') || '');
-  const [meetingContext, setMeetingContext] = useState(() => localStorage.getItem('innocean_mom_context') || '');
+  const [meetingLocation, setMeetingLocation] = useState(() => localStorage.getItem('alurku_mom_location') || '');
+  const [meetingContext, setMeetingContext] = useState(() => localStorage.getItem('alurku_mom_context') || '');
 
   // Notion-like Blocks State
   const [blocks, setBlocks] = useState(() => {
-    const saved = localStorage.getItem('innocean_mom_blocks');
+    const saved = localStorage.getItem('alurku_mom_blocks');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -77,11 +78,11 @@ export default function MoMNotepadModal({
   const dropdownRef = useRef(null);
 
   // Auto-save
-  useEffect(() => { localStorage.setItem('innocean_mom_date', meetingDate); }, [meetingDate]);
-  useEffect(() => { localStorage.setItem('innocean_mom_time', meetingTime); }, [meetingTime]);
-  useEffect(() => { localStorage.setItem('innocean_mom_location', meetingLocation); }, [meetingLocation]);
-  useEffect(() => { localStorage.setItem('innocean_mom_context', meetingContext); }, [meetingContext]);
-  useEffect(() => { localStorage.setItem('innocean_mom_blocks', JSON.stringify(blocks)); }, [blocks]);
+  useEffect(() => { localStorage.setItem('alurku_mom_date', meetingDate); }, [meetingDate]);
+  useEffect(() => { localStorage.setItem('alurku_mom_time', meetingTime); }, [meetingTime]);
+  useEffect(() => { localStorage.setItem('alurku_mom_location', meetingLocation); }, [meetingLocation]);
+  useEffect(() => { localStorage.setItem('alurku_mom_context', meetingContext); }, [meetingContext]);
+  useEffect(() => { localStorage.setItem('alurku_mom_blocks', JSON.stringify(blocks)); }, [blocks]);
 
   // Default board
   useEffect(() => {
@@ -289,13 +290,16 @@ export default function MoMNotepadModal({
 
     setIsProcessing(true);
     try {
-      const details = `Date: ${meetingDate}\nTime: ${meetingTime}\nLocation: ${meetingLocation || 'Not Specified'}${meetingContext ? `\nParticipants & Roles: ${meetingContext}` : ''}`;
+      const participantsLine = meetingContext ? `\nPeserta & Peran: ${meetingContext}` : '';
+      const details = `Tanggal: ${meetingDate}\nWaktu: ${meetingTime}\nLokasi: ${meetingLocation || 'Tidak Ditentukan'}${participantsLine}`;
 
-      const momPrompt = `You are an expert Project Manager. Organize the following meeting details and notes into a professional Minutes of Meeting (MoM). Respond in English or Indonesian to match the notes language.
+      const momPrompt = `You are an expert Project Manager. Organize the following meeting details and raw notes into a professional Minutes of Meeting (MoM). Respond in the SAME language as the raw notes (Indonesian if notes are in Indonesian, English if in English).
 
-IMPORTANT RULES:
-- Do NOT use markdown tables (e.g. | Header |). Render all discussion points and details using bullet points, sub-bullets, and paragraphs.
-- The note taker is @${currentUser}. When the notes use 'I', 'me', 'saya', 'aku', or a role name (like 'PM', 'SEO') that matches the stated role of the note taker, resolve it to the actual name/username '@${currentUser}'. Do NOT write '[Nama Anda]', '[Your Name]', or any other placeholder.
+STRICT RULES — violations are not allowed:
+- Do NOT use markdown tables. Use bullet points, sub-bullets, and paragraphs only.
+- The note taker is @${currentUser}. Resolve first-person pronouns ('I', 'me', 'saya', 'aku') and role references (e.g. 'PM', 'SEO') to '@${currentUser}'. Never write placeholders like '[Your Name]'.
+- PARTICIPANTS SECTION: List ONLY participants explicitly mentioned in the notes or meeting details. If no participants are stated, write 'Tidak tercatat / Not recorded'. NEVER invent names, channels, Slack threads, or assignments not in the notes.
+- FOOTNOTE / CLOSING: Do NOT add any notes about follow-up channels, Slack, or task distribution. End the MoM after the Action Items section.
 
 MEETING DETAILS:
 ${details}
@@ -303,11 +307,11 @@ ${details}
 RAW NOTES:
 ${rawNotes}
 
-Generate the MoM with these exact sections:
-1. Meeting Meta Details (Date, Time, Location, Participants)
-2. Executive Summary
-3. Key Discussion Points
-4. Action Items (Bulleted list of tasks to be done)`;
+Generate the MoM with EXACTLY these sections:
+1. Detail Rapat (Tanggal, Waktu, Lokasi, Peserta)
+2. Ringkasan Eksekutif
+3. Poin Diskusi Utama
+4. Action Items (daftar tugas yang perlu dilakukan)`;
 
       // Step 1: Generate MoM document
       const momRes = await axios.post('/api/ai/generate', { prompt: momPrompt, provider: AI_MODEL });
@@ -318,21 +322,25 @@ Generate the MoM with these exact sections:
 
       // Step 2: Extract tasks independently — a failure here must NOT block MoM display
       try {
-        const extractPrompt = `Extract ALL action items from the following generated Minutes of Meeting (MoM). Return ONLY a raw JSON array with no markdown and no extra text.
+        const extractPrompt = `Extract ALL action items from the following Minutes of Meeting (MoM). Return ONLY a raw JSON array — no markdown, no extra text.
 
-IMPORTANT: Align the deadlines and task names EXACTLY with what is written in the Minutes of Meeting (MoM) below.
+RULES:
+- project_name: SHORT and CONCISE task title, max 6 words. Do NOT copy full sentences from the MoM. Summarize the task intent only. Example: 'Revisi proposal anggaran Q3' or 'Setup staging environment'.
+- requester: MUST be one of the exact usernames below. If a person is mentioned for a task, use their username. Default to '@${currentUser}' only if truly unspecified.
+- deadline: Use the date stated in the MoM. If none stated, use '${meetingDate}'.
+- description: 1-2 sentence summary of what needs to be done.
 
-VALID WORKSPACE TEAM MEMBERS (ONLY use these exact usernames for requester field):
+VALID TEAM MEMBERS (use ONLY these exact usernames):
 ${JSON.stringify(mentionableMembers)}
 
 CURRENT USER: @${currentUser}
-(Note taker. If MoM refers to 'I', 'me', 'saya', 'aku', or their role e.g. 'PM', 'SEO Manager' or 'SEO', map them to '@${currentUser}')
+(If MoM refers to 'saya', 'aku', 'I', 'me', or their role, map to '@${currentUser}')
 
-GENERATED MINUTES OF MEETING (MoM):
+MINUTES OF MEETING:
 ${momRes.data.text}
 
-If no action items, return []. Schema:
-[{"project_name":"unique specific task title","requester":"@username (MUST be one of the exact usernames from the VALID list above)","category":"Development|Design|Marketing|Research|Maintenance|Consulting|Other","deadline":"YYYY-MM-DD","description":"brief description"}]`;
+If no action items found, return []. JSON Schema:
+[{"project_name":"judul task singkat max 6 kata","requester":"@username","category":"Development|Design|Marketing|Research|Maintenance|Consulting|Other","deadline":"YYYY-MM-DD","description":"deskripsi singkat"}]`;
 
         const extractRes = await axios.post('/api/ai/generate', { prompt: extractPrompt, provider: AI_MODEL });
         let raw = extractRes.data.text.trim().replace(/```json/gi, '').replace(/```/g, '').trim();
@@ -435,16 +443,29 @@ If no action items, return []. Schema:
   };
 
   const clearNotepad = () => {
+    const now = new Date();
+    const freshDate = now.toISOString().split('T')[0];
+    const freshTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
     setBlocks([
-      { id: 'b1', type: 'heading-1', content: 'Meeting Title' },
+      { id: 'b1', type: 'heading-1', content: '' },
       { id: 'b2', type: 'paragraph', content: '' }
     ]);
+    setMeetingDate(freshDate);
+    setMeetingTime(freshTime);
     setMeetingLocation('');
     setMeetingContext('');
     setGeneratedMoM('');
     setExtractedTasks([]);
+    setSelectedTasks({});
+    // Juga bersihkan localStorage agar state segar saat buka ulang
+    localStorage.removeItem('alurku_mom_date');
+    localStorage.removeItem('alurku_mom_time');
+    localStorage.removeItem('alurku_mom_location');
+    localStorage.removeItem('alurku_mom_context');
+    localStorage.removeItem('alurku_mom_blocks');
     setShowConfirmClear(false);
-    showNotification('Notepad cleared.', 'info');
+    showNotification('Notepad berhasil dikosongkan.', 'info');
   };
 
   // ── Mention dropdown position (anchored near the active element) ───
@@ -457,7 +478,7 @@ If no action items, return []. Schema:
         style={{ top: '100%', marginTop: 4 }}
       >
         <div className="px-3 py-1.5 border-b border-neutral-100 dark:border-neutral-800 text-[9px] font-black text-neutral-400 tracking-widest bg-neutral-50 dark:bg-neutral-950">
-          Team Members — ↑↓ to navigate · Enter to select
+          Anggota tim — ↑↓ navigasi · Enter pilih
         </div>
         {filteredMembers.map((member, idx) => (
           <button
@@ -478,34 +499,42 @@ If no action items, return []. Schema:
 
   // ── RENDER ─────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-150 p-4 text-slate-800">
-      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-150 p-2 sm:p-4 text-slate-800">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl sm:rounded-3xl w-full max-w-5xl h-[95vh] sm:h-[85vh] flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="border-b border-neutral-100 dark:border-neutral-800 p-5 flex justify-between items-center bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">📝</span>
-            <div>
-              <h2 className="text-base font-black text-black dark:text-white tracking-tight">
-                Live Meeting Notepad & MoM
+        <div className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-3 sm:p-5 flex justify-between items-center bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="text-xl sm:text-2xl shrink-0">📝</span>
+            <div className="min-w-0">
+              <h2 className="text-sm sm:text-base font-black text-black dark:text-white tracking-tight truncate">
+                Notepad Rapat & MoM
               </h2>
-              <p className="text-xs text-neutral-400 font-semibold tracking-wide">
-                Notes → AI generates MoM → auto-create tasks
+              <p className="text-[10px] sm:text-xs text-neutral-400 font-semibold tracking-wide hidden sm:block">
+                Catat → AI buat MoM → buat tugas otomatis
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {activeTab === 'editor' && (
+              <button
+                onClick={() => setSidebarOpen(prev => !prev)}
+                className="md:hidden px-2.5 py-1.5 text-[10px] font-black text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-all"
+              >
+                {sidebarOpen ? '✕ Detail' : '⚙ Detail'}
+              </button>
+            )}
             {activeTab === 'review' && (
               <button
                 onClick={() => setActiveTab('editor')}
-                className="px-4 py-2 text-xs font-black text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-all"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-black text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-all"
               >
-                ← Back to Notepad
+                ← Notepad
               </button>
             )}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white transition-all text-sm font-bold"
+              className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white transition-all text-sm font-bold shrink-0"
             >
               ✕
             </button>
@@ -518,40 +547,43 @@ If no action items, return []. Schema:
           {activeTab === 'editor' ? (
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full">
 
-              {/* ── Sidebar ── */}
-              <div className="w-full md:w-72 border-r border-neutral-100 dark:border-neutral-800 p-5 bg-neutral-50/30 dark:bg-neutral-900/10 overflow-y-auto shrink-0 flex flex-col gap-4">
-                <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400">Meeting Details</h3>
+              {/* ── Sidebar (desktop: always visible, mobile: collapsible) ── */}
+              <div className={`${
+                sidebarOpen ? 'flex' : 'hidden'
+              } md:flex w-full md:w-72 border-b md:border-b-0 md:border-r border-neutral-100 dark:border-neutral-800 p-4 sm:p-5 bg-neutral-50/30 dark:bg-neutral-900/10 overflow-y-auto md:max-h-full shrink-0 flex-col gap-3 sm:gap-4`}>
+                <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400">Detail Rapat</h3>
 
-                {/* Date */}
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">Date</label>
-                  <input type="date" value={meetingDate} onChange={e => setMeetingDate(e.target.value)}
-                    className="w-full p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500" />
-                </div>
+                {/* Date & Time — side by side on mobile */}
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">Tanggal</label>
+                    <input type="date" value={meetingDate} onChange={e => setMeetingDate(e.target.value)}
+                      className="w-full p-2 sm:p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500" />
+                  </div>
 
-                {/* Time */}
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">Time</label>
-                  <input type="time" value={meetingTime} onChange={e => setMeetingTime(e.target.value)}
-                    className="w-full p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500" />
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">Waktu</label>
+                    <input type="time" value={meetingTime} onChange={e => setMeetingTime(e.target.value)}
+                      className="w-full p-2 sm:p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500" />
+                  </div>
                 </div>
 
                 {/* Location */}
                 <div>
-                  <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">Location</label>
-                  <input type="text" placeholder="e.g., Room A, Google Meet" value={meetingLocation}
+                  <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">Lokasi</label>
+                  <input type="text" placeholder="cth. Ruang A, Google Meet" value={meetingLocation}
                     onChange={e => setMeetingLocation(e.target.value)}
-                    className="w-full p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500" />
+                    className="w-full p-2 sm:p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500" />
                 </div>
 
                 {/* Participants (with mention support) */}
                 <div className="relative">
                   <label className="block text-[11px] font-bold text-neutral-500 dark:text-neutral-400 mb-1">
-                    Participants & Roles
+                    Peserta & Peran
                   </label>
                   <textarea
                     ref={contextRef}
-                    placeholder="e.g., With @budi and @siti, I am the PM"
+                    placeholder="cth. Bersama @budi dan @siti, saya sebagai PM"
                     value={meetingContext}
                     onChange={(e) => {
                       setMeetingContext(e.target.value);
@@ -559,17 +591,17 @@ If no action items, return []. Schema:
                     }}
                     onKeyDown={handleContextKeyDown}
                     rows={3}
-                    className="w-full p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm focus:outline-none focus:border-indigo-500 resize-none font-medium"
+                    className="w-full p-2 sm:p-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm focus:outline-none focus:border-indigo-500 resize-none font-medium"
                   />
                   <span className="mt-1 text-[10px] text-neutral-400 dark:text-neutral-500 block font-semibold">
-                    Type @ for team suggestions
+                    Ketik @ untuk mention anggota tim
                   </span>
                   <MentionDropdown field="context" />
                 </div>
 
                 {/* Wrap Text toggle */}
                 <div className="flex items-center justify-between bg-neutral-100/50 dark:bg-neutral-800/50 p-3 rounded-xl mt-auto">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Wrap Text</span>
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Wrap Teks</span>
                   <button onClick={() => setTextWrap(!textWrap)}
                     className={`w-10 h-6 flex items-center rounded-full p-1 transition-all ${textWrap ? 'bg-indigo-600 justify-end' : 'bg-neutral-300 dark:bg-neutral-700 justify-start'}`}>
                     <span className="w-4 h-4 bg-white rounded-full shadow-md" />
@@ -578,14 +610,16 @@ If no action items, return []. Schema:
 
                 {/* Clear */}
                 <button onClick={() => setShowConfirmClear(true)}
-                  className="w-full py-2.5 border border-red-200 text-red-500 hover:bg-red-50 dark:border-red-900/30 dark:hover:bg-red-950/20 rounded-xl text-xs font-black uppercase tracking-wider transition-colors">
-                  🗑 Clear All Notes
+                  className="w-full py-2.5 border border-red-200 text-red-500 hover:bg-red-50 dark:border-red-900/30 dark:hover:bg-red-950/20 rounded-xl text-xs font-black tracking-wider transition-colors">
+                  🗑 Hapus Semua Catatan
                 </button>
               </div>
 
               {/* ── Block Editor ── */}
-              <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-950 overflow-hidden">
-                <div className={`flex-1 p-8 overflow-y-auto ${!textWrap ? 'overflow-x-auto' : ''}`}>
+              <div className={`flex-1 flex flex-col bg-white dark:bg-neutral-950 overflow-hidden ${
+                sidebarOpen ? 'hidden md:flex' : 'flex'
+              }`}>
+                <div className={`flex-1 p-4 sm:p-8 overflow-y-auto ${!textWrap ? 'overflow-x-auto' : ''}`}>
                   <div className={`max-w-3xl mx-auto w-full space-y-3 pb-8 ${!textWrap ? 'min-w-200' : ''}`}>
                     {blocks.map((block, index) => (
                       <div key={block.id} className="flex items-start gap-3 group relative">
@@ -627,9 +661,9 @@ If no action items, return []. Schema:
                             }}
                             onKeyDown={e => handleBlockKeyDown(e, index, block)}
                             placeholder={
-                              block.type === 'heading-1' ? 'Meeting Title' :
-                              block.type === 'heading-2' ? 'Section Heading...' :
-                              'Type here · use /todo /bullet /h1 · type @ to mention'
+                              block.type === 'heading-1' ? 'Judul Rapat' :
+                              block.type === 'heading-2' ? 'Judul Seksi...' :
+                              'Ketik di sini · /todo /bullet /h1 · @ untuk mention'
                             }
                             style={{ 
                               whiteSpace: textWrap ? 'pre-wrap' : 'pre', 
@@ -654,28 +688,28 @@ If no action items, return []. Schema:
                 </div>
 
                 {/* Process button - always stays at bottom */}
-                <div className="p-5 border-t border-neutral-100 dark:border-neutral-900 bg-neutral-50/80 dark:bg-neutral-900/80 backdrop-blur-md flex items-center justify-center gap-4 shrink-0">
+                <div className="px-3 py-3 sm:p-5 border-t border-neutral-100 dark:border-neutral-900 bg-neutral-50/80 dark:bg-neutral-900/80 backdrop-blur-md flex flex-wrap items-center justify-center gap-2 sm:gap-4 shrink-0">
                   {generatedMoM && (
                     <button
                       onClick={() => setActiveTab('review')}
-                      className="border border-indigo-400 text-indigo-600 dark:text-indigo-400 font-black px-6 py-3.5 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-all text-xs uppercase tracking-wider"
+                      className="border border-indigo-400 text-indigo-600 dark:text-indigo-400 font-black px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-all text-[10px] sm:text-xs  tracking-wider"
                     >
-                      View Previous Result →
+                      Lihat Hasil Sebelumnya →
                     </button>
                   )}
-                   <button
-                      onClick={generatedMoM ? handleRegenerate : processNotesWithAI}
-                      disabled={isProcessing}
-                      className="bg-black dark:bg-white text-white dark:text-black font-black px-10 py-3.5 rounded-2xl hover:scale-105 transition-all shadow-xl disabled:opacity-50 flex items-center gap-3 uppercase tracking-wider text-xs"
-                    >
-                      {isProcessing ? (
-                        <><span className="w-4 h-4 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" /> AI is Processing...</>
-                      ) : generatedMoM ? (
-                        <><span>🔄</span> Regenerate with AI</>
-                      ) : (
-                        <><span>✨</span> Process Notes with AI</>
-                      )}
-                    </button>
+                  <button
+                    onClick={generatedMoM ? handleRegenerate : processNotesWithAI}
+                    disabled={isProcessing}
+                    className="bg-black dark:bg-white text-white dark:text-black font-black px-6 sm:px-10 py-2.5 sm:py-3.5 rounded-2xl hover:scale-105 transition-all shadow-xl disabled:opacity-50 flex items-center gap-2 sm:gap-3  tracking-wider text-[10px] sm:text-xs"
+                  >
+                    {isProcessing ? (
+                      <><span className="w-4 h-4 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" /> AI sedang memproses...</>
+                    ) : generatedMoM ? (
+                      <><span>🔄</span> Buat Ulang dengan AI</>
+                    ) : (
+                      <><span>✨</span> Proses Catatan dengan AI</>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -684,39 +718,39 @@ If no action items, return []. Schema:
             // ── Review Tab ──
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden w-full h-full">
 
-              {/* Left: MoM */}
-              <div className="flex-1 p-6 overflow-y-auto border-r border-neutral-100 dark:border-neutral-800">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">Step 1</span>
-                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">Review Generated MoM</h3>
+              {/* Left: MoM — full on mobile, flex-1 on desktop */}
+              <div className="flex-1 p-4 sm:p-6 overflow-y-auto border-b md:border-b-0 md:border-r border-neutral-100 dark:border-neutral-800 min-h-0">
+                <div className="flex justify-between items-center mb-3 sm:mb-4 gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="shrink-0 inline-block bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 text-[10px] font-black  px-2.5 py-1 rounded-full">Langkah 1</span>
+                    <h3 className="text-[10px] sm:text-xs font-black text-slate-800 dark:text-slate-200  tracking-widest truncate">Tinjau MoM yang Dibuat</h3>
                   </div>
                   <button onClick={handleCopyMoM}
-                    className="text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-3 py-1.5 rounded-xl border border-indigo-200/50 hover:bg-indigo-100 transition-colors flex items-center gap-1">
-                    📋 Copy formatted
+                    className="shrink-0 text-[10px] sm:text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 sm:px-3 py-1.5 rounded-xl border border-indigo-200/50 hover:bg-indigo-100 transition-colors flex items-center gap-1">
+                    📋 Salin
                   </button>
                 </div>
                 <div id="rendered-mom-content"
-                  className="prose dark:prose-invert max-w-none text-sm leading-relaxed p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm text-black dark:text-white whitespace-pre-wrap">
+                  className="prose dark:prose-invert max-w-none text-sm leading-relaxed p-4 sm:p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm text-black dark:text-white whitespace-pre-wrap">
                   {renderRichText(generatedMoM)}
                 </div>
               </div>
 
-              {/* Right: Tasks */}
-              <div className="w-full md:w-96 p-6 overflow-y-auto bg-white dark:bg-neutral-950 flex flex-col shrink-0">
-                <div className="shrink-0 mb-4">
+              {/* Right: Tasks — full width on mobile, fixed width sidebar on desktop */}
+              <div className="w-full md:w-96 p-4 sm:p-6 overflow-y-auto bg-white dark:bg-neutral-950 flex flex-col shrink-0 min-h-0 md:max-h-full">
+                <div className="shrink-0 mb-3 sm:mb-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="inline-block bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 text-[10px] font-black uppercase px-2.5 py-1 rounded-full">Step 2</span>
-                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">Create Tasks</h3>
+                    <span className="inline-block bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 text-[10px] font-black  px-2.5 py-1 rounded-full">Langkah 2</span>
+                    <h3 className="text-[10px] sm:text-xs font-black text-slate-800 dark:text-slate-200  tracking-widest">Buat Tugas</h3>
                   </div>
                   <p className="text-[10px] text-neutral-400 font-semibold leading-relaxed">
-                    Check tasks to include · pick a project · click Create.
+                    Pilih tugas · pilih proyek · klik Buat.
                   </p>
                 </div>
 
-                <div className="flex-1 space-y-3 overflow-y-auto mb-6">
+                <div className="flex-1 space-y-2.5 sm:space-y-3 overflow-y-auto mb-4 sm:mb-6">
                   {extractedTasks.length > 0 ? extractedTasks.map((task, idx) => (
-                    <div key={idx} className={`p-4 border rounded-2xl flex items-start gap-3 transition-all ${
+                    <div key={idx} className={`p-3 sm:p-4 border rounded-2xl flex items-start gap-3 transition-all ${
                       selectedTasks[idx] ? 'border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/10' : 'border-neutral-200 dark:border-neutral-800 opacity-60'}`}>
                       <input type="checkbox" checked={selectedTasks[idx] || false}
                         onChange={e => setSelectedTasks(prev => ({ ...prev, [idx]: e.target.checked }))}
@@ -736,22 +770,22 @@ If no action items, return []. Schema:
                       </div>
                     </div>
                   )) : (
-                    <div className="text-center py-10 text-neutral-400 text-xs">No action items found.</div>
+                    <div className="text-center py-10 text-neutral-400 text-xs">Tidak ada action item yang ditemukan.</div>
                   )}
                 </div>
 
                 {extractedTasks.length > 0 && (
-                  <div className="border-t border-neutral-100 dark:border-neutral-900 pt-5 space-y-3 shrink-0">
+                  <div className="border-t border-neutral-100 dark:border-neutral-900 pt-4 sm:pt-5 space-y-3 shrink-0">
                     <div>
-                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1">Target Project</label>
+                      <label className="block text-[10px] font-bold text-neutral-400  tracking-wider mb-1">Proyek Tujuan</label>
                       <select value={targetBoardId} onChange={e => setTargetBoardId(e.target.value)}
                         className="w-full p-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-black dark:text-white rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500">
                         {boards.filter(b => b.id !== 'global').map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                       </select>
                     </div>
                     <button onClick={handleBulkCreateTasks} disabled={isCreatingTasks}
-                      className="w-full bg-black dark:bg-white text-white dark:text-black font-black py-3.5 rounded-2xl hover:scale-[1.02] transition-transform shadow-xl disabled:opacity-50 text-xs uppercase tracking-wider">
-                      {isCreatingTasks ? 'Creating Tasks... ⏳' : 'Create Selected Tasks'}
+                      className="w-full bg-black dark:bg-white text-white dark:text-black font-black py-3 sm:py-3.5 rounded-2xl hover:scale-[1.02] transition-transform shadow-xl disabled:opacity-50 text-xs  tracking-wider">
+                      {isCreatingTasks ? 'Membuat Tugas... ⏳' : 'Buat Tugas Terpilih'}
                     </button>
                   </div>
                 )}
@@ -770,22 +804,22 @@ If no action items, return []. Schema:
             <div className="w-12 h-12 bg-red-100 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4">
               ⚠️
             </div>
-            <h3 className="text-base font-black text-black dark:text-white mb-2">Clear Notepad</h3>
+            <h3 className="text-base font-black text-black dark:text-white mb-2">Hapus Notepad</h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 font-semibold mb-6 leading-relaxed">
-              Are you sure you want to clear all meeting notes? This action cannot be undone.
+              Yakin ingin menghapus semua catatan rapat? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setShowConfirmClear(false)}
-                className="px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex-1"
+                className="px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-black  tracking-wider transition-colors flex-1"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={clearNotepad}
-                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex-1"
+                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black  tracking-wider transition-colors flex-1"
               >
-                Clear
+                Hapus
               </button>
             </div>
           </div>
