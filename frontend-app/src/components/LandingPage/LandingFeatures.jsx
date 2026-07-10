@@ -3,25 +3,38 @@ import { motion } from 'framer-motion';
 
 /* ── Dual-tone illustrations matching Stitch screenshot ── */
 
-// Magic wand + sparkles icon (AI Planning) — clean, recognizable AI symbol
+// Geometric AI Node Network icon (AI Planning) — clean, professional, and symmetrical SaaS design
 const IconAI = () => (
   <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
-    {/* Wand body — diagonal from bottom-left to upper-right */}
-    <line x1="16" y1="64" x2="52" y2="28" stroke="#111E38" strokeWidth="3" strokeLinecap="round"/>
-    {/* Wand tip star */}
-    <circle cx="54" cy="26" r="4" fill="#111E38"/>
-    {/* Wand handle grip lines */}
-    <line x1="16" y1="64" x2="22" y2="58" stroke="#111E38" strokeWidth="5" strokeLinecap="round" strokeOpacity="0.25"/>
-    {/* Sparkle — large top-right */}
-    <path d="M62 14 L63.2 18.8 L68 20 L63.2 21.2 L62 26 L60.8 21.2 L56 20 L60.8 18.8 Z" fill="#111E38"/>
-    {/* Sparkle — medium left */}
-    <path d="M24 26 L24.9 29.1 L28 30 L24.9 30.9 L24 34 L23.1 30.9 L20 30 L23.1 29.1 Z" fill="#111E38" fillOpacity="0.5"/>
-    {/* Sparkle — small bottom-right */}
-    <path d="M58 50 L58.6 52.4 L61 53 L58.6 53.6 L58 56 L57.4 53.6 L55 53 L57.4 52.4 Z" fill="#111E38" fillOpacity="0.35"/>
-    {/* Sparkle — tiny top-left */}
-    <path d="M32 14 L32.4 15.6 L34 16 L32.4 16.4 L32 18 L31.6 16.4 L30 16 L31.6 15.6 Z" fill="#111E38" fillOpacity="0.4"/>
-    {/* Dashed arc hinting at AI generative flow */}
-    <path d="M36 52 Q44 40 56 38" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" strokeLinecap="round" fillOpacity="0" fill="none" strokeOpacity="0.4"/>
+    {/* Central core node */}
+    <circle cx="40" cy="40" r="8" stroke="#111E38" strokeWidth="2.5" fill="white" />
+    <circle cx="40" cy="40" r="3" fill="#111E38" />
+
+    {/* Symmetrical digital grid / network links */}
+    <line x1="40" y1="16" x2="40" y2="32" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
+    <line x1="40" y1="48" x2="40" y2="64" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
+    <line x1="16" y1="40" x2="32" y2="40" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
+    <line x1="48" y1="40" x2="64" y2="40" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
+
+    {/* Diagonal dotted connection lines */}
+    <line x1="23.03" y1="23.03" x2="34.34" y2="34.34" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="56.97" y1="56.97" x2="45.66" y2="45.66" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="56.97" y1="23.03" x2="45.66" y2="34.34" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="23.03" y1="56.97" x2="34.34" y2="45.66" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
+
+    {/* Outer peripheral nodes */}
+    <circle cx="40" cy="12" r="4" fill="#111E38" />
+    <circle cx="40" cy="68" r="4" fill="#111E38" />
+    <circle cx="12" cy="40" r="4" fill="#111E38" />
+    <circle cx="68" cy="40" r="4" fill="#111E38" />
+
+    <circle cx="21" cy="21" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
+    <circle cx="59" cy="59" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
+    <circle cx="59" cy="21" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
+    <circle cx="21" cy="59" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
+
+    {/* Outer orbit/ring indicating system processing */}
+    <circle cx="40" cy="40" r="28" stroke="#111E38" strokeWidth="1.5" strokeDasharray="5 4" strokeOpacity="0.4" />
   </svg>
 );
 
