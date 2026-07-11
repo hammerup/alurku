@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSEO } from '../../hooks/useSEO';
 import { motion } from 'framer-motion';
+import featuresIntegrationsImg from '../../assets/features_integrations.png';
 
 export default function LandingFeaturesPage({ language }) {
   const isId = language === 'id';
@@ -278,7 +279,7 @@ export default function LandingFeaturesPage({ language }) {
               <img 
                 alt="Integrations Illustration" 
                 className="absolute inset-0 w-full h-full object-cover opacity-100" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz7ZneB2TG4jSUj-VkR4ZQ2_rKRQfkZZfV1UuQmHr6CdXswR7JLj2krrLUpaxFrxYiZck2mIa1TUWXUK96GvUA2J0k6QUvzeKu2acTTNrg8l5NH27z6KgULcD7HvlUO2q6zDveIGYeiRGrolFN01MLtZB8SjH7EoIgF_H19LW19GFthKhHempcULncG1_ah5uDEKEux1PzXCGNlsE2PPK9NTIClo0TeWNRJsu8kgWcdwLJq8E5IjfqfQYXDCxPz44B6Pp7y93xY_AX"
+                src={featuresIntegrationsImg}
               />
               
             </div>
