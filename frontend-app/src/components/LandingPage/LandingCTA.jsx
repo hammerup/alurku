@@ -13,7 +13,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
     ? 'Bergabunglah dengan ribuan tim yang telah menggunakan alurku. untuk merapikan rencana kerja harian dan menyelesaikan proyek lebih cepat.'
     : 'Join thousands of teams already using alurku. to streamline their workflow and deliver projects faster.';
 
-  const ctaBtn = isId ? 'Mulai Rapikan alurku.' : 'Start for Free';
+  const ctaBtn = isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.';
 
   const handleStart = () => {
     setIsLoginMode(false);

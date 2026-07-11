@@ -65,7 +65,7 @@ function DragCard() {
   );
 }
 
-export default function LandingDetailedFeature({ language }) {
+export default function LandingDetailedFeature({ language, setCurrentTab }) {
   const isId = language === 'id';
 
   const title = isId ? 'Visualisasikan & Kelola Setiap Langkah' : 'Visualize & Manage Every Step';
@@ -92,7 +92,16 @@ export default function LandingDetailedFeature({ language }) {
           <p className="text-neutral-500 leading-relaxed mb-10" style={{ fontSize: '15px', maxWidth: '360px' }}>
             {subtitle}
           </p>
-          <button className="self-start px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors shadow-md" style={{ fontSize: '15px' }}>
+          <button 
+            onClick={() => {
+              if (setCurrentTab) {
+                setCurrentTab('features');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="self-start px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors shadow-md" 
+            style={{ fontSize: '15px' }}
+          >
             {cta}
           </button>
         </motion.div>

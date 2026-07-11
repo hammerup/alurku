@@ -66,6 +66,10 @@ class RegisterModel(BaseModel):
     password: str
 
 
+class QuickRegisterModel(BaseModel):
+    email: str
+
+
 class LoginModel(BaseModel):
     username: str
     password: str

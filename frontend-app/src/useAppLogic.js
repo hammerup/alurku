@@ -781,6 +781,30 @@ export default function useAppLogic() {
     setNotification({ message: safeMessage, type, id: Date.now() });
   };
 
+  useEffect(() => {
+    const handleNotificationEvent = (e) => {
+      if (e.detail && e.detail.message) {
+        showNotification(e.detail.message, e.detail.type || 'info');
+      }
+    };
+    window.addEventListener('show-notification', handleNotificationEvent);
+    return () => window.removeEventListener('show-notification', handleNotificationEvent);
+  }, []);
+
+  useEffect(() => {
+    if (sessionStorage.getItem('alurku_trial_signup')) {
+      sessionStorage.removeItem('alurku_trial_signup');
+      setTimeout(() => {
+        showNotification(
+          language === 'id'
+            ? 'Akun Uji Coba Berhasil Dibuat! Silakan cek email Anda untuk mengatur password.'
+            : 'Trial Account Created! Please check your email to set your password.',
+          'success'
+        );
+      }, 1000);
+    }
+  }, [language]);
+
   const startTour = () => {
     setShowWelcomeTour(true);
   };

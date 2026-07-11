@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
 export default function LandingHero({ setIsLoginMode, setShowAuthForm, language }) {
   const isId = language === 'id';
@@ -16,9 +17,41 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
     ? 'alurku. adalah asisten cerdas yang mengubah tumpukan rencana kerjamu menjadi alur eksekusi yang rapi. Fokus pada hasil, biarkan AI kami yang mengatur jadwalnya.'
     : 'alurku. turns your pile of plans into a clean execution flow. Focus on results, let our AI manage the schedule.';
 
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleStart = () => {
     setIsLoginMode(false);
     setShowAuthForm(true);
+  };
+
+  const handleQuickSignup = (e) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setIsLoading(true);
+
+    axios.post('/api/quick-register', { email: email.trim() })
+      .then((res) => {
+        const { username, password } = res.data;
+        // Langsung login otomatis
+        return axios.post('/api/login', { username, password });
+      })
+      .then((loginRes) => {
+        localStorage.setItem('alurku_auth', 'true');
+        localStorage.setItem('alurku_token', loginRes.data.token);
+        localStorage.setItem('alurku_username', loginRes.data.username || email.split('@')[0]);
+
+        sessionStorage.setItem('alurku_trial_signup', 'true');
+        window.location.href = '/';
+      })
+      .catch((err) => {
+        setIsLoading(false);
+        const errorMsg = err.response?.data?.detail || (isId ? 'Pendaftaran gagal!' : 'Registration failed!');
+        window.dispatchEvent(new CustomEvent('show-notification', { 
+          detail: { message: errorMsg, type: 'error' } 
+        }));
+      });
   };
 
   return (
@@ -53,21 +86,59 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
           <p className="text-neutral-300 leading-relaxed mb-12" style={{ fontSize: '1.1rem', maxWidth: '420px' }}>
             {subtitle}
           </p>
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={handleStart}
-              className="px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors"
-              style={{ fontSize: '1rem' }}
-            >
-              {isId ? 'Mulai Rapikan alurku.' : 'Start for Free'}
-            </button>
-            <button
-              className="px-8 py-4 rounded-full font-bold text-white border-2 border-white hover:bg-white/10 transition-colors"
-              style={{ fontSize: '1rem' }}
-            >
-              {isId ? 'Coba Gratis' : 'Book a Demo'}
-            </button>
-          </div>
+
+          {showEmailInput ? (
+            <form onSubmit={handleQuickSignup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full max-w-md animate-fade-up">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={isId ? "Masukkan email Anda..." : "Enter your email..."}
+                className="flex-1 px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-neutral-400 focus:outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] transition-all text-sm"
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-6 py-3.5 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] disabled:bg-neutral-500 disabled:text-neutral-300 transition-colors text-sm shrink-0 flex items-center justify-center min-w-[100px]"
+              >
+                {isLoading ? (
+                  <svg className="animate-spin h-5 w-5 text-[#111E38]" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  isId ? 'Daftar' : 'Sign Up'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEmailInput(false)}
+                className="px-4 py-3.5 rounded-full text-white/60 hover:text-white transition-colors text-sm"
+                disabled={isLoading}
+              >
+                {isId ? 'Batal' : 'Cancel'}
+              </button>
+            </form>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={handleStart}
+                className="px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors"
+                style={{ fontSize: '1rem' }}
+              >
+                {isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.'}
+              </button>
+              <button
+                onClick={() => setShowEmailInput(true)}
+                className="px-8 py-4 rounded-full font-bold text-white border-2 border-white hover:bg-white/10 transition-colors"
+                style={{ fontSize: '1rem' }}
+              >
+                {isId ? 'Coba Gratis' : 'Try Free'}
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* ── RIGHT: MOCKUP CLUSTER ── */}

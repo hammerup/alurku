@@ -8,9 +8,11 @@ import requests
 import time
 
 from database import get_db, User, get_security_log, set_security_log, Workspace, WorkspaceMember
-from schemas import RegisterModel, LoginModel, GoogleLoginModel, VerifyModel
+from schemas import RegisterModel, LoginModel, GoogleLoginModel, VerifyModel, QuickRegisterModel
 from dependencies import get_password_hash, verify_password, create_access_token, SECRET_KEY, ALGORITHM
 import jwt
+import random
+import string
 from services.email_service import send_email
 
 # Import evaluate_user_lifecycle from backend_api to resolve NameError
@@ -104,6 +106,91 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Se
 
     return {
         "message": "Registration successful! Please check your email inbox to verify your account before logging in."
+    }
+
+
+@router.post("/api/quick-register")
+def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    # Validasi format email sederhana
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", user_data.email):
+        raise HTTPException(status_code=400, detail="Invalid email address.")
+
+    # Cek jika email sudah terdaftar
+    existing = db.query(User).filter(User.email == user_data.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # Generate random username dan password
+    email_prefix = user_data.email.split("@")[0]
+    username = re.sub(r"[^a-zA-Z0-9_.-]", "", email_prefix)
+    if not username:
+        username = "user"
+    
+    # Pastikan username unik
+    original_username = username
+    suffix = 1
+    while db.query(User).filter(User.username == username).first():
+        username = f"{original_username}{random.randint(1000, 9999)}"
+        suffix += 1
+
+    # Password sementara
+    temp_password = "Alurku_" + "".join(random.choices(string.ascii_letters + string.digits, k=10))
+    full_name = original_username.replace(".", " ").replace("-", " ").replace("_", " ").title()
+
+    hashed_password = get_password_hash(temp_password)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Langsung verifikasi agar bisa langsung login otomatis di frontend
+    new_user = User(
+        username=username,
+        email=user_data.email,
+        full_name=full_name,
+        password=hashed_password,
+        is_verified=1,
+        created_at=now_str,
+    )
+    db.add(new_user)
+    db.flush()
+
+    # Create default personal workspace
+    default_ws = Workspace(
+        name=f"Workspace Pribadi {new_user.full_name or new_user.username}",
+        owner_username=new_user.username
+    )
+    db.add(default_ws)
+    db.flush()
+
+    # Create default workspace membership
+    ws_member = WorkspaceMember(
+        workspace_id=default_ws.id,
+        username=new_user.username,
+        role="admin"
+    )
+    db.add(ws_member)
+    db.commit()
+
+    # Kirim email untuk atur password (menggunakan token reset-password)
+    reset_token = create_access_token(
+        data={"sub": new_user.username, "type": "reset"}
+    )
+    reset_link = f"{FRONTEND_URL}/?token={reset_token}"
+
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+        <h2 style="color: #0f172a; margin-top: 0; text-transform: uppercase; font-weight: 900;">Set Password Akun alurku.</h2>
+        <p style="color: #475569; font-size: 16px;">Halo <strong>{new_user.full_name}</strong>,</p>
+        <p style="color: #475569; font-size: 15px;">Akun alurku. Anda telah berhasil dibuat secara otomatis dengan username <strong>@{new_user.username}</strong>.</p>
+        <p style="color: #475569; font-size: 15px;">Silakan klik tombol di bawah untuk membuat kata sandi Anda dan menyelesaikan pendaftaran:</p>
+        <a href="{reset_link}" style="display: inline-block; background-color: #facc15; color: #111e38; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0;">Set Kata Sandi</a>
+        <p style="color: #64748b; font-size: 14px;">Jika tombol di atas tidak berfungsi, gunakan link berikut: <a href="{reset_link}">{reset_link}</a></p>
+    </div>
+    """
+    background_tasks.add_task(send_email, new_user.email, "Set Password Akun alurku.", html_body)
+
+    return {
+        "message": "Registration successful",
+        "username": username,
+        "password": temp_password
     }
 
 

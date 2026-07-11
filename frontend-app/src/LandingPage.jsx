@@ -376,7 +376,7 @@ export default function LandingPage({
               <LandingSocialProof language={language} />
               <LandingFeatures language={language} />
               <LandingIntegrations language={language} />
-              <LandingDetailedFeature language={language} />
+              <LandingDetailedFeature language={language} setCurrentTab={setCurrentTab} />
               <LandingStats language={language} />
               <LandingTestimonials language={language} />
               <LandingFAQ language={language} />
