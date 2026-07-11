@@ -356,8 +356,8 @@ ${md}`;
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               {tMsg(
-                'Explore the alurku. Platform White Paper and system specifications.',
-                'Kunjungi halaman White Paper dan Spesifikasi Sistem alurku. lengkap.'
+                'Explore the alurku. documentation guide.',
+                'Kunjungi halaman dokumentasi panduan lengkap.'
               )}
             </p>
           </div>
@@ -372,7 +372,7 @@ ${md}`;
             }}
             className="inline-flex items-center gap-2 text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-yellow-500 py-3 px-6 rounded-full shadow-md transition-colors shrink-0"
           >
-            <IconBookOpen className="w-4 h-4 shrink-0 text-[#111E38]" /> {tMsg('Read System White Paper', 'Baca White Paper Sistem')}
+            <IconBookOpen className="w-4 h-4 shrink-0 text-[#111E38]" /> {tMsg('Read Documentation', 'Baca Dokumentasi')}
           </a>
         </div>
 
