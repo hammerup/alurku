@@ -373,13 +373,13 @@ export default function LandingPage({
               <LandingIntegrations language={language} />
               <LandingDetailedFeature language={language} />
               <LandingStats language={language} />
+              <LandingTestimonials language={language} />
               <LandingFAQ language={language} />
               <LandingCTA
                 setIsLoginMode={setIsLoginMode}
                 setShowAuthForm={setShowAuthForm}
                 language={language}
               />
-              <LandingTestimonials language={language} />
             </div>
           )}
 
