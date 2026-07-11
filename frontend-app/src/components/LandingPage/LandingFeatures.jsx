@@ -1,8 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/* ── Dual-tone illustrations matching Stitch screenshot ── */
-
 // Geometric AI Node Network icon (AI Planning) — clean, professional, and symmetrical SaaS design
 const IconAI = () => (
   <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
@@ -87,8 +85,8 @@ export default function LandingFeatures({ language }) {
       icon: <IconAI />,
       title: isId ? 'Perencanaan AI Otomatis' : 'AI-Powered Planning',
       desc: isId
-        ? 'Buat rencana proyek secara otomatis dan pecah tugas menggunakan asisten AI canggih kami.'
-        : 'Automatically generate project plans and break down tasks with our advanced AI assistant.',
+        ? 'Buat rencana proyek secara otomatis dan pecah tugas menggunakan asisten AI canggih kami. Hemat waktu berjam-jam untuk perencanaan administrasi.'
+        : 'Automatically generate project plans and break down tasks with our advanced AI assistant. Save hours of administrative planning.',
     },
     {
       icon: <IconTimeline />,
@@ -107,29 +105,71 @@ export default function LandingFeatures({ language }) {
   ];
 
   return (
-    <section className="w-full py-24 px-6 lg:px-12 bg-white flex justify-center">
-      <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-        {features.map((feat, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: idx * 0.12, duration: 0.55 }}
-            className="bg-neutral-50 rounded-2xl p-10 flex flex-col items-center text-center border border-neutral-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-          >
-            {/* Illustration */}
-            <div className="mb-8">
-              {feat.icon}
-            </div>
-            <h3 className="text-xl font-bold text-[#111E38] mb-4 leading-snug">
-              {feat.title}
+    <section className="w-full py-24 px-8 lg:px-16 bg-white flex justify-center">
+      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Row 1: Highlight Card (AI Planning) spanning both columns */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="lg:col-span-2 bg-neutral-50 rounded-[40px] p-8 sm:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 border border-neutral-100 hover:shadow-lg transition-all duration-300"
+        >
+          <div className="shrink-0 bg-white p-5 rounded-2xl shadow-sm border border-neutral-100">
+            {features[0].icon}
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <span className="inline-block bg-[#FACC15]/20 text-[#111E38] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full mb-4">
+              {isId ? 'Fitur Utama' : 'Featured Capability'}
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-[#111E38] mb-4">
+              {features[0].title}
             </h3>
-            <p className="text-neutral-500 leading-relaxed text-[15px]">
-              {feat.desc}
+            <p className="text-neutral-500 leading-relaxed text-sm sm:text-base">
+              {features[0].desc}
             </p>
-          </motion.div>
-        ))}
+          </div>
+        </motion.div>
+
+        {/* Row 2: Left Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1, duration: 0.6 }}
+          className="bg-neutral-50 rounded-[40px] p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-100 hover:shadow-lg transition-all duration-300"
+        >
+          <div className="mb-6 bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
+            {features[1].icon}
+          </div>
+          <h3 className="text-xl font-extrabold text-[#111E38] mb-3">
+            {features[1].title}
+          </h3>
+          <p className="text-neutral-500 leading-relaxed text-sm">
+            {features[1].desc}
+          </p>
+        </motion.div>
+
+        {/* Row 2: Right Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="bg-neutral-50 rounded-[40px] p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-100 hover:shadow-lg transition-all duration-300"
+        >
+          <div className="mb-6 bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
+            {features[2].icon}
+          </div>
+          <h3 className="text-xl font-extrabold text-[#111E38] mb-3">
+            {features[2].title}
+          </h3>
+          <p className="text-neutral-500 leading-relaxed text-sm">
+            {features[2].desc}
+          </p>
+        </motion.div>
+
       </div>
     </section>
   );

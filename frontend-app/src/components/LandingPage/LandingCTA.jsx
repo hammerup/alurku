@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import parallaxLightBg from '../../assets/parallax_light_bg.png';
+import parallaxNavyBg from '../../assets/parallax_navy_bg.png';
 
 export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }) {
   const isId = language === 'id';
@@ -22,14 +22,24 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
 
   return (
     <section 
-      className="relative w-full py-32 bg-no-repeat bg-cover bg-center overflow-hidden border-t border-b border-neutral-100"
+      className="relative w-full py-32 bg-no-repeat bg-cover bg-center overflow-hidden"
       style={{
-        backgroundImage: `url(${parallaxLightBg})`,
+        backgroundImage: `url(${parallaxNavyBg})`,
         backgroundAttachment: 'fixed', // Desktop parallax
       }}
     >
-      {/* Light overlay for clean contrast */}
-      <div className="absolute inset-0 bg-neutral-100/40 dark:bg-black/35 pointer-events-none" />
+      {/* Subtle overlay */}
+      <div className="absolute inset-0 bg-[#090D16]/30 pointer-events-none" />
+
+      {/* Panning glow effect BEHIND the card */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] rounded-full blur-[100px] sm:blur-[140px] opacity-30 dark:opacity-40 pointer-events-none mix-blend-screen"
+        style={{
+          backgroundImage: 'linear-gradient(-45deg, #a5f3fc, #c084fc, #fef08a, #f472b6)',
+          backgroundSize: '200% 200%',
+          animation: 'gemini-glow 15s ease infinite',
+        }}
+      />
 
       <div className="max-w-[1440px] mx-auto px-8 lg:px-16 relative z-10">
         <motion.div
@@ -37,29 +47,19 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border border-white/40 dark:border-neutral-800/40 rounded-[40px] p-12 sm:p-24 text-center shadow-xl relative overflow-hidden"
+          className="bg-[#111E38]/85 dark:bg-[#090D16]/85 backdrop-blur-xl border border-white/10 rounded-[40px] p-12 sm:p-24 text-center shadow-2xl relative overflow-hidden"
         >
-          {/* Gemini-like glowing animated background gradient */}
-          <div 
-            className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30 mix-blend-multiply dark:mix-blend-screen"
-            style={{
-              backgroundImage: 'linear-gradient(-45deg, #a5f3fc, #c084fc, #fef08a, #f472b6)',
-              backgroundSize: '400% 400%',
-              animation: 'gemini-glow 15s ease infinite',
-            }}
-          />
-
           {/* Grid pattern overlay */}
-          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{
-            backgroundImage: 'radial-gradient(circle, #111E38 1px, transparent 1px)',
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
+            backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
             backgroundSize: '24px 24px',
           }} />
 
           <div className="relative z-10 max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#111E38] dark:text-white mb-8 leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-8 leading-tight">
               {title}
             </h2>
-            <p className="text-base sm:text-lg text-neutral-500 dark:text-neutral-300 mb-12 max-w-xl mx-auto leading-relaxed font-semibold">
+            <p className="text-base sm:text-lg text-neutral-300 mb-12 max-w-xl mx-auto leading-relaxed font-semibold">
               {desc}
             </p>
             <button
