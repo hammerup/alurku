@@ -139,7 +139,7 @@ export default function LandingDetailedFeature({ language }) {
                   <p className="text-[8px] font-bold text-neutral-400 uppercase tracking-wider px-1 mb-1">Workspace</p>
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-neutral-50 border border-neutral-100">
                     <div className="w-2.5 h-2.5 rounded-sm bg-blue-400 shrink-0" />
-                    <span className="text-[10px] font-semibold text-[#111E38] truncate">Pribadi Admin</span>
+                    <span className="text-[10px] font-semibold text-[#111E38] truncate">Pribadi</span>
                   </div>
                 </div>
                 {/* Nav */}
