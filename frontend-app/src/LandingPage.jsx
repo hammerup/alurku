@@ -360,7 +360,12 @@ export default function LandingPage({
           />
 
           {currentTab === 'home' && (
-            <div className="w-full flex flex-col items-center">
+            <div className="relative z-0 w-full flex flex-col items-center overflow-hidden bg-[#f8f9ff]">
+              {/* ─── Background Blur Blobs (matching /fitur page gradient feel) ─── */}
+              <div className="absolute top-[600px] left-10 w-[400px] h-[400px] bg-[#dce9ff] rounded-full opacity-50 blur-[100px] pointer-events-none -z-10" />
+              <div className="absolute top-[1400px] right-10 w-[500px] h-[500px] bg-[#d3e4fe] rounded-full opacity-50 blur-[120px] pointer-events-none -z-10" />
+              <div className="absolute top-[2200px] left-5 w-[450px] h-[450px] bg-[#e5eeff] rounded-full opacity-45 blur-[110px] pointer-events-none -z-10" />
+              <div className="absolute top-[3200px] right-20 w-[400px] h-[400px] bg-[#dce9ff] rounded-full opacity-40 blur-[120px] pointer-events-none -z-10" />
               <LandingHero
                 setIsLoginMode={setIsLoginMode}
                 setShowAuthForm={setShowAuthForm}

@@ -75,7 +75,7 @@ export default function LandingDetailedFeature({ language }) {
   const cta = isId ? 'Jelajahi Fitur' : 'Explore Features';
 
   return (
-    <section className="w-full bg-neutral-100/60 overflow-hidden" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
+    <section className="w-full bg-transparent overflow-hidden border-b border-neutral-200/50" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
       <div className="max-w-[1440px] mx-auto px-8 lg:px-16 grid items-center" style={{ gridTemplateColumns: '400px 1fr', gap: '80px' }}>
 
         {/* ── LEFT: Copy ── */}

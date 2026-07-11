@@ -28,7 +28,7 @@ export default function LandingIntegrations({ language }) {
   const exploreText = isId ? 'Jelajahi semua integrasi' : 'Explore all integrations';
 
   return (
-    <section className="w-full py-24 bg-white overflow-hidden">
+    <section className="w-full py-24 bg-transparent overflow-hidden border-b border-neutral-200/50">
       <div className="max-w-[1440px] mx-auto px-8 lg:px-16 flex flex-col md:flex-row items-center gap-16 md:gap-20">
         
         {/* Left Side: Copy */}

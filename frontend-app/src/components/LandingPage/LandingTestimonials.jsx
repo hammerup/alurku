@@ -65,7 +65,7 @@ export default function LandingTestimonials({ language }) {
   };
 
   return (
-    <section className="w-full py-24 bg-neutral-50 flex justify-center overflow-hidden">
+    <section className="w-full py-24 bg-transparent flex justify-center overflow-hidden border-b border-neutral-200/50">
       <div className="max-w-7xl w-full px-6 lg:px-12 relative flex items-center">
         
         <button 

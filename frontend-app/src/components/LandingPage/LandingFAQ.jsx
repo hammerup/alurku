@@ -40,7 +40,7 @@ export default function LandingFAQ({ language }) {
       ];
 
   return (
-    <section className="w-full py-24 bg-white">
+    <section className="w-full py-24 bg-transparent border-b border-neutral-200/50">
       <div className="max-w-3xl mx-auto px-8 sm:px-16">
         
         {/* Header */}

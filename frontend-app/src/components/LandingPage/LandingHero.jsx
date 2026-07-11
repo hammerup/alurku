@@ -39,7 +39,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
         >
           {/* Tagline capsule pill above H1 */}
           <div className="inline-flex items-center self-start mb-5">
-            <span className="text-xs font-semibold text-[#FACC15] border border-[#FACC15]/40 bg-[#FACC15]/10 px-4 py-1.5 rounded-full leading-snug">
+            <span className="text-xs font-semibold text-white/80 border border-white/20 bg-white/10 px-4 py-1.5 rounded-full leading-snug">
               {tagline}
             </span>
           </div>

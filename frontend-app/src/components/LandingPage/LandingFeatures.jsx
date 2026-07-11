@@ -5,34 +5,34 @@ import { motion } from 'framer-motion';
 const IconAI = () => (
   <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
     {/* Central core node */}
-    <circle cx="40" cy="40" r="8" stroke="#111E38" strokeWidth="2.5" fill="white" />
-    <circle cx="40" cy="40" r="3" fill="#111E38" />
+    <circle cx="40" cy="40" r="8" stroke="#FACC15" strokeWidth="2.5" fill="#111E38" />
+    <circle cx="40" cy="40" r="3" fill="#FACC15" />
 
     {/* Symmetrical digital grid / network links */}
-    <line x1="40" y1="16" x2="40" y2="32" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
-    <line x1="40" y1="48" x2="40" y2="64" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
-    <line x1="16" y1="40" x2="32" y2="40" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
-    <line x1="48" y1="40" x2="64" y2="40" stroke="#111E38" strokeWidth="2" strokeLinecap="round" />
+    <line x1="40" y1="16" x2="40" y2="32" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
+    <line x1="40" y1="48" x2="40" y2="64" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
+    <line x1="16" y1="40" x2="32" y2="40" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
+    <line x1="48" y1="40" x2="64" y2="40" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
 
     {/* Diagonal dotted connection lines */}
-    <line x1="23.03" y1="23.03" x2="34.34" y2="34.34" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
-    <line x1="56.97" y1="56.97" x2="45.66" y2="45.66" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
-    <line x1="56.97" y1="23.03" x2="45.66" y2="34.34" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
-    <line x1="23.03" y1="56.97" x2="34.34" y2="45.66" stroke="#111E38" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="23.03" y1="23.03" x2="34.34" y2="34.34" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="56.97" y1="56.97" x2="45.66" y2="45.66" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="56.97" y1="23.03" x2="45.66" y2="34.34" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="3 2" />
+    <line x1="23.03" y1="56.97" x2="34.34" y2="45.66" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="3 2" />
 
     {/* Outer peripheral nodes */}
-    <circle cx="40" cy="12" r="4" fill="#111E38" />
-    <circle cx="40" cy="68" r="4" fill="#111E38" />
-    <circle cx="12" cy="40" r="4" fill="#111E38" />
-    <circle cx="68" cy="40" r="4" fill="#111E38" />
+    <circle cx="40" cy="12" r="4" fill="#FACC15" />
+    <circle cx="40" cy="68" r="4" fill="#FACC15" />
+    <circle cx="12" cy="40" r="4" fill="#FACC15" />
+    <circle cx="68" cy="40" r="4" fill="#FACC15" />
 
-    <circle cx="21" cy="21" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
-    <circle cx="59" cy="59" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
-    <circle cx="59" cy="21" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
-    <circle cx="21" cy="59" r="3" fill="white" stroke="#111E38" strokeWidth="1.5" />
+    <circle cx="21" cy="21" r="3" fill="#111E38" stroke="#FACC15" strokeWidth="1.5" />
+    <circle cx="59" cy="59" r="3" fill="#111E38" stroke="#FACC15" strokeWidth="1.5" />
+    <circle cx="59" cy="21" r="3" fill="#111E38" stroke="#FACC15" strokeWidth="1.5" />
+    <circle cx="21" cy="59" r="3" fill="#111E38" stroke="#FACC15" strokeWidth="1.5" />
 
     {/* Outer orbit/ring indicating system processing */}
-    <circle cx="40" cy="40" r="28" stroke="#111E38" strokeWidth="1.5" strokeDasharray="5 4" strokeOpacity="0.4" />
+    <circle cx="40" cy="40" r="28" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="5 4" strokeOpacity="0.4" />
   </svg>
 );
 
@@ -40,20 +40,20 @@ const IconAI = () => (
 const IconTimeline = () => (
   <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
     {/* Calendar body */}
-    <rect x="12" y="20" width="44" height="40" rx="4" stroke="#111E38" strokeWidth="2"/>
-    <line x1="12" y1="32" x2="56" y2="32" stroke="#111E38" strokeWidth="2"/>
-    <line x1="24" y1="14" x2="24" y2="26" stroke="#111E38" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="44" y1="14" x2="44" y2="26" stroke="#111E38" strokeWidth="2" strokeLinecap="round"/>
+    <rect x="12" y="20" width="44" height="40" rx="4" stroke="#FACC15" strokeWidth="2"/>
+    <line x1="12" y1="32" x2="56" y2="32" stroke="#FACC15" strokeWidth="2"/>
+    <line x1="24" y1="14" x2="24" y2="26" stroke="#FACC15" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="44" y1="14" x2="44" y2="26" stroke="#FACC15" strokeWidth="2" strokeLinecap="round"/>
     {/* Grid dots */}
     {[22, 34, 46].map(x => [40, 50, 60].map(y => (
-      <rect key={`${x}-${y}`} x={x} y={y} width="4" height="4" rx="1" fill="#111E38" fillOpacity="0.3"/>
+      <rect key={`${x}-${y}`} x={x} y={y} width="4" height="4" rx="1" fill="#FACC15" fillOpacity="0.3"/>
     )))}
     {/* Clock (navy, overlapping bottom-right) */}
-    <circle cx="58" cy="56" r="14" fill="white" stroke="#111E38" strokeWidth="2"/>
-    <circle cx="58" cy="56" r="14" fill="#111E38" fillOpacity="0.06"/>
-    <line x1="58" y1="50" x2="58" y2="56" stroke="#111E38" strokeWidth="2" strokeLinecap="round"/>
-    <line x1="58" y1="56" x2="63" y2="60" stroke="#111E38" strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="58" cy="56" r="2" fill="#111E38"/>
+    <circle cx="58" cy="56" r="14" fill="#111E38" stroke="#FACC15" strokeWidth="2"/>
+    <circle cx="58" cy="56" r="14" fill="#FACC15" fillOpacity="0.1"/>
+    <line x1="58" y1="50" x2="58" y2="56" stroke="#FACC15" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="58" y1="56" x2="63" y2="60" stroke="#FACC15" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="58" cy="56" r="2" fill="#FACC15"/>
   </svg>
 );
 
@@ -61,19 +61,19 @@ const IconTimeline = () => (
 const IconTeam = () => (
   <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
     {/* Center person */}
-    <circle cx="40" cy="28" r="10" stroke="#111E38" strokeWidth="2"/>
-    <path d="M22 66 Q22 50 40 50 Q58 50 58 66" stroke="#111E38" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="40" cy="28" r="10" stroke="#FACC15" strokeWidth="2"/>
+    <path d="M22 66 Q22 50 40 50 Q58 50 58 66" stroke="#FACC15" strokeWidth="2" strokeLinecap="round"/>
     {/* Left person (smaller) */}
-    <circle cx="18" cy="34" r="7" stroke="#111E38" strokeWidth="1.5" fillOpacity="0"/>
-    <path d="M6 62 Q6 50 18 50 Q24 50 28 54" stroke="#111E38" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="18" cy="34" r="7" stroke="#FACC15" strokeWidth="1.5" fillOpacity="0"/>
+    <path d="M6 62 Q6 50 18 50 Q24 50 28 54" stroke="#FACC15" strokeWidth="1.5" strokeLinecap="round"/>
     {/* Right person (smaller) */}
-    <circle cx="62" cy="34" r="7" stroke="#111E38" strokeWidth="1.5" fillOpacity="0"/>
-    <path d="M74 62 Q74 50 62 50 Q56 50 52 54" stroke="#111E38" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="62" cy="34" r="7" stroke="#FACC15" strokeWidth="1.5" fillOpacity="0"/>
+    <path d="M74 62 Q74 50 62 50 Q56 50 52 54" stroke="#FACC15" strokeWidth="1.5" strokeLinecap="round"/>
     {/* Navy triangle/badge between them */}
-    <path d="M40 40 L36 48 L44 48 Z" fill="#111E38" fillOpacity="0.5"/>
+    <path d="M40 40 L36 48 L44 48 Z" fill="#FACC15" fillOpacity="0.5"/>
     {/* Connection lines */}
-    <line x1="25" y1="34" x2="30" y2="34" stroke="#111E38" strokeWidth="1.5" strokeDasharray="2 1"/>
-    <line x1="50" y1="34" x2="55" y2="34" stroke="#111E38" strokeWidth="1.5" strokeDasharray="2 1"/>
+    <line x1="25" y1="34" x2="30" y2="34" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="2 1"/>
+    <line x1="50" y1="34" x2="55" y2="34" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="2 1"/>
   </svg>
 );
 
@@ -105,7 +105,7 @@ export default function LandingFeatures({ language }) {
   ];
 
   return (
-    <section className="w-full py-24 px-8 lg:px-16 bg-white flex justify-center">
+    <section className="w-full py-24 px-8 lg:px-16 flex justify-center border-b border-neutral-200/50">
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Row 1: Highlight Card (AI Planning) spanning both columns */}
@@ -114,13 +114,13 @@ export default function LandingFeatures({ language }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="lg:col-span-2 bg-neutral-50 rounded-[40px] p-8 sm:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 border border-neutral-100 hover:shadow-lg transition-all duration-300"
+          className="lg:col-span-2 bg-white rounded-3xl p-8 sm:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 border border-neutral-200/60 hover:shadow-lg transition-all duration-300"
         >
-          <div className="shrink-0 bg-white p-5 rounded-2xl shadow-sm border border-neutral-100">
+          <div className="shrink-0 bg-[#111E38] p-5 rounded-2xl shadow-md border-none">
             {features[0].icon}
           </div>
           <div className="flex-1 text-center md:text-left">
-            <span className="inline-block bg-[#FACC15]/20 text-[#111E38] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full mb-4">
+            <span className="bg-[#FACC15] text-[#111E38] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest inline-block mb-4">
               {isId ? 'Fitur Utama' : 'Featured Capability'}
             </span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-[#111E38] mb-4">
@@ -138,9 +138,9 @@ export default function LandingFeatures({ language }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1, duration: 0.6 }}
-          className="bg-neutral-50 rounded-[40px] p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-100 hover:shadow-lg transition-all duration-300"
+          className="bg-white rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-200/60 hover:shadow-lg transition-all duration-300"
         >
-          <div className="mb-6 bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
+          <div className="mb-6 bg-[#111E38] p-4 rounded-2xl shadow-md border-none">
             {features[1].icon}
           </div>
           <h3 className="text-xl font-extrabold text-[#111E38] mb-3">
@@ -157,9 +157,9 @@ export default function LandingFeatures({ language }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="bg-neutral-50 rounded-[40px] p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-100 hover:shadow-lg transition-all duration-300"
+          className="bg-white rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-200/60 hover:shadow-lg transition-all duration-300"
         >
-          <div className="mb-6 bg-white p-4 rounded-2xl shadow-sm border border-neutral-100">
+          <div className="mb-6 bg-[#111E38] p-4 rounded-2xl shadow-md border-none">
             {features[2].icon}
           </div>
           <h3 className="text-xl font-extrabold text-[#111E38] mb-3">

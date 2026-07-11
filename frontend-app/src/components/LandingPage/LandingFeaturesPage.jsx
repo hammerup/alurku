@@ -47,11 +47,11 @@ export default function LandingFeaturesPage({ language }) {
             {tMsg('Product Capabilities', 'Kapasitas Produk')}
           </span>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-[#111E38] leading-tight">
-            {tMsg('Fitur Cerdas untuk Kolaborasi Modern', 'Fitur Cerdas untuk Kolaborasi Modern')}
+            {tMsg('Smart Features for Modern Collaboration', 'Fitur Cerdas untuk Kolaborasi Modern')}
           </h1>
           <p className="text-lg md:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed">
             {tMsg(
-              'Jelajahi bagaimana alurku. membantu tim Anda merencanakan, melaksanakan, dan mengontrol proyek tanpa rasa kewalahan dengan AI yang dipersonalisasi.',
+              'Discover how alurku. helps your team plan, execute, and control projects without feeling overwhelmed — powered by personalized AI.',
               'Jelajahi bagaimana alurku. membantu tim Anda merencanakan, melaksanakan, dan mengontrol proyek tanpa rasa kewalahan dengan AI yang dipersonalisasi.'
             )}
           </p>
@@ -78,20 +78,20 @@ export default function LandingFeaturesPage({ language }) {
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-extrabold text-[#111E38] mb-3">
-                  {tMsg('Asisten Perencana Otomatis', 'Asisten Perencana Otomatis')}
+                  {tMsg('Automated Planning Assistant', 'Asisten Perencana Otomatis')}
                 </h3>
                 <p className="text-sm text-neutral-500">
                   {tMsg(
-                    "Menghilangkan tebakan dalam manajemen waktu. alurku. memecah tugas besar dan memprediksi durasi pengerjaan secara cerdas agar proyek selesai tepat waktu.",
+                    "Eliminate guesswork in time management. alurku. breaks down large tasks and intelligently predicts work duration so projects finish on time.",
                     "Menghilangkan tebakan dalam manajemen waktu. alurku. memecah tugas besar dan memprediksi durasi pengerjaan secara cerdas agar proyek selesai tepat waktu."
                   )}
                 </p>
               </div>
               <ul className="space-y-3">
                 {[
-                  tMsg('Prediksi durasi pengerjaan berbasis AI', 'Prediksi durasi pengerjaan berbasis AI'),
-                  tMsg('Pemecahan tugas & estimasi waktu otomatis', 'Pemecahan tugas & estimasi waktu otomatis'),
-                  tMsg('Penyesuaian prioritas tugas yang fleksibel', 'Penyesuaian prioritas tugas yang fleksibel')
+                  tMsg('AI-based work duration prediction', 'Prediksi durasi pengerjaan berbasis AI'),
+                  tMsg('Automatic task breakdown & time estimation', 'Pemecahan tugas & estimasi waktu otomatis'),
+                  tMsg('Flexible task priority adjustments', 'Penyesuaian prioritas tugas yang fleksibel')
                 ].map((pt, i) => (
                   <li key={i} className="flex items-center gap-3 text-xs sm:text-sm font-semibold text-[#111E38]">
                     <svg className="w-4 h-4 text-[#10B981] shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -134,11 +134,11 @@ export default function LandingFeaturesPage({ language }) {
             </div>
             <div className="space-y-6 flex-1">
               <h3 className="text-xl sm:text-2xl font-extrabold text-white">
-                {tMsg('Kerja Seimbang & Anti-Kewalahan', 'Kerja Seimbang & Anti-Kewalahan')}
+                {tMsg('Balanced Work, Anti-Burnout', 'Kerja Seimbang & Anti-Kewalahan')}
               </h3>
               <p className="text-sm text-neutral-300">
                 {tMsg(
-                  "Keseimbangan kerja adalah prioritas kami. Lacak beban kerja tim secara real-time dan bagikan tugas secara adil untuk mencegah burnout.",
+                  "Work-life balance is our priority. Track team workload in real-time and distribute tasks fairly to prevent burnout.",
                   "Keseimbangan kerja adalah prioritas kami. Lacak beban kerja tim secara real-time dan bagikan tugas secara adil untuk mencegah burnout."
                 )}
               </p>
@@ -156,8 +156,8 @@ export default function LandingFeaturesPage({ language }) {
 
               <ul className="space-y-3 pt-2">
                 {[
-                  tMsg('Grafik pemantauan beban kerja tim', 'Grafik pemantauan beban kerja tim'),
-                  tMsg('Deteksi dini potensi stres', 'Deteksi dini potensi stres')
+                  tMsg('Team workload monitoring charts', 'Grafik pemantauan beban kerja tim'),
+                  tMsg('Early stress potential detection', 'Deteksi dini potensi stres')
                 ].map((pt, i) => (
                   <li key={i} className="flex items-center gap-3 text-xs sm:text-sm font-semibold text-neutral-300">
                     <svg className="w-4 h-4 text-[#FACC15] shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -186,11 +186,11 @@ export default function LandingFeaturesPage({ language }) {
               </div>
               <div className="space-y-4">
                 <h3 className="text-xl sm:text-2xl font-extrabold text-[#111E38]">
-                  {tMsg('Satu Layar untuk Semua Progres', 'Satu Layar untuk Semua Progres')}
+                  {tMsg('One Screen for All Progress', 'Satu Layar untuk Semua Progres')}
                 </h3>
                 <p className="text-sm text-neutral-500 leading-relaxed mb-6">
                   {tMsg(
-                    "Dapatkan gambaran besar proyek Anda dalam satu tempat. Desain visual interaktif memudahkan kolaborasi dan pelacakan tugas secara real-time.",
+                    "Get the big picture of your project in one place. Interactive visual design makes collaboration and real-time task tracking effortless.",
                     "Dapatkan gambaran besar proyek Anda dalam satu tempat. Desain visual interaktif memudahkan kolaborasi dan pelacakan tugas secara real-time."
                   )}
                 </p>
@@ -209,7 +209,7 @@ export default function LandingFeaturesPage({ language }) {
                   <span className="font-bold text-xs sm:text-sm text-[#111E38] block mb-1">Smart Deadline Engine</span>
                   <p className="text-[11px] text-neutral-500 leading-relaxed">
                     {tMsg(
-                      'Otomatis menghitung hari libur nasional Indonesia, akhir pekan, dan cuti tim untuk tenggat waktu yang realistis.',
+                      'Automatically calculates Indonesian national holidays, weekends, and team leave for realistic deadlines.',
                       'Otomatis menghitung hari libur nasional Indonesia, akhir pekan, dan cuti tim untuk tenggat waktu yang realistis.'
                     )}
                   </p>
@@ -227,7 +227,7 @@ export default function LandingFeaturesPage({ language }) {
                   <span className="font-bold text-xs sm:text-sm text-[#111E38] block mb-1">Gantt Chart Interaktif</span>
                   <p className="text-[11px] text-neutral-500 leading-relaxed">
                     {tMsg(
-                      'Geser durasi tugas dan delegasikan ulang ke anggota tim langsung dari tampilan timeline dengan drag-and-drop.',
+                      'Drag task durations and re-delegate to team members directly from the timeline view with drag-and-drop.',
                       'Geser durasi tugas dan delegasikan ulang ke anggota tim langsung dari tampilan timeline dengan drag-and-drop.'
                     )}
                   </p>
@@ -251,18 +251,18 @@ export default function LandingFeaturesPage({ language }) {
                 </svg>
               </div>
               <h3 className="text-xl sm:text-2xl font-extrabold text-[#111E38]">
-                {tMsg('Integrasi Luas & Keamanan Tinggi', 'Integrasi Luas & Keamanan Tinggi')}
+                {tMsg('Wide Integrations & High Security', 'Integrasi Luas & Keamanan Tinggi')}
               </h3>
               <p className="text-sm text-neutral-500">
                 {tMsg(
-                  "Hubungkan alurku dengan alur kerja Anda yang sudah ada dengan aman melalui sistem otentikasi zero-trust.",
+                  "Connect alurku with your existing workflows securely through zero-trust authentication.",
                   "Hubungkan alurku dengan alur kerja Anda yang sudah ada dengan aman melalui sistem otentikasi zero-trust."
                 )}
               </p>
               <ul className="space-y-3">
                 {[
-                  tMsg('Otentikasi aman via Google OAuth', 'Otentikasi aman via Google OAuth'),
-                  tMsg('Proteksi enkripsi data tingkat tinggi', 'Proteksi enkripsi data tingkat tinggi')
+                  tMsg('Secure authentication via Google OAuth', 'Otentikasi aman via Google OAuth'),
+                  tMsg('High-level data encryption protection', 'Proteksi enkripsi data tingkat tinggi')
                 ].map((pt, i) => (
                   <li key={i} className="flex items-center gap-3 text-xs sm:text-sm font-semibold text-[#111E38]">
                     <svg className="w-4 h-4 text-[#10B981] shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
@@ -300,18 +300,18 @@ export default function LandingFeaturesPage({ language }) {
               </svg>
             </div>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
-              {tMsg('Workspace Chat Terfokus', 'Workspace Chat Terfokus')}
+              {tMsg('Focused Workspace Chat', 'Workspace Chat Terfokus')}
             </h3>
             <p className="text-sm text-neutral-300 leading-relaxed">
               {tMsg(
-                'Komunikasi tim tanpa kehilangan konteks. Diskusikan proyek langsung di dalam workspace dengan pratinjau tugas yang tetap terlihat untuk fokus maksimal.',
+                'Team communication without losing context. Discuss projects directly inside the workspace with task previews always visible for maximum focus.',
                 'Komunikasi tim tanpa kehilangan konteks. Diskusikan proyek langsung di dalam workspace dengan pratinjau tugas yang tetap terlihat untuk fokus maksimal.'
               )}
             </p>
             <ul className="space-y-3">
               {[
-                tMsg('Thread diskusi berbasis tugas spesifik', 'Thread diskusi berbasis tugas spesifik'),
-                tMsg('Berbagi file & aset dalam satu klik', 'Berbagi file & aset dalam satu klik')
+                tMsg('Task-specific discussion threads', 'Thread diskusi berbasis tugas spesifik'),
+                tMsg('One-click file & asset sharing', 'Berbagi file & aset dalam satu klik')
               ].map((pt, i) => (
                 <li key={i} className="flex items-center gap-3 text-xs sm:text-sm font-semibold text-neutral-300">
                   <svg className="w-4 h-4 text-[#FACC15] shrink-0" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
