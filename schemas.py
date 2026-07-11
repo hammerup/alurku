@@ -68,6 +68,7 @@ class RegisterModel(BaseModel):
 
 class QuickRegisterModel(BaseModel):
     email: str
+    origin: Optional[str] = None
 
 
 class LoginModel(BaseModel):

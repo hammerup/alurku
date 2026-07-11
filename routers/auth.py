@@ -173,7 +173,8 @@ def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTa
     reset_token = create_access_token(
         data={"sub": new_user.username, "type": "reset"}
     )
-    reset_link = f"{FRONTEND_URL}/?token={reset_token}"
+    frontend_url = user_data.origin if user_data.origin else FRONTEND_URL
+    reset_link = f"{frontend_url}/?token={reset_token}"
 
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">

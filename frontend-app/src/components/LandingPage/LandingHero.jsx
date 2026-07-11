@@ -31,7 +31,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
     if (!email.trim()) return;
     setIsLoading(true);
 
-    axios.post('/api/quick-register', { email: email.trim() })
+    axios.post('/api/quick-register', { email: email.trim(), origin: window.location.origin })
       .then((res) => {
         const { username, password } = res.data;
         // Langsung login otomatis
