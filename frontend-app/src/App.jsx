@@ -1196,6 +1196,7 @@ function App() {
           formatDateMMM={formatDateMMM}
           avatarsMap={avatarsMap}
           isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
           setLanguage={setLanguage}
         />
       ) : (

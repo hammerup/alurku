@@ -19,6 +19,7 @@ export default function ProactiveAIPage({
   formatDateMMM,
   avatarsMap,
   isDarkMode,
+  setIsDarkMode,
   setLanguage,
 }) {
   const [prompt, setPrompt] = useState('');
@@ -521,7 +522,7 @@ USER REQUEST:
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-y-auto lg:overflow-hidden font-sans ${
+      className={`fixed inset-0 z-50 overflow-y-auto font-sans transition-colors duration-700 ease-in-out ${
         isClosing ? 'mac-exit' : 'mac-animate'
       } ${isDarkMode ? 'bg-[#090D16] text-white' : 'bg-[#F3F4F6] text-[#111E38]'}`}
     >
@@ -572,7 +573,7 @@ USER REQUEST:
 
       {/* Top Header Navigation Bar (Reference Layout) */}
       <header
-        className={`fixed top-0 left-0 right-0 flex justify-between items-center w-full px-8 md:px-12 h-20 z-40 border-b transition-colors duration-200 ${
+        className={`fixed top-0 left-0 right-0 flex justify-between items-center w-full px-8 md:px-12 h-20 z-40 border-b transition-colors duration-700 ease-in-out ${
           isDarkMode ? 'bg-[#090D16]/60 border-white/5' : 'bg-[#F3F4F6]/60 border-black/5'
         } backdrop-blur-md`}
       >
@@ -631,6 +632,29 @@ USER REQUEST:
           </nav>
         </div>
         <div className="flex items-center gap-6">
+          {/* Stylish Light/Dark Theme Switch Toggle */}
+          <div className="flex items-center">
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`relative w-14 h-8 rounded-full transition-all duration-500 ease-in-out p-1 flex items-center shadow-inner ${
+                isDarkMode ? 'bg-neutral-800 border border-white/5' : 'bg-neutral-200 border border-black/5'
+              }`}
+              aria-label="Toggle theme"
+            >
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out shadow-md ${
+                  isDarkMode 
+                    ? 'translate-x-6 bg-[#001f3f] text-[#FACC15]' 
+                    : 'translate-x-0 bg-white text-[#FACC15]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px] select-none font-bold">
+                  {isDarkMode ? 'dark_mode' : 'light_mode'}
+                </span>
+              </div>
+            </button>
+          </div>
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
@@ -856,7 +880,9 @@ USER REQUEST:
                       setIsBoardMentioning(false);
                       setTimeout(() => textareaRef.current?.focus(), 50);
                     }}
-                    className="flex items-center gap-1 cursor-pointer hover:text-[#001f3f] transition-colors select-none"
+                    className={`flex items-center gap-1 cursor-pointer transition-colors select-none ${
+                      isDarkMode ? 'hover:text-white' : 'hover:text-[#001f3f]'
+                    }`}
                   >
                     <span className="text-[#FACC15]">@</span> Assign
                   </span>
@@ -871,7 +897,9 @@ USER REQUEST:
                       setIsMentioning(false);
                       setTimeout(() => textareaRef.current?.focus(), 50);
                     }}
-                    className="flex items-center gap-1 cursor-pointer hover:text-[#001f3f] transition-colors select-none"
+                    className={`flex items-center gap-1 cursor-pointer transition-colors select-none ${
+                      isDarkMode ? 'hover:text-white' : 'hover:text-[#001f3f]'
+                    }`}
                   >
                     <span className="text-[#FACC15]">#</span> Projects
                   </span>
