@@ -22,7 +22,13 @@ export default function LandingHeader({
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#111E38] border-b border-white/5 shadow-sm">
+    <>
+      <div className="w-full bg-[#FACC15] text-[#111E38] text-center py-2.5 px-4 text-xs md:text-sm font-bold relative z-50 select-none shadow-sm">
+        {language === 'id' 
+          ? '🚀 alurku. saat ini dalam tahap Private Beta. Daftar sekarang untuk mendapatkan akses awal gratis!' 
+          : '🚀 alurku. is currently in Closed Beta. Sign up now for free early access!'}
+      </div>
+      <header className="sticky top-0 z-50 w-full bg-[#111E38] border-b border-white/5 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
         {/* Logo — squircle monogram badge matching footer style */}
         <div
@@ -203,5 +209,6 @@ export default function LandingHeader({
         </div>
       )}
     </header>
+    </>
   );
 }

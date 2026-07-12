@@ -6,14 +6,14 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
   const isId = language === 'id';
 
   const title = isId
-    ? 'Siap untuk meningkatkan produktivitas tim Anda?'
-    : "Ready to boost your team's productivity?";
+    ? 'Siap mencoba cara kerja baru yang lebih seimbang?'
+    : "Ready to experience a healthier way of working?";
 
   const desc = isId
-    ? 'Bergabunglah dengan ribuan tim yang telah menggunakan alurku. untuk merapikan rencana kerja harian dan menyelesaikan proyek lebih cepat.'
-    : 'Join thousands of teams already using alurku. to streamline their workflow and deliver projects faster.';
+    ? 'Dapatkan akses ke Sandbox Private Beta alurku. dan jadilah bagian dari revolusi produktivitas tanpa stres.'
+    : 'Get access to the alurku. Private Beta Sandbox and be part of the stress-free productivity revolution.';
 
-  const ctaBtn = isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.';
+  const ctaBtn = isId ? 'Gabung Akses Beta' : 'Join Beta Access';
 
   const handleStart = () => {
     setIsLoginMode(false);

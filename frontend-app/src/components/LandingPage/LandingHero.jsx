@@ -88,39 +88,46 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
           </p>
 
           {showEmailInput ? (
-            <form onSubmit={handleQuickSignup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full max-w-md animate-fade-up">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={isId ? "Masukkan email Anda..." : "Enter your email..."}
-                className="flex-1 px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-neutral-400 focus:outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] transition-all text-sm"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-6 py-3.5 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] disabled:bg-neutral-500 disabled:text-neutral-300 transition-colors text-sm shrink-0 flex items-center justify-center min-w-[100px]"
-              >
-                {isLoading ? (
-                  <svg className="animate-spin h-5 w-5 text-[#111E38]" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : (
-                  isId ? 'Daftar' : 'Sign Up'
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowEmailInput(false)}
-                className="px-4 py-3.5 rounded-full text-white/60 hover:text-white transition-colors text-sm"
-                disabled={isLoading}
-              >
-                {isId ? 'Batal' : 'Cancel'}
-              </button>
-            </form>
+            <div className="space-y-2 animate-fade-up">
+              <form onSubmit={handleQuickSignup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full max-w-md">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={isId ? "Masukkan email Anda..." : "Enter your email..."}
+                  className="flex-1 px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-neutral-400 focus:outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] transition-all text-sm"
+                  disabled={isLoading}
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-3.5 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] disabled:bg-neutral-500 disabled:text-neutral-300 transition-colors text-sm shrink-0 flex items-center justify-center min-w-[100px]"
+                >
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5 text-[#111E38]" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    isId ? 'Daftar' : 'Sign Up'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEmailInput(false)}
+                  className="px-4 py-3.5 rounded-full text-white/60 hover:text-white transition-colors text-sm"
+                  disabled={isLoading}
+                >
+                  {isId ? 'Batal' : 'Cancel'}
+                </button>
+              </form>
+              <p className="text-xs text-neutral-400 font-medium pl-4">
+                ℹ️ {isId 
+                  ? 'Pendaftaran akan otomatis membuat akun pengujian di Sandbox Private Beta kami.' 
+                  : 'Registration will automatically create a testing account in our Private Beta Sandbox.'}
+              </p>
+            </div>
           ) : (
             <div className="flex flex-wrap gap-4">
               <button
@@ -135,7 +142,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                 className="px-8 py-4 rounded-full font-bold text-white border-2 border-white hover:bg-white/10 transition-colors"
                 style={{ fontSize: '1rem' }}
               >
-                {isId ? 'Coba Gratis' : 'Try Free'}
+                {isId ? 'Daftar Akses Awal (Beta)' : 'Register Early Access (Beta)'}
               </button>
             </div>
           )}

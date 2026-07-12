@@ -39,6 +39,9 @@ export default function LandingIntegrations({ language }) {
           transition={{ duration: 0.7 }}
           className="w-full md:w-1/2"
         >
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FACC15]/10 border border-[#FACC15]/30 rounded-full text-xs font-bold text-[#EAB308] uppercase tracking-wider mb-4">
+            <span>✨</span> {isId ? 'Rencana Integrasi (Segera Hadir)' : 'Integrations Coming Soon'}
+          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111E38] mb-6 leading-tight">
             {title}
           </h2>
