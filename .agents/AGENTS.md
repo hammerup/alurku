@@ -70,7 +70,7 @@ This document contains the complete visual identity, UI rules, brand message gui
 | :--- | :--- | :--- | :--- |
 | **Primary Brand** | Deep Navy | `#111E38` | Logo Identity, Main Border Accents |
 | **Accent Action** | Flat Yellow | `#FACC15` | CTA Buttons, Proactive AI Indicators |
-| **Background** | Dark Navy Void | `#090D16` | Main Webapp Background |
+| **Background** | Dark Navy Void | `#0d0f11` | Main Webapp Background |
 | **Surface Card** | Navy Surface | `#121B2D` | Kanban Cards, Gantt Rows |
 
 ---

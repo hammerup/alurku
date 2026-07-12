@@ -27,7 +27,6 @@ import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import AdminModal from '../AdminModal';
 import DocumentationModal from '../DocumentationModal';
-import ProactiveAIModal from '../ProactiveAIModal';
 import ChatWorkspaceModal from '../ChatWorkspaceModal';
 import SystemSpecsModal from '../SystemSpecsModal';
 import MoMNotepadModal from './SmartAssistant/MoMNotepadModal';
@@ -311,25 +310,6 @@ export default function AppModals() {
 
   return (
     <>
-      {isProactiveAIOpen && (
-        <ProactiveAIModal
-          setIsProactiveAIOpen={setIsProactiveAIOpen}
-          boards={boards}
-          fetchBoards={fetchBoards}
-          setSelectedBoard={setSelectedBoard}
-          currentUser={currentUser}
-          language={language}
-          setIsProjectChatOpen={setIsProjectChatOpen}
-          setDrawerTab={setDrawerTab}
-          setViewMode={setViewMode}
-          fetchTasks={fetchTasks}
-          showNotification={showNotification}
-          userDirectory={userDirectory}
-          formatDateMMM={formatDateMMM}
-          avatarsMap={avatarsMap}
-        />
-      )}
-
       {isFormOpen && (
         <TaskFormModal
           setIsFormOpen={setIsFormOpen}

@@ -36,7 +36,7 @@ import TaskFormModal from './TaskFormModal';
 import TaskDetailModal from './TaskDetailModal';
 import AdminModal from './AdminModal';
 import DocumentationModal from './DocumentationModal';
-import ProactiveAIModal from './ProactiveAIModal';
+import ProactiveAIPage from './ProactiveAIPage';
 import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
 import LandingPage from './LandingPage';
@@ -666,6 +666,39 @@ function App() {
     tMsg,
   });
 
+  const [currentPath, setCurrentPath] = useState(typeof window !== 'undefined' ? window.location.pathname : '/');
+
+  // Sync URL path with isProactiveAIOpen state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handlePathSync = () => {
+        const path = window.location.pathname;
+        setCurrentPath(path);
+        const isAIPath = path === '/proactive-ai';
+        if (isAIPath && !isProactiveAIOpen) {
+          setIsProactiveAIOpen(true);
+        } else if (!isAIPath && isProactiveAIOpen) {
+          setIsProactiveAIOpen(false);
+        }
+      };
+      
+      window.addEventListener('popstate', handlePathSync);
+      
+      // Perform immediate sync to avoid update depth race condition
+      const isAIPath = window.location.pathname === '/proactive-ai';
+      if (isProactiveAIOpen && !isAIPath) {
+        window.history.pushState({}, '', '/proactive-ai');
+        setCurrentPath('/proactive-ai');
+      } else if (!isProactiveAIOpen && isAIPath) {
+        window.history.pushState({}, '', '/');
+        setCurrentPath('/');
+      }
+      
+      return () => window.removeEventListener('popstate', handlePathSync);
+    }
+  }, [isProactiveAIOpen, setIsProactiveAIOpen]);
+
+
   if (!isAuthenticated) {
     return (
       <>
@@ -1146,8 +1179,28 @@ function App() {
         color: #ef4444 !important;
       }
     `}</style>
-      <div
-        className={`flex h-screen overflow-hidden text-black dark:text-white font-sans transition-colors duration-200 ${
+      {currentPath === '/proactive-ai' ? (
+        <ProactiveAIPage
+          setIsProactiveAIOpen={setIsProactiveAIOpen}
+          boards={boards}
+          fetchBoards={fetchBoards}
+          setSelectedBoard={setSelectedBoard}
+          currentUser={currentUser}
+          language={language}
+          setIsProjectChatOpen={setIsProjectChatOpen}
+          setDrawerTab={setDrawerTab}
+          setViewMode={setViewMode}
+          fetchTasks={fetchTasks}
+          showNotification={showNotification}
+          userDirectory={userDirectory}
+          formatDateMMM={formatDateMMM}
+          avatarsMap={avatarsMap}
+          isDarkMode={isDarkMode}
+          setLanguage={setLanguage}
+        />
+      ) : (
+        <div
+          className={`flex h-screen overflow-hidden text-black dark:text-white font-sans transition-colors duration-200 ${
           (!appTheme ||
             appTheme === 'gamer' ||
             appTheme === 'minimal' ||
@@ -2161,7 +2214,8 @@ function App() {
             />
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </DragDropContext>
   );
 }
