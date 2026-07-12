@@ -1,3 +1,41 @@
+// Shadow localStorage for alurku_auth, alurku_token, alurku_username if Remember Me is unchecked
+(() => {
+  if (typeof window !== 'undefined') {
+    const originalGet = localStorage.getItem.bind(localStorage);
+    const originalSet = localStorage.setItem.bind(localStorage);
+    const originalRemove = localStorage.removeItem.bind(localStorage);
+
+    const AUTH_KEYS = ['alurku_auth', 'alurku_token', 'alurku_username'];
+
+    localStorage.getItem = function(key) {
+      if (AUTH_KEYS.includes(key)) {
+        const rememberMe = originalGet('alurku_remember_me') || sessionStorage.getItem('alurku_remember_me');
+        if (rememberMe === 'false') {
+          return sessionStorage.getItem(key);
+        }
+      }
+      return originalGet(key);
+    };
+
+    localStorage.setItem = function(key, value) {
+      if (AUTH_KEYS.includes(key)) {
+        const rememberMe = originalGet('alurku_remember_me') || sessionStorage.getItem('alurku_remember_me');
+        if (rememberMe === 'false') {
+          return sessionStorage.setItem(key, value);
+        }
+      }
+      return originalSet(key, value);
+    };
+
+    localStorage.removeItem = function(key) {
+      if (AUTH_KEYS.includes(key)) {
+        sessionStorage.removeItem(key);
+      }
+      return originalRemove(key);
+    };
+  }
+})();
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';

@@ -38,7 +38,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=60 * 24)  # Berlaku 24 jam
+        expire = datetime.utcnow() + timedelta(days=30)  # Berlaku 30 hari (standar ideal SaaS)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
