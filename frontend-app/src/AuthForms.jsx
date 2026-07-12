@@ -126,7 +126,11 @@ export default function AuthForms({
               </div>
               
               <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight">
-                {tMsg("Begin Your Journey with alurku.", "Mulai Perjalanan Anda di alurku.")}
+                {isIndo ? (
+                  <>Mulai Perjalanan Anda di alur<span className="text-[#FACC15]">ku</span>.</>
+                ) : (
+                  <>Begin Your Journey with alur<span className="text-[#FACC15]">ku</span>.</>
+                )}
               </h1>
               
               <p className="text-lg text-white/80 leading-relaxed font-medium">
@@ -191,9 +195,8 @@ export default function AuthForms({
         {/* Forms Body Card */}
         <div className="w-full max-w-md mx-auto my-auto py-4">
           {/* Desktop Logo (Right Side - above form) */}
-          <div className="hidden md:flex items-center gap-2.5 mb-8 select-none">
-            <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center font-black text-[#111E38] text-xl leading-none pb-0.5 shrink-0">a</div>
-            <span className="font-black text-2xl tracking-tighter text-[#111E38] dark:text-white">
+          <div className="hidden md:flex items-center gap-2.5 mb-8 select-none">            
+            <span className="font-black text-5xl tracking-tighter text-[#111E38] dark:text-white">
               alur<span className="text-[#FACC15]">ku</span>.
             </span>
           </div>
