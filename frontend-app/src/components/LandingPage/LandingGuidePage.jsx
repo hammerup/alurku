@@ -224,7 +224,7 @@ return (
                   {results.map((art, aIdx) => (
                     <div
                       key={aIdx}
-                      className="bg-white dark:bg-neutral-900 p-8 rounded-xl shadow-[0_4px_20px_rgba(0,31,63,0.08)] dark:shadow-none border border-slate-200 dark:border-slate-800 hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between group"
+                      className="bg-white dark:bg-neutral-900 p-8 rounded-xl shadow-[0_4px_20px_rgba(0,31,63,0.08)] dark:shadow-none border border-slate-200 dark:border-slate-800 hover:-translate-y-1 hover:border-sky-500 dark:hover:border-sky-500 hover:ring-2 hover:ring-sky-500/20 transition-all duration-300 flex flex-col justify-between group"
                     >
                       <div>
                         <span className="inline-block bg-[#e5eeff] dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-300 mb-6">
@@ -234,7 +234,7 @@ return (
                           <a 
                             href={`/artikel/${art.category_slug}/${art.slug}`}
                             onClick={(e) => handleArticleClick(e, art.category_slug, art.slug)}
-                            className="hover:text-[#FACC15] transition-colors"
+                            className="hover:text-sky-500 dark:hover:text-sky-400 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors"
                           >
                             {art.title}
                           </a>
@@ -264,7 +264,7 @@ return (
                   <h2 className="text-2xl font-bold text-[#111E38] dark:text-white">
                     {section.category}
                   </h2>
-                  <a className="text-[#FACC15] font-bold hover:underline" href="#">
+                  <a className="text-sky-500 dark:text-sky-400 hover:text-sky-600 dark:hover:text-sky-300 font-bold hover:underline" href="#">
                     {tMsg("See All", "Lihat Semua")}
                   </a>
                 </div>
@@ -273,7 +273,7 @@ return (
                   {section.articles.map((art, aIdx) => (
                     <div
                       key={aIdx}
-                      className="bg-white dark:bg-neutral-900 p-8 rounded-xl shadow-[0_4px_20px_rgba(0,31,63,0.08)] dark:shadow-none border border-slate-200 dark:border-slate-800 hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between group"
+                      className="bg-white dark:bg-neutral-900 p-8 rounded-xl shadow-[0_4px_20px_rgba(0,31,63,0.08)] dark:shadow-none border border-slate-200 dark:border-slate-800 hover:-translate-y-1 hover:border-sky-500 dark:hover:border-sky-500 hover:ring-2 hover:ring-sky-500/20 transition-all duration-300 flex flex-col justify-between group"
                     >
                       <div>
                         <span className="inline-block bg-[#e5eeff] dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-semibold text-slate-700 dark:text-slate-300 mb-6">
@@ -283,7 +283,7 @@ return (
                           <a 
                             href={`/artikel/${art.category_slug}/${art.slug}`}
                             onClick={(e) => handleArticleClick(e, art.category_slug, art.slug)}
-                            className="hover:text-[#FACC15] transition-colors"
+                            className="hover:text-sky-500 dark:hover:text-sky-400 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors"
                           >
                             {art.title}
                           </a>
