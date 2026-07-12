@@ -41,18 +41,12 @@ export function useModals() {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [isProactiveAIOpen, setIsProactiveAIOpen] = useState(() => {
     if (typeof window !== 'undefined') {
-      const savedState = localStorage.getItem('alurku_proactive_ai_open');
-      if (savedState === 'true') return true;
-
-      const currentUsr = localStorage.getItem('alurku_username');
-      const hasSeenTour = localStorage.getItem(`alurku_tour_done_v2_${currentUsr}`);
-      const legacyTour = localStorage.getItem('alurku_tour_done_v2');
-      const hasCompletedTour = hasSeenTour || legacyTour;
-
       const justLoggedIn = sessionStorage.getItem('alurku_just_logged_in');
       if (justLoggedIn === 'true') {
-        if (hasCompletedTour) return true;
+        return true;
       }
+      const savedState = localStorage.getItem('alurku_proactive_ai_open');
+      if (savedState === 'true') return true;
     }
     return false;
   });

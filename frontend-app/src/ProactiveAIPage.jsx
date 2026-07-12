@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useCloseAnimation, LoadingSpinner } from './Utils';
 import { Avatar } from './SharedUI';
+import HeaderNavigation from './components/Layout/HeaderNavigation';
 
 export default function ProactiveAIPage({
   setIsProactiveAIOpen,
@@ -98,6 +99,12 @@ export default function ProactiveAIPage({
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
+
+  useEffect(() => {
+    if (!isProcessing && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isProcessing]);
 
   const [isClosing, close] = useCloseAnimation(() => {
     setIsProactiveAIOpen(false);
@@ -655,118 +662,17 @@ USER REQUEST:
         }
       `}</style>
 
-      {/* Top Header Navigation Bar (Reference Layout) */}
-      <header
-        className={`fixed top-0 left-0 right-0 flex justify-between items-center w-full px-8 md:px-12 h-20 z-40 border-b transition-colors duration-700 ease-in-out ${
-          isDarkMode ? 'bg-[#090D16]/60 border-white/5' : 'bg-[#F3F4F6]/60 border-black/5'
-        } backdrop-blur-md`}
-      >
-        <div className="flex items-center gap-12">
-          {/* Logo matching alurku. style */}
-          <div
-            onClick={handleSkipOrCancel}
-            className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity select-none"
-          >
-            <div className="w-9 h-9 bg-[#FACC15] rounded-xl flex items-center justify-center shadow-sm shrink-0">
-              <span className="text-[#111E38] font-black text-[32px] leading-none pb-1">a</span>
-            </div>
-            <div className="flex flex-col justify-center leading-none">
-              <span className={`font-black text-2xl tracking-tight leading-none ${isDarkMode ? 'text-white' : 'text-[#001f3f]'}`}>
-                alur<span className="text-[#FACC15]">ku</span>.
-              </span>
-              <span className={`text-[9px] font-bold self-end mt-0.5 leading-none pr-1 ${isDarkMode ? 'text-white/80' : 'text-[#001f3f]/80'}`}>
-                Beta
-              </span>
-            </div>
-          </div>
-          {/* Top navigation links */}
-          <nav className="hidden md:flex gap-8">
-            <a
-              onClick={handleSkipOrCancel}
-              className={`transition-colors font-semibold text-sm cursor-pointer ${
-                isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-              }`}
-            >
-              Dashboard
-            </a>
-            <a
-              onClick={handleSkipOrCancel}
-              className={`transition-colors font-semibold text-sm cursor-pointer ${
-                isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-              }`}
-            >
-              Projects
-            </a>
-            <a
-              onClick={handleSkipOrCancel}
-              className={`transition-colors font-semibold text-sm cursor-pointer ${
-                isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-              }`}
-            >
-              Team
-            </a>
-            <a
-              onClick={handleSkipOrCancel}
-              className={`transition-colors font-semibold text-sm cursor-pointer ${
-                isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-              }`}
-            >
-              Reports
-            </a>
-          </nav>
-        </div>
-        <div className="flex items-center gap-6">
-          {/* Stylish Light/Dark Theme Switch Toggle */}
-          <div className="flex items-center">
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`relative w-14 h-8 rounded-full transition-all duration-500 ease-in-out p-1 flex items-center shadow-inner ${
-                isDarkMode ? 'bg-neutral-800 border border-white/5' : 'bg-neutral-200 border border-black/5'
-              }`}
-              aria-label="Toggle theme"
-            >
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out shadow-md ${
-                  isDarkMode 
-                    ? 'translate-x-6 bg-[#001f3f] text-[#FACC15]' 
-                    : 'translate-x-0 bg-white text-[#FACC15]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px] select-none font-bold">
-                  {isDarkMode ? 'dark_mode' : 'light_mode'}
-                </span>
-              </div>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
-              className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider transition-all border ${
-                isDarkMode
-                  ? 'border-white/10 hover:border-white/30 text-white bg-white/5'
-                  : 'border-[#0b1c30]/10 hover:border-[#0b1c30]/30 text-[#001f3f] bg-black/5'
-              }`}
-            >
-              {language}
-            </button>
-          </div>
-          <button className={`p-2 transition-colors ${isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'}`}>
-            <span className="material-symbols-outlined flex items-center">search</span>
-          </button>
-          <button className={`p-2 transition-colors ${isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'}`}>
-            <span className="material-symbols-outlined flex items-center">notifications</span>
-          </button>
-          <div className="w-9 h-9 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-white/30 transition-colors">
-            <Avatar
-              name={currentUser}
-              url={avatarsMap[currentUser]}
-              size="w-9 h-9"
-              textClass="text-xs"
-            />
-          </div>
-        </div>
-      </header>
+      {/* Top Header Navigation Bar (Refactored to Shared Component) */}
+      <HeaderNavigation
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        language={language}
+        setLanguage={setLanguage}
+        currentUser={currentUser}
+        avatarsMap={avatarsMap}
+        onLogoClick={handleSkipOrCancel}
+        onNavClick={handleSkipOrCancel}
+      />
 
       {/* Main Workspace layout */}
       <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-stretch min-h-screen lg:h-screen pt-28 pb-8 px-6 lg:overflow-hidden">
@@ -1103,7 +1009,12 @@ USER REQUEST:
             <form onSubmit={handleSubmit} className="w-full relative z-20 animate-elegant mb-4 shrink-0">
               {/* Localized Aura glow in Light Mode */}
               {!isDarkMode && (
-                <div className="absolute inset-0 -m-1.5 bg-linear-to-r from-sky-400/20 via-[#FACC15]/30 to-indigo-400/20 rounded-[34px] blur-xl opacity-75 animate-pulse pointer-events-none -z-10" />
+                <>
+                  {/* Core glow */}
+                  <div className="absolute inset-0 -m-2.5 bg-sky-400/35 rounded-[34px] blur-xl opacity-90 pointer-events-none -z-10 animate-pulse" />
+                  {/* Wide ambient aura (spreads far in all directions) */}
+                  <div className="absolute inset-0 -m-7.5 bg-sky-300/25 rounded-[38px] blur-3xl opacity-80 pointer-events-none -z-10" />
+                </>
               )}
               {/* Slash commands autocomplete popup */}
               {isSlashMenuOpen && (
