@@ -14,6 +14,7 @@ export default function ProactiveAIPage({
   setDrawerTab,
   setViewMode,
   fetchTasks,
+  tasks,
   showNotification,
   userDirectory,
   formatDateMMM,
@@ -37,6 +38,26 @@ export default function ProactiveAIPage({
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [isCartVisible, setIsCartVisible] = useState(false);
 
+  const [chatHistory, setChatHistory] = useState([
+    {
+      id: 'welcome',
+      sender: 'ai',
+      text: language === 'id' 
+        ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
+        : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
+    }
+  ]);
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
+  const [slashIndex, setSlashIndex] = useState(0);
+  const [slashQuery, setSlashQuery] = useState('');
+  const chatEndRef = useRef(null);
+
+  const slashCommands = [
+    { cmd: '/generate', desc: language === 'id' ? 'Buat to-do list dari rencana kerjamu' : 'Generate tasks from your plan' },
+    { cmd: '/chat', desc: language === 'id' ? 'Tanya jawab atau diskusi id' : 'Discuss and ask general questions' },
+    { cmd: '/help', desc: language === 'id' ? 'Tampilkan panduan penggunaan asisten' : 'Show help instructions' }
+  ];
+
   const [isMentioning, setIsMentioning] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
@@ -50,6 +71,33 @@ export default function ProactiveAIPage({
   const textareaRef = useRef(null);
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
+
+  const renderChatText = (text) => {
+    if (!text) return '';
+    
+    // Escape HTML to prevent injection
+    let escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    
+    // Replace **bold** with <strong>bold</strong>
+    const boldClass = isDarkMode ? 'font-black text-[#FACC15]' : 'font-black text-[#111E38]';
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, `<strong class="${boldClass}">$1</strong>`);
+    
+    // Replace bullets like "- Item" or "* Item" with bullet elements
+    const bulletColor = isDarkMode ? 'text-[#FACC15]' : 'text-sky-500';
+    escaped = escaped.replace(/(?:^|\n)[-*]\s+(.+)/g, `<div class="pl-4 py-0.5 flex items-start"><span class="${bulletColor} mr-2">•</span><span>$1</span></div>`);
+    
+    // Replace numbered lists like "1. Item" with list elements
+    escaped = escaped.replace(/(?:^|\n)(\d+)\.\s+(.+)/g, `<div class="pl-4 py-0.5 flex items-start"><span class="${bulletColor} mr-2 font-bold">$1.</span><span>$2</span></div>`);
+    
+    return <div dangerouslySetInnerHTML={{ __html: escaped }} className="space-y-1 select-text" />;
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
 
   const [isClosing, close] = useCloseAnimation(() => {
     setIsProactiveAIOpen(false);
@@ -222,108 +270,138 @@ export default function ProactiveAIPage({
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!prompt.trim()) return;
+
+    const userPrompt = prompt.trim();
+    
+    // Add user message to history
+    setChatHistory((prev) => [
+      ...prev,
+      { id: Math.random().toString(), sender: 'user', text: userPrompt }
+    ]);
+    
+    setPrompt('');
+    setIsSlashMenuOpen(false);
+
     setIsProcessing(true);
-    setGeneratedTasks([]);
     setLoadingText(tMsg('Analyzing your request...', 'Menganalisis permintaan Anda...'));
 
     try {
-      setLoadingText(tMsg('Structuring tasks...', 'Menyusun tugas-tugas...'));
+      setLoadingText(tMsg('Structuring response...', 'Menyusun tanggapan...'));
       const currentYear = new Date().getFullYear();
-      const aiPrompt = `Act as an Expert Project Manager. Your objective is to parse the user's request and output a strictly valid JSON array of tasks.
+      
+      const aiPrompt = `Act as Luruka, an Expert Personal Assistant and Project Manager. Your objective is to parse the user's request and output a strictly valid JSON object matching the JSON SCHEMA below.
 
 DOMAIN KNOWLEDGE: You possess deep contextual understanding of the field mentioned in the request. Use this to accurately estimate time and break down complex workflows into clear, actionable, professional-grade steps.
 
 INSTRUCTIONS:
-1. Read and analyze carefully the request from the user.
-2. Delimiters: The user's request is enclosed in triple quotes (""").
-3. Task Breakdown (Specific vs Generic):
+1. Determine the intent of the user request.
+2. If the user request is a question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
+3. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". Write a brief conversational summary in "chat_message" explaining what tasks you are setting up, and break down the workflow into tasks inside the "tasks" array following these task-generation guidelines:
    - BROAD / GENERIC GOAL: If the user's request is generic or broad (e.g., "Paid search", "SEO", "marketing campaign", "website redesign") and does NOT explicitly mention a specific assignee (@name), a specific deadline/due date, a specific project name (#ProjectName), or any highly specific single action, you MUST logically break it down into multiple actionable tasks (minimum 3 tasks), regardless of how few words the user prompt is.
    - SPECIFIC TASK: If it is a single specific action, explicitly assigns work (@name), or specifies a distinct project (#ProjectName), generate EXACTLY ONE task per each action.
-4. Naming Convention (project_name):
-   - Language: MUST ALWAYS be in English for task titles, regardless of the prompt's language.
-   - Format: "[Context/Brand] Task Title". Extract the unique context prefix (e.g., brand, activity, or game title).
-   - Numbering: When generating multiple tasks from a breakdown, you MUST prepend step numbers (e.g. "[Part 1] Task Title" or "1. Task Title") so the sequence and order of execution are clear.
-5. Language Constraint: The "description" and "subtasks" fields MUST match the EXACT language used in the user's prompt. Make the explanation simple enough for a layperson.
+   - Naming Convention (project_name): Task titles MUST ALWAYS be in English, regardless of the prompt's language. The format MUST be "[Context/Brand] Task Title". Extract the unique context prefix (e.g. brand, activity, or game title). Prepend step numbers (e.g. "[Part 1] Task Title" or "1. Task Title") so the sequence and order of execution are clear.
+4. Language Constraint: You MUST write the "chat_message" and task "description" and "subtasks" in the EXACT language used in the user's prompt (usually Indonesian or English). Make the description explanation simple enough for a layperson.
+5. Formatting Constraint: In "chat_message", write list items and paragraphs with clean linebreaks. Do not merge everything into a single line or paragraph. Use double newlines (\n\n) to start new paragraphs, section headings, or separate list elements so the text is structured and highly readable.
 6. Extract URLs: If there are any URLs or links (e.g. http://, https://) mentioned in the user's prompt, extract them into the "supporting_access" field (separated by newlines). DO NOT include or repeat these URLs inside the "description" field.
-7. Output Format: Return ONLY a valid JSON array. DO NOT use markdown formatting blocks (\`\`\`json).
+7. Scope Restriction: You are Luruka, a productivity and project management assistant. You MUST ONLY discuss topics related to work, task management, scheduling, project coordination, time estimation, business workflows, and productivity. If the user asks about unrelated topics (such as cooking recipes, general entertainment, fiction, gaming advice, etc.), you MUST politely decline the request in the prompt's language, explaining that your expertise is limited to managing tasks and productivity on alurku., and suggest how they can use you instead.
 
 JSON SCHEMA:
-[
-  {
-    "project_name": "[Context] Actionable Title in ENGLISH ONLY",
-    "suggested_project": "Extract project name identified by '#' (e.g., '#WebsiteRedesign'). Leave empty if none.",
-    "requester": "If assigning TO someone, use '@username' (e.g., '@budi'). If requested BY someone else, use their name without '@' (e.g., 'Mr. Smith'). Default to '@${currentUser}' if unspecified.",
-    "category": "Identify the best category (e.g. Development, Design, Marketing). If none fit, create a short new category name in English.",
-    "impact": "High, Medium, or Low",
-    "deadline": "YYYY-MM-DD. Ensure year is ${currentYear} or later. Must be >= ${getLocalToday()}. Extract ONLY if explicitly mentioned, otherwise leave empty.",
-    "auto_nudge": "Boolean. Return true ONLY if the user explicitly asks to be reminded or notified about this task. Otherwise false.",
-    "etc": "Estimate the REALISTIC time consumption in hours (e.g. 0.5, 1, 1.5, 2.5, 3.0, 4.0, 8.0, 12.0). DO NOT default to 2. Base this heavily on the complexity of the task.",
-    "description": "Highly detailed and comprehensive brief expanding on the user's request. Provide full context, background, and specific requirements in markdown format. DO NOT include @ or # routing tags here. DO NOT include any URLs or links here.",
-    "supporting_access": "URLs/links found in the prompt (separated by newline). Leave empty if none.",
-    "subtasks": ["Break down the task into 3-5 actionable sub-tasks as an array of strings. If not applicable, return an empty array []."]
-  }
-]
+{
+  "response_type": "chat" | "tasks",
+  "chat_message": "Friendly, supportive, and conversational reply in the language used by the user. If generating tasks, briefly explain what tasks you set up. Format lists and paragraphs with clean double newlines (\n\n).",
+  "tasks": [
+    {
+      "project_name": "[Context] Actionable Title in ENGLISH ONLY",
+      "suggested_project": "Extract project name identified by '#' (e.g. '#Marketing'). Leave empty if none.",
+      "requester": "If assigning TO someone, use '@username' (e.g. '@budi'). Default to '@${currentUser}' if unspecified.",
+      "category": "Identify the best category (e.g. Development, Design, Marketing). If none fit, create a short new category name in English.",
+      "impact": "High, Medium, or Low",
+      "deadline": "YYYY-MM-DD. Ensure year is ${currentYear} or later. Must be >= ${getLocalToday()}. Extract ONLY if explicitly mentioned, otherwise leave empty.",
+      "auto_nudge": "Boolean. Return true ONLY if the user explicitly asks to be reminded or notified.",
+      "etc": "Estimate the REALISTIC time consumption in hours (e.g. 0.5, 1, 1.5, 2.5, 3.0, 4.0, 8.0). Base this heavily on task complexity.",
+      "description": "Detailed and comprehensive brief in markdown format. DO NOT include @ or # routing tags here. DO NOT include any URLs here.",
+      "supporting_access": "URLs/links found in the prompt (separated by newline). Leave empty if none.",
+      "subtasks": ["Break down the task into 3-5 actionable sub-tasks as an array of strings."]
+    }
+  ]
+}
 
 USER REQUEST:
-"""${prompt}"""`;
+"""${userPrompt}"""`;
+
       const resAi = await axios.post('/api/ai/generate', { prompt: aiPrompt, provider: 'auto' });
       let jsonStr = resAi.data.text
         .trim()
         .replace(/```json/gi, '')
         .replace(/```/g, '')
         .trim();
-      const startIdx = jsonStr.indexOf('[');
-      const endIdx = jsonStr.lastIndexOf(']') + 1;
+      const startIdx = jsonStr.indexOf('{');
+      const endIdx = jsonStr.lastIndexOf('}') + 1;
       if (startIdx >= 0 && endIdx > startIdx) {
         jsonStr = jsonStr.substring(startIdx, endIdx);
       }
-      const extractedTasks = JSON.parse(jsonStr);
-
-      if (!Array.isArray(extractedTasks) || extractedTasks.length === 0) {
-        throw new Error('No tasks generated');
-      }
-
-      setPrompt('');
-
-      for (let i = 0; i < extractedTasks.length; i++) {
-        setLoadingText(
-          tMsg(
-            `Drafting task ${i + 1} of ${extractedTasks.length}...`,
-            `Menyusun tugas ${i + 1} dari ${extractedTasks.length}...`
-          )
-        );
-        const delay = 1200 + Math.random() * 1000;
-        await new Promise((res) => setTimeout(res, delay));
-
-        let matchedBoardId = targetBoard?.id || '';
-        if (extractedTasks[i].suggested_project) {
-          const sp = extractedTasks[i].suggested_project.replace('#', '').toLowerCase().trim();
-          let matched = boards.find((b) => b.name.toLowerCase() === sp);
-          if (!matched) {
-            matched = boards.find((b) => b.name.toLowerCase().includes(sp));
-          }
-          if (matched && matched.id !== 'global') {
-            matchedBoardId = matched.id;
-          }
-        }
-
-        setGeneratedTasks((prev) => [
-          ...prev,
-          {
-            ...extractedTasks[i],
-            id: Math.random().toString(),
-            deadline: extractedTasks[i].deadline && extractedTasks[i].deadline !== '' ? extractedTasks[i].deadline : '',
-            auto_nudge: extractedTasks[i].auto_nudge === true || extractedTasks[i].auto_nudge === 'true',
-            selected: true,
-            target_board_id: matchedBoardId,
-          },
-        ]);
-      }
-    } catch (err) {
-      console.error(err);
-      alert(tMsg('Failed to process request. Please try again.', 'Gagal memproses permintaan. Silakan coba lagi.'));
-    } finally {
+      
+      const aiResponse = JSON.parse(jsonStr);
       setIsProcessing(false);
+      
+      const replyText = aiResponse.chat_message || '';
+      setChatHistory((prev) => [
+        ...prev,
+        { id: Math.random().toString(), sender: 'ai', text: replyText }
+      ]);
+
+      if (aiResponse.response_type === 'tasks' && Array.isArray(aiResponse.tasks) && aiResponse.tasks.length > 0) {
+        setGeneratedTasks([]);
+        const extractedTasks = aiResponse.tasks;
+        
+        for (let i = 0; i < extractedTasks.length; i++) {
+          setLoadingText(
+            tMsg(
+              `Drafting task ${i + 1} of ${extractedTasks.length}...`,
+              `Menyusun tugas ${i + 1} dari ${extractedTasks.length}...`
+            )
+          );
+          const delay = 800 + Math.random() * 500;
+          await new Promise((res) => setTimeout(res, delay));
+
+          let matchedBoardId = targetBoard?.id || '';
+          if (extractedTasks[i].suggested_project) {
+            const sp = extractedTasks[i].suggested_project.replace('#', '').toLowerCase().trim();
+            let matched = boards.find((b) => b.name.toLowerCase() === sp);
+            if (!matched) {
+              matched = boards.find((b) => b.name.toLowerCase().includes(sp));
+            }
+            if (matched && matched.id !== 'global') {
+              matchedBoardId = matched.id;
+            }
+          }
+
+          setGeneratedTasks((prev) => [
+            ...prev,
+            {
+              ...extractedTasks[i],
+              id: Math.random().toString(),
+              deadline: extractedTasks[i].deadline && extractedTasks[i].deadline !== '' ? extractedTasks[i].deadline : '',
+              auto_nudge: extractedTasks[i].auto_nudge === true || extractedTasks[i].auto_nudge === 'true',
+              selected: true,
+              target_board_id: matchedBoardId,
+            },
+          ]);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      setIsProcessing(false);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          id: Math.random().toString(),
+          sender: 'ai',
+          text: language === 'id' 
+            ? 'Maaf, aku mengalami kendala koneksi atau format respons tidak sesuai. Mari kita coba lagi!' 
+            : 'Sorry, I encountered a connection issue or response format discrepancy. Let\'s try again!'
+        }
+      ]);
     }
   };
 
@@ -526,16 +604,22 @@ USER REQUEST:
         isClosing ? 'mac-exit' : 'mac-animate'
       } ${isDarkMode ? 'bg-[#090D16] text-white' : 'bg-[#F3F4F6] text-[#111E38]'}`}
     >
-      {/* Full-screen WebGL Shader Canvas Background */}
-      <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none">
-        <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
-      </div>
+      {/* Full-screen WebGL Shader Canvas Background (Dark Mode Only) */}
+      {isDarkMode && (
+        <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none transition-colors duration-700 ease-in-out">
+          <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+          {/* Soft overlay to calm the colors */}
+          <div className="absolute inset-0 bg-[#090D16]/40 transition-colors duration-700 ease-in-out" />
+        </div>
+      )}
 
-      {/* Floating organic blurred flow blobs */}
-      <div className={`absolute inset-0 overflow-hidden pointer-events-none -z-10 transition-opacity duration-300 ${isDarkMode ? 'opacity-40' : 'opacity-20'}`}>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-[#FACC15]/30 rounded-full blur-[120px] animate-pulse" style={{ animation: 'flow 15s infinite alternate ease-in-out' }}></div>
-        <div className={`absolute top-1/3 left-1/4 w-150 h-150 rounded-full blur-[100px] ${isDarkMode ? 'bg-[#001f3f]/50' : 'bg-[#dce9ff]/60'}`} style={{ animation: 'flow 20s infinite alternate-reverse ease-in-out' }}></div>
-      </div>
+      {/* Floating organic blurred flow blobs (Dark Mode Only) */}
+      {isDarkMode && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 opacity-40 transition-opacity duration-300">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-[#FACC15]/30 rounded-full blur-[120px] animate-pulse" style={{ animation: 'flow 15s infinite alternate ease-in-out' }}></div>
+          <div className="absolute top-1/3 left-1/4 w-150 h-150 rounded-full blur-[100px] bg-[#001f3f]/50" style={{ animation: 'flow 20s infinite alternate-reverse ease-in-out' }}></div>
+        </div>
+      )}
 
       <style>{`
         @keyframes elegant-fade-up {
@@ -694,12 +778,10 @@ USER REQUEST:
               : ''
           }`}
         >
-          <div className="hidden lg:block shrink-0 transition-all duration-700 ease-in-out" style={{ height: isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0 ? '0vh' : '15vh' }} />
-          
-          <div className="w-full max-w-3xl mx-auto flex flex-col flex-1 min-h-0">
-            <div className="shrink-0 mb-8 animate-elegant">
+          <div className="w-full max-w-3xl mx-auto flex flex-col flex-1 min-h-0 animate-elegant">
+            <div className="shrink-0 mb-4">
               {/* Active Assistant badge */}
-              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4 shadow-sm border ${
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 shadow-sm border ${
                 isDarkMode 
                   ? 'bg-[#FACC15]/10 border-[#FACC15]/30 text-[#EAB308]' 
                   : 'bg-[#FACC15]/20 border-[#FACC15]/40 text-[#574500]'
@@ -709,23 +791,350 @@ USER REQUEST:
               </div>
 
               {/* Dynamic Headline */}
-              <h1 className={`text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-none mb-3 ${
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-none mb-2 ${
                 isDarkMode ? 'text-white' : 'text-[#001f3f]'
               }`}>
                 {tMsg('Hi there! How can alurku make your workday easier today?', 'Halo, bagaimana alurku bisa membantu pekerjaanmu hari ini?')}
               </h1>
-              <p className={`text-sm sm:text-base max-w-lg leading-relaxed ${
-                isDarkMode ? 'text-white/50' : 'text-[#0b1c30]/60'
-              }`}>
-                {tMsg(
-                  'Tell me your goals or delegate tasks. I will structure them into actionable items.',
-                  'Ceritakan tujuan Anda atau delegasikan tugas. Saya akan menyusunnya menjadi tugas terstruktur.'
-                )}
-              </p>
             </div>
 
+            {/* Dashboard Overview Shortcuts */}
+            {(() => {
+              const activeCount = (tasks || []).filter(t => t.status !== 'completed').length;
+              const todayCount = (tasks || []).filter(t => {
+                const todayStr = new Date().toISOString().split('T')[0];
+                return t.deadline && t.deadline.startsWith(todayStr);
+              }).length;
+              const overdueCount = (tasks || []).filter(t => {
+                if (t.status === 'completed' || !t.deadline) return false;
+                const todayStr = new Date().toISOString().split('T')[0];
+                return t.deadline < todayStr;
+              }).length;
+
+              return (
+                <div className="grid grid-cols-3 gap-3 mb-4 shrink-0">
+                  <div className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm transition-all duration-300 ${
+                    isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
+                  }`}>
+                    <span className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-white/40' : 'text-[#0b1c30]/40'}`}>
+                      {tMsg('Active Tasks', 'Tugas Aktif')}
+                    </span>
+                    <span className={`text-xl font-black mt-1 ${isDarkMode ? 'text-white' : 'text-[#001f3f]'}`}>
+                      {activeCount}
+                    </span>
+                  </div>
+                  <div className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm transition-all duration-300 ${
+                    isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
+                  }`}>
+                    <span className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-white/40' : 'text-[#0b1c30]/40'}`}>
+                      {tMsg('Due Today', 'Hari Ini')}
+                    </span>
+                    <span className={`text-xl font-black mt-1 ${todayCount > 0 ? 'text-[#FACC15]' : isDarkMode ? 'text-white' : 'text-[#001f3f]'}`}>
+                      {todayCount}
+                    </span>
+                  </div>
+                  <div className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm transition-all duration-300 ${
+                    isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
+                  }`}>
+                    <span className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-white/40' : 'text-[#0b1c30]/40'}`}>
+                      {tMsg('Overdue', 'Terlambat')}
+                    </span>
+                    <span className={`text-xl font-black mt-1 ${overdueCount > 0 ? 'text-rose-500' : isDarkMode ? 'text-white' : 'text-[#001f3f]'}`}>
+                      {overdueCount}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* MAIN WORKSPACE WORK AREA (TAKES ALL FLEX HEIGHT) */}
+            <div className="flex-1 flex flex-col min-h-0 mb-4 overflow-hidden relative">
+              
+              {/* Case 1: Generated Task Drafts Editor List */}
+              {generatedTasks.length > 0 && (
+                <div className="flex-1 flex flex-col min-h-0 animate-elegant">
+                  <div className="flex justify-between items-center mb-4 shrink-0">
+                    <h3 className="font-bold text-lg">
+                      {tMsg('Generated Tasks', 'Tugas Dihasilkan')}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          const allSelected = generatedTasks.every((t) => t.selected);
+                          setGeneratedTasks(generatedTasks.map((t) => ({ ...t, selected: !allSelected })));
+                        }}
+                        className="text-xs font-bold text-sky-500 hover:underline"
+                      >
+                        {generatedTasks.every((t) => t.selected)
+                          ? tMsg('Deselect All', 'Batal Pilih Semua')
+                          : tMsg('Select All', 'Pilih Semua')}
+                      </button>
+                      <span className="text-xs text-neutral-400">|</span>
+                      <button
+                        onClick={() => setGeneratedTasks([])}
+                        className="text-xs font-bold text-neutral-400 hover:text-red-500 hover:underline"
+                      >
+                        {tMsg('Clear Draft', 'Hapus Draf')}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-3 min-h-0 custom-scrollbar pb-16">
+                    <div className={`p-4 border rounded-2xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#121B2D]/80 border-white/10' : 'bg-white border-black/10'}`}>
+                      <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-1.5">
+                        {tMsg('Target Project', 'Target Proyek')}
+                      </label>
+                      <select
+                        value={targetBoard?.id || ''}
+                        onChange={(e) => {
+                          const b = boards.find((x) => String(x.id) === e.target.value);
+                          if (b) setTargetBoard(b);
+                          setGeneratedTasks(generatedTasks.map((item) => ({ ...item, target_board_id: b.id })));
+                        }}
+                        className={`w-full border rounded-xl p-2.5 text-xs font-bold outline-none transition-colors cursor-pointer ${
+                          isDarkMode
+                            ? 'bg-[#090D16] border-white/10 text-white focus:border-[#FACC15]'
+                            : 'bg-neutral-100 border-black/10 text-[#111E38] focus:border-sky-500'
+                        }`}
+                      >
+                        {boards
+                          .filter((b) => b.id !== 'global')
+                          .map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.name} {b.is_private ? '(Private)' : ''}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    {generatedTasks.map((t) => (
+                      <div
+                        key={t.id}
+                        onClick={() =>
+                          setGeneratedTasks(
+                            generatedTasks.map((item) =>
+                              item.id === t.id ? { ...item, selected: !item.selected } : item
+                            )
+                          )
+                        }
+                        className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-start gap-4 animate-slide-up ${
+                          t.selected
+                            ? isDarkMode
+                              ? 'bg-sky-500/10 border-sky-500/50'
+                              : 'bg-sky-50 border-sky-200'
+                            : isDarkMode
+                            ? 'bg-[#121B2D]/55 border-white/5 opacity-70 hover:opacity-100'
+                            : 'bg-white border-neutral-200 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={t.selected}
+                          readOnly
+                          disabled={isSaving}
+                          className="mt-1 w-4 h-4 rounded border-neutral-300 text-sky-500 focus:ring-sky-500 cursor-pointer disabled:opacity-50"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-1">{t.project_name}</h4>
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-[#090D16] text-neutral-400' : 'bg-neutral-200 text-neutral-600'}`}>
+                              {t.category}
+                            </span>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-sky-500/20 text-sky-400' : 'bg-sky-100 text-sky-700'}`}>
+                              {t.requester || `@${currentUser}`}
+                            </span>
+                            {t.deadline && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-rose-500/20 text-rose-400' : 'bg-rose-100 text-rose-700'}`}>
+                                📅 {formatDateMMM(t.deadline)}
+                              </span>
+                            )}
+                            {t.auto_nudge && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
+                                🔔 Auto nudge
+                              </span>
+                            )}
+                            <select
+                              value={t.target_board_id || targetBoard?.id || ''}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                const newId = e.target.value;
+                                setGeneratedTasks((prev) =>
+                                  prev.map((item) => (item.id === t.id ? { ...item, target_board_id: newId } : item))
+                                );
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`text-[9px] font-bold px-2 py-0.5 rounded outline-none cursor-pointer max-w-35 truncate border ${
+                                isDarkMode
+                                  ? 'bg-[#090D16] border-white/10 text-amber-400 [&>option]:bg-[#090D16] [&>option]:text-white'
+                                  : 'bg-amber-50 border-amber-200 text-amber-700 [&>option]:bg-white [&>option]:text-black'
+                              }`}
+                            >
+                              {boards
+                                .filter((b) => b.id !== 'global')
+                                .map((b) => (
+                                  <option key={b.id} value={b.id}>
+                                    📁 {b.name} {b.is_private ? '(Private)' : ''}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                          <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                            {t.description}
+                          </p>
+                          {t.subtasks && t.subtasks.length > 0 && (
+                            <div className="mt-3 space-y-1 pl-4 border-l-2 border-neutral-300 dark:border-neutral-700">
+                              {t.subtasks.map((st, sIdx) => (
+                                <div key={sIdx} className="text-[11px] text-neutral-400 flex items-center gap-1.5">
+                                  <span className="w-1 h-1 rounded-full bg-neutral-400" />
+                                  <span>{st}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {processingId === t.id && (
+                          <div className="shrink-0 mt-1">
+                            <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                        {!isSaving && processingId !== t.id && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setGeneratedTasks((prev) => prev.filter((item) => item.id !== t.id));
+                            }}
+                            className="shrink-0 ml-2 text-neutral-400 hover:text-red-500 transition-colors p-1"
+                            title={tMsg('Remove task', 'Hapus tugas')}
+                          >
+                            ✖
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <div ref={tasksEndRef} className="h-4 shrink-0" />
+                  </div>
+
+                  {/* Actions Bar Sticky to Task View Bottom */}
+                  <div className="absolute bottom-2 right-2 shrink-0 z-20 pointer-events-none flex gap-2">
+                    <button
+                      onClick={handleSaveSelected}
+                      disabled={isSaving || isProcessing || !generatedTasks.some((t) => t.selected)}
+                      className="bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] px-8 py-3 rounded-full font-bold text-xs shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 pointer-events-auto"
+                    >
+                      {isSaving ? <LoadingSpinner /> : '🚀'}
+                      {isSaving
+                        ? tMsg('Processing...', 'Memproses...')
+                        : tMsg('Add to Inbox', 'Tambahkan ke Kotak Masuk')}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Case 2: Conversational Chat bubble stream */}
+              {generatedTasks.length === 0 && (
+                <div className="flex-1 overflow-y-auto pr-1 space-y-4 min-h-0 custom-scrollbar pb-4">
+                  {chatHistory.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={`flex ${chat.sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                          chat.sender === 'user'
+                            ? 'bg-[#FACC15] text-[#111E38] font-bold rounded-tr-none'
+                            : isDarkMode
+                            ? 'bg-neutral-800/80 border border-white/5 text-white rounded-tl-none'
+                            : 'bg-white border border-neutral-200 text-[#111E38] rounded-tl-none'
+                        }`}
+                      >
+                        {chat.sender === 'user' ? chat.text : renderChatText(chat.text)}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Bouncing Typing / Processing loader bubble inside Chat list */}
+                  {isProcessing && (
+                    <div className="flex justify-start animate-slide-up">
+                      <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm flex items-center gap-3 shadow-sm ${
+                        isDarkMode
+                          ? 'bg-neutral-800/80 border border-white/5 text-white rounded-tl-none'
+                          : 'bg-white border border-neutral-200 text-[#111E38] rounded-tl-none'
+                      }`}>
+                        <div className={`w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin shrink-0 ${
+                          isDarkMode ? 'border-[#FACC15]' : 'border-sky-500'
+                        }`}></div>
+                        <span className={`text-xs font-bold uppercase tracking-wider animate-pulse ${
+                          isDarkMode ? 'text-[#FACC15]' : 'text-sky-500'
+                        }`}>
+                          {loadingText}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={chatEndRef} />
+                </div>
+              )}
+            </div>
+
+            {/* Default prompt suggestions (only when greeting is the only message) */}
+            {generatedTasks.length === 0 && chatHistory.length === 1 && !isProcessing && (
+              <div className="flex flex-wrap gap-2 mb-4 animate-elegant shrink-0">
+                {suggestions.map((sug) => (
+                  <button
+                    key={sug}
+                    onClick={() => {
+                      setPrompt(sug);
+                    }}
+                    className={`px-4 py-2 rounded-full border transition-all text-xs font-semibold ${
+                      isDarkMode
+                        ? 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white hover:border-white/30'
+                        : 'border-[#111E38]/10 text-[#111E38]/60 hover:bg-[#111E38]/5 hover:text-[#111E38] hover:border-[#111E38]/30'
+                    }`}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Input Form container */}
-            <form onSubmit={handleSubmit} className="w-full relative z-20 animate-elegant mb-8">
+            <form onSubmit={handleSubmit} className="w-full relative z-20 animate-elegant mb-4 shrink-0">
+              {/* Localized Aura glow in Light Mode */}
+              {!isDarkMode && (
+                <div className="absolute inset-0 -m-1.5 bg-linear-to-r from-sky-400/20 via-[#FACC15]/30 to-indigo-400/20 rounded-[34px] blur-xl opacity-75 animate-pulse pointer-events-none -z-10" />
+              )}
+              {/* Slash commands autocomplete popup */}
+              {isSlashMenuOpen && (
+                <div className="absolute left-4 bottom-full mb-2 w-72 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-48 overflow-y-auto py-2 mac-animate">
+                  {(() => {
+                    const filtered = slashCommands.filter(c => c.cmd.includes(slashQuery));
+                    if (filtered.length > 0) {
+                      return filtered.map((c, idx) => (
+                        <div
+                          key={c.cmd}
+                          className={`px-4 py-2 cursor-pointer text-sm font-semibold flex flex-col transition-colors ${
+                            slashIndex === idx
+                              ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-white'
+                              : 'hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-600 dark:text-neutral-300'
+                          }`}
+                          onClick={() => {
+                            setPrompt(c.cmd + ' ');
+                            setIsSlashMenuOpen(false);
+                            textareaRef.current?.focus();
+                          }}
+                        >
+                          <span className="font-bold text-[#FACC15]">{c.cmd}</span>
+                          <span className="text-xs text-neutral-400 font-medium">{c.desc}</span>
+                        </div>
+                      ));
+                    }
+                    return <div className="px-4 py-3 text-sm text-neutral-500 italic">No commands found</div>;
+                  })()}
+                </div>
+              )}
+
               <div
                 className={`rounded-3xl border-2 p-2 group transition-all flex flex-col ${
                   isDarkMode
@@ -745,6 +1154,20 @@ USER REQUEST:
                     onChange={(e) => {
                       const val = e.target.value;
                       setPrompt(val);
+                      
+                      // Handle slash command autocomplete
+                      if (val.startsWith('/') && !val.includes(' ')) {
+                        const q = val.substring(1).toLowerCase();
+                        setSlashQuery(q);
+                        setIsSlashMenuOpen(true);
+                        setSlashIndex(0);
+                        setIsMentioning(false);
+                        setIsBoardMentioning(false);
+                        return;
+                      } else {
+                        setIsSlashMenuOpen(false);
+                      }
+
                       const mentionMatch = val.match(/(?:^|\s)@([\w.-]*)$/);
                       const boardMatch = val.match(/(?:^|\s)#([\w\s.-]*)$/);
 
@@ -772,7 +1195,25 @@ USER REQUEST:
                       }
                     }}
                     onKeyDown={(e) => {
-                      if (isMentioning) {
+                      if (isSlashMenuOpen) {
+                        const filtered = slashCommands.filter(c => c.cmd.includes(slashQuery));
+                        if (e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          setSlashIndex((prev) => (prev + 1) % (filtered.length || 1));
+                        } else if (e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          setSlashIndex((prev) => (prev - 1 + filtered.length) % (filtered.length || 1));
+                        } else if (e.key === 'Enter' || e.key === 'Tab') {
+                          if (filtered.length > 0) {
+                            e.preventDefault();
+                            setPrompt(filtered[slashIndex].cmd + ' ');
+                            setIsSlashMenuOpen(false);
+                          }
+                        } else if (e.key === 'Escape') {
+                          e.preventDefault();
+                          setIsSlashMenuOpen(false);
+                        }
+                      } else if (isMentioning) {
                         const mentionOptions = (userDirectory || [])
                           .filter((u) => u.is_connected && u.username !== 'admin')
                           .map((u) => u.username);
@@ -844,8 +1285,8 @@ USER REQUEST:
                       }
                     }}
                     placeholder={tMsg(
-                      'Describe your goal to generate a to-do list...',
-                      'Ceritakan rencana Anda dan buat to-do list secara otomatis...'
+                      'Describe your goal, ask questions, or type "/" for commands...',
+                      'Ceritakan rencanamu, tanyakan sesuatu, atau ketik "/" untuk menu perintah...'
                     )}
                     className={`flex-1 bg-transparent border-none focus:ring-0 font-medium px-5 pt-4 text-base outline-none resize-none h-20 custom-scrollbar select-text ${
                       isDarkMode ? 'text-white placeholder-white/30' : 'text-[#001f3f] placeholder-[#0b1c30]/30'
@@ -911,7 +1352,7 @@ USER REQUEST:
 
               {/* User mentions autocomplete popup */}
               {isMentioning && (
-                <div className="absolute left-4 top-full mt-1 w-64 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
+                <div className="absolute left-4 bottom-full mb-2 w-64 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
                   {(() => {
                     const mentionOptions = (userDirectory || [])
                       .filter((u) => u.is_connected && u.username !== 'admin')
@@ -940,7 +1381,7 @@ USER REQUEST:
 
               {/* Project mentions autocomplete popup */}
               {isBoardMentioning && (
-                <div className="absolute left-4 top-full mt-1 w-64 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
+                <div className="absolute left-4 bottom-full mb-2 w-64 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2 mac-animate">
                   {(() => {
                     const boardOptions = boards.filter((b) => b.id !== 'global').map((b) => b.name);
                     const filtered = boardOptions.filter((m) => m.toLowerCase().includes(boardMentionQuery));
@@ -969,203 +1410,6 @@ USER REQUEST:
                 </div>
               )}
             </form>
-
-            {/* Default prompt suggestions */}
-            {generatedTasks.length === 0 && !isProcessing && (
-              <div className="flex flex-wrap justify-center gap-3 mt-4 animate-elegant">
-                {suggestions.map((sug) => (
-                  <button
-                    key={sug}
-                    onClick={() => {
-                      setPrompt(sug);
-                    }}
-                    className={`px-5 py-2 rounded-full border transition-all text-sm font-semibold ${
-                      isDarkMode
-                        ? 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white hover:border-white/30'
-                        : 'border-[#111E38]/10 text-[#111E38]/60 hover:bg-[#111E38]/5 hover:text-[#111E38] hover:border-[#111E38]/30'
-                    }`}
-                  >
-                    {sug}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Generated tasks wrapper */}
-            {isProcessing && generatedTasks.length === 0 && (
-              <div className="mt-8 flex flex-col items-center justify-center py-10 opacity-70 animate-elegant shrink-0">
-                <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-sm font-bold uppercase tracking-widest text-sky-500 animate-pulse">
-                  {loadingText}
-                </p>
-              </div>
-            )}
-
-            {generatedTasks.length > 0 && (
-              <div className="flex-1 flex flex-col min-h-0 animate-elegant">
-                <div className="flex justify-between items-center mb-4 shrink-0">
-                  <h3 className="font-bold text-lg">
-                    {tMsg('Generated Tasks', 'Tugas Dihasilkan')}
-                  </h3>
-                  <button
-                    onClick={() => {
-                      const allSelected = generatedTasks.every((t) => t.selected);
-                      setGeneratedTasks(generatedTasks.map((t) => ({ ...t, selected: !allSelected })));
-                    }}
-                    className="text-xs font-bold text-sky-500 hover:underline"
-                  >
-                    {generatedTasks.every((t) => t.selected)
-                      ? tMsg('Deselect All', 'Batal Pilih Semua')
-                      : tMsg('Select All', 'Pilih Semua')}
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto pr-2 space-y-3 min-h-0 custom-scrollbar">
-                  <div className={`p-4 border rounded-2xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#121B2D]/80 border-white/10' : 'bg-white border-black/10'}`}>
-                    <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-1.5">
-                      {tMsg('Target Project', 'Target Proyek')}
-                    </label>
-                    <select
-                      value={targetBoard?.id || ''}
-                      onChange={(e) => {
-                        const b = boards.find((x) => String(x.id) === e.target.value);
-                        if (b) setTargetBoard(b);
-                        setGeneratedTasks(generatedTasks.map((item) => ({ ...item, target_board_id: b.id })));
-                      }}
-                      className={`w-full border rounded-xl p-2.5 text-xs font-bold outline-none transition-colors cursor-pointer ${
-                        isDarkMode
-                          ? 'bg-[#090D16] border-white/10 text-white focus:border-[#FACC15]'
-                          : 'bg-neutral-100 border-black/10 text-[#111E38] focus:border-sky-500'
-                      }`}
-                    >
-                      {boards
-                        .filter((b) => b.id !== 'global')
-                        .map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name} {b.is_private ? '(Private)' : ''}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  {generatedTasks.map((t) => (
-                    <div
-                      key={t.id}
-                      onClick={() =>
-                        setGeneratedTasks(
-                          generatedTasks.map((item) =>
-                            item.id === t.id ? { ...item, selected: !item.selected } : item
-                          )
-                        )
-                      }
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-start gap-4 animate-slide-up ${
-                        t.selected
-                          ? isDarkMode
-                            ? 'bg-sky-500/10 border-sky-500/50'
-                            : 'bg-sky-50 border-sky-200'
-                          : isDarkMode
-                          ? 'bg-[#121B2D]/55 border-white/5 opacity-70 hover:opacity-100'
-                          : 'bg-white border-neutral-200 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={t.selected}
-                        readOnly
-                        disabled={isSaving}
-                        className="mt-1 w-4 h-4 rounded border-neutral-300 text-sky-500 focus:ring-sky-500 cursor-pointer disabled:opacity-50"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm mb-1">{t.project_name}</h4>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-[#090D16] text-neutral-400' : 'bg-neutral-200 text-neutral-600'}`}>
-                            {t.category}
-                          </span>
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-sky-500/20 text-sky-400' : 'bg-sky-100 text-sky-700'}`}>
-                            {t.requester || `@${currentUser}`}
-                          </span>
-                          {t.deadline && (
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-rose-500/20 text-rose-400' : 'bg-rose-100 text-rose-700'}`}>
-                              📅 {formatDateMMM(t.deadline)}
-                            </span>
-                          )}
-                          {t.auto_nudge && (
-                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isDarkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
-                              🔔 Auto nudge
-                            </span>
-                          )}
-                          <select
-                            value={t.target_board_id || targetBoard?.id || ''}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              const newId = e.target.value;
-                              setGeneratedTasks((prev) =>
-                                prev.map((item) => (item.id === t.id ? { ...item, target_board_id: newId } : item))
-                              );
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className={`text-[9px] font-bold px-2 py-0.5 rounded outline-none cursor-pointer max-w-35 truncate border ${
-                              isDarkMode
-                                ? 'bg-[#090D16] border-white/10 text-amber-400 [&>option]:bg-[#090D16] [&>option]:text-white'
-                                : 'bg-amber-50 border-amber-200 text-amber-700 [&>option]:bg-white [&>option]:text-black'
-                            }`}
-                          >
-                            {boards
-                              .filter((b) => b.id !== 'global')
-                              .map((b) => (
-                                <option key={b.id} value={b.id}>
-                                  📁 {b.name} {b.is_private ? '(Private)' : ''}
-                                </option>
-                              ))}
-                          </select>
-                        </div>
-                        <p className={`text-xs leading-relaxed line-clamp-2 ${isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                          {t.description}
-                        </p>
-                      </div>
-                      {processingId === t.id && (
-                        <div className="shrink-0 mt-1">
-                          <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                      )}
-                      {!isSaving && processingId !== t.id && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setGeneratedTasks((prev) => prev.filter((item) => item.id !== t.id));
-                          }}
-                          className="shrink-0 ml-2 text-neutral-400 hover:text-red-500 transition-colors p-1"
-                          title={tMsg('Remove task', 'Hapus tugas')}
-                        >
-                          ✖
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  {isProcessing && (
-                    <div className="p-4 rounded-2xl border border-dashed border-sky-200 bg-sky-50/50 dark:bg-sky-900/10 flex items-center gap-4 animate-pulse">
-                      <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin shrink-0"></div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-sky-500">
-                        {loadingText}
-                      </span>
-                    </div>
-                  )}
-                  <div ref={tasksEndRef} className="h-4 shrink-0" />
-                </div>
-                <div className="sticky bottom-0 mt-4 pt-4 pb-4 flex justify-end shrink-0 z-20 pointer-events-none">
-                  <button
-                    onClick={handleSaveSelected}
-                    disabled={isSaving || isProcessing || !generatedTasks.some((t) => t.selected)}
-                    className="w-full sm:w-auto bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] px-8 py-3.5 rounded-full font-bold text-xs shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 pointer-events-auto"
-                  >
-                    {isSaving ? <LoadingSpinner /> : '🚀'}
-                    {isSaving
-                      ? tMsg('Processing...', 'Memproses...')
-                      : tMsg('Add to Inbox', 'Tambahkan ke Kotak Masuk')}
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 

@@ -1191,6 +1191,7 @@ function App() {
           setDrawerTab={setDrawerTab}
           setViewMode={setViewMode}
           fetchTasks={fetchTasks}
+          tasks={tasks}
           showNotification={showNotification}
           userDirectory={userDirectory}
           formatDateMMM={formatDateMMM}
