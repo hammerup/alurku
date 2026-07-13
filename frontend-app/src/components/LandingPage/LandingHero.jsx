@@ -59,29 +59,29 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
       className="relative w-full overflow-hidden bg-[#111E38] text-white min-h-screen pt-24 pb-16 lg:pt-32 lg:pb-32"
     >
       <div
-        className="max-w-360 mx-auto px-6 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 lg:gap-16 items-center min-h-[calc(100vh-200px)] py-12 lg:py-0"
+        className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-4 lg:gap-16 items-center min-h-[calc(100vh-200px)] py-12 lg:py-0"
       >
         {/* ── LEFT: COPY ── */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col items-center lg:items-start text-center lg:text-left"
+          className="flex flex-col items-center lg:items-start text-center lg:text-left z-10"
         >
           {/* Tagline capsule pill above H1 */}
-          <div className="inline-flex items-center mb-5">
-            <span className="text-xs font-semibold text-white/80 border border-white/20 bg-white/10 px-4 py-1.5 rounded-full leading-snug text-center">
+          <div className="inline-flex items-center mb-5 mt-8 lg:mt-0">
+            <span className="text-[10px] md:text-xs font-semibold text-white/80 border border-white/20 bg-white/10 px-4 py-1.5 rounded-full leading-snug text-center">
               {tagline}
             </span>
           </div>
 
           <h1
-            className="font-bold text-white leading-tight tracking-tight mb-8 text-center lg:text-left"
-            style={{ fontSize: 'clamp(36px, 5vw, 76px)' }}
+            className="font-bold text-white leading-tight tracking-tight mb-6 lg:mb-8 text-center lg:text-left"
+            style={{ fontSize: 'clamp(32px, 5vw, 76px)' }}
           >
             {title}
           </h1>
-          <p className="text-neutral-300 leading-relaxed mb-12 text-center lg:text-left max-w-lg lg:max-w-105" style={{ fontSize: '1.1rem' }}>
+          <p className="text-neutral-300 leading-relaxed mb-8 lg:mb-12 text-center lg:text-left max-w-lg lg:max-w-105" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>
             {subtitle}
           </p>
 
@@ -122,7 +122,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   </button>
                 </div>
               </form>
-              <p className="text-xs text-neutral-400 font-medium pl-4 text-center lg:text-left">
+              <p className="text-xs text-neutral-400 font-medium pl-0 lg:pl-4 text-center lg:text-left">
                 ℹ️ {isId 
                   ? 'Pendaftaran akan otomatis membuat akun pengujian di Sandbox Private Beta kami.' 
                   : 'Registration will automatically create a testing account in our Private Beta Sandbox.'}
@@ -132,15 +132,13 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <button
                 onClick={handleStart}
-                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors text-center"
-                style={{ fontSize: '1rem' }}
+                className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors text-center text-sm lg:text-base shadow-[0_4px_14px_rgba(250,204,21,0.4)]"
               >
                 {isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.'}
               </button>
               <button
                 onClick={() => setShowEmailInput(true)}
-                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-white border-2 border-white hover:bg-white/10 transition-colors text-center"
-                style={{ fontSize: '1rem' }}
+                className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-white border-2 border-white/20 hover:border-white hover:bg-white/10 transition-colors text-center text-sm lg:text-base backdrop-blur-sm"
               >
                 {isId ? 'Daftar Akses Awal (Beta)' : 'Register Early Access (Beta)'}
               </button>
@@ -153,16 +151,15 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
           initial={{ opacity: 0, x: 48 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="hidden lg:block relative w-full"
-          style={{ height: '580px' }}
+          className="relative w-full mt-4 lg:mt-0 flex justify-center lg:block"
         >
-
-          {/* ─── MAIN DASHBOARD WINDOW ─── */}
-          <div
-            className="absolute bg-white rounded-2xl overflow-hidden shadow-2xl border border-neutral-200"
-            style={{ top: '20px', left: '0px', right: '0px', bottom: '0px' }}
-          >
-            {/* Window Chrome */}
+          {/* Scalable Container for Mobile to Desktop */}
+          <div className="relative w-[120%] lg:w-full max-w-[600px] lg:max-w-none h-[580px] scale-[0.6] xs:scale-[0.65] sm:scale-75 md:scale-90 lg:scale-100 origin-top lg:origin-center -mb-[200px] sm:-mb-[100px] lg:mb-0">
+            {/* ─── MAIN DASHBOARD WINDOW ─── */}
+            <div
+              className="absolute bg-white rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-neutral-200 inset-0 lg:top-[20px] lg:left-[0px] lg:right-[0px] lg:bottom-[0px]"
+            >
+              {/* Window Chrome */}
             <div className="flex items-center gap-2 px-4 border-b border-neutral-100 bg-white" style={{ height: '40px' }}>
               <div className="w-3 h-3 rounded-full bg-red-400" />
               <div className="w-3 h-3 rounded-full bg-amber-400" />
@@ -509,6 +506,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
               ))}
             </div>
           </motion.div>
+        </div>
 
         </motion.div>
       </div>

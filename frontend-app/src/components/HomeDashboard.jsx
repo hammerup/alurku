@@ -133,12 +133,7 @@ export default function HomeDashboard() {
     });
   }, [tasks, currentUser, sortBy]);
 
-  const topQueueTasks = sortedUserTasks.slice(0, 5);
-
-  const recentComments = (notifications || [])
-    .filter(n => n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 5);
+  const topQueueTasks = sortedUserTasks.slice(0, 3);
 
   const myWorkload = teamWorkloadStats?.[currentUser] || { total_etc: 0, done_etc: 0 };
   const myActiveWorkloadEtc = myWorkload.total_etc - myWorkload.done_etc;
@@ -156,12 +151,14 @@ export default function HomeDashboard() {
   const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   const formattedDate = today.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', dateOptions);
 
-  // Sync logic: tasks that belong to the global project (WIP only and assigned to the user)
+  // Sync logic: tasks that belong to the user
   const myTasks = tasks.filter(t => {
     const status = (t.status || '').toLowerCase();
     return status !== 'done' && status !== 'rejected' && isUserAssigned(t, currentUser);
   });
-  const activeProjectsCount = boards.length;
+  
+  // Filter out default 'To-do List' from Projects count to prevent confusion
+  const activeProjectsCount = boards.filter(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list').length;
   const criticalProjectsCount = boards.filter(b => b.health_alert?.includes('Attention')).length;
   
   // Overdue logic
@@ -177,7 +174,7 @@ export default function HomeDashboard() {
   }).length;
 
   const visibleChatsForKey = inboxChats.filter(chat => !(chat.latest_message || '').includes('<!--PRIVATE:'));
-  const dataKey = `${myTasks.length}_${overdueTasksCount}_${activeProjectsCount}_${visibleChatsForKey.length}`;
+  const dataKey = `${myTasks.length}_${overdueTasksCount}_${activeProjectsCount}_${visibleChatsForKey.length}_${language}`;
 
   const fetchAiSummary = async (currentDataKey) => {
     // Prevent spamming the API on every mount
@@ -260,11 +257,8 @@ export default function HomeDashboard() {
     let timer;
 
     if (hasData) {
-      // Data is present, fetch summary with a small delay
       timer = setTimeout(() => fetchAiSummary(dataKey), 500);
     } else {
-      // Data is empty. It might still be syncing in the background.
-      // Wait up to 5 seconds before giving up and assuming the user has no data.
       timer = setTimeout(() => fetchAiSummary(dataKey), 5000);
     }
 
@@ -310,167 +304,150 @@ export default function HomeDashboard() {
     return { color, badgeColor, timeStr };
   };
 
+  const projectDistribution = React.useMemo(() => {
+    if (!myTasks.length) return [];
+    const counts = {};
+    myTasks.forEach(t => {
+      const bId = t.board_id || 'global';
+      counts[bId] = (counts[bId] || 0) + 1;
+    });
+    
+    const dist = Object.entries(counts).map(([bId, count]) => {
+      const board = boards.find(b => parseInt(b.id) === parseInt(bId));
+      return {
+        id: bId,
+        name: board ? board.name : 'Global',
+        percentage: Math.round((count / myTasks.length) * 100)
+      };
+    }).sort((a, b) => b.percentage - a.percentage).slice(0, 3);
+    
+    return dist;
+  }, [myTasks, boards]);
+
   return (
-    <div className="bg-transparent p-6 md:p-10 w-full h-auto relative">
-      <div className="max-w-5xl mx-auto space-y-8 mt-12 md:mt-4 relative z-10">
+    <div className="bg-transparent p-4 md:p-6 lg:p-10 w-full h-auto relative">
+      <div className="max-w-[1280px] mx-auto space-y-8 mt-12 md:mt-4 relative z-10">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2">
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
               {formattedDate}
             </p>
-            <h1 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter leading-none">
-              {tMsg('Welcome back,', 'Selamat datang,')} <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-slate-800 to-black dark:from-white dark:to-slate-300">{currentUser}</span>
+            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none flex flex-wrap gap-x-2.5 items-baseline">
+              <span>{tMsg('Selamat Pagi,', 'Selamat Pagi,')}</span>
+              <span className="text-indigo-900 dark:text-indigo-100">{currentUser}</span>
             </h1>
+            <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-3 font-medium">
+              {tMsg('Berikut ringkasan kerja Anda untuk hari ini.', 'Berikut ringkasan kerja Anda untuk hari ini.')}
+            </p>
           </div>
           <button
             onClick={() => setIsCreateBoardOpen(true)}
             disabled={accountStatus === 'suspended'}
-            className="tour-home-new-project shrink-0 bg-black dark:bg-white text-white dark:text-black font-bold py-3 px-6 rounded-xl hover:scale-105 transition-transform shadow-md disabled:opacity-50 text-sm"
+            className="tour-home-new-project shrink-0 bg-yellow-400 text-indigo-950 font-bold py-3 px-6 rounded-xl hover:bg-yellow-300 transition-all shadow-sm hover:shadow-md disabled:opacity-50 text-sm flex items-center justify-center gap-2"
           >
-            + {tMsg('New Project', 'Proyek Baru')}
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            {tMsg('Tugas Baru', 'Tugas Baru')}
           </button>
-        </div>
+        </header>
 
-        {/* AI Summary Widget */}
-        <div className="tour-ai-briefing relative bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1.5 h-full bg-black dark:bg-white"></div>
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-              </svg>
+        {/* AI Intelligence Center */}
+        <section className="tour-ai-briefing ai-glow rounded-2xl p-6 md:p-8 relative overflow-hidden group">
+          <div className="absolute -right-10 -top-10 opacity-10 dark:opacity-5 text-indigo-950 dark:text-yellow-400 transition-transform group-hover:rotate-12 duration-700 pointer-events-none">
+            <span className="material-symbols-outlined text-[180px] md:text-[220px] select-none">auto_awesome</span>
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-500/20 rounded-lg shrink-0">
+                <span className="material-symbols-outlined text-yellow-600 dark:text-yellow-400">tips_and_updates</span>
+              </div>
+              <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                {tMsg('Sekilas Kerja Hari Ini Dari AI', 'Sekilas Kerja Hari Ini Dari AI')}
+                {isSummarizing && (
+                  <span className="inline-block w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
+                )}
+              </h2>
             </div>
-            <div className="flex-1">
-              <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between uppercase tracking-widest w-full">
-                <span className="flex items-center gap-2">
-                  {tMsg('Your Daily AI Briefing', 'Sekilas Kerja Hari Ini dari AI')}
-                  {isSummarizing && (
-                    <span className="inline-block w-3 h-3 border-2 border-black dark:border-white border-t-transparent rounded-full animate-spin"></span>
-                  )}
-                </span>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    sessionStorage.removeItem('aiWorkloadSnapshot');
-                    sessionStorage.removeItem('aiWorkloadSnapshotTime');
-                    sessionStorage.removeItem('aiWorkloadDataKey');
-                    fetchAiSummary(dataKey);
-                  }}
-                  disabled={isSummarizing}
-                  className="text-slate-400 hover:text-black dark:hover:text-white transition-colors disabled:opacity-50"
-                  title={tMsg('Refresh AI Briefing', 'Perbarui Ringkasan AI')}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                </button>
-              </h3>
-              <div className="text-slate-600 dark:text-slate-400 leading-relaxed font-medium text-sm md:text-base">
-                {isSummarizing ? (
-                  <span className="animate-pulse">{tMsg('Analyzing your projects and tasks...', 'Menganalisis proyek dan tugas Anda...')}</span>
+            <div className="text-sm md:text-base text-slate-700 dark:text-slate-300 mb-6 max-w-3xl leading-relaxed font-medium">
+              {isSummarizing ? (
+                <span className="animate-pulse">{tMsg('Menganalisis beban kerja Anda...', 'Menganalisis beban kerja Anda...')}</span>
+              ) : (
+                aiSummary ? (
+                  <span dangerouslySetInnerHTML={{ __html: aiSummary.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-white font-extrabold">$1</strong>') }} />
                 ) : (
-                  aiSummary ? (
-                    <span dangerouslySetInnerHTML={{ __html: aiSummary.replace(/\*\*(.*?)\*\*/g, '<strong class="text-black dark:text-white font-bold">$1</strong>') }} />
-                  ) : (
-                    tMsg('No summary generated.', 'Belum ada ringkasan.')
-                  )
-                )}
-              </div>
+                  tMsg('Belum ada ringkasan AI untuk hari ini.', 'Belum ada ringkasan AI untuk hari ini.')
+                )
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button 
+                onClick={() => {
+                  setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+                  setShowMyTasks(true);
+                  setShowOverdueOnly(false);
+                  setShowDueTodayOnly(true);
+                }}
+                className="px-5 py-2.5 bg-indigo-950 dark:bg-indigo-900 text-white font-semibold rounded-xl hover:bg-indigo-900 dark:hover:bg-indigo-800 transition-colors shadow-sm text-sm"
+              >
+                {tMsg('Lihat Rencana Hari Ini', 'Lihat Rencana Hari Ini')}
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  sessionStorage.removeItem('aiWorkloadSnapshot');
+                  sessionStorage.removeItem('aiWorkloadSnapshotTime');
+                  sessionStorage.removeItem('aiWorkloadDataKey');
+                  fetchAiSummary(dataKey);
+                }}
+                disabled={isSummarizing}
+                className="px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[16px]">refresh</span>
+                {tMsg('Perbarui', 'Perbarui')}
+              </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* My Capacity Meter */}
-        <div className="tour-my-capacity bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest flex items-center gap-2">
-              <svg className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              {tMsg('My Capacity', 'Kapasitas Saya')}
-            </h3>
-            {(isWeeklyOverload || isMonthlyOverload) && (
-              <div className="flex items-center gap-2">
-                {isWeeklyOverload && (
-                  <span className="text-[9px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-full border border-red-200 dark:border-red-800/50">
-                    ⚠️ {tMsg('Weekly Overload', 'Beban Mingguan Berlebih')}
-                  </span>
-                )}
-                {isMonthlyOverload && (
-                  <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-800/50">
-                    ⚠️ {tMsg('Monthly Overload', 'Beban Bulanan Berlebih')}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
-              {Math.round(myActiveWorkloadEtc * 10) / 10}<span className="text-lg">h</span>
-            </div>
-            <div className="flex-1">
-              <div className="w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-2.5">
-                <div 
-                  className="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" 
-                  style={{ width: `${myTotalWorkloadEtc > 0 ? (myWorkload.done_etc / myTotalWorkloadEtc) * 100 : 0}%` }}
-                ></div>
-              </div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium flex justify-between">
-                <span>{tMsg('Remaining Work', 'Sisa Pekerjaan')}</span>
-                <span>
-                  {Math.round(myWorkload.done_etc * 10) / 10}h / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Done', 'Selesai')}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="tour-quick-stats grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Key Metrics */}
+        <section className="tour-quick-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(true);
               setShowOverdueOnly(false);
               setShowDueTodayOnly(false);
             }}
-            className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm hover:shadow-lg hover:border-black dark:hover:border-white transition-all cursor-pointer group flex flex-col justify-between"
+            className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md hover:border-indigo-200 dark:hover:border-yellow-400/30 cursor-pointer transition-all hover:-translate-y-0.5 group"
           >
             <div>
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform origin-left">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                </svg>
-              </div>
-              <div className="text-4xl font-black text-black dark:text-white mb-1">
-                {isLoading ? (
-                  <div className="w-12 h-10 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse my-0.5"></div>
-                ) : (
-                  myTasks.length
-                )}
-              </div>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Total Tugas', 'Total Tugas')}</p>
+              <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+                {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : myTasks.length}
+              </p>
+              <p className="text-xs font-medium text-indigo-600 dark:text-yellow-400 mt-2 flex items-center gap-1 group-hover:underline">
+                {tMsg('Lihat semua tugas', 'Lihat semua tugas')} &rarr;
+              </p>
             </div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">{tMsg('My Tasks', 'Tugas Saya')}</div>
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined">task_alt</span>
+            </div>
           </div>
-          
-          <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+
+          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md transition-shadow">
             <div>
-              <div className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                </svg>
-              </div>
-              <div className="text-4xl font-black text-black dark:text-white mb-1">
-                {isLoading ? (
-                  <div className="w-12 h-10 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse my-0.5"></div>
-                ) : (
-                  activeProjectsCount
-                )}
-              </div>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Proyek Aktif', 'Proyek Aktif')}</p>
+              <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+                {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : activeProjectsCount}
+              </p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
+                {tMsg('Proyek yang diikuti', 'Proyek yang diikuti')}
+              </p>
             </div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">{tMsg('Active Projects', 'Proyek Aktif')}</div>
+            <div className="p-3 bg-sky-50 dark:bg-sky-900/30 rounded-xl text-sky-600 dark:text-sky-400 shrink-0">
+              <span className="material-symbols-outlined">folder_open</span>
+            </div>
           </div>
 
           <div 
@@ -480,294 +457,334 @@ export default function HomeDashboard() {
               setShowMyTasks(false);
               setShowDueTodayOnly(false);
             }}
-            className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-red-100 dark:border-red-900/30 p-6 rounded-2xl shadow-sm relative overflow-hidden hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
+            className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-l-4 border-l-red-500 border-y border-r border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between cursor-pointer hover:shadow-md transition-shadow group"
           >
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/10 rounded-full blur-xl"></div>
-            <div className="relative z-10">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-500 flex items-center justify-center mb-3 relative z-10">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </div>
-              <div className="text-4xl font-black text-amber-600 dark:text-amber-500 mb-1 relative z-10">
-                {isLoading ? (
-                  <div className="w-12 h-10 bg-amber-200/50 dark:bg-amber-900/20 rounded animate-pulse my-0.5"></div>
-                ) : (
-                  overdueTasksCount
-                )}
-              </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Tugas Terlambat', 'Tugas Terlambat')}</p>
+              <p className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-400">
+                {isLoading ? <div className="w-12 h-10 bg-red-100 dark:bg-red-900/20 rounded animate-pulse"></div> : overdueTasksCount}
+              </p>
+              <p className="text-xs font-medium text-red-600/80 dark:text-red-400/80 mt-2 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">warning</span>
+                {tMsg('Perlu tindakan', 'Perlu tindakan')}
+              </p>
             </div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest relative z-10 mt-2">{tMsg('Overdue Tasks', 'Tugas Terlambat')}</div>
+            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-600 dark:text-red-400 shrink-0 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined">schedule</span>
+            </div>
           </div>
 
-          <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-red-100 dark:border-red-900/30 p-6 rounded-2xl shadow-sm relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/10 rounded-full blur-xl"></div>
-            <div className="relative z-10">
-              <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-500 flex items-center justify-center mb-3 relative z-10">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-              </div>
-              <div className="text-4xl font-black text-red-600 dark:text-red-500 mb-1 relative z-10">
-                {isLoading ? (
-                  <div className="w-12 h-10 bg-red-200/50 dark:bg-red-900/20 rounded animate-pulse my-0.5"></div>
-                ) : (
-                  criticalProjectsCount
-                )}
-              </div>
+          <div 
+            onClick={() => {
+              const critBoard = boards.find(b => b.health_alert?.includes('Attention'));
+              if (critBoard) {
+                setSelectedBoard(critBoard);
+                setShowMyTasks(false);
+                setShowOverdueOnly(false);
+              } else {
+                setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+                setShowMyTasks(false);
+                setShowOverdueOnly(false);
+              }
+            }}
+            className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-l-4 border-l-yellow-400 border-y border-r border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md hover:border-yellow-400/30 cursor-pointer transition-all hover:-translate-y-0.5 group"
+          >
+            <div>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Proyek Kritis', 'Proyek Kritis')}</p>
+              <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+                {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : criticalProjectsCount}
+              </p>
+              <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1 group-hover:underline">
+                <span className="material-symbols-outlined text-[14px]">priority_high</span>
+                {criticalProjectsCount > 0 ? tMsg('Perlu perhatian', 'Perlu perhatian') : tMsg('Semua aman', 'Semua aman')}
+              </p>
             </div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest relative z-10 mt-2">{tMsg('Critical Projects', 'Proyek Kritis')}</div>
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-yellow-700 dark:text-yellow-500 shrink-0 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined">flag</span>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Bottom Section: Quick Feeds */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Top Queue Tasks */}
-          <div className="tour-top-queue bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col h-full min-h-75">
-            <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-              </svg>
-              {tMsg('My Top Queue', 'Antrean Teratas Saya')}
-            </h3>
-            <div className="flex-1 space-y-1 pr-2">
-              {topQueueTasks.length > 0 ? topQueueTasks.map((task, index) => (
-                <div 
-                  key={task.id} 
-                  onClick={() => openTaskInGlobal(task)}
-                  className="flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 py-3 last:border-0 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 px-2 -mx-2 rounded-lg transition-colors"
-                >
-                  <div className="w-6 h-6 rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 flex items-center justify-center text-[10px] font-black shrink-0 shadow-sm">
-                    #{index + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate" title={task.project_name || task.title}>{task.project_name || task.title}</div>
-                    
-                    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide text-[10px] mt-1">
-                      <span className="text-slate-500 shrink-0 font-medium">
-                        {boards.find(b => parseInt(b.id) === parseInt(task.board_id))?.name || 'Global'}
-                      </span>
-                      
-                      {/* Assignee Avatar */}
-                      {(() => {
-                        const assigneeName = getTaskAssignee(task).replace('@', '');
-                        return (
-                          <div className="flex items-center shrink-0 ml-1" title={`Assignee: ${assigneeName}`}>
-                            <Avatar name={assigneeName} url={avatarsMap?.[assigneeName]} size="w-3.5 h-3.5" textClass="text-[6px]" />
-                          </div>
-                        );
-                      })()}
-
-                      {/* Category */}
-                      {task.category && (
-                        <span className="shrink-0 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 font-medium border border-neutral-200 dark:border-neutral-700">
-                          {task.category}
-                        </span>
-                      )}
-
-                      {/* Impact */}
-                      {task.impact && (
-                        <span className={`shrink-0 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5 ${
-                          task.impact === 'High' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50' :
-                          task.impact === 'Medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50' :
-                          'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-900/50'
-                        }`}>
-                          {task.impact === 'High' ? '🔥' : task.impact === 'Medium' ? '⚡' : '🌱'} {task.impact}
-                        </span>
-                      )}
-
-                      {/* Recurring */}
-                      {task.recurring && task.recurring !== 'none' && (
-                        <span className="shrink-0 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5 border border-purple-200 dark:border-purple-900/50">
-                          🔄 {task.recurring}
-                        </span>
-                      )}
-
-                      {/* ETC */}
-                      {task.etc && (
-                        <span className="shrink-0 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium flex items-center gap-0.5 border border-blue-200 dark:border-blue-900/50">
-                          ⏱ {task.etc}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Dates / Countdown (Row 3) */}
-                    {(task.start_date || task.deadline) && (
-                      <div className="flex items-center gap-3 text-[10px] text-slate-500 mt-1.5">
-                        {task.start_date && (
-                          <div>
-                            <span className="font-medium">Start: </span>
-                            {formatDateMMM(task.start_date)}
-                          </div>
-                        )}
-                        {task.deadline && (() => {
-                          const dlInfo = getTaskDeadlineInfo(task);
-                          return (
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold">Due: </span>
-                              <span className={`font-bold ${dlInfo.color}`}>{formatDateMMM(task.deadline)}</span>
-                              <span className={`px-1.5 py-0.5 rounded font-black border tracking-wider text-[9px] ${dlInfo.badgeColor}`}>
-                                {dlInfo.timeStr}
-                              </span>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )) : (
-                <div className="text-sm text-slate-500 flex flex-col items-center h-full justify-center text-center gap-2">
-                  <div className="text-4xl">🎉</div>
-                  <div>{tMsg('You have no pending tasks! You are all caught up.', 'Tidak ada tugas tertunda! Anda sudah menyelesaikan semuanya.')}</div>
-                </div>
+        {/* Bento Grid: Analytics & Workspace */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Analitik Performa (1 Col) */}
+          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl p-6 shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{tMsg('Analitik Performa', 'Analitik Performa')}</h3>
+              {(isWeeklyOverload || isMonthlyOverload) && (
+                <span className="text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md border border-red-200 dark:border-red-800/50 uppercase tracking-wider">
+                  ⚠️ Overload
+                </span>
               )}
             </div>
-          </div>
 
-          {/* Recent Comments */}
-          <div className="tour-recent-comments bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col h-full min-h-75">
-            <h3 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-4 uppercase tracking-widest flex items-center gap-2 shrink-0">
-              <svg className="w-4 h-4 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            <div className="flex-1 flex flex-col items-center justify-center mb-8 relative py-6">
+              <svg className="w-48 h-48 md:w-52 md:h-52 transform -rotate-90">
+                <circle cx="50%" cy="50%" fill="none" r="35%" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="10"></circle>
+                <circle 
+                  cx="50%" cy="50%" fill="none" r="35%" 
+                  className="stroke-indigo-900 dark:stroke-yellow-400 transition-all duration-1000 ease-in-out" 
+                  strokeWidth="10" strokeLinecap="round"
+                  strokeDasharray="251.2"
+                  strokeDashoffset={251.2 - (251.2 * (myTotalWorkloadEtc > 0 ? (myWorkload.done_etc / myTotalWorkloadEtc) : 0))}
+                ></circle>
               </svg>
-              {tMsg('Recent Comments', 'Komentar Terbaru')}
-            </h3>
-            <div className="flex-1 space-y-3 pr-2">
-              {isInboxLoading ? (
-                <div className="flex justify-center items-center h-full">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-500 border-t-transparent"></div>
-                </div>
-              ) : (() => {
-                const visibleChats = inboxChats.filter(chat => {
-                  const displayMessage = chat.latest_message || '';
-                  return !displayMessage.includes('<!--PRIVATE:');
-                });
-                return visibleChats.length > 0 ? visibleChats.slice(0, 4).map(chat => {
-                  let displayMessage = chat.latest_message || 'No message content';
-                  const isUnread = (() => {
-                    if (chat.latest_sender === currentUser) return false;
-                    if (chat.is_dm) return chat.unread_count > 0;
-                    if (chat.is_project_chat) {
-                      const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
-                      const hasUnreadNotification = (notifications || []).some(
-                        n => !n.is_read && String(n.related_task_id) === String(chat.board_id) && 
-                        (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
-                      );
-                      if (!lastRead) return true;
-                      return chat.timestamp > lastRead || hasUnreadNotification;
-                    } else {
-                      const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
-                      const hasUnreadNotification = (notifications || []).some(
-                        n => !n.is_read && String(n.related_task_id) === String(chat.task_id) && 
-                        (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
-                      );
-                      if (!lastRead) return true;
-                      return chat.timestamp > lastRead || hasUnreadNotification;
-                    }
-                  })();
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+                  {myTotalWorkloadEtc > 0 ? Math.round((myWorkload.done_etc / myTotalWorkloadEtc) * 100) : 0}%
+                </span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{tMsg('Kapasitas', 'Kapasitas')}</span>
+              </div>
+              <div className="mt-4 text-xs font-medium text-slate-500 dark:text-slate-400 text-center">
+                {Math.round(myWorkload.done_etc * 10) / 10}h {tMsg('Selesai', 'Selesai')} / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Total', 'Total')}
+              </div>
+            </div>
 
-                  return (
-                    <div 
-                      key={`${chat.is_dm ? 'dm-' + chat.partner_username : chat.task_id}-${chat.timestamp}`}
-                      onClick={() => {
-                        if (chat.is_dm) {
-                          setWorkspaceChatTarget({
-                            type: 'dm',
-                            id: chat.partner_username,
-                            name: chat.partner_username,
-                            partner: chat.partner_username,
-                          });
-                          setIsChatWorkspaceOpen(true);
-                        } else if (chat.is_project_chat) {
-                          setWorkspaceChatTarget({
-                            type: 'project',
-                            id: chat.board_id,
-                            name: chat.board_name || 'Project Chat',
-                            board_id: chat.board_id,
-                          });
-                          setIsChatWorkspaceOpen(true);
-                        } else {
-                          handleNotificationTaskClick(chat.task_id);
-                        }
-                      }}
-                      className={`flex flex-col gap-1 border-b border-neutral-100 dark:border-neutral-800 pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 p-2 -mx-2 rounded-lg transition-all ${
-                        isUnread 
-                          ? 'bg-indigo-50/50 dark:bg-indigo-950/20 border-l-2 border-l-indigo-500 pl-3' 
-                          : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="text-lg shrink-0">
-                          {chat.is_dm ? '💬' : chat.is_project_chat ? '🏢' : '📋'}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate flex items-center gap-1.5">
-                            {chat.is_dm
-                              ? `DM: @${chat.partner_username}`
-                              : chat.is_project_chat
-                              ? `Project: ${chat.board_name}`
-                              : chat.project_name}
-                            {isUnread && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 inline-block animate-pulse" title="Unread" />
-                            )}
-                          </div>
-                          <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
-                            @{chat.latest_sender}
-                          </div>
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-medium ml-auto shrink-0 self-start">
-                          {formatDateMMM(chat.timestamp)}
-                        </div>
-                      </div>
-                      {!chat.is_dm && (
-                        <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mt-1 line-clamp-2 pl-7">
-                          {cleanMarkdown(displayMessage)}
-                        </div>
-                      )}
+            <div className="space-y-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tMsg('Distribusi Proyek', 'Distribusi Proyek')}</h4>
+              <div className="space-y-3">
+                {projectDistribution.length > 0 ? projectDistribution.map((dist, idx) => (
+                  <div key={dist.id}>
+                    <div className="flex justify-between text-xs mb-1.5 font-medium">
+                      <span className="text-slate-600 dark:text-slate-400 truncate pr-2">{dist.name}</span>
+                      <span className="text-slate-900 dark:text-white font-bold">{dist.percentage}%</span>
                     </div>
-                  );
-                }) : (
-                  <div className="text-sm text-slate-500 flex flex-col items-center h-full justify-center text-center gap-2">
-                    <div className="text-4xl">💭</div>
-                    <div>{tMsg('No recent comments found.', 'Tidak ada komentar terbaru.')}</div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className={`h-2 rounded-full ${idx === 0 ? 'bg-indigo-900 dark:bg-yellow-400' : idx === 1 ? 'bg-indigo-600 dark:bg-yellow-500/80' : 'bg-slate-400 dark:bg-slate-600'}`} 
+                        style={{ width: `${dist.percentage}%` }}
+                      ></div>
+                    </div>
                   </div>
-                );
-              })()}
+                )) : (
+                  <div className="text-xs text-slate-500 text-center py-4">{tMsg('Tidak ada data proyek aktif.', 'Tidak ada data proyek aktif.')}</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Getting Started CTA */}
-        <div className="mt-8 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 text-center flex flex-col items-center pb-10">
-          <div className="text-4xl mb-4 animate-bounce">🚀</div>
-          <h3 className="text-xl font-black text-black dark:text-white mb-2 tracking-tight">
-            {tMsg('Ready to get things done?', 'Siap untuk menyelesaikan tugas?')}
-          </h3>
-          <p className="text-slate-600 dark:text-slate-400 max-w-lg mx-auto text-sm mb-6 leading-relaxed">
-            {tMsg(
-              'Select a project from the sidebar to view your board, or see the big picture to see everything at once.',
-              'Pilih proyek dari sidebar untuk melihat papan Anda, atau lihat gambaran besar untuk melihat semuanya sekaligus.'
-            )}
-          </p>
-          <button
+          {/* Workspace Focus (2 Cols) */}
+          <div className="lg:col-span-2 bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl p-6 shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex flex-col">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{tMsg('Ruang Kerja Terfokus', 'Ruang Kerja Terfokus')}</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
+              {/* Left Col: Tasks */}
+              <div className="flex flex-col">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span className="material-symbols-outlined text-[18px]">list_alt</span>
+                  {tMsg('Antrean Teratas Saya', 'Antrean Teratas Saya')}
+                </h4>
+                <div className="space-y-3 flex-1">
+                  {topQueueTasks.length > 0 ? topQueueTasks.map((task, idx) => (
+                    <div 
+                      key={task.id}
+                      onClick={() => openTaskInGlobal(task)}
+                      className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex items-start gap-4"
+                    >
+                      {/* Left side Queue Badge */}
+                      <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400 font-bold text-xs">
+                        #{idx + 1}
+                      </span>
+                      
+                      <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">
+                          {task.title}
+                        </span>
+                        
+                        {/* Row 1 of metadata: Project name, category, impact, etc */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 text-[10px] font-bold rounded border border-indigo-100/50 dark:border-indigo-900/30">
+                            {task.project_name || 'Global'}
+                          </span>
+                          
+                          {task.category && (
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold rounded">
+                              {task.category}
+                            </span>
+                          )}
+                          
+                          {task.impact && (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                              task.impact === 'High' ? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-950 dark:text-red-400 dark:border-transparent' :
+                              task.impact === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-950 dark:text-yellow-400 dark:border-transparent' :
+                              'bg-green-50 text-green-600 border-green-100 dark:bg-green-950 dark:text-green-400 dark:border-transparent'
+                            }`}>
+                              <span>⚡</span>
+                              <span>{task.impact}</span>
+                            </span>
+                          )}
+                          
+                          {task.etc && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50/50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold rounded">
+                              <span>🕒</span>
+                              <span>{task.etc}h</span>
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Row 2 of metadata: Dates strip */}
+                        <div className="flex flex-wrap items-center gap-4 bg-slate-50/60 dark:bg-slate-800/40 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800/60 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                          {(() => {
+                            const formatShortDate = (dateStr) => {
+                              if (!dateStr) return '';
+                              try {
+                                const datePart = dateStr.split('T')[0];
+                                const parts = datePart.split('-');
+                                if (parts.length === 3) {
+                                  const day = parseInt(parts[2], 10);
+                                  const monthIndex = parseInt(parts[1], 10) - 1;
+                                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                  return `${day} ${months[monthIndex] || ''}`;
+                                }
+                                const d = new Date(dateStr);
+                                if (isNaN(d.getTime())) return dateStr;
+                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                return `${d.getDate()} ${months[d.getMonth()]}`;
+                              } catch (e) {
+                                return dateStr;
+                              }
+                            };
+                            return (
+                              <>
+                                <span className="flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                  <span>Start: {formatShortDate(task.start_date || task.timestamp)}</span>
+                                </span>
+                                
+                                {task.deadline && (
+                                  <>
+                                    <span className="flex items-center gap-1">
+                                      <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                      <span>Due: {formatShortDate(task.deadline)}</span>
+                                    </span>
+                                    
+                                    {(() => {
+                                      const now = new Date();
+                                      const d = new Date(task.deadline);
+                                      now.setHours(0,0,0,0);
+                                      d.setHours(0,0,0,0);
+                                      const diffMs = d.getTime() - now.getTime();
+                                      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                                      if (diffDays < 0) {
+                                        return (
+                                          <span className="px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 rounded text-[9px] font-bold">
+                                            {tMsg(`Overdue ${Math.abs(diffDays)} Days`, `Terlambat ${Math.abs(diffDays)} Hari`)}
+                                          </span>
+                                        );
+                                      }
+                                    })()}
+                                  </>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="text-sm text-slate-500 flex flex-col items-center h-full justify-center text-center gap-2 py-8">
+                      <div className="text-4xl">🎉</div>
+                      <div>{tMsg('Tidak ada tugas tertunda!', 'Tidak ada tugas tertunda!')}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Col: Comments */}
+              <div className="flex flex-col">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span className="material-symbols-outlined text-[18px]">forum</span>
+                  {tMsg('Komentar Terbaru', 'Komentar Terbaru')}
+                </h4>
+                <div className="space-y-4 flex-1">
+                  {isInboxLoading && inboxChats.length === 0 ? (
+                    <div className="flex justify-center items-center h-32">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-900 dark:border-yellow-400 border-t-transparent"></div>
+                    </div>
+                  ) : (() => {
+                    const visibleChats = inboxChats.filter(chat => !(chat.latest_message || '').includes('<!--PRIVATE:'));
+                    return visibleChats.length > 0 ? visibleChats.slice(0, 3).map(chat => {
+                      const isUnread = (() => {
+                        if (chat.latest_sender === currentUser) return false;
+                        if (chat.is_dm) return chat.unread_count > 0;
+                        const lastReadKey = chat.is_project_chat ? `alurku_last_read_board_${chat.board_id}_${currentUser}` : `alurku_last_read_task_${chat.task_id}_${currentUser}`;
+                        const lastRead = localStorage.getItem(lastReadKey);
+                        return !lastRead || chat.timestamp > lastRead;
+                      })();
+
+                      return (
+                        <div 
+                          key={`${chat.is_dm ? 'dm-' + chat.partner_username : chat.task_id}-${chat.timestamp}`}
+                          onClick={() => {
+                            if (chat.is_dm) {
+                              setWorkspaceChatTarget({ type: 'dm', id: chat.partner_username, name: chat.partner_username, partner: chat.partner_username });
+                              setIsChatWorkspaceOpen(true);
+                            } else if (chat.is_project_chat) {
+                              setWorkspaceChatTarget({ type: 'project', id: chat.board_id, name: chat.board_name || 'Project Chat', board_id: chat.board_id });
+                              setIsChatWorkspaceOpen(true);
+                            } else {
+                              handleNotificationTaskClick(chat.task_id);
+                            }
+                          }}
+                          className={`flex gap-3 cursor-pointer group p-2 -mx-2 rounded-xl transition-all ${isUnread ? 'bg-indigo-50/50 dark:bg-yellow-400/5' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                        >
+                          <div className="w-9 h-9 shrink-0 relative mt-0.5">
+                            <Avatar name={chat.latest_sender} url={avatarsMap?.[chat.latest_sender]} size="w-9 h-9" />
+                            {isUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full"></span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-baseline mb-1 gap-2">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                @{chat.latest_sender} <span className="text-slate-400 font-normal">in {chat.is_dm ? 'DM' : chat.project_name || chat.board_name}</span>
+                              </span>
+                              <span className="text-[10px] font-medium text-slate-400 shrink-0">{formatDateMMM(chat.timestamp)}</span>
+                            </div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl rounded-tl-sm border border-slate-200 dark:border-slate-700/50 line-clamp-2 leading-relaxed group-hover:border-indigo-200 dark:group-hover:border-yellow-400/30 transition-colors">
+                              {cleanMarkdown(chat.latest_message || '...')}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }) : (
+                      <div className="text-sm text-slate-500 flex flex-col items-center justify-center h-32 text-center gap-2">
+                        <div className="text-3xl">💭</div>
+                        <div>{tMsg('Tidak ada komentar terbaru.', 'Tidak ada komentar terbaru.')}</div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Call to Action Banner */}
+        <section className="bg-indigo-950 dark:bg-slate-800 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between shadow-xl relative overflow-hidden border border-indigo-900 dark:border-slate-700">
+          <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at right, #facc15 0%, transparent 60%)' }}></div>
+          <div className="flex items-center gap-6 z-10 mb-6 md:mb-0 w-full md:w-auto">
+            <div className="p-4 bg-yellow-400 rounded-2xl text-indigo-950 hidden sm:block shrink-0 shadow-inner">
+              <span className="material-symbols-outlined text-[32px]">rocket_launch</span>
+            </div>
+            <div>
+              <h3 className="text-xl md:text-2xl font-black mb-2 tracking-tight">{tMsg('Siap untuk menyelesaikan tugas?', 'Siap untuk menyelesaikan tugas?')}</h3>
+              <p className="text-indigo-200 dark:text-slate-400 text-sm md:text-base font-medium">
+                {tMsg('Buka Tampilan Master untuk manajemen mendalam.', 'Buka Tampilan Master untuk manajemen mendalam.')}
+              </p>
+            </div>
+          </div>
+          <button 
             onClick={() => {
               setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(false);
               setShowOverdueOnly(false);
             }}
-            className="group relative inline-flex items-center justify-center gap-3 bg-black dark:bg-white text-white dark:text-black font-black py-4 px-10 rounded-2xl transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 text-sm md:text-base overflow-hidden"
+            className="px-8 py-3.5 bg-yellow-400 text-indigo-950 font-black text-sm md:text-base uppercase tracking-wider rounded-xl shadow-[0_4px_14px_rgba(250,204,21,0.4)] hover:bg-yellow-300 hover:shadow-[0_6px_20px_rgba(250,204,21,0.6)] hover:-translate-y-1 transition-all z-10 w-full md:w-auto text-center"
           >
-            <div className="absolute inset-0 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
-            <span className="text-xl group-hover:scale-125 transition-transform duration-300">🌍</span> 
-            <span>{tMsg('Master View', 'Tampilan Master')}</span>
-            <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
+            {tMsg('Tampilan Master', 'Tampilan Master')}
           </button>
-        </div>
+        </section>
+
       </div>
     </div>
   );

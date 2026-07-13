@@ -30,3 +30,30 @@ html:not(.dark) body div.bg-indigo-600.chat-msg-bubble,
 .dark body div.bg-indigo-600.chat-msg-bubble {
   font-weight: 400 !important;
 }
+
+/* Stitch Design System classes */
+.ai-glow {
+  box-shadow: 0 0 40px rgba(254, 208, 27, 0.15), inset 0 0 20px rgba(254, 208, 27, 0.05);
+  background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(254, 208, 27, 0.08) 100%) !important;
+  border: 1px solid rgba(254, 208, 27, 0.2) !important;
+}
+
+.dark .ai-glow {
+  box-shadow: 0 0 40px rgba(254, 208, 27, 0.1), inset 0 0 20px rgba(254, 208, 27, 0.05);
+  background: linear-gradient(135deg, rgba(25, 28, 35, 1) 0%, rgba(254, 208, 27, 0.08) 100%) !important;
+  border: 1px solid rgba(254, 208, 27, 0.15) !important;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 4px 24px rgba(17, 30, 56, 0.04) !important;
+}
+
+.dark .glass-card {
+  background: rgba(18, 27, 45, 0.7) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25) !important;
+}
