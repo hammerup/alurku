@@ -56,40 +56,38 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#111E38] text-white"
-      style={{ minHeight: '100vh', paddingTop: '80px', paddingBottom: '120px' }}
+      className="relative w-full overflow-hidden bg-[#111E38] text-white min-h-screen pt-24 pb-16 lg:pt-32 lg:pb-32"
     >
       <div
-        className="max-w-[1440px] mx-auto px-8 lg:px-16 grid items-center"
-        style={{ gridTemplateColumns: '1fr 1.4fr', gap: '60px', minHeight: 'calc(100vh - 200px)' }}
+        className="max-w-360 mx-auto px-6 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 lg:gap-16 items-center min-h-[calc(100vh-200px)] py-12 lg:py-0"
       >
         {/* ── LEFT: COPY ── */}
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col"
+          className="flex flex-col items-center lg:items-start text-center lg:text-left"
         >
           {/* Tagline capsule pill above H1 */}
-          <div className="inline-flex items-center self-start mb-5">
-            <span className="text-xs font-semibold text-white/80 border border-white/20 bg-white/10 px-4 py-1.5 rounded-full leading-snug">
+          <div className="inline-flex items-center mb-5">
+            <span className="text-xs font-semibold text-white/80 border border-white/20 bg-white/10 px-4 py-1.5 rounded-full leading-snug text-center">
               {tagline}
             </span>
           </div>
 
           <h1
-            className="font-bold text-white leading-none tracking-tight mb-8"
-            style={{ fontSize: 'clamp(42px, 5vw, 76px)' }}
+            className="font-bold text-white leading-tight tracking-tight mb-8 text-center lg:text-left"
+            style={{ fontSize: 'clamp(36px, 5vw, 76px)' }}
           >
             {title}
           </h1>
-          <p className="text-neutral-300 leading-relaxed mb-12" style={{ fontSize: '1.1rem', maxWidth: '420px' }}>
+          <p className="text-neutral-300 leading-relaxed mb-12 text-center lg:text-left max-w-lg lg:max-w-105" style={{ fontSize: '1.1rem' }}>
             {subtitle}
           </p>
 
           {showEmailInput ? (
-            <div className="space-y-2 animate-fade-up">
-              <form onSubmit={handleQuickSignup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full max-w-md">
+            <div className="space-y-3 animate-fade-up w-full max-w-md flex flex-col items-center lg:items-start">
+              <form onSubmit={handleQuickSignup} className="flex flex-col sm:flex-row items-stretch gap-3 w-full">
                 <input
                   type="email"
                   required
@@ -99,47 +97,49 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   className="flex-1 px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-neutral-400 focus:outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] transition-all text-sm"
                   disabled={isLoading}
                 />
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-6 py-3.5 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] disabled:bg-neutral-500 disabled:text-neutral-300 transition-colors text-sm shrink-0 flex items-center justify-center min-w-[100px]"
-                >
-                  {isLoading ? (
-                    <svg className="animate-spin h-5 w-5 text-[#111E38]" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : (
-                    isId ? 'Daftar' : 'Sign Up'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEmailInput(false)}
-                  className="px-4 py-3.5 rounded-full text-white/60 hover:text-white transition-colors text-sm"
-                  disabled={isLoading}
-                >
-                  {isId ? 'Batal' : 'Cancel'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 sm:flex-initial px-6 py-3.5 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] disabled:bg-neutral-500 disabled:text-neutral-300 transition-colors text-sm shrink-0 flex items-center justify-center min-w-25"
+                  >
+                    {isLoading ? (
+                      <svg className="animate-spin h-5 w-5 text-[#111E38]" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      isId ? 'Daftar' : 'Sign Up'
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailInput(false)}
+                    className="px-4 py-3.5 rounded-full text-white/60 hover:text-white transition-colors text-sm"
+                    disabled={isLoading}
+                  >
+                    {isId ? 'Batal' : 'Cancel'}
+                  </button>
+                </div>
               </form>
-              <p className="text-xs text-neutral-400 font-medium pl-4">
+              <p className="text-xs text-neutral-400 font-medium pl-4 text-center lg:text-left">
                 ℹ️ {isId 
                   ? 'Pendaftaran akan otomatis membuat akun pengujian di Sandbox Private Beta kami.' 
                   : 'Registration will automatically create a testing account in our Private Beta Sandbox.'}
               </p>
             </div>
           ) : (
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <button
                 onClick={handleStart}
-                className="px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors"
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors text-center"
                 style={{ fontSize: '1rem' }}
               >
                 {isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.'}
               </button>
               <button
                 onClick={() => setShowEmailInput(true)}
-                className="px-8 py-4 rounded-full font-bold text-white border-2 border-white hover:bg-white/10 transition-colors"
+                className="w-full sm:w-auto px-8 py-4 rounded-full font-bold text-white border-2 border-white hover:bg-white/10 transition-colors text-center"
                 style={{ fontSize: '1rem' }}
               >
                 {isId ? 'Daftar Akses Awal (Beta)' : 'Register Early Access (Beta)'}
@@ -153,7 +153,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
           initial={{ opacity: 0, x: 48 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="relative"
+          className="hidden lg:block relative w-full"
           style={{ height: '580px' }}
         >
 
@@ -264,7 +264,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                 <div className="flex gap-3 flex-1 overflow-hidden pb-4">
 
                   {/* ── COL 1: To Do ── */}
-                  <div className="w-[148px] shrink-0 flex flex-col gap-2">
+                  <div className="w-37 shrink-0 flex flex-col gap-2">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-neutral-700">To Do</span>
@@ -302,7 +302,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   </div>
 
                   {/* ── COL 2: In Progress ── */}
-                  <div className="w-[148px] shrink-0 flex flex-col gap-2">
+                  <div className="w-37 shrink-0 flex flex-col gap-2">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-blue-600">In Progress</span>
@@ -345,7 +345,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   </div>
 
                   {/* ── COL 3: Done ── */}
-                  <div className="w-[148px] shrink-0 flex flex-col gap-2">
+                  <div className="w-37 shrink-0 flex flex-col gap-2">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] font-bold text-emerald-600">Done</span>
@@ -376,7 +376,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   </div>
 
                   {/* ── COL 4: Rejected ── */}
-                  <div className="w-[110px] shrink-0 flex flex-col gap-2">
+                  <div className="w-27.5 shrink-0 flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="text-[10px] font-bold text-red-500">Rejected</span>
                       <span className="w-4 h-4 rounded-full bg-red-100 text-[8px] font-bold text-red-500 flex items-center justify-center">1</span>
