@@ -37,6 +37,7 @@ export default function HomeDashboard() {
     accountStatus,
     setShowMyTasks,
     setShowOverdueOnly,
+    setShowDueTodayOnly,
     isLoading,
     isTasksLoading,
     isBoardsLoading,
@@ -426,13 +427,13 @@ export default function HomeDashboard() {
           </div>
         </div>
 
-        {/* Quick Stats Grid */}
         <div className="tour-quick-stats grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div 
             onClick={() => {
               setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(true);
               setShowOverdueOnly(false);
+              setShowDueTodayOnly(false);
             }}
             className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 p-6 rounded-2xl shadow-sm hover:shadow-lg hover:border-black dark:hover:border-white transition-all cursor-pointer group flex flex-col justify-between"
           >
@@ -477,6 +478,7 @@ export default function HomeDashboard() {
               setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
               setShowOverdueOnly(true);
               setShowMyTasks(false);
+              setShowDueTodayOnly(false);
             }}
             className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md border border-red-100 dark:border-red-900/30 p-6 rounded-2xl shadow-sm relative overflow-hidden hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
           >

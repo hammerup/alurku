@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useCloseAnimation, LoadingSpinner } from './Utils';
 import { Avatar } from './SharedUI';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
+import { useAppContext } from './hooks/useAppContext';
 
 export default function ProactiveAIPage({
   setIsProactiveAIOpen,
@@ -24,6 +25,17 @@ export default function ProactiveAIPage({
   setIsDarkMode,
   setLanguage,
 }) {
+  const {
+    setShowMyTasks,
+    setShowOverdueOnly,
+    setShowDueTodayOnly,
+    setSearchQuery,
+    setFilterStatus,
+    setFilterCategory,
+    setFilterAssignee,
+    isUserAssigned,
+  } = useAppContext();
+
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingText, setLoadingText] = useState('');
@@ -708,22 +720,61 @@ USER REQUEST:
 
             {/* Dashboard Overview Shortcuts */}
             {(() => {
-              const activeCount = (tasks || []).filter(t => t.status !== 'completed').length;
+              const activeCount = (tasks || []).filter(t => 
+                isUserAssigned(t, currentUser) && 
+                t.status !== 'Done' && 
+                t.status !== 'Rejected'
+              ).length;
               const todayCount = (tasks || []).filter(t => {
-                const todayStr = new Date().toISOString().split('T')[0];
+                if (!isUserAssigned(t, currentUser)) return false;
+                if (t.status === 'Done' || t.status === 'Rejected') return false;
+                const todayStr = getLocalToday();
                 return t.deadline && t.deadline.startsWith(todayStr);
               }).length;
               const overdueCount = (tasks || []).filter(t => {
-                if (t.status === 'completed' || !t.deadline) return false;
-                const todayStr = new Date().toISOString().split('T')[0];
-                return t.deadline < todayStr;
+                if (!isUserAssigned(t, currentUser)) return false;
+                if (t.status === 'Done' || t.status === 'Rejected') return false;
+                if (!t.deadline) return false;
+                const todayStr = getLocalToday();
+                const deadlineDateStr = t.deadline.split(' ')[0];
+                return deadlineDateStr < todayStr;
               }).length;
+
+              const navigateToGlobalKanban = (filterType) => {
+                setSelectedBoard({
+                  id: 'global',
+                  name: language === 'id' ? 'Lihat Gambaran Besar' : 'See the Big Picture',
+                  role: 'owner',
+                  isVirtual: true
+                });
+                setViewMode('kanban');
+                setShowMyTasks(true);
+                setSearchQuery('');
+                setFilterStatus('All');
+                setFilterCategory('All');
+                setFilterAssignee('All');
+
+                if (filterType === 'active') {
+                  setShowOverdueOnly(false);
+                  setShowDueTodayOnly(false);
+                } else if (filterType === 'today') {
+                  setShowOverdueOnly(false);
+                  setShowDueTodayOnly(true);
+                } else if (filterType === 'overdue') {
+                  setShowOverdueOnly(true);
+                  setShowDueTodayOnly(false);
+                }
+                close();
+              };
 
               return (
                 <div className="grid grid-cols-3 gap-3 mb-4 shrink-0">
-                  <div className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm transition-all duration-300 ${
-                    isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
-                  }`}>
+                  <div 
+                    onClick={() => navigateToGlobalKanban('active')}
+                    className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm cursor-pointer hover:border-indigo-500 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
+                      isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
+                    }`}
+                  >
                     <span className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-white/40' : 'text-[#0b1c30]/40'}`}>
                       {tMsg('Active Tasks', 'Tugas Aktif')}
                     </span>
@@ -731,9 +782,12 @@ USER REQUEST:
                       {activeCount}
                     </span>
                   </div>
-                  <div className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm transition-all duration-300 ${
-                    isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
-                  }`}>
+                  <div 
+                    onClick={() => navigateToGlobalKanban('today')}
+                    className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm cursor-pointer hover:border-yellow-500 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
+                      isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
+                    }`}
+                  >
                     <span className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-white/40' : 'text-[#0b1c30]/40'}`}>
                       {tMsg('Due Today', 'Hari Ini')}
                     </span>
@@ -741,9 +795,12 @@ USER REQUEST:
                       {todayCount}
                     </span>
                   </div>
-                  <div className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm transition-all duration-300 ${
-                    isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
-                  }`}>
+                  <div 
+                    onClick={() => navigateToGlobalKanban('overdue')}
+                    className={`p-3 rounded-2xl border flex flex-col justify-between shadow-sm cursor-pointer hover:border-rose-500 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 ${
+                      isDarkMode ? 'bg-neutral-800/40 border-white/5' : 'bg-white border-black/5'
+                    }`}
+                  >
                     <span className={`text-[9px] font-black uppercase tracking-wider ${isDarkMode ? 'text-white/40' : 'text-[#0b1c30]/40'}`}>
                       {tMsg('Overdue', 'Terlambat')}
                     </span>

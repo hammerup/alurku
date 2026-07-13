@@ -32,6 +32,8 @@ export default function MainToolbar() {
     setShowMyTasks,
     showOverdueOnly,
     setShowOverdueOnly,
+    showDueTodayOnly,
+    setShowDueTodayOnly,
     showUnreadOnly,
     setShowUnreadOnly,
     showHasSubtasks,
@@ -75,8 +77,8 @@ export default function MainToolbar() {
             <span 
               onClick={() => {
                 setSelectedBoard(null);
-                setIsProactiveAIOpen(true);
-                window.history.pushState({}, '', '/');
+                setIsProactiveAIOpen(false);
+                window.history.pushState({}, '', '/dashboard');
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
               className="cursor-pointer hover:text-indigo-600 hover:underline transition-colors flex items-center gap-1 shrink-0"
@@ -342,7 +344,10 @@ export default function MainToolbar() {
           <button
             onClick={() => {
               setShowMyTasks(!showMyTasks);
-              if (!showMyTasks) setShowOverdueOnly(false);
+              if (!showMyTasks) {
+                setShowOverdueOnly(false);
+                setShowDueTodayOnly(false);
+              }
             }}
             disabled={accountStatus === 'suspended'}
             className={`py-1.5 px-3 rounded-full shadow-sm focus:outline-none text-xs font-semibold transition-all border flex justify-center items-center gap-1.5 whitespace-nowrap shrink-0 ${
@@ -360,11 +365,14 @@ export default function MainToolbar() {
           <button
             onClick={() => {
               setShowOverdueOnly(!showOverdueOnly);
-              if (!showOverdueOnly) setShowMyTasks(false);
+              if (!showOverdueOnly) {
+                setShowMyTasks(false);
+                setShowDueTodayOnly(false);
+              }
             }}
             className={`py-1.5 px-3 rounded-full shadow-sm focus:outline-none text-xs font-semibold transition-all border flex justify-center items-center gap-1.5 whitespace-nowrap shrink-0 ${
               showOverdueOnly
-                ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/30 dark:text-amber-300'
+                ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/20 dark:border-rose-500/30 dark:text-rose-300'
                 : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
             }`}
           >
@@ -373,7 +381,29 @@ export default function MainToolbar() {
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
-            {tMsg('Overdue', 'Terlambat')}
+            {language === 'id' ? 'Terlambat' : 'Overdue'}
+          </button>
+          <button
+            onClick={() => {
+              setShowDueTodayOnly(!showDueTodayOnly);
+              if (!showDueTodayOnly) {
+                setShowMyTasks(false);
+                setShowOverdueOnly(false);
+              }
+            }}
+            className={`py-1.5 px-3 rounded-full shadow-sm focus:outline-none text-xs font-semibold transition-all border flex justify-center items-center gap-1.5 whitespace-nowrap shrink-0 ${
+              showDueTodayOnly
+                ? 'bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-500/20 dark:border-yellow-500/30 dark:text-yellow-300'
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            {language === 'id' ? 'Hari Ini' : 'Due Today'}
           </button>
           <button
             onClick={() => setShowUnreadOnly(!showUnreadOnly)}

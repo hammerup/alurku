@@ -302,6 +302,7 @@ export default function useAppLogic() {
   const [filterAssignee, setFilterAssignee] = useState('All');
   const [showMyTasks, setShowMyTasks] = useState(false);
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
+  const [showDueTodayOnly, setShowDueTodayOnly] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [showHasSubtasks, setShowHasSubtasks] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(() => {
@@ -3556,6 +3557,17 @@ export default function useAppLogic() {
           return end < now;
         })();
 
+      const matchDueToday =
+        !showDueTodayOnly ||
+        (() => {
+          if (!task.deadline) return false;
+          const status = (task.status || '').toLowerCase();
+          if (status === 'done' || status === 'rejected') return false;
+          const todayStr = getLocalToday();
+          const deadlineDateStr = task.deadline.split(' ')[0];
+          return deadlineDateStr === todayStr;
+        })();
+
       return (
         matchSearch &&
         matchStatus &&
@@ -3565,7 +3577,8 @@ export default function useAppLogic() {
         matchUnread &&
         matchHasSubtasks &&
         matchHideCompleted &&
-        matchOverdue
+        matchOverdue &&
+        matchDueToday
       );
     });
 
@@ -4680,6 +4693,8 @@ export default function useAppLogic() {
     setShowMyTasks,
     showOverdueOnly,
     setShowOverdueOnly,
+    showDueTodayOnly,
+    setShowDueTodayOnly,
     showUnreadOnly,
     setShowUnreadOnly,
     showHasSubtasks,
