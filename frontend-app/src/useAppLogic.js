@@ -3544,12 +3544,13 @@ export default function useAppLogic() {
           (viewMode === 'kanban' || viewMode === 'list' || viewMode === 'timeline' || viewMode === 'calendar')
         ) ||
         (task.status !== 'Done' && task.status !== 'Rejected');
-      const matchOverdue =
-        !showOverdueOnly ||
-        (() => {
-          if (!task.deadline) return false;
-          const status = (task.status || '').toLowerCase();
-          if (status === 'done' || status === 'rejected') return false;
+      const matchDateFilter = (() => {
+        if (!showOverdueOnly && !showDueTodayOnly) return true;
+        if (!task.deadline) return false;
+        const status = (task.status || '').toLowerCase();
+        if (status === 'done' || status === 'rejected') return false;
+
+        const isOverdue = (() => {
           const end = new Date(task.deadline);
           const now = new Date();
           end.setHours(0, 0, 0, 0);
@@ -3557,16 +3558,19 @@ export default function useAppLogic() {
           return end < now;
         })();
 
-      const matchDueToday =
-        !showDueTodayOnly ||
-        (() => {
-          if (!task.deadline) return false;
-          const status = (task.status || '').toLowerCase();
-          if (status === 'done' || status === 'rejected') return false;
+        const isDueToday = (() => {
           const todayStr = getLocalToday();
           const deadlineDateStr = task.deadline.split(' ')[0];
           return deadlineDateStr === todayStr;
         })();
+
+        if (showOverdueOnly && showDueTodayOnly) {
+          return isOverdue || isDueToday;
+        }
+        if (showOverdueOnly) return isOverdue;
+        if (showDueTodayOnly) return isDueToday;
+        return true;
+      })();
 
       return (
         matchSearch &&
@@ -3577,8 +3581,7 @@ export default function useAppLogic() {
         matchUnread &&
         matchHasSubtasks &&
         matchHideCompleted &&
-        matchOverdue &&
-        matchDueToday
+        matchDateFilter
       );
     });
 

@@ -344,10 +344,6 @@ export default function MainToolbar() {
           <button
             onClick={() => {
               setShowMyTasks(!showMyTasks);
-              if (!showMyTasks) {
-                setShowOverdueOnly(false);
-                setShowDueTodayOnly(false);
-              }
             }}
             disabled={accountStatus === 'suspended'}
             className={`py-1.5 px-3 rounded-full shadow-sm focus:outline-none text-xs font-semibold transition-all border flex justify-center items-center gap-1.5 whitespace-nowrap shrink-0 ${
@@ -365,10 +361,6 @@ export default function MainToolbar() {
           <button
             onClick={() => {
               setShowOverdueOnly(!showOverdueOnly);
-              if (!showOverdueOnly) {
-                setShowMyTasks(false);
-                setShowDueTodayOnly(false);
-              }
             }}
             className={`py-1.5 px-3 rounded-full shadow-sm focus:outline-none text-xs font-semibold transition-all border flex justify-center items-center gap-1.5 whitespace-nowrap shrink-0 ${
               showOverdueOnly
@@ -386,10 +378,6 @@ export default function MainToolbar() {
           <button
             onClick={() => {
               setShowDueTodayOnly(!showDueTodayOnly);
-              if (!showDueTodayOnly) {
-                setShowMyTasks(false);
-                setShowOverdueOnly(false);
-              }
             }}
             className={`py-1.5 px-3 rounded-full shadow-sm focus:outline-none text-xs font-semibold transition-all border flex justify-center items-center gap-1.5 whitespace-nowrap shrink-0 ${
               showDueTodayOnly
