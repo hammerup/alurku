@@ -334,12 +334,106 @@ export default function Sidebar() {
         } ${isCollapsed ? 'w-16' : 'w-64 md:w-72'}`}
       >
         <div
-          className={`h-16 hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
-            isCollapsed ? 'px-3 justify-center' : 'px-4 justify-between'
+          className={`hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
+            isCollapsed ? 'h-auto py-3 flex-col gap-2 px-3 justify-center' : 'h-16 px-4 justify-between'
           } relative`}
         >
           {isCollapsed ? (
-            null
+            <>
+              {/* Compact Workspace Switcher when collapsed */}
+              {workspaces && workspaces.length > 0 && (
+                <div className="relative z-60">
+                  <button
+                    onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
+                    className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
+                    title={`${tMsg('Workspace', 'Ruang Kerja')}: ${activeWorkspace?.name || ''}`}
+                  >
+                    {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
+                  </button>
+                  {isWorkspaceMenuOpen && (
+                    <div className="absolute left-full top-0 ml-2 w-60 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5 animate-fadeIn">
+                      <div className="max-h-48 overflow-y-auto space-y-0.5">
+                        {workspaces.map((ws) => (
+                          <button
+                            key={`ws-opt-${ws.id}`}
+                            onClick={() => {
+                              switchWorkspace(ws);
+                              setIsWorkspaceMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                              ws.id === activeWorkspace?.id
+                                ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
+                                : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
+                            }`}
+                          >
+                            <span className="truncate">{ws.name}</span>
+                            {ws.id === activeWorkspace?.id && (
+                              <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="border-t border-slate-100 dark:border-neutral-800 mt-1.5 pt-1.5 px-1.5">
+                        {isCreatingWs ? (
+                          <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5">
+                            <input
+                              type="text"
+                              placeholder={tMsg('New Workspace Name', 'Nama Workspace Baru')}
+                              value={newWsName}
+                              onChange={(e) => setNewWsName(e.target.value)}
+                              className="flex-1 bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs rounded-lg px-2.5 py-1.5 outline-none text-black dark:text-white"
+                              autoFocus
+                            />
+                            <button
+                              type="submit"
+                              className="px-2.5 py-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:bg-[#1a2d52] dark:hover:bg-yellow-400 transition-colors"
+                            >
+                              +
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsCreatingWs(false)}
+                              className="px-2 py-1.5 bg-slate-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded-lg hover:bg-slate-200 transition-colors"
+                            >
+                              ✕
+                            </button>
+                          </form>
+                        ) : (
+                          <button
+                            onClick={() => setIsCreatingWs(true)}
+                            className="w-full text-center py-1.5 bg-[#111E38]/8 hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/20 dark:text-[#FACC15] text-xs font-bold rounded-lg transition-all border border-[#111E38]/15 dark:border-transparent"
+                          >
+                            + {tMsg('Create Workspace', 'Buat Workspace')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Expand Sidebar button under switcher when collapsed */}
+              <button
+                onClick={toggleCollapse}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                title="Expand sidebar"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <path d="M9 3v18" />
+                  <path d="M14 9l3 3-3 3" />
+                </svg>
+              </button>
+            </>
           ) : (
             <>
               {/* Workspace Switcher in Header */}
@@ -450,7 +544,40 @@ export default function Sidebar() {
           )}
         </div>
 
-        {!isCollapsed && (
+        {isCollapsed ? (
+          <div className="flex flex-col items-center gap-4 py-4 border-b border-neutral-200/50 dark:border-neutral-800/50 shrink-0">
+            {/* Collapsed Search Button */}
+            <button
+              onClick={() => {
+                toggleCollapse();
+                setTimeout(() => {
+                  const inputEl = document.querySelector('input[placeholder*="Search"]');
+                  if (inputEl) inputEl.focus();
+                }, 150);
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+              title={tMsg('Search everywhere...', 'Cari dimana saja...')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+
+            {/* Collapsed Add New Project Button */}
+            <button
+              onClick={() => {
+                setIsCreateBoardOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              disabled={accountStatus === 'suspended'}
+              className="w-8 h-8 flex items-center justify-center bg-black dark:bg-white text-white dark:text-black hover:opacity-80 font-bold rounded-lg transition-opacity disabled:opacity-50 shadow-xs"
+              title={tMsg('New Project', 'Proyek Baru')}
+            >
+              <IconPlus className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
           <div className="px-4 pt-5 pb-2 shrink-0 relative">
             <div className="relative mb-3 group z-50">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors">
@@ -658,29 +785,7 @@ export default function Sidebar() {
             isCollapsed ? 'pt-0' : 'pt-2'
           }`}
         >
-          {isCollapsed && (
-            <div className="sticky top-0 bg-white dark:bg-neutral-950 z-10 flex flex-col items-center py-2 mb-2 border-b border-neutral-100 dark:border-neutral-800 w-full">
-              <button
-                onClick={toggleCollapse}
-                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-                title="Expand sidebar"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  viewBox="0 0 24 24"
-                >
-                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                  <path d="M9 3v18" />
-                  <path d="M14 9l3 3-3 3" />
-                </svg>
-              </button>
-            </div>
-          )}
+
           <div className={`mb-2 ${isCollapsed ? 'mt-0' : 'mt-2'}`}>
             <button
               onClick={() => {
