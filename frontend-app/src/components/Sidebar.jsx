@@ -335,137 +335,120 @@ export default function Sidebar() {
       >
         <div
           className={`h-16 hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
-            isCollapsed ? 'px-3 justify-center' : 'px-6'
-          }`}
+            isCollapsed ? 'px-3 justify-center' : 'px-4 justify-between'
+          } relative`}
         >
-          <div
-            className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity tour-board-title"
-            onClick={() => {
-              setSelectedBoard(null);
-              setIsProactiveAIOpen(true);
-              setIsMobileMenuOpen(false);
-              window.history.pushState({}, '', '/');
-              window.dispatchEvent(new CustomEvent('alurku-navigate'));
-            }}
-          >
-            {isCollapsed ? (
-              <img src="/favicon.png" alt="a." className="w-8 h-8 rounded-lg select-none object-cover" />
-            ) : (
-              <div className="font-sans font-extrabold text-2xl tracking-tight select-none">
-                <span className="text-black dark:text-white">alur</span>
-                <span className="text-[#FACC15]">ku</span>
-                <span className="text-black dark:text-white">.</span>
-              </div>
-            )}
-          </div>
-          {!isCollapsed && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleCollapse();
-              }}
-              className="ml-auto p-1.5 text-neutral-400 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              title="Collapse sidebar"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                viewBox="0 0 24 24"
-              >
-                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                <path d="M9 3v18" />
-                <path d="M14 15l-3-3 3-3" />
-              </svg>
-            </button>
-          )}
-        </div>
+          {isCollapsed ? (
+            null
+          ) : (
+            <>
+              {/* Workspace Switcher in Header */}
+              {workspaces && workspaces.length > 0 && (
+                <div className="relative flex-1 min-w-0 mr-2 z-60">
+                  <button
+                    onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
+                    className="flex items-center gap-1.5 w-full hover:bg-neutral-100 dark:hover:bg-neutral-800/50 p-1.5 rounded-lg transition-colors text-left min-w-0"
+                  >
+                    <div className="w-5 h-5 rounded bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">
+                      {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 dark:text-neutral-200 truncate flex-1 leading-none">
+                      {activeWorkspace?.name || 'Workspace'}
+                    </span>
+                    <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
 
-        {/* Workspace Switcher */}
-        {!isCollapsed && workspaces && workspaces.length > 0 && (
-          <div className="px-4 pt-4 pb-1 shrink-0 relative z-60">
-            <button
-              onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-slate-50/50 dark:bg-neutral-900 border border-slate-200/50 dark:border-neutral-800/50 rounded-xl hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-left"
-            >
-              <div className="min-w-0">
-                <span className="text-[10px] text-neutral-400 font-bold uppercase block tracking-wider leading-none mb-1">
-                  {tMsg('Workspace', 'Ruang Kerja')}
-                </span>
-                <span className="text-sm font-bold text-slate-800 dark:text-neutral-200 truncate block">
-                  {activeWorkspace?.name || 'Loading...'}
-                </span>
-              </div>
-              <svg className="w-4 h-4 text-neutral-400 shrink-0 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+                  {isWorkspaceMenuOpen && (
+                    <div className="absolute left-0 w-60 mt-2 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5">
+                      <div className="max-h-48 overflow-y-auto space-y-0.5">
+                        {workspaces.map((ws) => (
+                          <button
+                            key={`ws-opt-${ws.id}`}
+                            onClick={() => {
+                              switchWorkspace(ws);
+                              setIsWorkspaceMenuOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                              ws.id === activeWorkspace?.id
+                                ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
+                                : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
+                            }`}
+                          >
+                            <span className="truncate">{ws.name}</span>
+                            {ws.id === activeWorkspace?.id && (
+                              <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
 
-            {isWorkspaceMenuOpen && (
-              <div className="absolute left-4 right-4 mt-1.5 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5">
-                <div className="max-h-48 overflow-y-auto space-y-0.5">
-                  {workspaces.map((ws) => (
-                    <button
-                      key={`ws-opt-${ws.id}`}
-                      onClick={() => {
-                        switchWorkspace(ws);
-                        setIsWorkspaceMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
-                        ws.id === activeWorkspace?.id
-                          ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
-                          : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
-                      }`}
-                    >
-                      <span className="truncate">{ws.name}</span>
-                      {ws.id === activeWorkspace?.id && (
-                        <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="border-t border-slate-100 dark:border-neutral-800 mt-1.5 pt-1.5 px-1.5">
-                  {isCreatingWs ? (
-                    <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5">
-                      <input
-                        type="text"
-                        placeholder={tMsg('New Workspace Name', 'Nama Workspace Baru')}
-                        value={newWsName}
-                        onChange={(e) => setNewWsName(e.target.value)}
-                        className="flex-1 bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs rounded-lg px-2.5 py-1.5 outline-none text-black dark:text-white"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        className="px-2.5 py-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:bg-[#1a2d52] dark:hover:bg-yellow-400 transition-colors"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsCreatingWs(false)}
-                        className="px-2 py-1.5 bg-slate-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded-lg hover:bg-slate-200 transition-colors"
-                      >
-                        ✕
-                      </button>
-                    </form>
-                  ) : (
-                    <button
-                      onClick={() => setIsCreatingWs(true)}
-                      className="w-full text-center py-1.5 bg-[#111E38]/8 hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/20 dark:text-[#FACC15] text-xs font-bold rounded-lg transition-all border border-[#111E38]/15 dark:border-transparent"
-                    >
-                      + {tMsg('Create Workspace', 'Buat Workspace')}
-                    </button>
+                      <div className="border-t border-slate-100 dark:border-neutral-800 mt-1.5 pt-1.5 px-1.5">
+                        {isCreatingWs ? (
+                          <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5">
+                            <input
+                              type="text"
+                              placeholder={tMsg('New Workspace Name', 'Nama Workspace Baru')}
+                              value={newWsName}
+                              onChange={(e) => setNewWsName(e.target.value)}
+                              className="flex-1 bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs rounded-lg px-2.5 py-1.5 outline-none text-black dark:text-white"
+                              autoFocus
+                            />
+                            <button
+                              type="submit"
+                              className="px-2.5 py-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:bg-[#1a2d52] dark:hover:bg-yellow-400 transition-colors"
+                            >
+                              +
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsCreatingWs(false)}
+                              className="px-2 py-1.5 bg-slate-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded-lg hover:bg-slate-200 transition-colors"
+                            >
+                              ✕
+                            </button>
+                          </form>
+                        ) : (
+                          <button
+                            onClick={() => setIsCreatingWs(true)}
+                            className="w-full text-center py-1.5 bg-[#111E38]/8 hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/20 dark:text-[#FACC15] text-xs font-bold rounded-lg transition-all border border-[#111E38]/15 dark:border-transparent"
+                          >
+                            + {tMsg('Create Workspace', 'Buat Workspace')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Collapse button aligned to the right */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCollapse();
+                }}
+                className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center shrink-0 ml-auto"
+                title="Collapse sidebar"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <path d="M9 3v18" />
+                  <path d="M16 15l-3-3 3-3" />
+                </svg>
+              </button>
+            </>
+          )}
+        </div>
 
         {!isCollapsed && (
           <div className="px-4 pt-5 pb-2 shrink-0 relative">

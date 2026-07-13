@@ -37,6 +37,7 @@ import TaskDetailModal from './TaskDetailModal';
 import AdminModal from './AdminModal';
 import DocumentationModal from './DocumentationModal';
 import ProactiveAIPage from './ProactiveAIPage';
+import HeaderNavigation from './components/Layout/HeaderNavigation';
 import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
 import LandingPage from './LandingPage';
@@ -1189,7 +1190,7 @@ function App() {
         />
       ) : (
         <div
-          className={`flex h-screen overflow-hidden text-black dark:text-white font-sans transition-colors duration-200 ${
+          className={`flex h-screen pt-20 overflow-hidden text-black dark:text-white font-sans transition-colors duration-200 ${
           (!appTheme ||
             appTheme === 'gamer' ||
             appTheme === 'minimal' ||
@@ -1230,6 +1231,28 @@ function App() {
             : {}
         }
       >
+        <HeaderNavigation
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+          language={language}
+          setLanguage={setLanguage}
+          currentUser={currentUser}
+          avatarsMap={avatarsMap}
+          onLogoClick={() => {
+            setSelectedBoard(null);
+            setIsProactiveAIOpen(true);
+            window.history.pushState({}, '', '/');
+            window.dispatchEvent(new CustomEvent('alurku-navigate'));
+          }}
+          onNavClick={(destination) => {
+            if (destination === 'dashboard') {
+              setSelectedBoard(null);
+              setIsProactiveAIOpen(false);
+              window.history.pushState({}, '', '/dashboard');
+              window.dispatchEvent(new CustomEvent('alurku-navigate'));
+            }
+          }}
+        />
         {appTexture && (
           <div
             className="fixed inset-0 z-0 pointer-events-none opacity-60"

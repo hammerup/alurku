@@ -32,17 +32,9 @@ export default function HeaderNavigation({
           onClick={onLogoClick}
           className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity select-none"
         >
-          <div className="w-9 h-9 bg-[#FACC15] rounded-xl flex items-center justify-center shadow-sm shrink-0">
-            <span className="text-[#111E38] font-black text-[32px] leading-none pb-1">a</span>
-          </div>
-          <div className="flex flex-col justify-center leading-none">
-            <span className={`font-black text-2xl tracking-tight leading-none ${isDarkMode ? 'text-white' : 'text-[#001f3f]'}`}>
-              alur<span className="text-[#FACC15]">ku</span>.
-            </span>
-            <span className={`text-[9px] font-bold self-end mt-0.5 leading-none pr-1 ${isDarkMode ? 'text-white/80' : 'text-[#001f3f]/80'}`}>
-              Beta
-            </span>
-          </div>
+          <span className={`font-black text-2xl tracking-tight leading-none ${isDarkMode ? 'text-white' : 'text-[#001f3f]'}`}>
+            alur<span className="text-[#FACC15]">ku</span>.
+          </span>
         </div>
 
         {/* Top navigation links */}
