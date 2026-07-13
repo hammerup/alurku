@@ -58,6 +58,8 @@ export default function MobileTopBar() {
           onClick={() => {
             setSelectedBoard(null);
             setIsProactiveAIOpen(true);
+            window.history.pushState({}, '', '/');
+            window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }}
         >
           <span className="text-black dark:text-white">alur</span>

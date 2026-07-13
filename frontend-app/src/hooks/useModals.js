@@ -39,17 +39,11 @@ export function useModals() {
     return false;
   });
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
-  const [isProactiveAIOpen, setIsProactiveAIOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const justLoggedIn = sessionStorage.getItem('alurku_just_logged_in');
-      if (justLoggedIn === 'true') {
-        return true;
-      }
-      const savedState = localStorage.getItem('alurku_proactive_ai_open');
-      if (savedState === 'true') return true;
-    }
-    return false;
-  });
+  // isProactiveAIOpen is kept for sidebar/toolbar compatibility.
+  // Routing is now URL-path-based: '/' = ProactiveAI, '/dashboard' = Dashboard.
+  const [isProactiveAIOpen, setIsProactiveAIOpen] = useState(
+    typeof window !== 'undefined' && window.location.pathname !== '/dashboard'
+  );
   const [isProjectChatOpen, setIsProjectChatOpen] = useState(false);
   const [isChatSearchOpen, setIsChatSearchOpen] = useState(false);
   const [showWelcomeTour, setShowWelcomeTour] = useState(false);

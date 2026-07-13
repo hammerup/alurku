@@ -821,6 +821,8 @@ export default function useAppLogic() {
         if (!selectedBoard || selectedBoard.id === 'global') {
           localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
           setIsProactiveAIOpen(true);
+          window.history.pushState({}, '', '/');
+          window.dispatchEvent(new CustomEvent('alurku-navigate'));
         } else {
           localStorage.setItem(`alurku_board_tour_done_v2_${currentUser}`, 'true');
         }
@@ -4444,6 +4446,11 @@ export default function useAppLogic() {
         setIsMobileMenuOpen(false);
         setIsChatWorkspaceOpen(false);
         setIsAssistantOpen(false);
+        if (isProactiveAIOpen) {
+          // Navigate to dashboard when Escape closes ProactiveAI
+          window.history.pushState({}, '', '/dashboard');
+          window.dispatchEvent(new CustomEvent('alurku-navigate'));
+        }
         setIsProactiveAIOpen(false);
         setColModal((prev) => ({ ...prev, isOpen: false }));
         window.history.pushState({ app_state: 'active' }, ''); // Cegah aplikasi keluar

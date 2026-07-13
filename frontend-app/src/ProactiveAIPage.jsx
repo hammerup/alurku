@@ -107,6 +107,8 @@ export default function ProactiveAIPage({
   }, [isProcessing]);
 
   const [isClosing, close] = useCloseAnimation(() => {
+    window.history.pushState({}, '', '/dashboard');
+    window.dispatchEvent(new CustomEvent('alurku-navigate'));
     setIsProactiveAIOpen(false);
   }, 200);
 

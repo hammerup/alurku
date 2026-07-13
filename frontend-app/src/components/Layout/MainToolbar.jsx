@@ -75,7 +75,9 @@ export default function MainToolbar() {
             <span 
               onClick={() => {
                 setSelectedBoard(null);
-                setIsProactiveAIOpen(false);
+                setIsProactiveAIOpen(true);
+                window.history.pushState({}, '', '/');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
               className="cursor-pointer hover:text-indigo-600 hover:underline transition-colors flex items-center gap-1 shrink-0"
               title={tMsg('Go to Dashboard', 'Kembali ke Dashboard')}

@@ -124,6 +124,8 @@ export function WelcomeTourModal({
     } else {
       localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
       setIsProactiveAIOpen(true);
+      window.history.pushState({}, '', '/');
+      window.dispatchEvent(new CustomEvent('alurku-navigate'));
     }
   });
   const tMsg = (en, id) => (language === 'id' ? id : en);

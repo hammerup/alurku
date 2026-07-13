@@ -668,35 +668,22 @@ function App() {
 
   const [currentPath, setCurrentPath] = useState(typeof window !== 'undefined' ? window.location.pathname : '/');
 
-  // Sync URL path with isProactiveAIOpen state
+  // Sync URL path for browser back/forward navigation
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const handlePathSync = () => {
-        const path = window.location.pathname;
-        setCurrentPath(path);
-        const isAIPath = path === '/proactive-ai';
-        if (isAIPath && !isProactiveAIOpen) {
-          setIsProactiveAIOpen(true);
-        } else if (!isAIPath && isProactiveAIOpen) {
-          setIsProactiveAIOpen(false);
-        }
+        setCurrentPath(window.location.pathname);
       };
-      
+      // Listen to browser back/forward
       window.addEventListener('popstate', handlePathSync);
-      
-      // Perform immediate sync to avoid update depth race condition
-      const isAIPath = window.location.pathname === '/proactive-ai';
-      if (isProactiveAIOpen && !isAIPath) {
-        window.history.pushState({}, '', '/proactive-ai');
-        setCurrentPath('/proactive-ai');
-      } else if (!isProactiveAIOpen && isAIPath) {
-        window.history.pushState({}, '', '/');
-        setCurrentPath('/');
-      }
-      
-      return () => window.removeEventListener('popstate', handlePathSync);
+      // Listen to internal SPA navigation (avoids triggering useAppLogic's handlePopState)
+      window.addEventListener('alurku-navigate', handlePathSync);
+      return () => {
+        window.removeEventListener('popstate', handlePathSync);
+        window.removeEventListener('alurku-navigate', handlePathSync);
+      };
     }
-  }, [isProactiveAIOpen, setIsProactiveAIOpen]);
+  }, []);
 
 
   if (!isAuthenticated) {
@@ -1179,7 +1166,7 @@ function App() {
         color: #ef4444 !important;
       }
     `}</style>
-      {currentPath === '/proactive-ai' ? (
+      {currentPath !== '/dashboard' ? (
         <ProactiveAIPage
           setIsProactiveAIOpen={setIsProactiveAIOpen}
           boards={boards}

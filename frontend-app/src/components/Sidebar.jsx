@@ -214,6 +214,8 @@ export default function Sidebar() {
           setSelectedBoard(board);
           setIsMobileMenuOpen(false);
           setIsProactiveAIOpen(false);
+          window.history.pushState({}, '', '/dashboard');
+          window.dispatchEvent(new CustomEvent('alurku-navigate'));
         }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -221,6 +223,8 @@ export default function Sidebar() {
             setSelectedBoard(board);
             setIsMobileMenuOpen(false);
             setIsProactiveAIOpen(false);
+            window.history.pushState({}, '', '/dashboard');
+            window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }
         }}
         className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
@@ -340,6 +344,8 @@ export default function Sidebar() {
               setSelectedBoard(null);
               setIsProactiveAIOpen(true);
               setIsMobileMenuOpen(false);
+              window.history.pushState({}, '', '/');
+              window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }}
           >
             {isCollapsed ? (
@@ -704,6 +710,8 @@ export default function Sidebar() {
                 });
                 setIsMobileMenuOpen(false);
                 setIsProactiveAIOpen(false);
+                window.history.pushState({}, '', '/dashboard');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all tour-global-board ${
                 selectedBoard?.id === 'global'
@@ -732,6 +740,8 @@ export default function Sidebar() {
                   setSelectedBoard(todoListBoard);
                   setIsMobileMenuOpen(false);
                   setIsProactiveAIOpen(false);
+                  window.history.pushState({}, '', '/dashboard');
+                  window.dispatchEvent(new CustomEvent('alurku-navigate'));
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
                   selectedBoard?.id === todoListBoard.id
