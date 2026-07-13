@@ -1190,7 +1190,9 @@ function App() {
         />
       ) : (
         <div
-          className={`flex h-screen pt-20 overflow-hidden text-black dark:text-white font-sans transition-colors duration-200 ${
+          className={`flex pt-20 text-black dark:text-white font-sans transition-colors duration-200 ${
+            selectedBoard && viewMode === 'kanban' ? 'h-screen overflow-hidden' : 'min-h-screen'
+          } ${
           (!appTheme ||
             appTheme === 'gamer' ||
             appTheme === 'minimal' ||
@@ -1334,18 +1336,24 @@ function App() {
           <ProjectLifecycleBanner deletionDateStr={selectedBoard.deletion_date} language={language} />
         )}
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div className={`flex-1 flex flex-col min-w-0 relative ${
+          selectedBoard && viewMode === 'kanban' ? 'overflow-hidden' : ''
+        }`}>
           <MobileTopBar />
           {!selectedBoard ? (
             <HomeDashboard />
           ) : (
-            <div className="flex-1 flex flex-col w-full min-h-0 overflow-hidden">
+            <div className={`flex-1 flex flex-col w-full ${
+              selectedBoard && viewMode === 'kanban' ? 'min-h-0 overflow-hidden' : ''
+            }`}>
               <MainToolbar />
 
               <main
                 ref={scrollRef}
-                className={`flex-1 px-6 pb-4 flex flex-col min-h-0 ${
-                  viewMode === 'kanban' ? 'overflow-auto sm:overflow-x-auto sm:overflow-y-hidden' : 'overflow-auto'
+                className={`px-6 pb-4 flex flex-col ${
+                  selectedBoard && viewMode === 'kanban'
+                    ? 'flex-1 min-h-0 overflow-auto sm:overflow-x-auto sm:overflow-y-hidden'
+                    : 'h-auto'
                 } ${accountStatus === 'suspended' ? 'cursor-not-allowed' : ''} ${
                   timelineDrag
                     ? (timelineDrag.mode === 'both' ? 'cursor-grabbing' : 'cursor-ew-resize') + ' select-none'

@@ -311,7 +311,7 @@ export default function HomeDashboard() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-transparent p-6 md:p-10 w-full h-full relative">
+    <div className="bg-transparent p-6 md:p-10 w-full h-auto relative">
       <div className="max-w-5xl mx-auto space-y-8 mt-12 md:mt-4 relative z-10">
         
         {/* Header Section */}
