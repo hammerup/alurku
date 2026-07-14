@@ -36,5 +36,37 @@ services:
     depends_on:
       - backend
 
+  databasement:
+    image: davidcrty/databasement:1
+    container_name: databasement
+    restart: unless-stopped
+    ports:
+      - "2226:2226"
+    environment:
+      - APP_URL=http://localhost:2226
+      - APP_KEY=base64:BhxIzN/8xqJ+kbKcP5NDxSW8MFs6bm4lpz1tfMQb5no=
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/data/database.sqlite
+    volumes:
+      - databasement_data:/data
+    depends_on:
+      - db
+
+  databasement-worker:
+    image: davidcrty/databasement:1
+    container_name: databasement-worker
+    restart: unless-stopped
+    command: sh -c "php artisan db:wait --check-migrations && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"
+    environment:
+      - APP_URL=http://localhost:2226
+      - APP_KEY=base64:BhxIzN/8xqJ+kbKcP5NDxSW8MFs6bm4lpz1tfMQb5no=
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/data/database.sqlite
+    volumes:
+      - databasement_data:/data
+    depends_on:
+      - databasement
+
 volumes:
   postgres_data:
+  databasement_data:
