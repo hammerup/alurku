@@ -326,7 +326,7 @@ export default function HomeDashboard() {
 
   return (
     <div className="bg-transparent p-4 md:p-6 lg:p-10 w-full h-auto relative">
-      <div className="max-w-[1280px] mx-auto space-y-8 mt-12 md:mt-4 relative z-10">
+      <div className="max-w-7xl mx-auto space-y-8 mt-12 md:mt-4 relative z-10">
         
         {/* Header Section */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -335,11 +335,11 @@ export default function HomeDashboard() {
               {formattedDate}
             </p>
             <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none flex flex-wrap gap-x-2.5 items-baseline">
-              <span>{tMsg('Selamat Pagi,', 'Selamat Pagi,')}</span>
+              <span>{tMsg('Good Morning,', 'Selamat Pagi,')}</span>
               <span className="text-indigo-900 dark:text-indigo-100">{currentUser}</span>
             </h1>
             <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-3 font-medium">
-              {tMsg('Berikut ringkasan kerja Anda untuk hari ini.', 'Berikut ringkasan kerja Anda untuk hari ini.')}
+              {tMsg('Here is your work summary for today.', 'Berikut ringkasan kerja Anda untuk hari ini.')}
             </p>
           </div>
           <button
@@ -348,14 +348,14 @@ export default function HomeDashboard() {
             className="tour-home-new-project shrink-0 bg-yellow-400 text-indigo-950 font-bold py-3 px-6 rounded-xl hover:bg-yellow-300 transition-all shadow-sm hover:shadow-md disabled:opacity-50 text-sm flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
-            {tMsg('Tugas Baru', 'Tugas Baru')}
+            {tMsg('New Project', 'Proyek Baru')}
           </button>
         </header>
 
         {/* AI Intelligence Center */}
         <section className="tour-ai-briefing ai-glow rounded-2xl p-6 md:p-8 relative overflow-hidden group">
-          <div className="absolute -right-10 -top-10 opacity-10 dark:opacity-5 text-indigo-950 dark:text-yellow-400 transition-transform group-hover:rotate-12 duration-700 pointer-events-none">
-            <span className="material-symbols-outlined text-[180px] md:text-[220px] select-none">auto_awesome</span>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-30 dark:opacity-15 text-yellow-500 dark:text-yellow-400 transition-transform group-hover:rotate-12 duration-700 pointer-events-none select-none z-0">
+            <span className="material-symbols-outlined leading-none" style={{ fontSize: '180px' }}>auto_awesome</span>
           </div>
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
@@ -363,7 +363,7 @@ export default function HomeDashboard() {
                 <span className="material-symbols-outlined text-yellow-600 dark:text-yellow-400">tips_and_updates</span>
               </div>
               <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                {tMsg('Sekilas Kerja Hari Ini Dari AI', 'Sekilas Kerja Hari Ini Dari AI')}
+                {tMsg("Today's Work Snapshot From AI", 'Sekilas Kerja Hari Ini Dari AI')}
                 {isSummarizing && (
                   <span className="inline-block w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
                 )}
@@ -371,12 +371,12 @@ export default function HomeDashboard() {
             </div>
             <div className="text-sm md:text-base text-slate-700 dark:text-slate-300 mb-6 max-w-3xl leading-relaxed font-medium">
               {isSummarizing ? (
-                <span className="animate-pulse">{tMsg('Menganalisis beban kerja Anda...', 'Menganalisis beban kerja Anda...')}</span>
+                <span className="animate-pulse">{tMsg('Analyzing your workload...', 'Menganalisis beban kerja Anda...')}</span>
               ) : (
                 aiSummary ? (
                   <span dangerouslySetInnerHTML={{ __html: aiSummary.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-white font-extrabold">$1</strong>') }} />
                 ) : (
-                  tMsg('Belum ada ringkasan AI untuk hari ini.', 'Belum ada ringkasan AI untuk hari ini.')
+                  tMsg('No AI summary for today yet.', 'Belum ada ringkasan AI untuk hari ini.')
                 )
               )}
             </div>
@@ -390,7 +390,7 @@ export default function HomeDashboard() {
                 }}
                 className="px-5 py-2.5 bg-indigo-950 dark:bg-indigo-900 text-white font-semibold rounded-xl hover:bg-indigo-900 dark:hover:bg-indigo-800 transition-colors shadow-sm text-sm"
               >
-                {tMsg('Lihat Rencana Hari Ini', 'Lihat Rencana Hari Ini')}
+                {tMsg("See Today's Plan", 'Lihat Rencana Hari Ini')}
               </button>
               <button 
                 onClick={(e) => {
@@ -404,7 +404,7 @@ export default function HomeDashboard() {
                 className="px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-[16px]">refresh</span>
-                {tMsg('Perbarui', 'Perbarui')}
+                {tMsg('Refresh', 'Perbarui')}
               </button>
             </div>
           </div>
@@ -422,12 +422,12 @@ export default function HomeDashboard() {
             className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md hover:border-indigo-200 dark:hover:border-yellow-400/30 cursor-pointer transition-all hover:-translate-y-0.5 group"
           >
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Total Tugas', 'Total Tugas')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Total Tasks', 'Total Tugas')}</p>
               <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                 {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : myTasks.length}
               </p>
               <p className="text-xs font-medium text-indigo-600 dark:text-yellow-400 mt-2 flex items-center gap-1 group-hover:underline">
-                {tMsg('Lihat semua tugas', 'Lihat semua tugas')} &rarr;
+                {tMsg('See all tasks', 'Lihat semua tugas')} &rarr;
               </p>
             </div>
             <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:scale-110 transition-transform">
@@ -437,12 +437,12 @@ export default function HomeDashboard() {
 
           <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md transition-shadow">
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Proyek Aktif', 'Proyek Aktif')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Active Projects', 'Proyek Aktif')}</p>
               <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                 {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : activeProjectsCount}
               </p>
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
-                {tMsg('Proyek yang diikuti', 'Proyek yang diikuti')}
+                {tMsg('Projects followed', 'Proyek yang diikuti')}
               </p>
             </div>
             <div className="p-3 bg-sky-50 dark:bg-sky-900/30 rounded-xl text-sky-600 dark:text-sky-400 shrink-0">
@@ -460,13 +460,13 @@ export default function HomeDashboard() {
             className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-l-4 border-l-red-500 border-y border-r border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between cursor-pointer hover:shadow-md transition-shadow group"
           >
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Tugas Terlambat', 'Tugas Terlambat')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Overdue Tasks', 'Tugas Terlambat')}</p>
               <p className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-400">
                 {isLoading ? <div className="w-12 h-10 bg-red-100 dark:bg-red-900/20 rounded animate-pulse"></div> : overdueTasksCount}
               </p>
               <p className="text-xs font-medium text-red-600/80 dark:text-red-400/80 mt-2 flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">warning</span>
-                {tMsg('Perlu tindakan', 'Perlu tindakan')}
+                {tMsg('Action required', 'Perlu tindakan')}
               </p>
             </div>
             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-600 dark:text-red-400 shrink-0 group-hover:scale-110 transition-transform">
@@ -490,13 +490,13 @@ export default function HomeDashboard() {
             className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-l-4 border-l-yellow-400 border-y border-r border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md hover:border-yellow-400/30 cursor-pointer transition-all hover:-translate-y-0.5 group"
           >
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Proyek Kritis', 'Proyek Kritis')}</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Critical Projects', 'Proyek Kritis')}</p>
               <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                 {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : criticalProjectsCount}
               </p>
               <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1 group-hover:underline">
                 <span className="material-symbols-outlined text-[14px]">priority_high</span>
-                {criticalProjectsCount > 0 ? tMsg('Perlu perhatian', 'Perlu perhatian') : tMsg('Semua aman', 'Semua aman')}
+                {criticalProjectsCount > 0 ? tMsg('Needs attention', 'Perlu perhatian') : tMsg('All safe', 'Semua aman')}
               </p>
             </div>
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-yellow-700 dark:text-yellow-500 shrink-0 group-hover:scale-110 transition-transform">
@@ -511,7 +511,7 @@ export default function HomeDashboard() {
           {/* Analitik Performa (1 Col) */}
           <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl p-6 shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{tMsg('Analitik Performa', 'Analitik Performa')}</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{tMsg('Performance Analytics', 'Analitik Performa')}</h3>
               {(isWeeklyOverload || isMonthlyOverload) && (
                 <span className="text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md border border-red-200 dark:border-red-800/50 uppercase tracking-wider">
                   ⚠️ Overload
@@ -534,15 +534,15 @@ export default function HomeDashboard() {
                 <span className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                   {myTotalWorkloadEtc > 0 ? Math.round((myWorkload.done_etc / myTotalWorkloadEtc) * 100) : 0}%
                 </span>
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{tMsg('Kapasitas', 'Kapasitas')}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{tMsg('Capacity', 'Kapasitas')}</span>
               </div>
               <div className="mt-4 text-xs font-medium text-slate-500 dark:text-slate-400 text-center">
-                {Math.round(myWorkload.done_etc * 10) / 10}h {tMsg('Selesai', 'Selesai')} / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Total', 'Total')}
+                {Math.round(myWorkload.done_etc * 10) / 10}h {tMsg('Done', 'Selesai')} / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Total', 'Total')}
               </div>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tMsg('Distribusi Proyek', 'Distribusi Proyek')}</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tMsg('Project Distribution', 'Distribusi Proyek')}</h4>
               <div className="space-y-3">
                 {projectDistribution.length > 0 ? projectDistribution.map((dist, idx) => (
                   <div key={dist.id}>
@@ -558,54 +558,102 @@ export default function HomeDashboard() {
                     </div>
                   </div>
                 )) : (
-                  <div className="text-xs text-slate-500 text-center py-4">{tMsg('Tidak ada data proyek aktif.', 'Tidak ada data proyek aktif.')}</div>
+                  <div className="text-xs text-slate-500 text-center py-4">{tMsg('No active project data.', 'Tidak ada data proyek aktif.')}</div>
                 )}
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                <span>{tMsg('Database Storage', 'Penyimpanan Database')}</span>
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">Free Tier</span>
+              </h4>
+              <div>
+                <div className="flex justify-between text-xs mb-1.5 font-medium">
+                  <span className="text-slate-500 dark:text-slate-400">18.4 MB / 512.0 MB</span>
+                  <span className="text-slate-900 dark:text-white font-bold">3.6%</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div className="h-2 rounded-full bg-yellow-400" style={{ width: '3.6%' }}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                <span>{tMsg('File Storage', 'Penyimpanan Berkas')}</span>
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">Cloud S3</span>
+              </h4>
+              <div>
+                <div className="flex justify-between text-xs mb-1.5 font-medium">
+                  <span className="text-slate-500 dark:text-slate-400">245.8 MB / 5.0 GB</span>
+                  <span className="text-slate-900 dark:text-white font-bold">4.9%</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div className="h-2 rounded-full bg-yellow-400" style={{ width: '4.9%' }}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
+                <span>{tMsg('AI Usage Quota', 'Kuota Penggunaan AI')}</span>
+                <span className="text-[10px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">Luruka AI</span>
+              </h4>
+              <div>
+                <div className="flex justify-between text-xs mb-1.5 font-medium">
+                  <span className="text-slate-500 dark:text-slate-400">142 / 500 {tMsg('prompts', 'permintaan')}</span>
+                  <span className="text-slate-900 dark:text-white font-bold">28.4%</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div className="h-2 rounded-full bg-yellow-400" style={{ width: '28.4%' }}></div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Workspace Focus (2 Cols) */}
           <div className="lg:col-span-2 bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl p-6 shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex flex-col">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{tMsg('Ruang Kerja Terfokus', 'Ruang Kerja Terfokus')}</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{tMsg('Focused Workspace', 'Ruang Kerja Terfokus')}</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
               {/* Left Col: Tasks */}
               <div className="flex flex-col">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                   <span className="material-symbols-outlined text-[18px]">list_alt</span>
-                  {tMsg('Antrean Teratas Saya', 'Antrean Teratas Saya')}
+                  {tMsg('My Top Queue', 'Antrean Teratas Saya')}
                 </h4>
                 <div className="space-y-3 flex-1">
                   {topQueueTasks.length > 0 ? topQueueTasks.map((task, idx) => (
                     <div 
                       key={task.id}
                       onClick={() => openTaskInGlobal(task)}
-                      className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex items-start gap-4"
+                      className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer flex items-start gap-3"
                     >
                       {/* Left side Queue Badge */}
                       <span className="flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400 font-bold text-xs">
                         #{idx + 1}
                       </span>
                       
-                      <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+                      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                         <span className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">
-                          {task.title}
+                          {task.project_name || task.title}
                         </span>
                         
-                        {/* Row 1 of metadata: Project name, category, impact, etc */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 text-[10px] font-bold rounded border border-indigo-100/50 dark:border-indigo-900/30">
-                            {task.project_name || 'Global'}
+                        {/* Row 1 of metadata: Board name, category, impact, etc */}
+                        <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-[10px]" style={{ scrollbarWidth: 'none' }}>
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 font-bold rounded border border-indigo-100/50 dark:border-indigo-900/30 truncate max-w-25">
+                            {boards.find(b => parseInt(b.id) === parseInt(task.board_id))?.name || 'Global'}
                           </span>
                           
                           {task.category && (
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold rounded">
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 font-bold rounded truncate max-w-17.5">
                               {task.category}
                             </span>
                           )}
                           
                           {task.impact && (
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                            <span className={`px-2 py-0.5 rounded font-bold border flex items-center gap-1 ${
                               task.impact === 'High' ? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-950 dark:text-red-400 dark:border-transparent' :
                               task.impact === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100 dark:bg-yellow-950 dark:text-yellow-400 dark:border-transparent' :
                               'bg-green-50 text-green-600 border-green-100 dark:bg-green-950 dark:text-green-400 dark:border-transparent'
@@ -616,7 +664,7 @@ export default function HomeDashboard() {
                           )}
                           
                           {task.etc && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50/50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold rounded">
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-indigo-50/50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 font-bold rounded">
                               <span>🕒</span>
                               <span>{task.etc}h</span>
                             </span>
@@ -624,7 +672,7 @@ export default function HomeDashboard() {
                         </div>
                         
                         {/* Row 2 of metadata: Dates strip */}
-                        <div className="flex flex-wrap items-center gap-4 bg-slate-50/60 dark:bg-slate-800/40 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800/60 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2 bg-slate-50/60 dark:bg-slate-800/40 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800/60 text-[10px] font-medium text-slate-500 dark:text-slate-400 overflow-hidden whitespace-nowrap">
                           {(() => {
                             const formatShortDate = (dateStr) => {
                               if (!dateStr) return '';
@@ -647,15 +695,16 @@ export default function HomeDashboard() {
                             };
                             return (
                               <>
-                                <span className="flex items-center gap-1">
-                                  <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                <span className="flex items-center gap-1 shrink-0">
+                                  <span className="material-symbols-outlined text-[12px]">calendar_today</span>
                                   <span>Start: {formatShortDate(task.start_date || task.timestamp)}</span>
                                 </span>
                                 
                                 {task.deadline && (
                                   <>
-                                    <span className="flex items-center gap-1">
-                                      <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0"></span>
+                                    <span className="flex items-center gap-1 shrink-0">
+                                      <span className="material-symbols-outlined text-[12px]">calendar_today</span>
                                       <span>Due: {formatShortDate(task.deadline)}</span>
                                     </span>
                                     
@@ -668,8 +717,8 @@ export default function HomeDashboard() {
                                       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                                       if (diffDays < 0) {
                                         return (
-                                          <span className="px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 rounded text-[9px] font-bold">
-                                            {tMsg(`Overdue ${Math.abs(diffDays)} Days`, `Terlambat ${Math.abs(diffDays)} Hari`)}
+                                          <span className="px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 rounded text-[9px] font-bold shrink-0">
+                                            {tMsg(`Overdue`, `Terlambat`)}
                                           </span>
                                         );
                                       }
@@ -695,7 +744,7 @@ export default function HomeDashboard() {
               <div className="flex flex-col">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                   <span className="material-symbols-outlined text-[18px]">forum</span>
-                  {tMsg('Komentar Terbaru', 'Komentar Terbaru')}
+                  {tMsg('Recent Comments', 'Komentar Terbaru')}
                 </h4>
                 <div className="space-y-4 flex-1">
                   {isInboxLoading && inboxChats.length === 0 ? (
@@ -749,7 +798,7 @@ export default function HomeDashboard() {
                     }) : (
                       <div className="text-sm text-slate-500 flex flex-col items-center justify-center h-32 text-center gap-2">
                         <div className="text-3xl">💭</div>
-                        <div>{tMsg('Tidak ada komentar terbaru.', 'Tidak ada komentar terbaru.')}</div>
+                        <div>{tMsg('No recent comments.', 'Tidak ada komentar terbaru.')}</div>
                       </div>
                     );
                   })()}
@@ -767,9 +816,9 @@ export default function HomeDashboard() {
               <span className="material-symbols-outlined text-[32px]">rocket_launch</span>
             </div>
             <div>
-              <h3 className="text-xl md:text-2xl font-black mb-2 tracking-tight">{tMsg('Siap untuk menyelesaikan tugas?', 'Siap untuk menyelesaikan tugas?')}</h3>
+              <h3 className="text-xl md:text-2xl font-black mb-2 tracking-tight">{tMsg('Ready to get things done?', 'Siap untuk menyelesaikan tugas?')}</h3>
               <p className="text-indigo-200 dark:text-slate-400 text-sm md:text-base font-medium">
-                {tMsg('Buka Tampilan Master untuk manajemen mendalam.', 'Buka Tampilan Master untuk manajemen mendalam.')}
+                {tMsg('Open Master View for in-depth management.', 'Buka Tampilan Master untuk manajemen mendalam.')}
               </p>
             </div>
           </div>
@@ -781,7 +830,7 @@ export default function HomeDashboard() {
             }}
             className="px-8 py-3.5 bg-yellow-400 text-indigo-950 font-black text-sm md:text-base uppercase tracking-wider rounded-xl shadow-[0_4px_14px_rgba(250,204,21,0.4)] hover:bg-yellow-300 hover:shadow-[0_6px_20px_rgba(250,204,21,0.6)] hover:-translate-y-1 transition-all z-10 w-full md:w-auto text-center"
           >
-            {tMsg('Tampilan Master', 'Tampilan Master')}
+            {tMsg('Master View', 'Tampilan Master')}
           </button>
         </section>
 
