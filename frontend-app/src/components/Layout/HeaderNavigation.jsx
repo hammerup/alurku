@@ -1,5 +1,6 @@
 import React from 'react';
 import { Avatar } from '../../SharedUI';
+import { useAppContext } from '../../contexts/AppContext';
 
 export default function HeaderNavigation({
   isDarkMode,
@@ -11,6 +12,7 @@ export default function HeaderNavigation({
   onLogoClick,
   onNavClick,
 }) {
+  const { setIsMobileMenuOpen } = useAppContext();
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
   const handleNavClick = (e, destination) => {
@@ -22,11 +24,21 @@ export default function HeaderNavigation({
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 flex justify-between items-center w-full px-8 md:px-12 h-20 z-40 border-b transition-colors duration-700 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 flex justify-between items-center w-full px-4 md:px-12 h-20 z-40 border-b transition-colors duration-700 ease-in-out ${
         isDarkMode ? 'bg-[#090D16]/60 border-white/5' : 'bg-[#F3F4F6]/60 border-black/5'
       } backdrop-blur-md`}
     >
-      <div className="flex items-center gap-12">
+      <div className="flex items-center gap-3 md:gap-12">
+        {/* Hamburger Menu on Mobile */}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+
         {/* Logo matching alurku. style */}
         <div
           onClick={onLogoClick}
@@ -78,7 +90,7 @@ export default function HeaderNavigation({
         </nav>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 sm:gap-6">
         {/* Stylish Light/Dark Theme Switch Toggle */}
         <div className="flex items-center">
           <button
