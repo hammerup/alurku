@@ -707,22 +707,25 @@ export default function HomeDashboard() {
                                       <span className="material-symbols-outlined text-[12px]">calendar_today</span>
                                       <span>Due: {formatShortDate(task.deadline)}</span>
                                     </span>
-                                    
-                                    {(() => {
-                                      const now = new Date();
-                                      const d = new Date(task.deadline);
-                                      now.setHours(0,0,0,0);
-                                      d.setHours(0,0,0,0);
-                                      const diffMs = d.getTime() - now.getTime();
-                                      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                                      if (diffDays < 0) {
-                                        return (
-                                          <span className="px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 rounded text-[9px] font-bold shrink-0">
-                                            {tMsg(`Overdue`, `Terlambat`)}
-                                          </span>
-                                        );
-                                      }
-                                    })()}
+                                  </>
+                                )}
+
+                                {task.priority_str && (
+                                  <>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0"></span>
+                                    <span
+                                      className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shadow-sm shrink-0 ${
+                                        task.priority_str.includes('NO DATE')
+                                          ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                                          : task.priority_lvl === 'critical'
+                                          ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                                          : task.priority_lvl === 'warning'
+                                          ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                                          : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                      }`}
+                                    >
+                                      {task.priority_str}
+                                    </span>
                                   </>
                                 )}
                               </>
