@@ -423,9 +423,9 @@ export default function HomeDashboard() {
           >
             <div>
               <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Total Tasks', 'Total Tugas')}</p>
-              <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+              <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                 {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : myTasks.length}
-              </p>
+              </div>
               <p className="text-xs font-medium text-indigo-600 dark:text-yellow-400 mt-2 flex items-center gap-1 group-hover:underline">
                 {tMsg('See all tasks', 'Lihat semua tugas')} &rarr;
               </p>
@@ -438,9 +438,9 @@ export default function HomeDashboard() {
           <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md transition-shadow">
             <div>
               <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Active Projects', 'Proyek Aktif')}</p>
-              <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+              <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                 {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : activeProjectsCount}
-              </p>
+              </div>
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
                 {tMsg('Projects followed', 'Proyek yang diikuti')}
               </p>
@@ -461,9 +461,9 @@ export default function HomeDashboard() {
           >
             <div>
               <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Overdue Tasks', 'Tugas Terlambat')}</p>
-              <p className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-400">
+              <div className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-400">
                 {isLoading ? <div className="w-12 h-10 bg-red-100 dark:bg-red-900/20 rounded animate-pulse"></div> : overdueTasksCount}
-              </p>
+              </div>
               <p className="text-xs font-medium text-red-600/80 dark:text-red-400/80 mt-2 flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">warning</span>
                 {tMsg('Action required', 'Perlu tindakan')}
@@ -491,9 +491,9 @@ export default function HomeDashboard() {
           >
             <div>
               <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Critical Projects', 'Proyek Kritis')}</p>
-              <p className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
+              <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
                 {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : criticalProjectsCount}
-              </p>
+              </div>
               <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1 group-hover:underline">
                 <span className="material-symbols-outlined text-[14px]">priority_high</span>
                 {criticalProjectsCount > 0 ? tMsg('Needs attention', 'Perlu perhatian') : tMsg('All safe', 'Semua aman')}

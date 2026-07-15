@@ -12,7 +12,7 @@ export default function HeaderNavigation({
   onLogoClick,
   onNavClick,
 }) {
-  const { setIsMobileMenuOpen } = useAppContext();
+  const { setIsMobileMenuOpen, selectedBoard, boards } = useAppContext();
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
   const handleNavClick = (e, destination) => {
@@ -50,15 +50,28 @@ export default function HeaderNavigation({
         </div>
 
         {/* Top navigation links */}
-        <nav className="hidden md:flex gap-8">
+        <nav className="hidden md:flex gap-8 items-center">
           <a
             href="#dashboard"
             onClick={(e) => handleNavClick(e, 'dashboard')}
-            className={`transition-colors font-semibold text-sm cursor-pointer ${
-              isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
+            className={`transition-all font-semibold text-sm cursor-pointer pb-1 ${
+              !selectedBoard
+                ? 'text-slate-900 dark:text-white border-b-2 border-[#FACC15] font-extrabold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Dashboard
+          </a>
+          <a
+            href="#workspace"
+            onClick={(e) => handleNavClick(e, 'workspace')}
+            className={`transition-all font-semibold text-sm cursor-pointer pb-1 ${
+              selectedBoard
+                ? 'text-slate-900 dark:text-white border-b-2 border-[#FACC15] font-extrabold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Workspace
           </a>
           <a
             href="#projects"

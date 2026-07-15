@@ -1252,6 +1252,12 @@ function App() {
               setIsProactiveAIOpen(false);
               window.history.pushState({}, '', '/dashboard');
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
+            } else if (destination === 'workspace') {
+              const firstBoard = boards.find(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list') || boards[0] || { id: 'global', name: 'Global', isVirtual: true };
+              setSelectedBoard(firstBoard);
+              setIsProactiveAIOpen(false);
+              window.history.pushState({}, '', '/dashboard');
+              window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }
           }}
         />
