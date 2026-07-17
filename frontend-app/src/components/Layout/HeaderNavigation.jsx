@@ -3,6 +3,7 @@ import { Avatar } from '../../SharedUI';
 import { useAppContext } from '../../contexts/AppContext';
 
 export default function HeaderNavigation({
+  currentPath = '',
   isDarkMode,
   setIsDarkMode,
   language,
@@ -55,7 +56,7 @@ export default function HeaderNavigation({
             href="#dashboard"
             onClick={(e) => handleNavClick(e, 'dashboard')}
             className={`transition-all font-semibold text-sm cursor-pointer pb-1 ${
-              !selectedBoard
+              currentPath === '/dashboard'
                 ? 'text-slate-900 dark:text-white border-b-2 border-[#FACC15] font-extrabold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
@@ -66,7 +67,7 @@ export default function HeaderNavigation({
             href="#workspace"
             onClick={(e) => handleNavClick(e, 'workspace')}
             className={`transition-all font-semibold text-sm cursor-pointer pb-1 ${
-              selectedBoard
+              currentPath.startsWith('/workspace')
                 ? 'text-slate-900 dark:text-white border-b-2 border-[#FACC15] font-extrabold'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}

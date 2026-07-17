@@ -135,6 +135,7 @@ class Board(Base):
     last_activity_date = Column(DateTime, nullable=True)
     deletion_date = Column(DateTime, nullable=True)
     is_private = Column(Integer, default=0)
+    description = Column(Text, nullable=True)
 
     # Relationships
     workspace = relationship("Workspace", back_populates="boards")

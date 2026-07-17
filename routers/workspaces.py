@@ -176,3 +176,41 @@ def list_workspace_members(
             "joined_at": m.joined_at.strftime("%Y-%m-%d %H:%M:%S") if m.joined_at else None
         })
     return result
+
+
+@router.put("/{workspace_id}")
+def update_workspace(
+    workspace_id: int,
+    payload: WorkspaceCreateModel,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Mengubah nama workspace. Hanya Admin workspace yang dapat melakukannya.
+    """
+    if not payload.name.strip():
+        raise HTTPException(status_code=400, detail="Workspace name cannot be empty")
+        
+    admin_check = db.query(WorkspaceMember).filter(
+        WorkspaceMember.workspace_id == workspace_id,
+        WorkspaceMember.username == current_user,
+        WorkspaceMember.role == "admin"
+    ).first()
+    if not admin_check:
+        raise HTTPException(status_code=403, detail="Only workspace admins can rename the workspace")
+        
+    ws = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not ws:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+        
+    ws.name = payload.name.strip()
+    db.commit()
+    
+    return {
+        "message": "Workspace updated successfully",
+        "workspace": {
+            "id": ws.id,
+            "name": ws.name
+        }
+    }
+

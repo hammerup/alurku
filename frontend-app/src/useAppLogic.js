@@ -290,9 +290,9 @@ export default function useAppLogic() {
   const [colModal, setColModal] = useState({ isOpen: false, target: 'Status', mode: 'add', oldName: '', newName: '' });
   const [viewMode, setViewMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('alurku_view_mode') || 'kanban';
+      return localStorage.getItem('alurku_view_mode') || 'overview';
     }
-    return 'kanban';
+    return 'overview';
   });
   const [selectedTask, setSelectedTask] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -1731,6 +1731,41 @@ export default function useAppLogic() {
       })
       .catch((err) => {
         showNotification(err.response?.data?.detail || 'Failed to create workspace', 'error');
+      });
+  };
+
+  const renameWorkspace = (id, name) => {
+    if (!name.trim()) return;
+    axios
+      .put(`/api/workspaces/${id}`, { name: name.trim() })
+      .then((res) => {
+        showNotification(language === 'id' ? 'Workspace berhasil diubah namanya!' : 'Workspace renamed successfully!', 'success');
+        fetchWorkspaces().then((list) => {
+          const updated = list.find((w) => w.id === id);
+          if (updated) {
+            setActiveWorkspace(updated);
+          }
+        });
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || 'Failed to rename workspace', 'error');
+      });
+  };
+
+  const renameProject = (id, name, description = null) => {
+    if (!name.trim()) return;
+    const payload = { name: name.trim() };
+    if (description !== null) {
+      payload.description = description.trim();
+    }
+    axios
+      .put(`/api/boards/${id}`, payload)
+      .then((res) => {
+        showNotification(language === 'id' ? 'Proyek berhasil diperbarui!' : 'Project updated successfully!', 'success');
+        fetchBoards();
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || 'Failed to update project', 'error');
       });
   };
 
@@ -4571,6 +4606,8 @@ export default function useAppLogic() {
     fetchWorkspaces,
     createWorkspace,
     switchWorkspace,
+    renameWorkspace,
+    renameProject,
     isAuthenticated,
     currentUser,
     isLoginMode,

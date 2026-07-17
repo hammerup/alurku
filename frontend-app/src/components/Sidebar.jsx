@@ -23,8 +23,9 @@ export default function Sidebar() {
     isNotifOpen,
     unreadCount,
     setIsChatWorkspaceOpen,
-    isProactiveAIOpen,
     setIsProactiveAIOpen,
+    viewMode,
+    setViewMode,
     globalSearchQuery,
     setGlobalSearchQuery,
     setIsGlobalSearchOpen,
@@ -214,6 +215,9 @@ export default function Sidebar() {
           setSelectedBoard(board);
           setIsMobileMenuOpen(false);
           setIsProactiveAIOpen(false);
+          if (viewMode === 'overview') {
+            setViewMode('kanban');
+          }
           window.history.pushState({}, '', '/dashboard');
           window.dispatchEvent(new CustomEvent('alurku-navigate'));
         }}
@@ -223,6 +227,9 @@ export default function Sidebar() {
             setSelectedBoard(board);
             setIsMobileMenuOpen(false);
             setIsProactiveAIOpen(false);
+            if (viewMode === 'overview') {
+              setViewMode('kanban');
+            }
             window.history.pushState({}, '', '/dashboard');
             window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }

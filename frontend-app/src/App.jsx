@@ -53,6 +53,7 @@ import Sidebar from './components/Sidebar';
 import MobileTopBar from './components/Layout/MobileTopBar';
 import MainToolbar from './components/Layout/MainToolbar';
 import HomeDashboard from './components/HomeDashboard';
+import WorkspaceOverview from './components/WorkspaceOverview';
 
 import './api/axiosSetup';
 
@@ -123,6 +124,7 @@ function App() {
     commentToDelete,
     memberToRevoke,
     avatarsMap,
+    activeWorkspace,
     myTeam,
     boards,
     selectedBoard,
@@ -1167,7 +1169,7 @@ function App() {
         color: #ef4444 !important;
       }
     `}</style>
-      {currentPath !== '/dashboard' ? (
+      {currentPath === '/' ? (
         <ProactiveAIPage
           setIsProactiveAIOpen={setIsProactiveAIOpen}
           boards={boards}
@@ -1234,6 +1236,7 @@ function App() {
         }
       >
         <HeaderNavigation
+          currentPath={currentPath}
           isDarkMode={isDarkMode}
           setIsDarkMode={setIsDarkMode}
           language={language}
@@ -1253,10 +1256,12 @@ function App() {
               window.history.pushState({}, '', '/dashboard');
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
             } else if (destination === 'workspace') {
-              const firstBoard = boards.find(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list') || boards[0] || { id: 'global', name: 'Global', isVirtual: true };
-              setSelectedBoard(firstBoard);
+              setSelectedBoard(null);
               setIsProactiveAIOpen(false);
-              window.history.pushState({}, '', '/dashboard');
+              
+              const slug = activeWorkspace?.name ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'main';
+              const targetUrl = `/workspace/${slug}`;
+              window.history.pushState({}, '', targetUrl);
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }
           }}
@@ -1346,7 +1351,11 @@ function App() {
           selectedBoard && viewMode === 'kanban' ? 'overflow-hidden' : ''
         }`}>
           {!selectedBoard ? (
-            <HomeDashboard />
+            currentPath.startsWith('/workspace') ? (
+              <WorkspaceOverview />
+            ) : (
+              <HomeDashboard />
+            )
           ) : (
             <div className={`flex-1 flex flex-col w-full ${
               selectedBoard && viewMode === 'kanban' ? 'min-h-0 overflow-hidden' : ''
@@ -1378,6 +1387,17 @@ function App() {
                   </div>
                 ) : (
                   <>
+                    {viewMode === 'overview' && (
+                      <WorkspaceOverview
+                        selectedBoard={selectedBoard}
+                        tasks={tasks}
+                        boards={boards}
+                        avatarsMap={avatarsMap}
+                        currentUser={currentUser}
+                        language={language}
+                      />
+                    )}
+
                     {viewMode === 'kanban' && (
                       <KanbanBoard
                         isKanbanDragging={isKanbanDragging}

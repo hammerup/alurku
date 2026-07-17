@@ -350,6 +350,34 @@ def update_board_settings(
     return {"message": "Board settings updated"}
 
 
+@router.put("/api/boards/{board_id}")
+def rename_board(
+    board_id: int,
+    payload: dict,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mengubah nama project (board). Hanya pemilik proyek yang dapat melakukannya.
+    """
+    board = db.query(Board).filter(Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if board.owner_username != current_user:
+        raise HTTPException(
+            status_code=403, detail="Only the project owner can rename this project."
+        )
+    new_name = payload.get("name", "").strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Project name cannot be empty")
+    board.name = new_name
+    if "description" in payload:
+        board.description = payload.get("description", "").strip()
+    db.commit()
+    return {"message": "Project renamed successfully", "board": {"id": board.id, "name": board.name, "description": board.description}}
+
+
+
 @router.delete("/api/boards/{board_id}")
 def delete_board(
     board_id: int,

@@ -34,7 +34,10 @@ export default function ProactiveAIPage({
     setFilterCategory,
     setFilterAssignee,
     isUserAssigned,
+    activeWorkspace,
   } = useAppContext();
+
+  const destRef = useRef('/dashboard');
 
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -119,7 +122,7 @@ export default function ProactiveAIPage({
   }, [isProcessing]);
 
   const [isClosing, close] = useCloseAnimation(() => {
-    window.history.pushState({}, '', '/dashboard');
+    window.history.pushState({}, '', destRef.current);
     window.dispatchEvent(new CustomEvent('alurku-navigate'));
     setIsProactiveAIOpen(false);
   }, 200);
@@ -508,10 +511,51 @@ USER REQUEST:
   };
 
   const handleSkipOrCancel = () => {
+    destRef.current = '/dashboard';
     if (isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0) {
       setCancelConfirmOpen(true);
     } else {
       close();
+    }
+  };
+
+  const handleLogoClick = () => {
+    if (isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0) {
+      destRef.current = 'reset';
+      setCancelConfirmOpen(true);
+    } else {
+      setPrompt('');
+      setChatHistory([
+        {
+          id: 'welcome',
+          sender: 'ai',
+          text: language === 'id' 
+            ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
+            : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
+        }
+      ]);
+    }
+  };
+
+  const handleNavClick = (destination) => {
+    const dest = typeof destination === 'string' ? destination : 'dashboard';
+    let destPath = '/dashboard';
+    if (dest === 'workspace') {
+      const slug = activeWorkspace?.name ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'main';
+      destPath = `/workspace/${slug}`;
+    }
+
+    const navigateImmediately = () => {
+      window.history.pushState({}, '', destPath);
+      window.dispatchEvent(new CustomEvent('alurku-navigate'));
+      setIsProactiveAIOpen(false);
+    };
+
+    if (isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0) {
+      destRef.current = destPath;
+      setCancelConfirmOpen(true);
+    } else {
+      navigateImmediately();
     }
   };
 
@@ -522,7 +566,23 @@ USER REQUEST:
     setIsCartVisible(false);
     setIsCancelling(false);
     setCancelConfirmOpen(false);
-    close();
+    
+    if (destRef.current === 'reset') {
+      setPrompt('');
+      setChatHistory([
+        {
+          id: 'welcome',
+          sender: 'ai',
+          text: language === 'id' 
+            ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
+            : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
+        }
+      ]);
+    } else {
+      window.history.pushState({}, '', destRef.current);
+      window.dispatchEvent(new CustomEvent('alurku-navigate'));
+      setIsProactiveAIOpen(false);
+    }
   };
 
   const handleFinish = async () => {
@@ -678,14 +738,15 @@ USER REQUEST:
 
       {/* Top Header Navigation Bar (Refactored to Shared Component) */}
       <HeaderNavigation
+        currentPath={window.location.pathname}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
         language={language}
         setLanguage={setLanguage}
         currentUser={currentUser}
         avatarsMap={avatarsMap}
-        onLogoClick={handleSkipOrCancel}
-        onNavClick={handleSkipOrCancel}
+        onLogoClick={handleLogoClick}
+        onNavClick={handleNavClick}
       />
 
       {/* Main Workspace layout */}
