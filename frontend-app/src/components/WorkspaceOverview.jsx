@@ -23,6 +23,9 @@ export default function WorkspaceOverview() {
     setSelectedTask,
     showNotification,
     userDirectory,
+    workspaces,
+    switchWorkspace,
+    fetchWorkspaces,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -48,6 +51,14 @@ export default function WorkspaceOverview() {
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSuggestions, setInviteSuggestions] = useState([]);
   const [inviteIndex, setInviteIndex] = useState(0);
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: '',
+  });
 
   const token = localStorage.getItem('alurku_token') || '';
   const { onlineUsers, activityFeed } = useWebSocket(activeWorkspace?.id, token, currentUser);
@@ -198,6 +209,88 @@ export default function WorkspaceOverview() {
       });
   };
 
+  const handleUpdateRole = (username, newRole) => {
+    if (!activeWorkspace?.id) return;
+
+    axios
+      .put(`/api/workspaces/${activeWorkspace.id}/members/${username}`, { role: newRole })
+      .then((res) => {
+        showNotification(
+          tMsg(`Successfully updated role for @${username} to ${newRole}`, `Berhasil mengubah peran @${username} menjadi ${newRole}`),
+          "success"
+        );
+        // Refresh members list
+        axios.get(`/api/workspaces/${activeWorkspace.id}/members`)
+          .then(res => setMembers(res.data || []));
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || "Failed to update role!", "error");
+      });
+  };
+
+  const handleRemoveMember = (username) => {
+    if (!activeWorkspace?.id) return;
+
+    setConfirmModal({
+      isOpen: true,
+      title: tMsg('Remove Workspace Member', 'Keluarkan Anggota'),
+      message: tMsg(
+        `Are you sure you want to remove @${username} from this workspace?`,
+        `Apakah Anda yakin ingin mengeluarkan @${username} dari ruang kerja ini?`
+      ),
+      confirmText: tMsg('Remove', 'Keluarkan'),
+      onConfirm: () => {
+        axios
+          .delete(`/api/workspaces/${activeWorkspace.id}/members/${username}`)
+          .then((res) => {
+            showNotification(
+              tMsg(`Successfully removed @${username}`, `Berhasil mengeluarkan @${username}`),
+              "success"
+            );
+            axios.get(`/api/workspaces/${activeWorkspace.id}/members`)
+              .then(res => setMembers(res.data || []));
+          })
+          .catch((err) => {
+            showNotification(err.response?.data?.detail || "Failed to remove member!", "error");
+          });
+      }
+    });
+  };
+
+  const handleLeaveWorkspace = () => {
+    if (!activeWorkspace?.id) return;
+
+    setConfirmModal({
+      isOpen: true,
+      title: tMsg('Leave Workspace', 'Keluar dari Ruang Kerja'),
+      message: tMsg(
+        "Are you sure you want to leave this workspace?",
+        "Apakah Anda yakin ingin keluar dari ruang kerja ini?"
+      ),
+      confirmText: tMsg('Leave', 'Keluar'),
+      onConfirm: () => {
+        axios
+          .delete(`/api/workspaces/${activeWorkspace.id}/members/${currentUser}`)
+          .then(async (res) => {
+            showNotification(
+              tMsg("You have left the workspace successfully.", "Anda berhasil keluar dari ruang kerja."),
+              "success"
+            );
+            setIsViewingMembers(false);
+            const updatedList = await fetchWorkspaces();
+            if (updatedList && updatedList.length > 0) {
+              switchWorkspace(updatedList[0]);
+            } else {
+              window.location.reload();
+            }
+          })
+          .catch((err) => {
+            showNotification(err.response?.data?.detail || "Failed to leave workspace!", "error");
+          });
+      }
+    });
+  };
+
   // Active projects mapping
   const activeProjects = useMemo(() => {
     return boards.filter(b => {
@@ -254,100 +347,151 @@ export default function WorkspaceOverview() {
               </h2>
               
               <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {members.map((m, idx) => {
-                  const isOwner = activeWorkspace?.owner_username === m.username;
-                  return (
-                    <div key={idx} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
-                      <div className="flex items-center gap-4">
-                        <Avatar name={m.username} url={avatarsMap[m.username]} size="w-11 h-11" />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-sm text-[#111E38] dark:text-white">
-                              {m.full_name || m.username}
-                            </p>
-                            {isOwner && (
-                              <span className="bg-[#111E38] text-white dark:bg-slate-800 dark:text-[#FACC15] text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                Owner
-                              </span>
-                            )}
+                {(() => {
+                  const currentUserMember = members.find((m) => m.username === currentUser);
+                  const isCurrentUserAdmin = currentUserMember?.role === 'admin' || activeWorkspace?.owner_username === currentUser;
+
+                  return members.map((m, idx) => {
+                    const isMemberOwner = activeWorkspace?.owner_username === m.username;
+                    const isSelf = m.username === currentUser;
+
+                    return (
+                      <div key={idx} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+                        <div className="flex items-center gap-4">
+                          <Avatar name={m.username} url={avatarsMap[m.username]} size="w-11 h-11" />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-sm text-[#111E38] dark:text-white">
+                                {m.full_name || m.username}
+                              </p>
+                              {isMemberOwner && (
+                                <span className="bg-[#111E38] text-white dark:bg-slate-800 dark:text-[#FACC15] text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                  Owner
+                                </span>
+                              )}
+                              {isSelf && (
+                                <span className="bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-400 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                  {tMsg('You', 'Anda')}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-neutral-450 dark:text-neutral-400">@{m.username}</p>
+                            <p className="text-xs text-neutral-405 dark:text-neutral-400 mt-0.5">{m.email}</p>
                           </div>
-                          <p className="text-xs text-neutral-450 dark:text-neutral-400">@{m.username}</p>
-                          <p className="text-xs text-neutral-405 dark:text-neutral-400 mt-0.5">{m.email}</p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          {/* If current user is admin/owner and this member is not the owner, let them change roles */}
+                          {isCurrentUserAdmin && !isMemberOwner && !isSelf ? (
+                            <select
+                              value={m.role || 'member'}
+                              onChange={(e) => handleUpdateRole(m.username, e.target.value)}
+                              className="bg-neutral-100 dark:bg-slate-800 border border-neutral-250 dark:border-neutral-700 text-xs font-bold text-[#111E38] dark:text-white rounded-lg px-2 py-1 outline-none cursor-pointer"
+                            >
+                              <option value="member">Member</option>
+                              <option value="admin">Admin</option>
+                              <option value="viewer">Viewer</option>
+                            </select>
+                          ) : (
+                            <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
+                              {m.role || 'member'}
+                            </span>
+                          )}
+
+                          {/* Action Buttons: Remove Member (Admin only) or Leave Workspace (Self only) */}
+                          {isCurrentUserAdmin && !isMemberOwner && !isSelf && (
+                            <button
+                              onClick={() => handleRemoveMember(m.username)}
+                              className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-colors"
+                              title={tMsg('Remove Member', 'Keluarkan Anggota')}
+                            >
+                              <span className="material-symbols-outlined text-lg">person_remove</span>
+                            </button>
+                          )}
+
+                          {isSelf && !isMemberOwner && (
+                            <button
+                              onClick={handleLeaveWorkspace}
+                              className="flex items-center gap-1 text-xs font-bold text-rose-500 hover:bg-rose-55 dark:hover:bg-rose-950/30 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/30 transition-colors"
+                              title={tMsg('Leave Workspace', 'Keluar dari Ruang Kerja')}
+                            >
+                              <span className="material-symbols-outlined text-sm">logout</span>
+                              {tMsg('Leave', 'Keluar')}
+                            </button>
+                          )}
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
-                          {m.role || 'member'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </div>
           </div>
 
           {/* Right panel: Invite Form (4 cols) */}
-          {activeWorkspace?.owner_username === currentUser && (
-            <div className="col-span-12 xl:col-span-4">
-              <div className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
-                <h2 className="text-lg font-bold text-[#111E38] dark:text-white">
-                  {tMsg('Invite Member', 'Undang Anggota')}
-                </h2>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                  {tMsg('Invite a colleague to collaborate in this workspace.', 'Undang rekan untuk berkolaborasi di ruang kerja ini.')}
-                </p>
+          {(() => {
+            const currentUserMember = members.find((m) => m.username === currentUser);
+            const isCurrentUserAdmin = currentUserMember?.role === 'admin' || activeWorkspace?.owner_username === currentUser;
+            
+            return isCurrentUserAdmin && (
+              <div className="col-span-12 xl:col-span-4">
+                <div className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                  <h2 className="text-lg font-bold text-[#111E38] dark:text-white">
+                    {tMsg('Invite Member', 'Undang Anggota')}
+                  </h2>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    {tMsg('Invite a colleague to collaborate in this workspace.', 'Undang rekan untuk berkolaborasi di ruang kerja ini.')}
+                  </p>
 
-                <form onSubmit={handleInviteSubmit} className="space-y-4 pt-2">
-                  <div className="relative">
-                    <label className="block text-[10px] font-bold text-neutral-450 dark:text-neutral-400 uppercase tracking-widest mb-1.5">
-                      {tMsg('Username or Email', 'Nama Pengguna atau Email')}
-                    </label>
-                    <input
-                      type="text"
-                      value={inviteInput}
-                      onChange={handleInviteInputChange}
-                      className="w-full bg-[#F3F4F6] dark:bg-[#0d0f11] border border-neutral-250 dark:border-neutral-800 text-slate-800 dark:text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-colors"
-                      placeholder="e.g. budi, siti@email.com..."
-                      required
-                    />
+                  <form onSubmit={handleInviteSubmit} className="space-y-4 pt-2">
+                    <div className="relative">
+                      <label className="block text-[10px] font-bold text-neutral-450 dark:text-neutral-400 uppercase tracking-widest mb-1.5">
+                        {tMsg('Username or Email', 'Nama Pengguna atau Email')}
+                      </label>
+                      <input
+                        type="text"
+                        value={inviteInput}
+                        onChange={handleInviteInputChange}
+                        className="w-full bg-[#F3F4F6] dark:bg-[#0d0f11] border border-neutral-250 dark:border-neutral-800 text-slate-800 dark:text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-colors"
+                        placeholder="e.g. budi, siti@email.com..."
+                        required
+                      />
 
-                    {inviteSuggestions.length > 0 && (
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl rounded-xl z-50 max-h-40 overflow-y-auto py-1">
-                        {inviteSuggestions.map((u, idx) => (
-                          <div
-                            key={u.username}
-                            className={`px-3 py-2 cursor-pointer flex items-center justify-between border-b border-neutral-100 dark:border-neutral-850 last:border-0 transition-colors ${
-                              inviteIndex === idx ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-850'
-                            }`}
-                            onClick={() => {
-                              setInviteInput(u.username);
-                              setInviteSuggestions([]);
-                            }}
-                          >
-                            <span className="text-xs text-[#111E38] dark:text-white font-bold">@{u.username}</span>
-                            <span className="text-[10px] text-neutral-450 truncate ml-4">{u.email}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                      {inviteSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl rounded-xl z-50 max-h-40 overflow-y-auto py-1">
+                          {inviteSuggestions.map((u, idx) => (
+                            <div
+                              key={u.username}
+                              className={`px-3 py-2 cursor-pointer flex items-center justify-between border-b border-neutral-100 dark:border-neutral-850 last:border-0 transition-colors ${
+                                inviteIndex === idx ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-850'
+                              }`}
+                              onClick={() => {
+                                setInviteInput(u.username);
+                                setInviteSuggestions([]);
+                              }}
+                            >
+                              <span className="text-xs text-[#111E38] dark:text-white font-bold">@{u.username}</span>
+                              <span className="text-[10px] text-neutral-450 truncate ml-4">{u.email}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-neutral-450 dark:text-neutral-400 uppercase tracking-widest mb-1.5">
-                      {tMsg('Role', 'Peran')}
-                    </label>
-                    <select
-                      value={inviteRole}
-                      onChange={(e) => setInviteRole(e.target.value)}
-                      className="w-full bg-[#F3F4F6] dark:bg-[#0d0f11] border border-neutral-250 dark:border-neutral-800 text-slate-800 dark:text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-colors"
-                    >
-                      <option value="member">Member</option>
-                      <option value="admin">Admin</option>
-                      <option value="viewer">Viewer</option>
-                    </select>
-                  </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-neutral-450 dark:text-neutral-400 uppercase tracking-widest mb-1.5">
+                        {tMsg('Role', 'Peran')}
+                      </label>
+                      <select
+                        value={inviteRole}
+                        onChange={(e) => setInviteRole(e.target.value)}
+                        className="w-full bg-[#F3F4F6] dark:bg-[#0d0f11] border border-neutral-250 dark:border-neutral-800 text-slate-800 dark:text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-colors cursor-pointer"
+                      >
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                      </select>
+                    </div>
 
                   <button
                     type="submit"
@@ -366,8 +510,40 @@ export default function WorkspaceOverview() {
                 </form>
               </div>
             </div>
-          )}
+            );
+          })()}
         </div>
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 bg-[#111E38]/20 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-200">
+            <div className="bg-white dark:bg-[#121B2D] p-6 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl w-full max-w-sm">
+              <h3 className="text-base font-extrabold text-[#111E38] dark:text-white mb-2">
+                {confirmModal.title}
+              </h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6 leading-relaxed">
+                {confirmModal.message}
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                  className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                >
+                  {tMsg('Cancel', 'Batal')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirmModal.onConfirm) confirmModal.onConfirm();
+                    setConfirmModal({ ...confirmModal, isOpen: false });
+                  }}
+                  className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer"
+                >
+                  {confirmModal.confirmText}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
