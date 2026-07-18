@@ -218,7 +218,11 @@ export default function Sidebar() {
           if (viewMode === 'overview') {
             setViewMode('kanban');
           }
-          window.history.pushState({}, '', '/dashboard');
+          const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+          const wsSlug = slugify(activeWorkspace?.name);
+          const boardSlug = slugify(board.name);
+          const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${board.id}`;
+          window.history.pushState({}, '', targetUrl);
           window.dispatchEvent(new CustomEvent('alurku-navigate'));
         }}
         onKeyDown={(e) => {
@@ -230,7 +234,11 @@ export default function Sidebar() {
             if (viewMode === 'overview') {
               setViewMode('kanban');
             }
-            window.history.pushState({}, '', '/dashboard');
+            const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+            const wsSlug = slugify(activeWorkspace?.name);
+            const boardSlug = slugify(board.name);
+            const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${board.id}`;
+            window.history.pushState({}, '', targetUrl);
             window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }
         }}
@@ -883,9 +891,13 @@ export default function Sidebar() {
                   role: 'owner',
                   isVirtual: true,
                 });
+                setViewMode('kanban');
                 setIsMobileMenuOpen(false);
                 setIsProactiveAIOpen(false);
-                window.history.pushState({}, '', '/dashboard');
+                const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+                const wsSlug = slugify(activeWorkspace?.name);
+                const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/overall-project`;
+                window.history.pushState({}, '', targetUrl);
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all tour-global-board ${
@@ -913,9 +925,13 @@ export default function Sidebar() {
               <button
                 onClick={() => {
                   setSelectedBoard(todoListBoard);
+                  setViewMode('kanban');
                   setIsMobileMenuOpen(false);
                   setIsProactiveAIOpen(false);
-                  window.history.pushState({}, '', '/dashboard');
+                  const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+                  const wsSlug = slugify(activeWorkspace?.name);
+                  const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/todo-list`;
+                  window.history.pushState({}, '', targetUrl);
                   window.dispatchEvent(new CustomEvent('alurku-navigate'));
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${

@@ -655,7 +655,11 @@ export default function WorkspaceOverview() {
                     if (viewMode === 'overview') {
                       setViewMode('kanban');
                     }
-                    window.history.pushState({}, '', '/dashboard');
+                    const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+                    const wsSlug = slugify(activeWorkspace?.name);
+                    const boardSlug = slugify(proj.name);
+                    const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${proj.id}`;
+                    window.history.pushState({}, '', targetUrl);
                     window.dispatchEvent(new CustomEvent('alurku-navigate'));
                   }}
                   className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:shadow-lg transition-all duration-300 group relative flex flex-col justify-between cursor-pointer"

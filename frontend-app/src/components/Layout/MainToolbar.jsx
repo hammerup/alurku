@@ -73,27 +73,7 @@ export default function MainToolbar() {
     <header className="px-4 py-3 md:px-6 md:py-6 flex flex-col gap-3 md:gap-4 shrink-0 border-b border-neutral-100 dark:border-neutral-800/50 md:border-b-0">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-4">
         <div>
-          <div className="text-[10px] uppercase font-bold tracking-widest text-indigo-500 mb-0.5 md:mb-1 flex items-center gap-1.5 tour-breadcrumb">
-            <span 
-              onClick={() => {
-                setSelectedBoard(null);
-                setIsProactiveAIOpen(false);
-                window.history.pushState({}, '', '/dashboard');
-                window.dispatchEvent(new CustomEvent('alurku-navigate'));
-              }}
-              className="cursor-pointer hover:text-indigo-600 hover:underline transition-colors flex items-center gap-1 shrink-0"
-              title={tMsg('Go to Dashboard', 'Kembali ke Dashboard')}
-            >
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span className="hidden sm:inline">{tMsg('Dashboard', 'Dashboard')}</span>
-            </span>
-            <span className="text-neutral-300 dark:text-neutral-600">/</span>
-            <span className="truncate max-w-37.5 sm:max-w-50">
-              {selectedBoard.id === 'global' ? tMsg('Master View', 'Tampilan Utama') : selectedBoard.name}
-            </span>
-          </div>
+
           <h2 className="text-lg md:text-2xl font-extrabold text-slate-800 dark:text-white capitalize">
             {viewMode === 'kanban' ? 'Kanban Board' : viewMode === 'list' ? 'Table List' : viewMode}
           </h2>

@@ -13,7 +13,7 @@ export default function HeaderNavigation({
   onLogoClick,
   onNavClick,
 }) {
-  const { setIsMobileMenuOpen, selectedBoard, boards, setSelectedBoard, setViewMode, activeWorkspace } = useAppContext();
+  const { setIsMobileMenuOpen, selectedBoard, boards, setSelectedBoard, setViewMode, activeWorkspace, isProactiveAIOpen, setIsProactiveAIOpen } = useAppContext();
   const [isProjectsDropdownOpen, setIsProjectsDropdownOpen] = React.useState(false);
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
@@ -58,10 +58,11 @@ export default function HeaderNavigation({
             onClick={() => {
               setSelectedBoard(null);
               setViewMode('overview');
+              setIsProactiveAIOpen(false);
               const slug = activeWorkspace?.name 
                 ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
                 : 'main';
-              window.history.pushState({}, '', `/workspace/${slug}`);
+              window.history.pushState({}, '', `/workspace/${slug}/${activeWorkspace?.id}`);
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }}
           >
@@ -69,7 +70,13 @@ export default function HeaderNavigation({
           </span>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <span className="text-slate-900 dark:text-white font-extrabold">
-            {selectedBoard ? selectedBoard.name : tMsg('Overview', 'Ringkasan')}
+            {isProactiveAIOpen
+              ? 'Chat Luruka'
+              : (window.location.pathname === '/dashboard'
+                  ? tMsg('Personal Dashboard', 'Dasbor Pribadi')
+                  : (selectedBoard ? selectedBoard.name : tMsg('Overview', 'Ringkasan'))
+                )
+            }
           </span>
         </div>
       </div>

@@ -224,6 +224,8 @@ function App() {
     setMyTeam,
     setBoards,
     setSelectedBoard,
+    workspaces,
+    switchWorkspace,
     setIsCreateBoardOpen,
     setNewBoardName,
     isPrivateBoard,
@@ -672,21 +674,98 @@ function App() {
   const [currentPath, setCurrentPath] = useState(typeof window !== 'undefined' ? window.location.pathname : '/');
 
   // Sync URL path for browser back/forward navigation
+  // Sync URL path for browser back/forward navigation and active board/workspace state
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const handlePathSync = () => {
         setCurrentPath(window.location.pathname);
+        
+        const path = window.location.pathname;
+        const parts = path.split('/');
+        
+        // Sync active workspace from URL ID
+        if (path.startsWith('/workspace/')) {
+          const wsId = parseInt(parts[3], 10);
+          if (wsId && !isNaN(wsId) && activeWorkspace?.id !== wsId && workspaces && workspaces.length > 0) {
+            const targetWs = workspaces.find((w) => w.id === wsId);
+            if (targetWs) {
+              switchWorkspace(targetWs);
+            }
+          }
+        }
+
+        if (path.includes('/project/')) {
+          const boardParam = parts[5] === 'overall-project' || parts[5] === 'todo-list' ? parts[5] : parts[6];
+          if (boardParam === 'overall-project') {
+            if (selectedBoard?.id !== 'global') {
+              setSelectedBoard({
+                id: 'global',
+                name: tMsg ? tMsg('See the Big Picture', 'Lihat Gambaran Besar') : 'See the Big Picture',
+                owner_username: currentUser,
+                role: 'owner',
+                isVirtual: true,
+              });
+            }
+          } else if (boardParam === 'todo-list') {
+            const todoBoard = boards.find((b) => b.name.toLowerCase() === 'to-do list' && b.is_private);
+            if (todoBoard && selectedBoard?.id !== todoBoard.id) {
+              setSelectedBoard(todoBoard);
+            }
+          } else {
+            const boardId = parseInt(boardParam, 10);
+            const targetBoard = !isNaN(boardId) ? boards.find((b) => b.id === boardId) : null;
+            if (targetBoard && selectedBoard?.id !== targetBoard.id) {
+              setSelectedBoard(targetBoard);
+            }
+          }
+        } else if (path.startsWith('/workspace/')) {
+          if (selectedBoard) {
+            setSelectedBoard(null);
+          }
+        }
       };
-      // Listen to browser back/forward
+      
       window.addEventListener('popstate', handlePathSync);
-      // Listen to internal SPA navigation (avoids triggering useAppLogic's handlePopState)
       window.addEventListener('alurku-navigate', handlePathSync);
       return () => {
         window.removeEventListener('popstate', handlePathSync);
         window.removeEventListener('alurku-navigate', handlePathSync);
       };
     }
-  }, []);
+  }, [boards, selectedBoard, setSelectedBoard, currentUser, tMsg, activeWorkspace, workspaces, switchWorkspace]);
+
+  // Sync state changes back to URL
+  useEffect(() => {
+    if (!isAuthenticated || !activeWorkspace) return;
+    
+    const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+    
+    const wsNameSlug = slugify(activeWorkspace.name);
+      
+    let targetPath = '';
+    if (selectedBoard) {
+      // Auto-switch viewMode if user opens a board while on overview mode
+      if (viewMode === 'overview') {
+        setViewMode('kanban');
+      }
+      
+      if (selectedBoard.id === 'global') {
+        targetPath = `/workspace/${wsNameSlug}/${activeWorkspace.id}/project/overall-project`;
+      } else if (selectedBoard.name?.toLowerCase() === 'to-do list' && selectedBoard.is_private) {
+        targetPath = `/workspace/${wsNameSlug}/${activeWorkspace.id}/project/todo-list`;
+      } else {
+        const boardNameSlug = slugify(selectedBoard.name);
+        targetPath = `/workspace/${wsNameSlug}/${activeWorkspace.id}/project/${boardNameSlug}/${selectedBoard.id}`;
+      }
+    } else if (currentPath.startsWith('/workspace')) {
+      targetPath = `/workspace/${wsNameSlug}/${activeWorkspace.id}`;
+    }
+    
+    if (targetPath && window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+      window.dispatchEvent(new CustomEvent('alurku-navigate'));
+    }
+  }, [selectedBoard, activeWorkspace, isAuthenticated, currentPath, viewMode, setViewMode]);
 
 
   if (!isAuthenticated) {
