@@ -20,6 +20,8 @@ export default function WorkspaceOverview() {
     viewMode,
     setViewMode,
     setSelectedTask,
+    showNotification,
+    userDirectory,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -37,6 +39,14 @@ export default function WorkspaceOverview() {
 
   // Project pagination state
   const [showAllProjects, setShowAllProjects] = useState(false);
+
+  // Workspace member management states
+  const [isViewingMembers, setIsViewingMembers] = useState(false);
+  const [inviteInput, setInviteInput] = useState('');
+  const [inviteRole, setInviteRole] = useState('member');
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteSuggestions, setInviteSuggestions] = useState([]);
+  const [inviteIndex, setInviteIndex] = useState(0);
 
   // Fetch workspace members for active members lists
   useEffect(() => {
@@ -73,10 +83,60 @@ export default function WorkspaceOverview() {
     }
   };
 
+  const handleInviteInputChange = (e) => {
+    const val = e.target.value;
+    setInviteInput(val);
+    if (!val.trim()) {
+      setInviteSuggestions([]);
+      return;
+    }
+    const filtered = (userDirectory || []).filter(
+      (u) =>
+        u.username.toLowerCase().includes(val.toLowerCase()) &&
+        u.username.toLowerCase() !== currentUser.toLowerCase()
+    );
+    setInviteSuggestions(filtered.slice(0, 5));
+    setInviteIndex(0);
+  };
+
+  const handleInviteSubmit = (e) => {
+    e.preventDefault();
+    if (!inviteInput.trim() || !activeWorkspace?.id) return;
+
+    setIsInviting(true);
+    axios
+      .post(`/api/workspaces/${activeWorkspace.id}/invite`, {
+        username_or_email: inviteInput.trim(),
+        role: inviteRole,
+      })
+      .then((res) => {
+        showNotification(
+          tMsg(
+            `Successfully invited @${inviteInput.trim()}`,
+            `Berhasil mengundang @${inviteInput.trim()}`
+          ),
+          'success'
+        );
+        setInviteInput('');
+        setInviteSuggestions([]);
+        // Refresh members list
+        axios.get(`/api/workspaces/${activeWorkspace.id}/members`)
+          .then(res => setMembers(res.data || []));
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || 'Failed to send invite!', 'error');
+      })
+      .finally(() => {
+        setIsInviting(false);
+      });
+  };
+
   // Active projects mapping
   const activeProjects = useMemo(() => {
-    return boards
-      .filter(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list');
+    return boards.filter(b => {
+      const nameLower = (b.name || '').toLowerCase().trim();
+      return nameLower !== 'to-do list' && nameLower !== 'to-do-list' && nameLower !== 'to do list';
+    });
   }, [boards]);
 
   // Paginated/Limited projects
@@ -96,6 +156,154 @@ export default function WorkspaceOverview() {
   
   const doneThisWeekGlobal = globalDoneTasks.length; 
   const remainingTasksGlobal = globalTodoTasks.length + globalDoingTasks.length;
+
+  if (isViewingMembers) {
+    return (
+      <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
+        {/* Navigation & Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => setIsViewingMembers(false)}
+            className="flex items-center gap-2 text-neutral-500 hover:text-[#111E38] dark:hover:text-white mb-4 text-sm font-bold transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            {tMsg('Back to Overview', 'Kembali')}
+          </button>
+          <h1 className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-white tracking-tight">
+            {tMsg('Workspace Members', 'Anggota Ruang Kerja')}
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400 mt-2 text-sm font-medium">
+            {tMsg('Manage user access and roles for ', 'Kelola hak akses dan peran anggota di ')}
+            <span className="font-bold text-[#111E38] dark:text-white">{activeWorkspace?.name}</span>
+          </p>
+        </div>
+
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left panel: List of Members (8 cols) */}
+          <div className="col-span-12 xl:col-span-8 space-y-6">
+            <div className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+              <h2 className="text-lg font-bold text-[#111E38] dark:text-white mb-4">
+                {tMsg('Active Members', 'Anggota Aktif')} ({members.length})
+              </h2>
+              
+              <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+                {members.map((m, idx) => {
+                  const isOwner = activeWorkspace?.owner_username === m.username;
+                  return (
+                    <div key={idx} className="flex items-center justify-between py-4 first:pt-0 last:pb-0">
+                      <div className="flex items-center gap-4">
+                        <Avatar name={m.username} url={avatarsMap[m.username]} size="w-11 h-11" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-sm text-[#111E38] dark:text-white">
+                              {m.full_name || m.username}
+                            </p>
+                            {isOwner && (
+                              <span className="bg-[#111E38] text-white dark:bg-slate-800 dark:text-[#FACC15] text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                Owner
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-neutral-450 dark:text-neutral-400">@{m.username}</p>
+                          <p className="text-xs text-neutral-405 dark:text-neutral-400 mt-0.5">{m.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
+                          {m.role || 'member'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Right panel: Invite Form (4 cols) */}
+          {activeWorkspace?.owner_username === currentUser && (
+            <div className="col-span-12 xl:col-span-4">
+              <div className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm space-y-4">
+                <h2 className="text-lg font-bold text-[#111E38] dark:text-white">
+                  {tMsg('Invite Member', 'Undang Anggota')}
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  {tMsg('Invite a colleague to collaborate in this workspace.', 'Undang rekan untuk berkolaborasi di ruang kerja ini.')}
+                </p>
+
+                <form onSubmit={handleInviteSubmit} className="space-y-4 pt-2">
+                  <div className="relative">
+                    <label className="block text-[10px] font-bold text-neutral-450 dark:text-neutral-400 uppercase tracking-widest mb-1.5">
+                      {tMsg('Username or Email', 'Nama Pengguna atau Email')}
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteInput}
+                      onChange={handleInviteInputChange}
+                      className="w-full bg-[#F3F4F6] dark:bg-[#0d0f11] border border-neutral-250 dark:border-neutral-800 text-slate-800 dark:text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-colors"
+                      placeholder="e.g. budi, siti@email.com..."
+                      required
+                    />
+
+                    {inviteSuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xl rounded-xl z-50 max-h-40 overflow-y-auto py-1">
+                        {inviteSuggestions.map((u, idx) => (
+                          <div
+                            key={u.username}
+                            className={`px-3 py-2 cursor-pointer flex items-center justify-between border-b border-neutral-100 dark:border-neutral-850 last:border-0 transition-colors ${
+                              inviteIndex === idx ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-50 dark:hover:bg-neutral-850'
+                            }`}
+                            onClick={() => {
+                              setInviteInput(u.username);
+                              setInviteSuggestions([]);
+                            }}
+                          >
+                            <span className="text-xs text-[#111E38] dark:text-white font-bold">@{u.username}</span>
+                            <span className="text-[10px] text-neutral-450 truncate ml-4">{u.email}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-neutral-450 dark:text-neutral-400 uppercase tracking-widest mb-1.5">
+                      {tMsg('Role', 'Peran')}
+                    </label>
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value)}
+                      className="w-full bg-[#F3F4F6] dark:bg-[#0d0f11] border border-neutral-250 dark:border-neutral-800 text-slate-800 dark:text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-colors"
+                    >
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                      <option value="viewer">Viewer</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isInviting}
+                    className="w-full py-3 bg-[#FACC15] hover:bg-yellow-400 disabled:bg-yellow-200/50 text-[#111E38] font-bold text-sm rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    {isInviting ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#111E38] border-t-transparent"></div>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-lg">person_add</span>
+                        {tMsg('Send Invite', 'Kirim Undangan')}
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
@@ -159,7 +367,7 @@ export default function WorkspaceOverview() {
               )}
             </div>
             <button 
-              onClick={() => openTeamModal(null)} 
+              onClick={() => setIsViewingMembers(true)} 
               className="bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 px-4 py-2 rounded-xl text-sm font-bold text-[#111E38] dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
             >
               {tMsg('Manage Team', 'Kelola Anggota')}
