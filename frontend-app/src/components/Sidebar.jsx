@@ -793,6 +793,86 @@ export default function Sidebar() {
           }`}
         >
 
+          <div className="mb-2">
+            <button
+              onClick={() => {
+                setSelectedBoard(null);
+                setViewMode('overview');
+                setIsMobileMenuOpen(false);
+                setIsProactiveAIOpen(false);
+                window.history.pushState({}, '', '/dashboard');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                window.location.pathname === '/dashboard' && !selectedBoard
+                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
+                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+              } ${isCollapsed ? 'justify-center' : ''}`}
+              title={tMsg('Personal Dashboard', 'Dasbor Pribadi')}
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl text-slate-500 dark:text-slate-400">home</span>
+              </div>
+              {!isCollapsed && (
+                <span className="text-sm truncate">{tMsg('Personal Dashboard', 'Dasbor Pribadi')}</span>
+              )}
+            </button>
+          </div>
+
+          <div className="mb-2">
+            <button
+              onClick={() => {
+                setSelectedBoard(null);
+                setViewMode('overview');
+                setIsMobileMenuOpen(false);
+                setIsProactiveAIOpen(false);
+                const slug = activeWorkspace?.name 
+                  ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
+                  : 'main';
+                window.history.pushState({}, '', `/workspace/${slug}`);
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                window.location.pathname.startsWith('/workspace') && !selectedBoard
+                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
+                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+              } ${isCollapsed ? 'justify-center' : ''}`}
+              title={tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl text-slate-500 dark:text-slate-400">dashboard</span>
+              </div>
+              {!isCollapsed && (
+                <span className="text-sm truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
+              )}
+            </button>
+          </div>
+
+          <div className="mb-2">
+            <button
+              onClick={() => {
+                setSelectedBoard(null);
+                setIsProactiveAIOpen(true);
+                setIsMobileMenuOpen(false);
+                window.history.pushState({}, '', '/');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                window.location.pathname === '/' && !selectedBoard
+                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
+                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+              } ${isCollapsed ? 'justify-center' : ''}`}
+              title="Chat Luruka"
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl text-slate-500 dark:text-slate-400">bolt</span>
+              </div>
+              {!isCollapsed && (
+                <span className="text-sm truncate">Chat Luruka</span>
+              )}
+            </button>
+          </div>
+
           <div className={`mb-2 ${isCollapsed ? 'mt-0' : 'mt-2'}`}>
             <button
               onClick={() => {

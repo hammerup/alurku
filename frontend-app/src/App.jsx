@@ -1245,8 +1245,8 @@ function App() {
           avatarsMap={avatarsMap}
           onLogoClick={() => {
             setSelectedBoard(null);
-            setIsProactiveAIOpen(true);
-            window.history.pushState({}, '', '/');
+            setIsProactiveAIOpen(false);
+            window.history.pushState({}, '', '/dashboard');
             window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }}
           onNavClick={(destination) => {

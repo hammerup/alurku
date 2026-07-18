@@ -520,21 +520,7 @@ USER REQUEST:
   };
 
   const handleLogoClick = () => {
-    if (isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0) {
-      destRef.current = 'reset';
-      setCancelConfirmOpen(true);
-    } else {
-      setPrompt('');
-      setChatHistory([
-        {
-          id: 'welcome',
-          sender: 'ai',
-          text: language === 'id' 
-            ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
-            : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
-        }
-      ]);
-    }
+    handleNavClick('dashboard');
   };
 
   const handleNavClick = (destination) => {

@@ -13,7 +13,8 @@ export default function HeaderNavigation({
   onLogoClick,
   onNavClick,
 }) {
-  const { setIsMobileMenuOpen, selectedBoard, boards } = useAppContext();
+  const { setIsMobileMenuOpen, selectedBoard, boards, setSelectedBoard, setViewMode, activeWorkspace } = useAppContext();
+  const [isProjectsDropdownOpen, setIsProjectsDropdownOpen] = React.useState(false);
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
   const handleNavClick = (e, destination) => {
@@ -50,58 +51,27 @@ export default function HeaderNavigation({
           </span>
         </div>
 
-        {/* Top navigation links */}
-        <nav className="hidden md:flex gap-8 items-center">
-          <a
-            href="#dashboard"
-            onClick={(e) => handleNavClick(e, 'dashboard')}
-            className={`transition-all font-semibold text-sm cursor-pointer pb-1 ${
-              currentPath === '/dashboard'
-                ? 'text-slate-900 dark:text-white border-b-2 border-[#FACC15] font-extrabold'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
+        {/* Breadcrumbs penunjuk lokasi aktif (Sidebar-Centric Utility) */}
+        <div className="hidden md:flex items-center gap-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 select-none">
+          <span
+            className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            onClick={() => {
+              setSelectedBoard(null);
+              setViewMode('overview');
+              const slug = activeWorkspace?.name 
+                ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
+                : 'main';
+              window.history.pushState({}, '', `/workspace/${slug}`);
+              window.dispatchEvent(new CustomEvent('alurku-navigate'));
+            }}
           >
-            Dashboard
-          </a>
-          <a
-            href="#workspace"
-            onClick={(e) => handleNavClick(e, 'workspace')}
-            className={`transition-all font-semibold text-sm cursor-pointer pb-1 ${
-              currentPath.startsWith('/workspace')
-                ? 'text-slate-900 dark:text-white border-b-2 border-[#FACC15] font-extrabold'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            Workspace
-          </a>
-          <a
-            href="#projects"
-            onClick={(e) => handleNavClick(e, 'projects')}
-            className={`transition-colors font-semibold text-sm cursor-pointer ${
-              isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-            }`}
-          >
-            Projects
-          </a>
-          <a
-            href="#team"
-            onClick={(e) => handleNavClick(e, 'team')}
-            className={`transition-colors font-semibold text-sm cursor-pointer ${
-              isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-            }`}
-          >
-            Team
-          </a>
-          <a
-            href="#reports"
-            onClick={(e) => handleNavClick(e, 'reports')}
-            className={`transition-colors font-semibold text-sm cursor-pointer ${
-              isDarkMode ? 'text-white/40 hover:text-white' : 'text-[#0b1c30]/60 hover:text-[#001f3f]'
-            }`}
-          >
-            Reports
-          </a>
-        </nav>
+            {activeWorkspace ? activeWorkspace.name : 'Workspace'}
+          </span>
+          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+          <span className="text-slate-900 dark:text-white font-extrabold">
+            {selectedBoard ? selectedBoard.name : tMsg('Overview', 'Ringkasan')}
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-6">
