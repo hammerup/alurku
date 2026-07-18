@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Avatar } from '../SharedUI';
 import { useAppContext } from '../contexts/AppContext';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export default function WorkspaceOverview() {
   const {
@@ -47,6 +48,72 @@ export default function WorkspaceOverview() {
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSuggestions, setInviteSuggestions] = useState([]);
   const [inviteIndex, setInviteIndex] = useState(0);
+
+  const token = localStorage.getItem('alurku_token') || '';
+  const { onlineUsers, activityFeed } = useWebSocket(activeWorkspace?.id, token, currentUser);
+
+  const getUserDisplayName = (username) => {
+    const member = (members || []).find((m) => m.username === username);
+    if (member && member.full_name) return member.full_name;
+    const dirUser = (userDirectory || []).find((u) => u.username === username);
+    if (dirUser && dirUser.full_name) return dirUser.full_name;
+    return username;
+  };
+
+  const formatActivityMessage = (username, action, target_title, extra_data) => {
+    const isIndo = language === 'id';
+    const displayName = getUserDisplayName(username);
+    
+    if (action === 'task_created') {
+      return (
+        <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+          <span className="font-extrabold">{displayName}</span> {isIndo ? 'membuat tugas baru' : 'created a new task'} <span className="text-sky-600 dark:text-[#FACC15] font-bold">{target_title}</span>
+        </p>
+      );
+    }
+    if (action === 'task_status_changed') {
+      const newStatus = extra_data?.new_status || 'Pending';
+      return (
+        <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+          <span className="font-extrabold">{displayName}</span> {isIndo ? 'mengubah status tugas' : 'changed status of'} <span className="text-sky-600 dark:text-[#FACC15] font-bold">{target_title}</span> {isIndo ? 'menjadi' : 'to'} <span className="font-extrabold uppercase tracking-wide text-xs px-2 py-0.5 bg-neutral-100 dark:bg-slate-800 rounded">{newStatus}</span>
+        </p>
+      );
+    }
+    if (action === 'task_deleted') {
+      return (
+        <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+          <span className="font-extrabold">{displayName}</span> {isIndo ? 'menghapus tugas' : 'deleted task'} <span className="text-neutral-400 font-bold line-through">{target_title}</span>
+        </p>
+      );
+    }
+    
+    return (
+      <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+        <span className="font-extrabold">{displayName}</span> {action.replace('_', ' ')} <span className="text-sky-600 dark:text-[#FACC15] font-bold">{target_title}</span>
+      </p>
+    );
+  };
+
+  const formatTimeAgo = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const t = new Date(dateStr.replace(' ', 'T'));
+      const diffMs = Date.now() - t.getTime();
+      const diffSec = Math.floor(diffMs / 1000);
+      const diffMin = Math.floor(diffSec / 60);
+      const diffHr = Math.floor(diffMin / 60);
+      const diffDays = Math.floor(diffHr / 24);
+
+      const isIndo = language === 'id';
+
+      if (diffSec < 60) return isIndo ? 'Baru saja' : 'Just now';
+      if (diffMin < 60) return isIndo ? `${diffMin} menit yang lalu` : `${diffMin}m ago`;
+      if (diffHr < 24) return isIndo ? `${diffHr} jam yang lalu` : `${diffHr}h ago`;
+      return isIndo ? `${diffDays} hari yang lalu` : `${diffDays}d ago`;
+    } catch (e) {
+      return dateStr;
+    }
+  };
 
   // Fetch workspace members for active members lists
   useEffect(() => {
@@ -370,7 +437,7 @@ export default function WorkspaceOverview() {
               onClick={() => setIsViewingMembers(true)} 
               className="bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 px-4 py-2 rounded-xl text-sm font-bold text-[#111E38] dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
             >
-              {tMsg('Manage Team', 'Kelola Anggota')}
+              {tMsg('Manage Member', 'Kelola Anggota')}
             </button>
           </div>
         </div>
@@ -648,97 +715,54 @@ export default function WorkspaceOverview() {
             
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar relative">
               {/* Vertical connector line */}
-              <div className="absolute left-11 top-10 bottom-10 w-px bg-neutral-200 dark:bg-neutral-850"></div>
+              {activityFeed.length > 0 && (
+                <div className="absolute left-11 top-10 bottom-10 w-px bg-neutral-200 dark:bg-neutral-850"></div>
+              )}
               
-              {/* Activity Item 1 */}
-              <div className="flex gap-4 relative z-10">
-                <div className="shrink-0">
-                  <div className="ring-2 ring-white dark:ring-[#121B2D] rounded-full">
-                    <Avatar name="Budi Santoso" url="" size="w-10 h-10" />
+              {activityFeed.slice(0, 10).map((act) => (
+                <div key={act.id} className="flex gap-4 relative z-10">
+                  <div className="shrink-0">
+                    <div className="ring-2 ring-white dark:ring-[#121B2D] rounded-full">
+                      <Avatar name={act.username} url={avatarsMap[act.username]} size="w-10 h-10" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    {formatActivityMessage(act.username, act.action, act.target_title, act.extra_data)}
+                    <p className="text-[11px] text-neutral-400 mt-0.5">{formatTimeAgo(act.created_at)}</p>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-[#111E38] dark:text-white leading-snug">
-                    <span className="font-extrabold">Budi Santoso</span> {tMsg('pushed 4 commits to', 'mengirim 4 komit ke')} <span className="text-sky-600 dark:text-[#FACC15] font-bold">dev/main-auth</span>
-                  </p>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">2 minutes ago</p>
-                  <div className="mt-2.5 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-100 dark:border-neutral-850">
-                    <p className="text-xs font-mono text-slate-650 dark:text-slate-300">feat: improve login validation logic</p>
-                  </div>
-                </div>
-              </div>
+              ))}
 
-              {/* Activity Item 2 */}
-              <div className="flex gap-4 relative z-10">
-                <div className="shrink-0">
-                  <div className="ring-2 ring-white dark:ring-[#121B2D] rounded-full">
-                    <Avatar name="Siti Aminah" url="" size="w-10 h-10" />
-                  </div>
+              {activityFeed.length === 0 && (
+                <div className="text-center py-10 text-xs text-neutral-450 dark:text-neutral-500">
+                  {tMsg('No activity recorded yet.', 'Belum ada aktivitas tercatat.')}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-[#111E38] dark:text-white leading-snug">
-                    <span className="font-extrabold">Siti Aminah</span> {tMsg('commented on', 'mengomentari')} <span className="text-sky-600 dark:text-[#FACC15] font-bold">Checkout Flow Design</span>
-                  </p>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">1 hour ago</p>
-                  <p className="mt-2 text-neutral-600 dark:text-neutral-300 italic text-xs leading-relaxed">
-                    "The button placement looks great, but let's check accessibility."
-                  </p>
-                </div>
-              </div>
-
-              {/* Activity Item 3 */}
-              <div className="flex gap-4 relative z-10">
-                <div className="shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-sky-650 dark:text-[#FACC15] ring-2 ring-white dark:ring-[#121B2D]">
-                    <span className="material-symbols-outlined text-lg">rocket_launch</span>
-                  </div>
-                </div>
-                <div className="flex-1 pt-1">
-                  <p className="text-sm text-[#111E38] dark:text-white leading-snug">
-                    <span className="font-extrabold">System</span> {tMsg('automatically deployed', 'otomatis meluncurkan')} <span className="text-sky-600 dark:text-[#FACC15] font-bold">Production v2.4</span>
-                  </p>
-                  <p className="text-[11px] text-neutral-400 mt-0.5">4 hours ago</p>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Active Members List */}
             <div className="p-6 bg-neutral-50 dark:bg-slate-900/30 border-t border-neutral-100 dark:border-neutral-800">
               <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-4">Online Now</h3>
               <div className="space-y-4">
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Avatar name="Alex Rivera" url="" size="w-8 h-8" />
-                      <span className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 border border-white dark:border-[#121B2D] rounded-full"></span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#111E38] dark:text-white">Alex Rivera</p>
-                      <p className="text-[10px] text-neutral-400">Working on API</p>
-                    </div>
-                  </div>
-                  <button className="text-slate-400 hover:text-[#111E38] dark:hover:text-white transition-colors">
-                    <span className="material-symbols-outlined text-base">chat_bubble</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Avatar name="Linda Chen" url="" size="w-8 h-8" />
-                      <span className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 border border-white dark:border-[#121B2D] rounded-full"></span>
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#111E38] dark:text-white">Linda Chen</p>
-                      <p className="text-[10px] text-neutral-400">Reviewing Designs</p>
+                {Array.from(onlineUsers).map((username) => (
+                  <div key={username} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <Avatar name={username} url={avatarsMap[username]} size="w-8 h-8" />
+                        <span className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 border border-white dark:border-[#121B2D] rounded-full"></span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#111E38] dark:text-white">{getUserDisplayName(username)}</p>
+                        <p className="text-[10px] text-neutral-450 dark:text-neutral-500">@{username}</p>
+                      </div>
                     </div>
                   </div>
-                  <button className="text-slate-400 hover:text-[#111E38] dark:hover:text-white transition-colors">
-                    <span className="material-symbols-outlined text-base">chat_bubble</span>
-                  </button>
-                </div>
-
+                ))}
+                {onlineUsers.size === 0 && (
+                  <div className="text-center py-4 text-xs text-neutral-450 dark:text-neutral-500">
+                    {tMsg('Nobody online', 'Tidak ada yang online')}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -647,6 +647,51 @@ from routers.workspaces import router as workspaces_router
 app.include_router(workspaces_router)
 from routers.articles import router as articles_router
 app.include_router(articles_router)
+from routers.ws import router as ws_router
+app.include_router(ws_router)
+
+
+# REST endpoint to load initial activity logs for a workspace
+@app.get("/api/workspaces/{workspace_id}/activity")
+def get_workspace_activity(
+    workspace_id: int,
+    limit: int = 20,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mengambil log aktivitas terbaru untuk sebuah workspace.
+    Digunakan saat halaman pertama kali dimuat sebelum WebSocket terhubung.
+    """
+    from database import ActivityLog, WorkspaceMember
+
+    # Verify membership
+    member = db.query(WorkspaceMember).filter(
+        WorkspaceMember.workspace_id == workspace_id,
+        WorkspaceMember.username == current_user,
+    ).first()
+    if not member:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    logs = (
+        db.query(ActivityLog)
+        .filter(ActivityLog.workspace_id == workspace_id)
+        .order_by(ActivityLog.created_at.desc())
+        .limit(min(limit, 50))
+        .all()
+    )
+
+    result = []
+    for log in logs:
+        result.append({
+            "id": log.id,
+            "username": log.username,
+            "action": log.action,
+            "target_title": log.target_title,
+            "extra_data": json.loads(log.extra_data) if log.extra_data else {},
+            "created_at": log.created_at.strftime("%Y-%m-%d %H:%M:%S") if log.created_at else None,
+        })
+    return result
 
 
 def run_startup_auto_nudge():

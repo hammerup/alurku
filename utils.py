@@ -566,3 +566,49 @@ def get_or_create_chat_task(db: Session, board_id: int):
         db.refresh(task)
     return task
 
+
+def log_and_broadcast_activity(db: Session, workspace_id: int, username: str, action: str, target_title: str = "", extra_data: dict = None):
+    from database import ActivityLog
+    import json
+    from services.ws_manager import manager
+    import asyncio
+    
+    # Save to database
+    log_entry = ActivityLog(
+        workspace_id=workspace_id,
+        username=username,
+        action=action,
+        target_title=target_title,
+        extra_data=json.dumps(extra_data) if extra_data else None,
+    )
+    db.add(log_entry)
+    db.commit()
+    
+    # Broadcast asynchronously
+    try:
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+        if loop.is_running():
+            asyncio.ensure_future(manager.broadcast_activity(
+                workspace_id=workspace_id,
+                username=username,
+                action=action,
+                target_title=target_title,
+                extra_data=extra_data
+            ))
+        else:
+            loop.run_until_complete(manager.broadcast_activity(
+                workspace_id=workspace_id,
+                username=username,
+                action=action,
+                target_title=target_title,
+                extra_data=extra_data
+            ))
+    except Exception as e:
+        print(f"[Activity Broadcast Error]: {e}")
+
+

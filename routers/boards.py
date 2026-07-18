@@ -648,6 +648,15 @@ def create_task(
 
         db.commit()
         log_activity(db, new_task.id, f"**@{current_user}** created this task.")
+        if workspace_id:
+            log_and_broadcast_activity(
+                db,
+                workspace_id,
+                current_user,
+                "task_created",
+                new_task.project_name or "Untitled",
+                {"task_id": new_task.id}
+            )
 
         assignees = get_assignees(task.requester)
         all_involved = assignees.union(subtask_assignees)

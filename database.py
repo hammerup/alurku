@@ -190,6 +190,16 @@ class SecurityLog(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    username = Column(String(50), index=True)
+    action = Column(String(50), nullable=False)  # e.g. task_created, task_completed, comment_added, board_created
+    target_title = Column(String(200), nullable=True)
+    extra_data = Column(Text, nullable=True)  # JSON string for additional context
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
 
 class Article(Base):
     __tablename__ = "articles"

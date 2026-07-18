@@ -453,6 +453,15 @@ def update_task_status(
         log_activity(
             db, task.id, f"**@{current_user}** changed status to **{update.status}**."
         )
+        if getattr(task, "workspace_id", None):
+            log_and_broadcast_activity(
+                db, 
+                task.workspace_id, 
+                current_user, 
+                "task_status_changed", 
+                task.project_name or "Untitled", 
+                {"task_id": task.id, "old_status": old_status, "new_status": update.status}
+            )
         notif_type = "task_completed" if update.status == "Done" else "status_changed"
         if current_user != task.owner_username and check_board_access(
             db, task.board_id, task.owner_username
@@ -679,9 +688,20 @@ def delete_task(
             detail="Only task owner or project owner can delete this task",
         )
 
+    ws_id = getattr(task, "workspace_id", None)
+    task_name = task.project_name
     db.query(Subtask).filter(Subtask.request_id == task_id).delete()
     db.delete(task)
     db.commit()
+    if ws_id:
+        log_and_broadcast_activity(
+            db, 
+            ws_id, 
+            current_user, 
+            "task_deleted", 
+            task_name or "Untitled",
+            {"task_id": task_id}
+        )
     update_board_activity(db, task.board_id)
     return {"message": "Task deleted successfully"}
 
