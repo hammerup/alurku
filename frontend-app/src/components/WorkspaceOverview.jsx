@@ -11,10 +11,15 @@ export default function WorkspaceOverview() {
     setBoardToDelete,
     boards,
     tasks,
+    filteredTasks,
     avatarsMap,
     currentUser,
     language,
     openTeamModal,
+    setSelectedBoard,
+    viewMode,
+    setViewMode,
+    setSelectedTask,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -79,13 +84,18 @@ export default function WorkspaceOverview() {
     return showAllProjects ? activeProjects : activeProjects.slice(0, 4);
   }, [activeProjects, showAllProjects]);
 
-  // Task metrics for snapshot
-  const todoTasks = tasks.filter(t => (t.status || '').toLowerCase() === 'to do' || (t.status || '').toLowerCase() === 'backlog');
-  const doingTasks = tasks.filter(t => (t.status || '').toLowerCase() === 'in progress' || (t.status || '').toLowerCase() === 'doing');
-  const doneTasks = tasks.filter(t => (t.status || '').toLowerCase() === 'done');
+  // Task metrics for snapshot (uses filteredTasks for card list consistency)
+  const todoTasks = filteredTasks.filter(t => (t.status || '').toLowerCase() === 'to do' || (t.status || '').toLowerCase() === 'backlog' || (t.status || '').toLowerCase() === 'pending');
+  const doingTasks = filteredTasks.filter(t => (t.status || '').toLowerCase() === 'in progress' || (t.status || '').toLowerCase() === 'doing');
+  const doneTasks = filteredTasks.filter(t => (t.status || '').toLowerCase() === 'done');
 
-  const doneThisWeek = doneTasks.length; 
-  const remainingTasks = todoTasks.length + doingTasks.length;
+  // Global metrics for Workspace Velocity (always overall view/all tasks)
+  const globalDoneTasks = tasks.filter(t => (t.status || '').toLowerCase() === 'done');
+  const globalTodoTasks = tasks.filter(t => (t.status || '').toLowerCase() === 'to do' || (t.status || '').toLowerCase() === 'backlog' || (t.status || '').toLowerCase() === 'pending');
+  const globalDoingTasks = tasks.filter(t => (t.status || '').toLowerCase() === 'in progress' || (t.status || '').toLowerCase() === 'doing');
+  
+  const doneThisWeekGlobal = globalDoneTasks.length; 
+  const remainingTasksGlobal = globalTodoTasks.length + globalDoingTasks.length;
 
   return (
     <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
@@ -179,16 +189,32 @@ export default function WorkspaceOverview() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {displayedProjects.map((proj) => {
-              const projTasks = tasks.filter(t => t.board_id === proj.id || t.project_name === proj.name);
+              const projTasks = tasks.filter(t => t.board_id && parseInt(t.board_id) === parseInt(proj.id));
               const totalProj = projTasks.length;
               const doneProj = projTasks.filter(t => (t.status || '').toLowerCase() === 'done').length;
               const progress = totalProj > 0 ? Math.round((doneProj / totalProj) * 100) : 0;
               const isEditing = editingProjId === proj.id;
               
               return (
-                <div key={proj.id} className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:shadow-lg transition-all duration-300 group relative flex flex-col justify-between">
+                <div 
+                  key={proj.id} 
+                  onClick={() => {
+                    if (isEditing) return;
+                    setSelectedBoard(proj);
+                    if (viewMode === 'overview') {
+                      setViewMode('kanban');
+                    }
+                    window.history.pushState({}, '', '/dashboard');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                  }}
+                  className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 hover:shadow-lg transition-all duration-300 group relative flex flex-col justify-between cursor-pointer"
+                >
                   {isEditing ? (
-                    <form onSubmit={(e) => handleSaveProjectSubmit(e, proj.id)} className="space-y-4 w-full">
+                    <form 
+                      onSubmit={(e) => handleSaveProjectSubmit(e, proj.id)} 
+                      onClick={(e) => e.stopPropagation()}
+                      className="space-y-4 w-full"
+                    >
                       <div>
                         <label className="block text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-1.5">Project Name</label>
                         <input
@@ -217,12 +243,33 @@ export default function WorkspaceOverview() {
                     <>
                       <div>
                         <div className="flex justify-between items-start mb-4">
-                          <div className="p-2 bg-[#111E38] dark:bg-slate-800 text-white dark:text-[#FACC15] rounded-xl">
-                            <span className="material-symbols-outlined">folder_open</span>
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 bg-[#111E38] dark:bg-slate-800 text-white dark:text-[#FACC15] rounded-xl">
+                              <span className="material-symbols-outlined">folder_open</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {!!proj.is_private && (
+                                <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-450 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 rounded-lg" title={tMsg('Private Project', 'Proyek Privat')}>
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                  </svg>
+                                  {tMsg('Private', 'Privat')}
+                                </span>
+                              )}
+                              {proj.health_alert?.includes('Attention') && (
+                                <span className="flex items-center gap-1 text-[10px] font-bold text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-950/20 px-2 py-1 rounded-lg animate-pulse" title={tMsg('Attention Needed', 'Butuh Perhatian')}>
+                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                  </svg>
+                                  {tMsg('Attention', 'Perhatian')}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           
                           {/* Project action menu dropdown */}
-                          <div className="relative">
+                          <div className="relative" onClick={(e) => e.stopPropagation()}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); setActiveProjMenu(activeProjMenu === proj.id ? null : proj.id); }} 
                               className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
@@ -285,16 +332,20 @@ export default function WorkspaceOverview() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-[#111E38] dark:text-white">{tMsg('Workflow Snapshot', 'Cuplikan Alur Kerja')}</h3>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full pb-4">
               
               {/* To Do Column Preview */}
-              <div className="shrink-0 w-64 space-y-3">
+              <div className="w-full space-y-3">
                 <div className="flex items-center justify-between px-2">
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">To Do ({todoTasks.length})</span>
                 </div>
                 {todoTasks.length > 0 ? (
                   todoTasks.slice(0, 2).map(t => (
-                    <div key={t.id} className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <div 
+                      key={t.id} 
+                      onClick={() => setSelectedTask(t)}
+                      className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm cursor-pointer hover:border-neutral-350 dark:hover:border-neutral-700 transition-colors"
+                    >
                       <p className="text-sm font-bold text-[#111E38] dark:text-white mb-3 truncate">{t.project_name}</p>
                       <div className="flex items-center gap-2">
                         <span className="px-2 py-1 bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded text-[9px] font-bold uppercase tracking-widest">
@@ -316,13 +367,17 @@ export default function WorkspaceOverview() {
               </div>
 
               {/* Doing Column Preview */}
-              <div className="shrink-0 w-64 space-y-3">
+              <div className="w-full space-y-3">
                 <div className="flex items-center justify-between px-2">
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Doing ({doingTasks.length})</span>
                 </div>
                 {doingTasks.length > 0 ? (
                   doingTasks.slice(0, 2).map(t => (
-                    <div key={t.id} className="bg-[#FACC15]/10 p-4 rounded-xl border border-[#FACC15]/30 shadow-sm">
+                    <div 
+                      key={t.id} 
+                      onClick={() => setSelectedTask(t)}
+                      className="bg-[#FACC15]/10 p-4 rounded-xl border border-[#FACC15]/30 shadow-sm cursor-pointer hover:border-[#FACC15]/50 transition-colors"
+                    >
                       <p className="text-sm font-bold text-[#111E38] dark:text-white mb-3 truncate">{t.project_name}</p>
                       <div className="flex items-center justify-between">
                         <span className="px-2 py-1 bg-[#FACC15] text-[#111E38] rounded text-[9px] font-bold uppercase tracking-widest">
@@ -346,13 +401,17 @@ export default function WorkspaceOverview() {
               </div>
 
               {/* Done Column Preview */}
-              <div className="shrink-0 w-64 space-y-3">
+              <div className="w-full space-y-3">
                 <div className="flex items-center justify-between px-2">
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Done ({doneTasks.length})</span>
                 </div>
                 {doneTasks.length > 0 ? (
                   doneTasks.slice(0, 2).map(t => (
-                    <div key={t.id} className="bg-neutral-50 dark:bg-slate-900/40 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 opacity-75">
+                    <div 
+                      key={t.id} 
+                      onClick={() => setSelectedTask(t)}
+                      className="bg-neutral-50 dark:bg-slate-900/40 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 opacity-75 cursor-pointer hover:border-neutral-350 dark:hover:border-neutral-700 transition-colors"
+                    >
                       <p className="text-sm font-bold text-neutral-400 dark:text-neutral-500 line-through mb-2 truncate">{t.project_name}</p>
                       <span className="material-symbols-outlined text-emerald-500 text-sm">check_circle</span>
                     </div>
@@ -492,17 +551,17 @@ export default function WorkspaceOverview() {
             <div className="max-w-xl">
               <h2 className="text-2xl md:text-3xl font-black mb-3">Workspace Velocity</h2>
               <p className="text-indigo-200 text-sm md:text-base font-medium mb-8 leading-relaxed">
-                {tMsg('Your team is maintaining strong momentum.', 'Tim Anda mempertahankan momentum yang kuat.')} {doneThisWeek > 0 ? `${doneThisWeek} tasks were completed recently.` : 'No tasks completed yet recently, keep it up!'}
+                {tMsg('Your team is maintaining strong momentum.', 'Tim Anda mempertahankan momentum yang kuat.')} {doneThisWeekGlobal > 0 ? `${doneThisWeekGlobal} tasks were completed recently.` : 'No tasks completed yet recently, keep it up!'}
               </p>
               
               <div className="flex gap-6">
                 <div className="flex flex-col">
-                  <span className="text-4xl font-black text-[#FACC15] drop-shadow-sm">{doneTasks.length}</span>
+                  <span className="text-4xl font-black text-[#FACC15] drop-shadow-sm">{globalDoneTasks.length}</span>
                   <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mt-1">Total Done</span>
                 </div>
                 <div className="w-px h-12 bg-indigo-500/30 self-center"></div>
                 <div className="flex flex-col">
-                  <span className="text-4xl font-black text-white drop-shadow-sm">{remainingTasks}</span>
+                  <span className="text-4xl font-black text-white drop-shadow-sm">{remainingTasksGlobal}</span>
                   <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mt-1">Remaining</span>
                 </div>
               </div>
