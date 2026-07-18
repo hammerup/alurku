@@ -53,6 +53,7 @@ import Sidebar from './components/Sidebar';
 import MobileTopBar from './components/Layout/MobileTopBar';
 import MainToolbar from './components/Layout/MainToolbar';
 import HomeDashboard from './components/HomeDashboard';
+import SearchResults from './components/SearchResults';
 import WorkspaceOverview from './components/WorkspaceOverview';
 
 import './api/axiosSetup';
@@ -1429,7 +1430,19 @@ function App() {
         <div className={`flex-1 flex flex-col min-w-0 relative ${
           selectedBoard && viewMode === 'kanban' ? 'overflow-hidden' : ''
         }`}>
-          {!selectedBoard ? (
+          {viewMode === 'search-results' ? (
+            <SearchResults
+              query={globalSearchQuery}
+              onClose={() => setViewMode(selectedBoard ? 'kanban' : 'overview')}
+              onSelectTask={(task) => {
+                handleGlobalSearchSelect(task);
+              }}
+              onSelectBoard={(board) => {
+                setSelectedBoard(board);
+                setViewMode('kanban');
+              }}
+            />
+          ) : !selectedBoard ? (
             currentPath.startsWith('/workspace') ? (
               <WorkspaceOverview />
             ) : (

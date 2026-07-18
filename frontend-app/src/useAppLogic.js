@@ -3748,7 +3748,9 @@ export default function useAppLogic() {
     const board = boards.find((b) => b.id === task.board_id);
     if (board) setSelectedBoard(board);
     setSelectedTask(task);
-    setGlobalSearchQuery('');
+    if (viewMode !== 'search-results') {
+      setGlobalSearchQuery('');
+    }
     closeGlobalSearch();
   };
 

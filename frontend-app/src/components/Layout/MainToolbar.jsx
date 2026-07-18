@@ -22,6 +22,7 @@ export default function MainToolbar() {
     showNotification,
     setExportMode,
     setIsExportModalOpen,
+    setIsCreateBoardOpen,
     searchQuery,
     setSearchQuery,
     handleOpenNewTaskForm,
