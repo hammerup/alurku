@@ -191,6 +191,8 @@ export default function useAppLogic() {
     setIsMomNotepadOpen,    
     isMyTicketsOpen,
     setIsMyTicketsOpen,
+    isArchivedOpen,
+    setIsArchivedOpen,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     isMobileProfileOpen,
