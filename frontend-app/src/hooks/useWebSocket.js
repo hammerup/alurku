@@ -33,8 +33,20 @@ export function useWebSocket(workspaceId, token, currentUser) {
       }
 
       // Build WebSocket URL
-      const isProd = import.meta.env.PROD;
-      const wsBase = isProd ? 'wss://alurku.app' : 'ws://localhost:8000';
+      let wsBase;
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      if (apiUrl) {
+        if (apiUrl.startsWith('https://')) {
+          wsBase = apiUrl.replace('https://', 'wss://').replace(/\/api$/, '').replace(/\/api\/$/, '');
+        } else if (apiUrl.startsWith('http://')) {
+          wsBase = apiUrl.replace('http://', 'ws://').replace(/\/api$/, '').replace(/\/api\/$/, '');
+        } else {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          wsBase = `${protocol}//${window.location.host}${apiUrl.replace(/\/api$/, '').replace(/\/api\/$/, '')}`;
+        }
+      } else {
+        wsBase = import.meta.env.PROD ? 'wss://alurku.app' : 'ws://localhost:8000';
+      }
       const wsUrl = `${wsBase}/ws/workspace/${workspaceId}?token=${encodeURIComponent(token)}`;
 
       const ws = new WebSocket(wsUrl);

@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// Setup Axios Base URL (should only be done once)
-axios.defaults.baseURL = import.meta.env.PROD ? 'https://alurku.app' : 'http://localhost:8000';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
 
 // Setup Axios Interceptor untuk JWT Token
 axios.interceptors.request.clear();
