@@ -40,11 +40,35 @@ def get_active_workspace_id(
 def list_workspaces(current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Mengambil daftar semua workspace di mana pengguna saat ini terdaftar sebagai anggota.
-    Ini sangat berguna bagi data analyst untuk menganalisis retensi pengguna dan pola keterlibatan tim (CRM).
+    Jika belum memiliki workspace, buatkan otomatis satu Workspace Pribadi untuk kelancaran sistem.
     """
     memberships = db.query(WorkspaceMember).filter(WorkspaceMember.username == current_user).all()
-    workspace_ids = [m.workspace_id for m in memberships]
     
+    if not memberships:
+        # Auto-provisioning workspace pribadi jika kosong
+        user = db.query(User).filter(User.username == current_user).first()
+        full_name = user.full_name if user else current_user
+        
+        new_ws = Workspace(
+            name=f"Workspace Pribadi {full_name}",
+            owner_username=current_user,
+            created_at=datetime.now()
+        )
+        db.add(new_ws)
+        db.flush()
+        
+        new_member = WorkspaceMember(
+            workspace_id=new_ws.id,
+            username=current_user,
+            role="admin"
+        )
+        db.add(new_member)
+        db.commit()
+        
+        # Ambil kembali daftar membership terbaru
+        memberships = [new_member]
+        
+    workspace_ids = [m.workspace_id for m in memberships]
     workspaces = db.query(Workspace).filter(Workspace.id.in_(workspace_ids)).all()
     
     result = []
