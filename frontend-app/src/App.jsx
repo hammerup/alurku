@@ -1686,53 +1686,6 @@ function App() {
           </div>
         </div>{' '}
         {/* End Main Content Wrapper */}
-        <AppModals />
-        {isSettingsOpen && (
-          <SettingsPage
-            closeSettings={() => setIsSettingsOpen(false)}
-            profileData={profileData}
-            setProfileData={setProfileData}
-            handleUpdateProfile={handleUpdateProfile}
-            handleAvatarUpload={handleAvatarUpload}
-            appTheme={appTheme}
-            handleSelectAppTheme={handleSelectAppTheme}
-            appBgImage={appBgImage}
-            handleAppBgUpload={handleAppBgUpload}
-            removeAppBgImage={removeAppBgImage}
-            appTexture={appTexture}
-            handleSelectAppTexture={handleSelectAppTexture}
-            chatBg={chatBg}
-            handleChatBgUpload={handleChatBgUpload}
-            removeChatBg={removeChatBg}
-            handleSelectDefaultBg={handleSelectDefaultBg}
-            cardTheme={cardTheme}
-            handleSelectCardTheme={handleSelectCardTheme}
-            isDarkMode={isDarkMode}
-            setIsDarkMode={setIsDarkMode}
-            language={language}
-            setLanguage={setLanguage}
-            dateFormat={dateFormat}
-            setDateFormat={setDateFormat}
-            showLiveClock={showLiveClock}
-            setShowLiveClock={setShowLiveClock}
-            showLiveClockDate={showLiveClockDate}
-            setShowLiveClockDate={setShowLiveClockDate}
-            pomodoroEnabled={pomodoroEnabled}
-            setPomodoroEnabled={setPomodoroEnabled}
-            showAssistantButton={showAssistantButton}
-            setShowAssistantButton={setShowAssistantButton}
-            notifPosition={notifPosition}
-            setNotifPosition={setNotifPosition}
-            notifSound={notifSound}
-            setNotifSound={setNotifSound}
-            notifPrivacy={notifPrivacy}
-            setNotifPrivacy={setNotifPrivacy}
-            browserNotifEnabled={browserNotifEnabled}
-            setBrowserNotifEnabled={setBrowserNotifEnabled}
-            showNotification={showNotification}
-            tMsg={tMsg}
-          />
-        )}
         {pomodoroEnabled && accountStatus !== 'suspended' && <PomodoroWidget isDarkMode={isDarkMode} />}
         {/* Floating Smart Assistant Button */}
         {!isProjectChatOpen && accountStatus !== 'suspended' && showAssistantButton && (
@@ -2351,7 +2304,54 @@ function App() {
             />
           </div>
         </div>
-        </div>
+    </div>
+  )}
+  <AppModals />
+      {isSettingsOpen && (
+        <SettingsPage
+          closeSettings={() => setIsSettingsOpen(false)}
+          profileData={profileData}
+          setProfileData={setProfileData}
+          handleUpdateProfile={handleUpdateProfile}
+          handleAvatarUpload={handleAvatarUpload}
+          appTheme={appTheme}
+          handleSelectAppTheme={handleSelectAppTheme}
+          appBgImage={appBgImage}
+          handleAppBgUpload={handleAppBgUpload}
+          removeAppBgImage={removeAppBgImage}
+          appTexture={appTexture}
+          handleSelectAppTexture={handleSelectAppTexture}
+          chatBg={chatBg}
+          handleChatBgUpload={handleChatBgUpload}
+          removeChatBg={removeChatBg}
+          handleSelectDefaultBg={handleSelectDefaultBg}
+          cardTheme={cardTheme}
+          handleSelectCardTheme={handleSelectCardTheme}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+          language={language}
+          setLanguage={setLanguage}
+          dateFormat={dateFormat}
+          setDateFormat={setDateFormat}
+          showLiveClock={showLiveClock}
+          setShowLiveClock={setShowLiveClock}
+          showLiveClockDate={showLiveClockDate}
+          setShowLiveClockDate={setShowLiveClockDate}
+          pomodoroEnabled={pomodoroEnabled}
+          setPomodoroEnabled={setPomodoroEnabled}
+          showAssistantButton={showAssistantButton}
+          setShowAssistantButton={setShowAssistantButton}
+          notifPosition={notifPosition}
+          setNotifPosition={setNotifPosition}
+          notifSound={notifSound}
+          setNotifSound={setNotifSound}
+          notifPrivacy={notifPrivacy}
+          setNotifPrivacy={setNotifPrivacy}
+          browserNotifEnabled={browserNotifEnabled}
+          setBrowserNotifEnabled={setBrowserNotifEnabled}
+          showNotification={showNotification}
+          tMsg={tMsg}
+        />
       )}
     </DragDropContext>
   );
