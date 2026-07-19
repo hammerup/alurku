@@ -40,9 +40,10 @@ export function BaseConfirmModal({
 
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[110] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-110 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
+      style={{ zIndex: 9999 }}
     >
       <div
         className={`bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center ${
@@ -132,7 +133,7 @@ export function WelcomeTourModal({
 
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-100 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -911,7 +912,7 @@ export function ColumnModal({ colModal, setColModal, handleColSubmit, language }
   const tMsg = (en, id) => (language === 'id' ? id : en);
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[70] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-70 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -1009,7 +1010,7 @@ export function LeaveModal({
   const tMsg = (en, id) => (language === 'id' ? id : en);
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[70] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-70 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -1157,7 +1158,7 @@ export function FeedbackModal({
   const tMsg = (en, id) => (language === 'id' ? id : en);
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[80] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-80 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -1184,7 +1185,7 @@ export function FeedbackModal({
             value={feedbackText}
             onChange={(e) => setFeedbackText(e.target.value)}
             placeholder={tMsg('I think it would be great if...', 'Menurut saya akan luar biasa jika...')}
-            className="w-full p-4 mb-8 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-2xl focus:border-neutral-300 dark:focus:border-neutral-700 focus:bg-white dark:focus:bg-black focus:outline-none text-sm placeholder-neutral-400 transition-all min-h-[120px] resize-y shadow-inner"
+            className="w-full p-4 mb-8 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-2xl focus:border-neutral-300 dark:focus:border-neutral-700 focus:bg-white dark:focus:bg-black focus:outline-none text-sm placeholder-neutral-400 transition-all min-h-30 resize-y shadow-inner"
             required
             autoFocus
           ></textarea>
@@ -1229,7 +1230,7 @@ export function ContactSupportModal({
   const tMsg = (en, id) => (language === 'id' ? id : en);
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[80] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-80 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
@@ -1256,7 +1257,7 @@ export function ContactSupportModal({
             value={supportText}
             onChange={(e) => setSupportText(e.target.value)}
             placeholder={tMsg('I am unable to do...', 'Saya tidak bisa melakukan...')}
-            className="w-full p-4 mb-8 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-2xl focus:border-blue-500 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:outline-none text-sm placeholder-neutral-400 transition-all min-h-[120px] resize-y shadow-inner"
+            className="w-full p-4 mb-8 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-2xl focus:border-blue-500 dark:focus:border-blue-500 focus:bg-white dark:focus:bg-black focus:outline-none text-sm placeholder-neutral-400 transition-all min-h-30 resize-y shadow-inner"
             required
             autoFocus
           ></textarea>
@@ -1400,7 +1401,7 @@ export function NotificationModal({
           <p
             className={`text-neutral-600 dark:text-neutral-400 ${
               isToast ? 'text-xs' : 'mb-8 text-sm'
-            } font-medium leading-relaxed break-words`}
+            } font-medium leading-relaxed wrap-break-word`}
           >
             {displayMessage}
           </p>
@@ -1459,7 +1460,7 @@ export function MyTicketsModal({ setIsMyTicketsOpen, language, setSelectedTask, 
 
   return (
     <div
-      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-[80] p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-80 p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
