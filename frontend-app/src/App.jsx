@@ -1427,7 +1427,9 @@ function App() {
           <ProjectLifecycleBanner deletionDateStr={selectedBoard.deletion_date} language={language} />
         )}
         <Sidebar />
-        <div className={`flex-1 flex flex-col min-w-0 relative ${
+        <div className={`flex-1 flex flex-col min-w-0 relative transition-all duration-300 ${
+          isProjectChatOpen ? 'lg:pr-100 xl:pr-112.5' : ''
+        } ${
           selectedBoard && viewMode === 'kanban' ? 'overflow-hidden' : ''
         }`}>
           {viewMode === 'search-results' ? (
@@ -1704,18 +1706,10 @@ function App() {
             </span>
           </button>
         )}
-        {/* Transparent Dark Overlay & Smooth Slide-in Drawer */}
+        {/* Smooth Slide-in Right Sidebar (No background blocker to allow working while chatting) */}
         <div
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-85 transition-opacity duration-300 ${
-            isProjectChatOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          onClick={() => setIsProjectChatOpen(false)}
-        ></div>
-        <div
-          className={`fixed inset-0 sm:inset-auto sm:bottom-28 sm:right-10 w-full sm:w-100 xl:w-112.5 sm:h-[calc(100vh-160px)] sm:max-h-200 bg-white dark:bg-neutral-950 sm:shadow-2xl sm:border border-neutral-200 dark:border-neutral-800 z-90 flex flex-col transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-bottom-right sm:rounded-4xl overflow-hidden ${
-            isProjectChatOpen
-              ? 'opacity-100 scale-100 translate-y-0'
-              : 'opacity-0 scale-90 translate-y-10 pointer-events-none'
+          className={`fixed top-20 right-0 h-[calc(100vh-80px)] w-full sm:w-100 xl:w-112.5 bg-white dark:bg-neutral-950 border-l border-neutral-200 dark:border-neutral-800 z-35 flex flex-col shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isProjectChatOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           <div className="flex border-b border-neutral-200 dark:border-neutral-800 shrink-0 bg-white dark:bg-neutral-950">
