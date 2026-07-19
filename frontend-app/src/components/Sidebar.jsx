@@ -838,30 +838,6 @@ export default function Sidebar() {
             </button>
           </div>
 
-          <div className="mb-2">
-            <button
-              onClick={() => {
-                setSelectedBoard(null);
-                setIsProactiveAIOpen(true);
-                setIsMobileMenuOpen(false);
-                window.history.pushState({}, '', '/');
-                window.dispatchEvent(new CustomEvent('alurku-navigate'));
-              }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-                window.location.pathname === '/' && !selectedBoard
-                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
-                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
-              } ${isCollapsed ? 'justify-center' : ''}`}
-              title="Chat Luruka"
-            >
-              <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl text-slate-500 dark:text-slate-400">bolt</span>
-              </div>
-              {!isCollapsed && (
-                <span className="text-sm truncate">Chat Luruka</span>
-              )}
-            </button>
-          </div>
 
           <div className={`mb-2 ${isCollapsed ? 'mt-0' : 'mt-2'}`}>
             <button
@@ -992,6 +968,69 @@ export default function Sidebar() {
                 : displayBoards.map((b) => renderBoardItem(b))}
             </div>
           </div>
+        </div>
+
+        {/* ── Pinned Bottom Footer ── */}
+        <div className={`shrink-0 border-t border-neutral-200/60 dark:border-neutral-800/60 pt-1 pb-2 px-2 flex flex-col gap-0.5`}>
+
+          {/* Archived Projects */}
+          <button
+            onClick={() => {
+              showNotification(tMsg('Archived Projects coming soon!', 'Proyek Diarsipkan segera hadir!'), 'info');
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
+            title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
+          >
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <polyline points="21 8 21 21 3 21 3 8" />
+                <rect x="1" y="3" width="22" height="5" rx="1" />
+                <line x1="10" y1="12" x2="14" y2="12" />
+              </svg>
+            </div>
+            {!isCollapsed && <span className="text-sm truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>}
+          </button>
+
+          {/* Chat Luruka — brand yellow bolt */}
+          <button
+            onClick={() => {
+              setSelectedBoard(null);
+              setIsProactiveAIOpen(true);
+              setIsMobileMenuOpen(false);
+              window.history.pushState({}, '', '/');
+              window.dispatchEvent(new CustomEvent('alurku-navigate'));
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+              window.location.pathname === '/' && !selectedBoard
+                ? 'bg-[#FACC15]/10 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                : 'hover:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/10 text-slate-600 dark:text-slate-400 font-medium'
+            } ${isCollapsed ? 'justify-center' : ''}`}
+            title="Chat Luruka"
+          >
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-[#FACC15] fill-[#FACC15]" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </div>
+            {!isCollapsed && <span className="text-sm truncate font-bold text-[#111E38] dark:text-[#FACC15]">Chat Luruka</span>}
+          </button>
+
+          {/* Help & Support */}
+          <button
+            onClick={() => setIsSupportOpen(true)}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
+            title={tMsg('Help & Support', 'Bantuan & Dukungan')}
+          >
+            <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            {!isCollapsed && <span className="text-sm truncate">{tMsg('Help & Support', 'Bantuan & Dukungan')}</span>}
+          </button>
+
         </div>
 
       </aside>
