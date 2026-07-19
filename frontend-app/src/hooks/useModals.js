@@ -24,6 +24,7 @@ export function useModals() {
     return false;
   });  
   const [isMyTicketsOpen, setIsMyTicketsOpen] = useState(false);
+  const [isArchivedOpen, setIsArchivedOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -67,6 +68,7 @@ export function useModals() {
     isDocsOpen, setIsDocsOpen,
     isMomNotepadOpen, setIsMomNotepadOpen,    
     isMyTicketsOpen, setIsMyTicketsOpen,
+    isArchivedOpen, setIsArchivedOpen,
     isMobileMenuOpen, setIsMobileMenuOpen,
     isMobileProfileOpen, setIsMobileProfileOpen,
     isLogoutConfirmOpen, setIsLogoutConfirmOpen,

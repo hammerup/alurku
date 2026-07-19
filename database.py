@@ -136,6 +136,7 @@ class Board(Base):
     deletion_date = Column(DateTime, nullable=True)
     is_private = Column(Integer, default=0)
     description = Column(Text, nullable=True)
+    is_archived = Column(Integer, default=0)
 
     # Relationships
     workspace = relationship("Workspace", back_populates="boards")

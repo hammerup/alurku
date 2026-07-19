@@ -30,6 +30,7 @@ import DocumentationModal from '../DocumentationModal';
 import ChatWorkspaceModal from '../ChatWorkspaceModal';
 import SystemSpecsModal from '../SystemSpecsModal';
 import MoMNotepadModal from './SmartAssistant/MoMNotepadModal';
+import ArchivedProjectsModal from './ArchivedProjectsModal';
 
 export default function AppModals() {
   const context = useAppContext();
@@ -279,6 +280,7 @@ export default function AppModals() {
     isFeedbackOpen,
     isInvitesModalOpen,
     isMyTicketsOpen,
+    isArchivedOpen,
     isSupportOpen,
     myTeam,
     notifications,
@@ -293,6 +295,7 @@ export default function AppModals() {
     setIsFeedbackOpen,
     setIsInvitesModalOpen,
     setIsMyTicketsOpen,
+    setIsArchivedOpen,
     setIsSupportOpen,
     setLanguage,
     setMemberToRevoke,
@@ -780,6 +783,14 @@ export default function AppModals() {
           currentUser={currentUser}
         />
       )}
+
+      <ArchivedProjectsModal
+        isOpen={isArchivedOpen}
+        onClose={() => setIsArchivedOpen(false)}
+        language={language}
+        showNotification={showNotification}
+        onProjectRestored={fetchBoards}
+      />
     </>
   );
 }

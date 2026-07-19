@@ -59,7 +59,8 @@ def get_boards(
 
     owned = db.query(Board).filter(
         Board.owner_username == current_user,
-        Board.workspace_id == workspace_id
+        Board.workspace_id == workspace_id,
+        or_(Board.is_archived == 0, Board.is_archived == None)
     ).all()
     member_links = (
         db.query(BoardMember)
@@ -410,6 +411,69 @@ def delete_board(
     db.delete(board)
     db.commit()
     return {"message": "Project deleted successfully!"}
+
+
+@router.get("/api/boards/archived")
+def get_archived_boards(
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_active_workspace_id)
+):
+    """Get all archived boards owned by the current user."""
+    archived = db.query(Board).filter(
+        Board.owner_username == current_user,
+        Board.workspace_id == workspace_id,
+        Board.is_archived == 1
+    ).all()
+    result = []
+    for b in archived:
+        task_count = db.query(Request).filter(Request.board_id == b.id).count()
+        result.append({
+            "id": b.id,
+            "name": b.name,
+            "description": b.description,
+            "created_at": b.created_at.isoformat() if b.created_at else None,
+            "last_activity_date": b.last_activity_date.isoformat() if b.last_activity_date else None,
+            "task_count": task_count,
+            "is_private": b.is_private,
+        })
+    return result
+
+
+@router.patch("/api/boards/{board_id}/archive")
+def archive_board(
+    board_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Soft-archive a board. Only the owner can archive their own board."""
+    board = db.query(Board).filter(Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=404, detail="Project not found.")
+    if board.owner_username != current_user and not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Only the project owner can archive this project.")
+    if getattr(board, "is_private", 0) == 1 and board.name.lower() == "to-do list":
+        raise HTTPException(status_code=403, detail="Cannot archive your default To-do List.")
+    board.is_archived = 1
+    db.commit()
+    return {"message": "Project archived successfully.", "board_id": board_id}
+
+
+@router.patch("/api/boards/{board_id}/unarchive")
+def unarchive_board(
+    board_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Restore an archived board back to the active projects list."""
+    board = db.query(Board).filter(Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=404, detail="Project not found.")
+    if board.owner_username != current_user and not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Only the project owner can restore this project.")
+    board.is_archived = 0
+    db.commit()
+    return {"message": "Project restored successfully.", "board_id": board_id}
 
 
 @router.get("/api/boards/{board_id}/tasks")

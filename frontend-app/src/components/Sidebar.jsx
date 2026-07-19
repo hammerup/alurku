@@ -49,6 +49,7 @@ export default function Sidebar() {
     setIsLeaveModalOpen,
     setIsMyTicketsOpen,
     setIsFeedbackOpen,
+    setIsArchivedOpen,
     setIsSupportOpen,
     setIsProjectChatOpen,
     setDrawerTab,
@@ -976,7 +977,7 @@ export default function Sidebar() {
           {/* Archived Projects */}
           <button
             onClick={() => {
-              showNotification(tMsg('Archived Projects coming soon!', 'Proyek Diarsipkan segera hadir!'), 'info');
+              setIsArchivedOpen(true);
             }}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
             title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
