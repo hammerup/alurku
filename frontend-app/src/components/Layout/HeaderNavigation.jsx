@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Avatar } from '../../SharedUI';
 import { useAppContext } from '../../contexts/AppContext';
 
@@ -68,6 +68,20 @@ export default function HeaderNavigation({
   } = useAppContext();
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
   const matchedGlobalBoards = useMemo(() => {
@@ -347,10 +361,10 @@ export default function HeaderNavigation({
         {/* User Account Menu Trigger & Dropdown */}
         <div 
           className="relative"
-          onMouseEnter={() => setIsProfileMenuOpen(true)}
-          onMouseLeave={() => setIsProfileMenuOpen(false)}
+          ref={profileMenuRef}
         >
           <div
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             className="w-9 h-9 rounded-full border border-neutral-300 dark:border-white/10 overflow-hidden cursor-pointer hover:border-neutral-500 dark:hover:border-white/30 transition-colors"
           >
             <Avatar
