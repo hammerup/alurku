@@ -365,7 +365,18 @@ USER REQUEST:
         jsonStr = jsonStr.substring(startIdx, endIdx);
       }
       
-      const aiResponse = JSON.parse(jsonStr);
+      let aiResponse = null;
+      try {
+        const aiResponse_parsed = JSON.parse(jsonStr);
+        aiResponse = aiResponse_parsed;
+      } catch (parseErr) {
+        // Jika JSON parse gagal (AI mengembalikan teks biasa), tampilkan sebagai pesan chat
+        aiResponse = {
+          response_type: 'chat',
+          chat_message: resAi.data.text?.trim() || tMsg('Sorry, I could not parse the response.', 'Maaf, aku tidak bisa memproses respons ini.'),
+          tasks: []
+        };
+      }
       setIsProcessing(false);
       
       const replyText = aiResponse.chat_message || '';
