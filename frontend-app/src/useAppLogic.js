@@ -383,6 +383,7 @@ export default function useAppLogic() {
   const [newBoardName, setNewBoardName] = useState('');
   const [isPrivateBoard, setIsPrivateBoard] = useState(false);
   const [boardToDelete, setBoardToDelete] = useState(null);
+  const [boardToArchive, setBoardToArchive] = useState(null);
 
   // PWA (Progressive Web App) Install Logic
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -4422,6 +4423,25 @@ export default function useAppLogic() {
       .finally(() => setIsSubmitting(false));
   };
 
+  const archiveBoard = (board) => {
+    setBoardToArchive(board);
+  };
+
+  const confirmArchiveBoard = () => {
+    if (!boardToArchive) return;
+    setIsSubmitting(true);
+    axios
+      .patch(`/api/boards/${boardToArchive.id}/archive`)
+      .then(() => {
+        showNotification('Project archived!', 'success');
+        fetchBoards();
+        if (selectedBoard?.id === boardToArchive.id) setSelectedBoard(null);
+        setBoardToArchive(null);
+      })
+      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to archive project', 'error'))
+      .finally(() => setIsSubmitting(false));
+  };
+
   const handleFeedbackSubmit = (e) => {
     e.preventDefault();
     if (!feedbackText.trim()) return;
@@ -4612,6 +4632,7 @@ export default function useAppLogic() {
     switchWorkspace,
     renameWorkspace,
     renameProject,
+    archiveBoard,
     isAuthenticated,
     currentUser,
     isLoginMode,
@@ -4795,6 +4816,9 @@ export default function useAppLogic() {
     isPrivateBoard,
     setIsPrivateBoard,
     setBoardToDelete,
+    boardToArchive,
+    setBoardToArchive,
+    confirmArchiveBoard,
     setDeleteBoardConfirmText,
     setIsExportModalOpen,
     setExportMode,

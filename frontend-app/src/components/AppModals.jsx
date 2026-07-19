@@ -5,6 +5,7 @@ import {
   DeleteCommentModal,
   RevokeMemberModal,
   DeleteBoardModal,
+  ArchiveBoardModal,
   ExportModal,
   CreateBoardModal,
   TeamModal,
@@ -286,6 +287,9 @@ export default function AppModals() {
     notifications,
     setAdminUsers,
     setBoardToDelete,
+    boardToArchive,
+    setBoardToArchive,
+    confirmArchiveBoard,
     setDeleteBoardConfirmText,
     setDmConversations,
     setDrawerTab,
@@ -512,6 +516,15 @@ export default function AppModals() {
           deleteBoardConfirmText={deleteBoardConfirmText}
           setDeleteBoardConfirmText={setDeleteBoardConfirmText}
           confirmDeleteBoard={confirmDeleteBoard}
+          language={language}
+          isSubmitting={isSubmitting}
+        />
+      )}
+      {boardToArchive && (
+        <ArchiveBoardModal
+          boardToArchive={boardToArchive}
+          setBoardToArchive={setBoardToArchive}
+          confirmArchiveBoard={confirmArchiveBoard}
           language={language}
           isSubmitting={isSubmitting}
         />

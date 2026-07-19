@@ -1563,3 +1563,33 @@ export function MyTicketsModal({ setIsMyTicketsOpen, language, setSelectedTask, 
     </div>
   );
 }
+
+export function ArchiveBoardModal({
+  boardToArchive,
+  setBoardToArchive,
+  confirmArchiveBoard,
+  language,
+  isSubmitting,
+}) {
+  const tMsg = (en, id) => (language === 'id' ? id : en);
+  return (
+    <BaseConfirmModal
+      onClose={() => setBoardToArchive(null)}
+      onConfirm={confirmArchiveBoard}
+      title={tMsg('Archive Project?', 'Arsipkan Proyek?')}
+      description={
+        <>
+          {tMsg('Are you sure you want to archive', 'Apakah Anda yakin ingin mengarsipkan')} <br />
+          <strong className="text-black dark:text-white font-bold">
+            {boardToArchive.name}
+          </strong>?
+          <br /> {tMsg('It will be hidden from the sidebar but all data will be preserved.', 'Proyek ini akan disembunyikan dari sidebar tetapi semua data akan tetap disimpan.')}
+        </>
+      }
+      confirmText={tMsg('Archive', 'Arsipkan')}
+      cancelText={tMsg('Cancel', 'Batal')}
+      isSubmitting={isSubmitting}
+      color="amber"
+    />
+  );
+}
