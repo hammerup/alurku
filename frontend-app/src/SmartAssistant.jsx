@@ -247,8 +247,8 @@ export default function SmartAssistant({
 
     addBotMessage(
       tMsg(
-        `Hi **@${currentUser}**! I'm your Smart Assistant.\n\nYou are currently in **${workspaceName}**. What would you like to do?\n\n*💡 Tip: Type **"options"** to see what else I can do.*`,
-        `Hai **@${currentUser}**! Saya Asisten Pintar Anda.\n\nAnda saat ini berada di **${workspaceName}**. Apa yang ingin Anda lakukan?\n\n*💡 Tip: Ketik **"opsi"** untuk melihat menu bantuan.*`
+        `Hi **@${currentUser}**! I'm Luruka, your personal AI assistant.\n\nYou are currently in **${workspaceName}**. What would you like to do?\n\n*💡 Tip: Type **"options"** to see what else I can do.*`,
+        `Hai **@${currentUser}**! Aku Luruka, asisten AI pribadimu.\n\nAnda saat ini berada di **${workspaceName}**. Apa yang ingin Anda lakukan?\n\n*💡 Tip: Ketik **"opsi"** untuk melihat menu bantuan.*`
       ),
       [optCreate, optAnalysis, optMeeting, optMore]
     );
@@ -970,7 +970,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           .map((m) => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text.replace(/<[^>]*>?/gm, '')}`)
           .join('\n');
 
-        const prompt = `You are 'Smart Assistant', the AI Assistant inside Alurku. Today is ${todayStr}. User @${currentUser} says: "${data}".
+        const prompt = `You are 'Luruka', the AI Assistant inside Alurku. Today is ${todayStr}. User @${currentUser} says: "${data}".
 
 Recent Conversation History:
 ${recentHistory}
@@ -1139,11 +1139,21 @@ If it's a general question or conversation related to project/task management, o
           })
           .catch((err) => {
             setMessages((prev) => prev.filter((m) => m.text !== tMsg('Thinking... 🤔', 'Berpikir... 🤔')));
-            const errorMsg = err.response?.data?.detail || err.message || 'Unknown error';
+            let rawMsg = err.response?.data?.detail || err.message || 'Unknown error';
+            // Sanitize provider mentions to hide proprietary backend engines
+            let errorMsg = rawMsg;
+            if (
+              /gemini|groq|gpt-oss|llama|openai|claude/i.test(rawMsg)
+            ) {
+              errorMsg = tMsg(
+                'AI engine connection issue. Please check your network or API settings.',
+                'Kendala koneksi ke server AI. Silakan periksa jaringan atau pengaturan API Anda.'
+              );
+            }
             addBotMessage(
               tMsg(
-                `⚠️ **Smart Assistant Error:** ${errorMsg}\n\nI couldn't process your request. Try choosing an option below:`,
-                `⚠️ **Smart Assistant Error:** ${errorMsg}\n\nSaya tidak dapat memproses permintaan Anda. Coba pilih opsi di bawah:`
+                `⚠️ **Luruka AI Error:** ${errorMsg}\n\nI couldn't process your request. Try choosing an option below:`,
+                `⚠️ **Luruka AI Error:** ${errorMsg}\n\nSaya tidak dapat memproses permintaan Anda. Coba pilih opsi di bawah:`
               ),
               [optCreate, optAnalysis, optSearch, optMore]
             );
@@ -1987,7 +1997,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             'Account: Manage profile, export CSV data globally or per project, toggle Dark Mode, submit feedback, or view system specs from the top right Account menu.';
         else if (data === 'Assistant')
           baseContext =
-            'Assistant: Smart Assistant is a Multi-AI helper (Gemini/GPT-OSS) that can draft tasks, summarize notes, answer docs, and extract meeting notes into actionable tasks.';
+            'Assistant: Luruka is an advanced AI helper that can draft tasks, summarize notes, answer docs, and extract meeting notes into actionable tasks.';
         else if (data === 'Tickets')
           baseContext =
             "Tickets: Users can submit System Feedback or Contact Support via the Account menu. These auto-generate a ticket ID (e.g. TKT-0001) which can be tracked in the 'My Tickets' panel.";

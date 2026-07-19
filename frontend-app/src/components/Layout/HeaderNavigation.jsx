@@ -367,7 +367,7 @@ export default function HeaderNavigation({
           </button>
         </div>
 
-        {/* Smart Assistant Trigger (Only if floating assistant button is off) */}
+        {/* Luruka AI Trigger (Only if floating assistant button is off) */}
         {!showAssistantButton && (
           <button
             onClick={() => {
@@ -379,9 +379,9 @@ export default function HeaderNavigation({
                 ? 'border-white/10 hover:border-white/30 text-white bg-white/5'
                 : 'border-[#0b1c30]/10 hover:border-[#0b1c30]/30 text-[#001f3f] bg-black/5'
             }`}
-            title={tMsg('Smart Assistant', 'Asisten Pintar AI')}
+            title="Luruka AI"
           >
-            <svg className="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.187L15 15l-5.187.904zM18.007 7.007L17.5 10l-.507-2.993L14 6.5l2.993-.507L17.5 3l.507 2.993L21 6.5l-2.993.507z" />
             </svg>
           </button>

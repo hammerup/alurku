@@ -1715,9 +1715,9 @@ function App() {
           <div className="flex border-b border-neutral-200 dark:border-neutral-800 shrink-0 bg-white dark:bg-neutral-950">
             <button
               onClick={() => setDrawerTab('assistant')}
-              className="flex-1 py-4 text-[10px] sm:text-xs uppercase tracking-wider transition-colors font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10"
+              className="flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10"
             >
-              ✨ Assistant
+              Luruka
             </button>
             <button
               onClick={() => setIsProjectChatOpen(false)}

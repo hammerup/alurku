@@ -50,7 +50,8 @@ export default function SmartAssistantChat({
           animation: chat-bubble-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
-      <div className="px-5 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-between items-center shrink-0">
+      {/* Floating minimal controls on top of the viewport (saves vertical space, removes redundant header) */}
+      <div className="absolute top-3 left-3 right-3 flex justify-between items-center z-30 pointer-events-none">
         <button
           onClick={() => {
             if (messages.length > 2) {
@@ -63,25 +64,10 @@ export default function SmartAssistantChat({
             setMessages([]);
             setAssistantMode('landing');
           }}
-          className="text-[10px] font-bold text-neutral-400 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors flex items-center gap-1 w-16"
+          className="pointer-events-auto text-[9px] font-black text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest bg-white/90 dark:bg-neutral-900/90 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-sm transition-all hover:scale-105 active:scale-95"
         >
           ◀ {tMsg('Menu', 'Menu')}
         </button>
-        <div className="flex items-center gap-2 flex-1 justify-center">
-          <select
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-transparent border-none p-0 pr-4 focus:ring-0 cursor-pointer outline-none hover:opacity-80 transition-opacity [&>option]:bg-white dark:[&>option]:bg-neutral-900 [&>option]:text-black dark:[&>option]:text-white"
-            title={language === 'id' ? 'Pilih Model AI' : 'Select AI Model'}
-          >
-            <option value="auto">✨ {aiProvider === 'Smart Assistant' ? 'AUTO AI' : aiProvider.toUpperCase()}</option>
-            <option value="gemini">⚡ GOOGLE GEMINI</option>
-            <option value="llama">GPT-OSS 120B</option>
-          </select>
-          <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest hidden sm:block">
-            • {tMsg('Your Private AI', 'AI Pribadi Anda')}
-          </p>
-        </div>
         <button
           onClick={() => {
             if (messages.length > 2) {
@@ -92,13 +78,13 @@ export default function SmartAssistantChat({
             }
             startConversation();
           }}
-          className="text-[10px] font-bold text-neutral-400 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors flex items-center justify-end gap-1 w-16"
+          className="pointer-events-auto text-[9px] font-black text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest bg-white/90 dark:bg-neutral-900/90 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-sm transition-all hover:scale-105 active:scale-95"
         >
           {tMsg('Reset', 'Ulang')} ↻
         </button>
       </div>
 
-      <div className="flex-1 relative flex flex-col min-h-0 overflow-hidden">
+      <div className="flex-1 relative flex flex-col min-h-0 overflow-hidden pt-12">
         {/* Static Background Layer */}
         {chatBg && (
           <div
@@ -127,7 +113,7 @@ export default function SmartAssistantChat({
             const isMe = msg.sender === 'user';
             const chatMsgData = {
               id: msg.id,
-              username: isMe ? currentUser : 'Smart Assistant 🤖',
+              username: isMe ? currentUser : 'Luruka',
               text: msg.text,
               timestamp: msg.timestamp || getLocalTimestamp(),
               reactions: {},
@@ -153,7 +139,7 @@ export default function SmartAssistantChat({
                 key={msg.id}
                 message={chatMsgData}
                 currentUser={currentUser}
-                avatarsMap={{ ...avatarsMap, 'Smart Assistant 🤖': '' }}
+                avatarsMap={{ ...avatarsMap, 'Luruka': '' }}
                 showDivider={showDivider}
                 dividerDisplay={dividerDisplay}
                 isFirstUnread={false}
