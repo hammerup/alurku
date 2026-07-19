@@ -2,9 +2,8 @@ import os
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
-from fastapi import HTTPException, Depends, Header
+from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-from typing import Optional
 from sqlalchemy.orm import Session
 
 # Import get_db and User model from database
@@ -19,7 +18,7 @@ if not SECRET_KEY:
     )
 
 ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
 
 def get_password_hash(password: str) -> str:
     # Batasi 71 karakter dan hash langsung menggunakan bcrypt (tanpa passlib)
@@ -44,24 +43,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_current_user(
-    token: Optional[str] = Depends(oauth2_scheme),
-    x_authorization: Optional[str] = Header(None, alias="X-Authorization"),
-    db: Session = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
-    # Jika token dari Authorization header kosong, coba ambil dari X-Authorization (bypass proxy filter)
-    if not token and x_authorization:
-        if x_authorization.startswith("Bearer "):
-            token = x_authorization.split(" ")[1]
-        else:
-            token = x_authorization
-
-    if not token:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")

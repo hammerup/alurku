@@ -8,10 +8,7 @@ axios.interceptors.response.clear();
 
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('alurku_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    config.headers['X-Authorization'] = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   
   const workspaceId = localStorage.getItem('alurku_active_workspace_id');
   if (workspaceId) config.headers['X-Workspace-ID'] = workspaceId;
