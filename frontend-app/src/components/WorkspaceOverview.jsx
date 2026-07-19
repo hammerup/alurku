@@ -10,6 +10,8 @@ export default function WorkspaceOverview() {
     renameWorkspace,
     renameProject,
     setBoardToDelete,
+    archiveBoard,
+    isSuperAdmin,
     boards,
     tasks,
     filteredTasks,
@@ -740,6 +742,12 @@ export default function WorkspaceOverview() {
                                     className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-semibold"
                                   >
                                     <span className="material-symbols-outlined text-xs">edit</span> {tMsg('Edit Details', 'Ubah Detail')}
+                                  </button>
+                                  <button 
+                                    onClick={() => { archiveBoard(proj); setActiveProjMenu(null); }} 
+                                    className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-semibold"
+                                  >
+                                    <span className="material-symbols-outlined text-xs">archive</span> {tMsg('Archive', 'Arsipkan')}
                                   </button>
                                   <button 
                                     onClick={() => { setBoardToDelete(proj); setActiveProjMenu(null); }} 
