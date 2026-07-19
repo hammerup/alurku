@@ -78,6 +78,8 @@ def get_current_user(
                 status_code=403, detail="Account is disabled and scheduled for deletion"
             )
 
+        return username
+
     except jwt.PyJWTError as e:
         print("JWT Decode Error:", str(e))
         raise HTTPException(
