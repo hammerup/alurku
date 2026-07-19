@@ -45,7 +45,8 @@ export function useWebSocket(workspaceId, token, currentUser) {
           wsBase = `${protocol}//${window.location.host}${apiUrl.replace(/\/api$/, '').replace(/\/api\/$/, '')}`;
         }
       } else {
-        wsBase = import.meta.env.PROD ? 'wss://alurku.app' : 'ws://localhost:8000';
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsBase = `${protocol}//${window.location.host}`;
       }
       const wsUrl = `${wsBase}/ws/workspace/${workspaceId}?token=${encodeURIComponent(token)}`;
 
