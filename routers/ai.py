@@ -42,7 +42,7 @@ def generate_ai_text(
         client = genai.Client(api_key=gemini_api_key.strip())
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash", contents=final_prompt
+                model="gemini-2.0-flash", contents=final_prompt
             )
             return {"text": response.text, "provider": "Google Gemini"}
         except Exception as e:
@@ -89,18 +89,18 @@ def generate_ai_text(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"GPT-OSS Error: {str(e)}")
 
-    # Default Fallback Logic (Auto)
-    if gemini_api_key:
-        try:
-            return call_gemini()
-        except Exception as e:
-            error_msgs.append(f"Gemini: {str(e)}")
-
+    # Default Fallback Logic (Auto) — Groq dulu karena lebih cepat, Gemini sebagai fallback
     if groq_api_key:
         try:
             return call_llama()
         except Exception as e:
             error_msgs.append(f"Groq: {str(e)}")
+
+    if gemini_api_key:
+        try:
+            return call_gemini()
+        except Exception as e:
+            error_msgs.append(f"Gemini: {str(e)}")
 
     if not gemini_api_key and not groq_api_key:
         raise HTTPException(
