@@ -59,7 +59,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
       className="relative w-full overflow-hidden bg-[#111E38] text-white min-h-screen pt-24 pb-16 lg:pt-32 lg:pb-32"
     >
       <div
-        className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-4 lg:gap-16 items-center min-h-[calc(100vh-200px)] py-12 lg:py-0"
+        className="max-w-360 mx-auto px-6 md:px-12 lg:px-16 grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-4 lg:gap-16 items-center min-h-[calc(100vh-200px)] py-12 lg:py-0"
       >
         {/* ── LEFT: COPY ── */}
         <motion.div
@@ -154,10 +154,10 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
           className="relative w-full mt-4 lg:mt-0 flex justify-center lg:block"
         >
           {/* Scalable Container for Mobile to Desktop */}
-          <div className="relative w-[120%] lg:w-full max-w-[600px] lg:max-w-none h-[580px] scale-[0.6] xs:scale-[0.65] sm:scale-75 md:scale-90 lg:scale-100 origin-top lg:origin-center -mb-[200px] sm:-mb-[100px] lg:mb-0">
+          <div className="relative w-[120%] lg:w-full max-w-150 lg:max-w-none h-145 scale-[0.6] xs:scale-[0.65] sm:scale-75 md:scale-90 lg:scale-100 origin-top lg:origin-center -mb-50 sm:-mb-25 lg:mb-0">
             {/* ─── MAIN DASHBOARD WINDOW ─── */}
             <div
-              className="absolute bg-white rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-neutral-200 inset-0 lg:top-[20px] lg:left-[0px] lg:right-[0px] lg:bottom-[0px]"
+              className="absolute bg-white rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-neutral-200 inset-0 lg:top-5 lg:left-0 lg:right-0 lg:bottom-0"
             >
               {/* Window Chrome */}
             <div className="flex items-center gap-2 px-4 border-b border-neutral-100 bg-white" style={{ height: '40px' }}>

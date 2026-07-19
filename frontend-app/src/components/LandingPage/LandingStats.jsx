@@ -35,7 +35,7 @@ export default function LandingStats({ language }) {
 
       {/* Panning glow effect BEHIND the cards */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] sm:w-[900px] sm:h-[500px] rounded-full blur-[100px] sm:blur-[140px] opacity-30 dark:opacity-40 pointer-events-none mix-blend-screen"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-100 sm:w-225 sm:h-125 rounded-full blur-[100px] sm:blur-[140px] opacity-30 dark:opacity-40 pointer-events-none mix-blend-screen"
         style={{
           backgroundImage: 'linear-gradient(-45deg, #a5f3fc, #c084fc, #fef08a, #f472b6)',
           backgroundSize: '200% 200%',
@@ -43,7 +43,7 @@ export default function LandingStats({ language }) {
         }}
       />
 
-      <div className="max-w-[1440px] mx-auto px-8 lg:px-16 relative z-10">
+      <div className="max-w-360 mx-auto px-8 lg:px-16 relative z-10">
         
         {/* Title */}
         <div className="text-center mb-20">
@@ -64,7 +64,7 @@ export default function LandingStats({ language }) {
               transition={{ delay: idx * 0.12, duration: 0.6 }}
               className="group"
             >
-              <div className="bg-[#111E38]/85 dark:bg-[#090D16]/85 backdrop-blur-xl border border-white/10 rounded-[32px] p-10 text-center shadow-lg relative overflow-hidden transition-all duration-300 hover:scale-103">
+              <div className="bg-[#111E38]/85 dark:bg-[#090D16]/85 backdrop-blur-xl border border-white/10 rounded-4xl p-10 text-center shadow-lg relative overflow-hidden transition-all duration-300 hover:scale-103">
                 {/* Grid pattern overlay */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
                   backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',

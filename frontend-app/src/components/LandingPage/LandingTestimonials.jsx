@@ -87,7 +87,7 @@ export default function LandingTestimonials({ language }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="min-w-[320px] max-w-[400px] flex-shrink-0 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 snap-center"
+              className="min-w-[320px] max-w-100 shrink-0 bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 snap-center"
             >
               <div className="flex space-x-1 mb-4">
                 {[...Array(5)].map((_, i) => (
