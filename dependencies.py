@@ -63,8 +63,7 @@ def get_current_user(
 
         return username
 
-    except jwt.PyJWTError as e:
-        print("JWT Decode Error:", str(e))
+    except jwt.PyJWTError:
         raise HTTPException(
             status_code=401, detail="Invalid authentication credentials"
         )
