@@ -163,10 +163,10 @@ export default function SmartAssistant({
     )}:${pad(now.getSeconds())}`;
   };
 
-  const addBotMessage = (text, options = null, isDate = false) => {
+  const addBotMessage = (text, options = null, isDate = false, searchResults = null) => {
     setMessages((prev) => [
       ...prev,
-      { id: Date.now() + Math.random(), sender: 'bot', text, options, isDate, timestamp: getLocalTimestamp() },
+      { id: Date.now() + Math.random(), sender: 'bot', text, options, isDate, searchResults, timestamp: getLocalTimestamp() },
     ]);
   };
 
@@ -290,12 +290,99 @@ export default function SmartAssistant({
     setIsMomNotepadOpen(true);
     closeDrawer();
   };
-
   const handleUserReply = (text) => {
     if (!text.trim()) return;
     addUserMessage(text);
     setInputValue('');
     setIsMentioning(false);
+
+    // Global Search API integration to prevent local board boundary issues
+    const handleLocalSearch = (query) => {
+      if (setGlobalSearchQuery && setIsGlobalSearchOpen) {
+        setGlobalSearchQuery(query);
+        setIsGlobalSearchOpen(true);
+      }
+
+      axios
+        .get(`/api/tasks/search?q=${encodeURIComponent(query)}`)
+        .then((res) => {
+          const results = res.data.results || [];
+          const resultsText = results.length === 0
+            ? tMsg(
+                `Aku tidak menemukan tugas dengan kata kunci **"${query}"** di database. Coba kata kunci lain?`,
+                `Aku tidak menemukan tugas dengan kata kunci **"${query}"** di database. Coba kata kunci lain?`
+              )
+            : tMsg(
+                `Aku sudah cari task yang mengandung kata **"${query}"**. Ini hasilnya:`,
+                `Aku sudah cari task yang mengandung kata **"${query}"**. Ini hasilnya:`
+              );
+
+          if (results.length === 0) {
+            addBotMessage(resultsText, [optStartOver, optClose]);
+          } else {
+            const searchResultsPayload = results.slice(0, 5).map(t => {
+              const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
+              return {
+                id: t.id,
+                project_name: t.project_name,
+                board_name: boardName,
+                status: t.status,
+                category: t.category,
+                deadline: t.deadline
+              };
+            });
+            
+            addBotMessage(resultsText, [optStartOver, optClose], false, searchResultsPayload);
+          }
+        })
+        .catch(() => {
+          addBotMessage(
+            tMsg(
+              'Gagal melakukan pencarian. Silakan coba beberapa saat lagi ya.',
+              'Gagal melakukan pencarian. Silakan coba beberapa saat lagi ya.'
+            ),
+            [optStartOver, optClose]
+          );
+        });
+      setStep('end');
+    };
+
+    // Query Extractor from natural sentences
+    const extractSearchQuery = (textStr) => {
+      const textL = textStr.toLowerCase().trim();
+      
+      const searchIndex = textL.indexOf('cari ');
+      const searchIndexEn = textL.indexOf('search ');
+      const findIndex = textL.indexOf('find ');
+      
+      let query = '';
+      if (searchIndex !== -1) {
+        query = textStr.substring(searchIndex + 5).trim();
+      } else if (searchIndexEn !== -1) {
+        query = textStr.substring(searchIndexEn + 7).trim();
+      } else if (findIndex !== -1) {
+        query = textStr.substring(findIndex + 5).trim();
+      } else {
+        return null;
+      }
+      
+      // Clean prefixes
+      query = query.replace(/^(?:task|tugas|namanya|tentang|yang|mengandung|kata)\s+/i, '').trim();
+      
+      // Exclude generic queries so they fallback to guided search
+      if (!query || ['task', 'tugas', 'project', 'proyek'].includes(query.toLowerCase())) {
+        return null;
+      }
+      
+      return query;
+    };
+
+    // Intercept search intents immediately
+    const searchQuery = extractSearchQuery(text);
+    if (searchQuery && step !== 'taking_notes') {
+      setTimeout(() => handleLocalSearch(searchQuery), 500);
+      return;
+    }
 
     const nextStep = (currentStep, data) => {
       const textLower = data.toLowerCase();
@@ -551,12 +638,14 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           }, 1500);
           return;
         }
-        if (['search', 'find', 'cari', 'pencarian'].includes(textLower)) {
+        if (
+          ['search', 'find', 'cari', 'pencarian', 'cari task', 'cari tugas', 'search task', 'find task', 'pencarian tugas', 'pencarian task', 'aku ingin cari task', 'aku mau cari task', 'aku mau cari tugas'].some(kw => textLower.includes(kw))
+        ) {
           setStep('ask_search');
           addBotMessage(
             tMsg(
-              `Sure! What are you looking for? Give me a keyword, project name, or assignee.`,
-              `Siap! Mau cari apa? Ketik kata kunci, nama project, atau nama orang.`
+              `Mau cari task dengan kata kunci apa? Kasih tahu aku ya, nanti aku carikan. 😊`,
+              `Mau cari task dengan kata kunci apa? Kasih tahu aku ya, nanti aku carikan. 😊`
             )
           );
           return;
@@ -1910,16 +1999,8 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             setStep('end');
           });
       } else if (currentStep === 'ask_search') {
-        setGlobalSearchQuery(data);
-        setIsGlobalSearchOpen(true);
-        addBotMessage(
-          tMsg(
-            `I've opened the Global Search for **"${data}"**. Check the top of your screen! 🔍`,
-            `Saya telah membuka Pencarian Global untuk **"${data}"**. Lihat bagian atas layar Anda! 🔍`
-          ),
-          [optStartOver, optClose]
-        );
-        setStep('end');
+        handleLocalSearch(data);
+        return;
       } else if (currentStep === 'ask_edit' || currentStep === 'ask_delete') {
         const target = textLower;
         const matchedTasks = tasks.filter(
@@ -2581,6 +2662,9 @@ USER REQUEST:
       teamMembers={teamMembers}
       messagesEndRef={messagesEndRef}
       renderDiscardModal={renderDiscardModal}
+      setSelectedTask={setSelectedTask}
+      setIsEditing={setIsEditing}
+      closeDrawer={closeDrawer}
     />
   );
 }

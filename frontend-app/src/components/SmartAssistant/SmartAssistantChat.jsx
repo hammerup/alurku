@@ -122,6 +122,9 @@ export default function SmartAssistantChat({
   teamMembers,
   messagesEndRef,
   renderDiscardModal,
+  setSelectedTask,
+  setIsEditing,
+  closeDrawer,
 }) {
   return (
     <div className="flex-1 flex flex-col w-full h-full bg-white dark:bg-neutral-950 relative z-20">
@@ -259,6 +262,61 @@ export default function SmartAssistantChat({
                 idPrefix="ai-msg-"
                 tMsg={tMsg}
               >
+                {/* Interaktif Search Results Cards */}
+                {msg.searchResults && msg.searchResults.length > 0 && (
+                  <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700/50 w-full">
+                    {msg.searchResults.map((task) => (
+                      <div 
+                        key={task.id} 
+                        className="flex flex-col p-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl hover:border-sky-400 dark:hover:border-[#FACC15] transition-all cursor-pointer shadow-sm group/task"
+                        onClick={() => {
+                          if (setSelectedTask) {
+                            setSelectedTask(task);
+                          }
+                        }}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="text-xs font-bold text-[#111E38] dark:text-slate-200 line-clamp-2 group-hover/task:text-sky-500 dark:group-hover/task:text-[#EAB308] transition-colors leading-snug">
+                            {task.project_name}
+                          </h4>
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                            task.status === 'Done' 
+                              ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400'
+                              : task.status === 'In Progress'
+                                ? 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400'
+                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                          }`}>
+                            {task.status || 'Open'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-2 text-[9px] font-semibold text-neutral-500 dark:text-neutral-400">
+                          <span className="flex items-center gap-1">
+                            <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75h22.5M2.25 6h22.5M2.25 19.5h22.5" />
+                            </svg>
+                            {task.board_name || 'General'}
+                          </span>
+                          {task.category && (
+                            <span className="flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-sky-400 dark:bg-[#FACC15]"></span>
+                              {task.category}
+                            </span>
+                          )}
+                          {task.deadline && (
+                            <span className="flex items-center gap-1 ml-auto">
+                              <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h12.75A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008z" />
+                              </svg>
+                              {task.deadline.split(' ')[0]}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {msg.options && msg.sender === 'bot' && msg.options.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-indigo-200/30 dark:border-neutral-700/50">
                     {msg.options.map((opt) => {
