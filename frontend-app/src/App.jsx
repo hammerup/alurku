@@ -1712,18 +1712,40 @@ function App() {
             isProjectChatOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="flex border-b border-neutral-200 dark:border-neutral-800 shrink-0 bg-white dark:bg-neutral-950">
-            <button
-              onClick={() => setDrawerTab('assistant')}
-              className="flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10"
-            >
-              Luruka
-            </button>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-[#FAFAFA] dark:bg-[#121B2D] shrink-0 select-none">
+            <div className="flex items-center gap-2">
+              {/* Spark/AI Monogram Icon */}
+              <div className="w-6.5 h-6.5 rounded-lg bg-[#FACC15] flex items-center justify-center shadow-sm">
+                <svg className="w-3.5 h-3.5 text-[#111E38]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.7 8.3L21.5 9.3L16.6 14.1L17.8 20.8L12 17.6L6.2 20.8L7.4 14.1L2.5 9.3L9.3 8.3L12 2Z" />
+                </svg>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5 leading-none">
+                  <span className="font-extrabold text-sm text-[#111E38] dark:text-slate-200 tracking-tight">
+                    Luruka
+                  </span>
+                  <span className="text-[8px] bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                    AI
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-[9px] text-neutral-500 dark:text-neutral-400 font-medium">{tMsg('Assistant Active', 'Asisten Aktif')}</span>
+                </div>
+              </div>
+            </div>
             <button
               onClick={() => setIsProjectChatOpen(false)}
-              className="px-4 text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors border-b-2 border-transparent"
+              className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 rounded-lg transition-colors border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800"
+              title={tMsg('Tutup', 'Close')}
             >
-              ✖
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 

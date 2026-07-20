@@ -210,20 +210,38 @@ export default function SmartAssistant({
   const optTicket = tMsg('Create Ticket', 'Buat Tiket');
   const optStartOver = tMsg('Start Over', 'Mulai Ulang');
   const optClose = tMsg('Close', 'Tutup');
-  const optDraftYes = tMsg('✨ Yes, Draft with AI', '✨ Ya, Draf dengan AI');
+  const optDraftYes = tMsg('Draft with AI', 'Draf dengan AI');
   const optConfirmYes = tMsg('Yes, Create Task', 'Ya, Buat Tugas');
-  const optDraftNo = tMsg('No, keep it blank', 'Tidak, biarkan kosong');
+  const optDraftNo = tMsg('No, keep it blank', 'Biarkan kosong');
   const optCancel = tMsg('Cancel', 'Batal');
   const optMeeting = tMsg('Meeting Notes', 'Catatan Rapat');
-  const optAutoTasks = tMsg('✨ Auto-Create Tasks', '✨ Buat Tugas Otomatis');
+  const optAutoTasks = tMsg('Auto-Create Tasks', 'Buat Tugas Otomatis');
   const optConfirmBulkYes = tMsg('Yes, Create All', 'Ya, Buat Semua');
-  const optNewProject = tMsg('➕ New Project', '➕ Proyek Baru');
+  const optNewProject = tMsg('New Project', 'Proyek Baru');
   const optTour = tMsg('Start Workspace Tour', 'Mulai Tur Ruang Kerja');
-  const optExplore = tMsg('Explore on my own', 'Eksplorasi Sendiri');
+  const optExplore = tMsg('Explore on my own', 'Jelajahi Sendiri');
 
-  const optProceed = tMsg('✅ Proceed', '✅ Lanjut');
-  const optChangeProj = tMsg('📂 Change Project', '📂 Ubah Proyek');
-  const optChangeCat = tMsg('🏷️ Change Category', '🏷️ Ubah Kategori');
+  const optProceed = tMsg('Looks good, proceed!', 'Oke, lanjutkan!');
+  const optChangeProj = tMsg('Change Project', 'Ubah Proyek');
+  const optChangeCat = tMsg('Change Category', 'Ubah Kategori');
+
+  // Randomized thinking phrases so Luruka doesn't feel like a stuck bot
+  const thinkingPhrases = language === 'id'
+    ? [
+        'Sebentar, aku cek dulu... 🔍',
+        'Oke, biarkan aku pikirkan itu... 💭',
+        'Baik, aku proses ya... ⚙️',
+        'Hmm, menarik. Aku cari jawaban terbaik... ✨',
+        'Bentar ya, lagi aku analisis... 📊',
+      ]
+    : [
+        'On it! Let me figure that out... 🔍',
+        'Give me a second... 💭',
+        'Processing your request... ⚙️',
+        'Interesting! Let me think... ✨',
+        'Analyzing that for you... 📊',
+      ];
+  const getThinkingPhrase = () => thinkingPhrases[Math.floor(Math.random() * thinkingPhrases.length)];
 
   const startConversation = () => {
     setAssistantMode('chat');
@@ -237,19 +255,33 @@ export default function SmartAssistant({
       localStorage.removeItem('alurku_ai_offer_docs');
       addBotMessage(
         tMsg(
-          `I've successfully created your "To-do List" tasks! 🎉\n\nWould you like a quick **Workspace Tour** to learn how to manage these tasks, or would you prefer to explore on your own?`,
-          `Saya telah berhasil membuat tugas "To-do List" Anda! 🎉\n\nApakah Anda ingin **Tur Ruang Kerja** singkat untuk mempelajari cara mengelola tugas ini, atau ingin bereksplorasi sendiri?`
+          `Done! ✅ Semua tugas dari To-do List kamu sudah berhasil aku buat!\n\nMau aku tunjukkin cara kelola semuanya lewat **Tur Workspace**? Atau kamu lebih suka eksplorasi sendiri dulu?`,
+          `Done! ✅ Semua tugas dari To-do List kamu sudah berhasil aku buat!\n\nMau aku tunjukkin cara kelola semuanya lewat **Tur Workspace**? Atau kamu lebih suka eksplorasi sendiri dulu?`
         ),
         [optTour, optExplore]
       );
       return;
     }
 
+    const greetings = language === 'id'
+      ? [
+          `Hai **@${currentUser}**! Ada yang bisa aku bantu hari ini? 👋`,
+          `Hei **@${currentUser}**! Aku siap membantu. Mau mulai dari mana? 😊`,
+          `Selamat datang kembali, **@${currentUser}**! Apa yang mau kita kerjakan bareng hari ini?`,
+        ]
+      : [
+          `Hey **@${currentUser}**! What can I help you with today? 👋`,
+          `Hi **@${currentUser}**! Ready to get things done. Where do you want to start? 😊`,
+          `Welcome back, **@${currentUser}**! What are we tackling today?`,
+        ];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+
+    const workspaceHint = isGlobal
+      ? tMsg(`You're in the **Global Workspace**.`, `Kamu lagi di **Global Workspace**.`)
+      : tMsg(`You're working in **${workspaceName}**.`, `Kamu lagi di project **${workspaceName}**.`);
+
     addBotMessage(
-      tMsg(
-        `Hi **@${currentUser}**! I'm Luruka, your personal AI assistant.\n\nYou are currently in **${workspaceName}**. What would you like to do?\n\n*💡 Tip: Type **"options"** to see what else I can do.*`,
-        `Hai **@${currentUser}**! Aku Luruka, asisten AI pribadimu.\n\nAnda saat ini berada di **${workspaceName}**. Apa yang ingin Anda lakukan?\n\n*💡 Tip: Ketik **"opsi"** untuk melihat menu bantuan.*`
-      ),
+      `${greeting}\n\n${workspaceHint} ${tMsg('Type **"options"** anytime to see everything I can do.', 'Ketik **"opsi"** kapan saja untuk lihat semua yang bisa aku lakukan.')}`,
       [optCreate, optAnalysis, optMeeting, optMore]
     );
   };
@@ -282,11 +314,11 @@ export default function SmartAssistant({
         setStep('end');
         return;
       }
-      if (['explore on my own', 'eksplorasi sendiri'].includes(textLower) || data === optExplore) {
+      if (['explore on my own', 'eksplorasi sendiri', 'jelajahi sendiri'].includes(textLower) || data === optExplore) {
         addBotMessage(
           tMsg(
-            'Alright! I will be right here if you need any help. Just click the ✨ button.',
-            'Baiklah! Saya akan ada di sini jika Anda butuh bantuan. Cukup klik tombol ✨.'
+            `Sounds good! I'll be right here whenever you need me. Feel free to type anything anytime. 😊`,
+            `Siap! Aku selalu ada di sini kalau kamu butuh bantuan. Ketik aja kapan pun. 😊`
           )
         );
         localStorage.setItem(`alurku_board_tour_done_v2_${currentUser}`, 'true');
@@ -484,8 +516,8 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
             setStep('ask_board_for_create');
             addBotMessage(
               tMsg(
-                `You are in the Global Workspace. Which project should this task be created in?`,
-                `Anda berada di Ruang Kerja Global. Di proyek mana tugas ini akan dibuat?`
+                `Sure! You're in the Global Workspace — which project should this task go into?`,
+                `Oke! Kamu lagi di Global Workspace — mau masukkan tugas ini ke project mana?`
               ),
               (boards || []).map((b) => b.name).slice(0, 5)
             );
@@ -493,8 +525,8 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
             setStep('ask_project');
             addBotMessage(
               tMsg(
-                `Let's draft a new request in **${selectedBoard.name}**. What is the title of this task or request?`,
-                `Mari buat permintaan baru di **${selectedBoard.name}**. Apa judul tugas ini?`
+                `Let's do it! Creating a new task in **${selectedBoard.name}**. What's the title?`,
+                `Siap! Aku buatkan tugas baru di **${selectedBoard.name}**. Apa judulnya?`
               )
             );
           }
@@ -505,14 +537,14 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
             setStep('ask_board_for_team');
             addBotMessage(
               tMsg(
-                `You are in the Global Workspace. Which project's team would you like to manage?`,
-                `Anda berada di Ruang Kerja Global. Tim proyek mana yang ingin Anda kelola?`
+                `Sure! You're in the Global Workspace. Which project's team do you want to manage?`,
+                `Oke! Kamu lagi di Global Workspace. Tim project mana yang mau kamu kelola?`
               ),
               (boards || []).map((b) => b.name).slice(0, 5)
             );
             return;
           }
-          addBotMessage(tMsg(`Opening Team Management panel... 🤝`, `Membuka panel Kelola Tim... 🤝`));
+          addBotMessage(tMsg(`Opening Team Management... 🤝`, `Buka panel Tim... 🤝`));
           setTimeout(() => {
             openTeamModal();
             closeDrawer();
@@ -523,8 +555,8 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           setStep('ask_search');
           addBotMessage(
             tMsg(
-              `What are you looking for? Type a keyword, project name, or assignee.`,
-              `Apa yang Anda cari? Ketik kata kunci, nama proyek, atau pekerja.`
+              `Sure! What are you looking for? Give me a keyword, project name, or assignee.`,
+              `Siap! Mau cari apa? Ketik kata kunci, nama project, atau nama orang.`
             )
           );
           return;
@@ -533,8 +565,8 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           setStep('ask_leave_action');
           addBotMessage(
             tMsg(
-              `Would you like to add a new personal leave or open the Time Off panel?`,
-              `Apakah Anda ingin menambahkan cuti pribadi baru atau membuka panel Cuti?`
+              `Sure! Do you want to log a new personal leave, or open the Time Off panel to see everything?`,
+              `Oke! Mau langsung tambah cuti baru, atau buka panel Cuti dulu untuk lihat semua data?`
             ),
             [tMsg('Add Leave', 'Tambah Cuti'), tMsg('Open Panel', 'Buka Panel')]
           );
@@ -543,7 +575,10 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
         if (['documentation', 'docs', 'help', 'dokumentasi', 'bantuan'].includes(textLower)) {
           setStep('ask_doc');
           addBotMessage(
-            tMsg(`Sure! Which topic would you like to learn about?`, `Tentu! Topik apa yang ingin Anda pelajari?`),
+            tMsg(
+              `Of course! What topic do you want to learn about?`,
+              `Tentu! Topik apa yang ingin kamu pelajari?`
+            ),
             [
               'Workspace',
               'Tasks',
@@ -564,8 +599,8 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           setStep('ask_feedback');
           addBotMessage(
             tMsg(
-              `I'm listening! 💡 Please type your feedback or idea below, and I'll send it to the Admin queue.`,
-              `Saya mendengarkan! 💡 Silakan ketik masukan atau ide Anda di bawah ini, dan saya akan mengirimkannya ke antrean Admin.`
+              `Awesome, I love hearing your thoughts! 💡 Type your feedback or idea below — I'll make sure it reaches the team.`,
+              `Asyik, aku senang dengar idemu! 💡 Ketik masukan atau idenya di bawah — aku pastikan sampai ke tim.`
             )
           );
           return;
@@ -959,7 +994,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
         }
 
         // --- General AI Conversation & Command Executor Fallback ---
-        addBotMessage(tMsg('Thinking... 🤔', 'Berpikir... 🤔'));
+        addBotMessage(getThinkingPhrase());
         const todayStr = getLocalToday();
 
         const recentHistory = messages
@@ -970,12 +1005,17 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           .map((m) => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text.replace(/<[^>]*>?/gm, '')}`)
           .join('\n');
 
-        const prompt = `You are 'Luruka', the AI Assistant inside Alurku. Today is ${todayStr}. User @${currentUser} says: "${data}".
+        const prompt = `You are 'Luruka', the friendly, casual, and supportive AI personal assistant inside the task manager app 'alurku.'. Today is ${todayStr}. User @${currentUser} says: "${data}".
 
 Recent Conversation History:
 ${recentHistory}
 
 Please respond in the same language that the user used in their message.
+
+PERSONA & TONE OF VOICE:
+- Be friendly, casual, and highly supportive (like a helpful workspace friend, not a strict manager or generic robot).
+- In Indonesian, ALWAYS use the pronouns "Aku" to refer to yourself and "Kamu" to refer to the user. NEVER use formal pronouns like "Saya", "Anda", or robotic prefixes.
+- Keep your tone warm, encouraging, and helpful. Use normal casing (no forced uppercase).
 
 CRITICAL RULE: You must stay strictly within the context of Alurku, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
 
@@ -990,13 +1030,13 @@ If the user wants to SUBMIT A TICKET/FEEDBACK/SUPPORT (e.g. "bikin tiket", "crea
 
 If the user asks to conceptualize a program, workflow, architecture, or flowchart, provide a detailed, readable ASCII-art flowchart wrapped in a \`\`\` code block, and you may ignore the 3-sentence limit to provide a complete answer. Do NOT use leading spaces to center the flowchart; align it to the left edge.
 
-If it's a general question or conversation related to project/task management, office work, or work productivity, reply naturally in text (max 3 sentences) keeping the context of the conversation history.`;
+If it's a general question or conversation related to project/task management, office work, or work productivity, reply naturally in text (max 3 sentences) keeping the context of the conversation history, adhering strictly to the friendly, supportive, and casual 'Aku/Kamu' persona.`;
 
         axios
           .post('/api/ai/generate', { prompt, provider: selectedModel })
           .then((res) => {
             if (res.data.provider) setAiProvider(res.data.provider);
-            setMessages((prev) => prev.filter((m) => m.text !== tMsg('Thinking... 🤔', 'Berpikir... 🤔')));
+            setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
             const replyText = res.data.text.trim();
 
             try {
@@ -1042,7 +1082,7 @@ If it's a general question or conversation related to project/task management, o
                     selected: true,
                   }));
 
-                  setMessages((prev) => prev.filter((m) => m.text !== tMsg('Thinking... 🤔', 'Berpikir... 🤔')));
+                  setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
                   setPlannerTargetBoardId(defaultBoardId);
                   setPlannedTasks(plannerReadyTasks);
                   setAssistantMode('planner');
@@ -1088,8 +1128,8 @@ If it's a general question or conversation related to project/task management, o
                     setStep('ask_board_for_create');
                     addBotMessage(
                       tMsg(
-                        `I've prepared the task **"${parsed.project_name}"**. Since you are in the Global Workspace, which project should this belong to?`,
-                        `Saya telah menyiapkan tugas **"${parsed.project_name}"**. Karena Anda berada di Ruang Kerja Global, proyek mana yang akan menjadi tempat tugas ini?`
+                        `Got it! I've drafted the task **"${parsed.project_name}"**. Since you're in the Global Workspace, which project should this go into?`,
+                        `Oke! Aku udah siapkan tugas **"${parsed.project_name}"**. Kamu lagi di Global Workspace — mau masukkan ke project mana?`
                       ),
                       (boards || []).map((b) => b.name).slice(0, 5)
                     );
@@ -1101,8 +1141,8 @@ If it's a general question or conversation related to project/task management, o
 
                     const summary =
                       language === 'id'
-                        ? `Saya akan membuat tugas ini di proyek **${finalData.board_name}** dengan kategori **${finalData.category}**.\n\nApakah ini sudah benar, atau Anda ingin mengubahnya?`
-                        : `I will create this task in project **${finalData.board_name}** under category **${finalData.category}**.\n\nIs this correct, or do you want to change it?`;
+                        ? `Aku udah siapkan tugasnya! Rencananya masuk ke project **${finalData.board_name}**, kategori **${finalData.category}**.\n\nSudah cocok, atau ada yang mau diubah?`
+                        : `All set! I'm placing this task in **${finalData.board_name}** under **${finalData.category}**.\n\nLooks good, or want to tweak anything?`;
 
                     addBotMessage(summary, [optProceed, optChangeProj, optChangeCat, optCancel]);
                   }
@@ -1138,7 +1178,7 @@ If it's a general question or conversation related to project/task management, o
             addBotMessage(replyText);
           })
           .catch((err) => {
-            setMessages((prev) => prev.filter((m) => m.text !== tMsg('Thinking... 🤔', 'Berpikir... 🤔')));
+            setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
             let rawMsg = err.response?.data?.detail || err.message || 'Unknown error';
             // Sanitize provider mentions to hide proprietary backend engines
             let errorMsg = rawMsg;
@@ -1146,14 +1186,14 @@ If it's a general question or conversation related to project/task management, o
               /gemini|groq|gpt-oss|llama|openai|claude/i.test(rawMsg)
             ) {
               errorMsg = tMsg(
-                'AI engine connection issue. Please check your network or API settings.',
-                'Kendala koneksi ke server AI. Silakan periksa jaringan atau pengaturan API Anda.'
+                'There was a hiccup connecting to the AI service. Try again in a moment?',
+                'Koneksinya ada sedikit gangguan. Coba lagi sebentar lagi ya?'
               );
             }
             addBotMessage(
               tMsg(
-                `⚠️ **Luruka AI Error:** ${errorMsg}\n\nI couldn't process your request. Try choosing an option below:`,
-                `⚠️ **Luruka AI Error:** ${errorMsg}\n\nSaya tidak dapat memproses permintaan Anda. Coba pilih opsi di bawah:`
+                `Hmm, something went wrong on my end. 😅\n\n*${errorMsg}*\n\nNo worries though — here's what I can still help you with:`,
+                `Ups, ada yang tidak beres di sisi aku. 😅\n\n*${errorMsg}*\n\nTenang aja — ini yang masih bisa aku bantu:`
               ),
               [optCreate, optAnalysis, optSearch, optMore]
             );
@@ -1163,7 +1203,13 @@ If it's a general question or conversation related to project/task management, o
 
       if (currentStep === 'ask_meeting_context') {
         if (data === optCancel) {
-          addBotMessage(tMsg('Action cancelled.', 'Tindakan dibatalkan.'), [optStartOver, optClose]);
+          addBotMessage(
+            tMsg(
+              `No worries! Whenever you're ready, just let me know. 😊`,
+              `Gapapa! Kalau sudah siap, tinggal bilang aja ya. 😊`
+            ),
+            [optStartOver, optClose]
+          );
           setStep('end');
           return;
         }
