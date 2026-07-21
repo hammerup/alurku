@@ -24,6 +24,7 @@ export default function ProactiveAIPage({
   isDarkMode,
   setIsDarkMode,
   setLanguage,
+  setSelectedTask,
 }) {
   const {
     setShowMyTasks,
@@ -70,6 +71,9 @@ export default function ProactiveAIPage({
 
   const slashCommands = [
     { cmd: '/generate', desc: language === 'id' ? 'Buat to-do list dari rencana kerjamu' : 'Generate tasks from your plan' },
+    language === 'id'
+      ? { cmd: '/cari', desc: 'Cari tugas atau task di database' }
+      : { cmd: '/search', desc: 'Search for tasks in the database' },
     { cmd: '/chat', desc: language === 'id' ? 'Tanya jawab atau diskusi id' : 'Discuss and ask general questions' },
     { cmd: '/help', desc: language === 'id' ? 'Tampilkan panduan penggunaan asisten' : 'Show help instructions' }
   ];
@@ -291,6 +295,41 @@ export default function ProactiveAIPage({
     )}`;
   };
 
+  const extractSearchQuery = (textStr) => {
+    const textL = textStr.toLowerCase().trim();
+    
+    const searchIndex = textL.indexOf('cari ');
+    const slashCariIndex = textL.indexOf('/cari ');
+    const searchIndexEn = textL.indexOf('search ');
+    const slashSearchIndex = textL.indexOf('/search ');
+    const findIndex = textL.indexOf('find ');
+    
+    let query = '';
+    if (searchIndex !== -1) {
+      query = textStr.substring(searchIndex + 5).trim();
+    } else if (slashCariIndex !== -1) {
+      query = textStr.substring(slashCariIndex + 6).trim();
+    } else if (searchIndexEn !== -1) {
+      query = textStr.substring(searchIndexEn + 7).trim();
+    } else if (slashSearchIndex !== -1) {
+      query = textStr.substring(slashSearchIndex + 8).trim();
+    } else if (findIndex !== -1) {
+      query = textStr.substring(findIndex + 5).trim();
+    } else {
+      return null;
+    }
+    
+    // Clean prefixes
+    query = query.replace(/^(?:task|tugas|namanya|tentang|yang|mengandung|kata)\s+/i, '').trim();
+    
+    // Exclude generic queries
+    if (!query || ['task', 'tugas', 'project', 'proyek'].includes(query.toLowerCase())) {
+      return null;
+    }
+    
+    return query;
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!prompt.trim()) return;
@@ -305,6 +344,52 @@ export default function ProactiveAIPage({
     
     setPrompt('');
     setIsSlashMenuOpen(false);
+
+    // Intercept search intent
+    const searchQuery = extractSearchQuery(userPrompt);
+    if (searchQuery) {
+      setIsProcessing(true);
+      setLoadingText(tMsg('Searching database...', 'Mencari di database...'));
+      try {
+        const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}`);
+        const results = res.data.results || [];
+        
+        const formattedResults = results.slice(0, 5).map(t => {
+          const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
+          return {
+            id: t.id,
+            project_name: t.project_name,
+            board_name: boardName,
+            status: t.status,
+            category: t.category,
+            deadline: t.deadline
+          };
+        });
+
+        const botMsg = {
+          id: Math.random().toString(),
+          sender: 'ai',
+          text: results.length === 0 
+            ? tMsg(`I couldn't find any tasks with keyword **"${searchQuery}"** in the database.`, `Aku tidak menemukan tugas dengan kata kunci **"${searchQuery}"** di database.`)
+            : tMsg(`I found task(s) containing **"${searchQuery}"**. Here are the results:`, `Aku sudah cari task yang mengandung kata **"${searchQuery}"**. Ini hasilnya:`),
+          searchResults: formattedResults
+        };
+
+        setChatHistory(prev => [...prev, botMsg]);
+      } catch (err) {
+        setChatHistory(prev => [
+          ...prev,
+          {
+            id: Math.random().toString(),
+            sender: 'ai',
+            text: tMsg('Failed to perform search. Please try again.', 'Gagal melakukan pencarian. Silakan coba lagi.')
+          }
+        ]);
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
 
     setIsProcessing(true);
     setLoadingText(tMsg('Analyzing your request...', 'Menganalisis permintaan Anda...'));
@@ -1072,6 +1157,51 @@ USER REQUEST:
                         }`}
                       >
                         {chat.sender === 'user' ? chat.text : renderChatText(chat.text)}
+                        {chat.searchResults && chat.searchResults.length > 0 && (
+                          <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-200/50 dark:border-neutral-700/50 w-full min-w-[280px]">
+                            {chat.searchResults.map((task) => (
+                              <div 
+                                key={task.id} 
+                                className="flex flex-col p-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl hover:border-sky-400 dark:hover:border-[#FACC15] transition-all cursor-pointer shadow-sm group/task text-left"
+                                onClick={() => {
+                                  if (setSelectedTask) {
+                                    setSelectedTask(task);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <h4 className="text-xs font-bold text-[#111E38] dark:text-slate-200 line-clamp-2 group-hover/task:text-sky-500 dark:group-hover/task:text-[#EAB308] transition-colors leading-snug">
+                                    {task.project_name}
+                                  </h4>
+                                  <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                                    task.status === 'Done' 
+                                      ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400'
+                                      : task.status === 'In Progress'
+                                        ? 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400'
+                                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                                  }`}>
+                                    {task.status || 'Open'}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-2 text-[9px] font-semibold text-neutral-500 dark:text-neutral-400">
+                                  <span className="flex items-center gap-1">
+                                    <svg className="w-3 h-3 text-neutral-400" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75h22.5M2.25 6h22.5M2.25 19.5h22.5" />
+                                    </svg>
+                                    {task.board_name || 'General'}
+                                  </span>
+                                  {task.category && (
+                                    <span className="flex items-center gap-1">
+                                      <span className="w-1 h-1 rounded-full bg-sky-400 dark:bg-[#FACC15]"></span>
+                                      {task.category}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1142,6 +1272,11 @@ USER REQUEST:
                       return filtered.map((c, idx) => (
                         <div
                           key={c.cmd}
+                          ref={(el) => {
+                            if (slashIndex === idx && el) {
+                              el.scrollIntoView({ block: 'nearest' });
+                            }
+                          }}
                           className={`px-4 py-2 cursor-pointer text-sm font-semibold flex flex-col transition-colors ${
                             slashIndex === idx
                               ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-white'
@@ -1391,6 +1526,11 @@ USER REQUEST:
                         <div
                           key={m}
                           id={`user-item-${idx}`}
+                          ref={(el) => {
+                            if (mentionIndex === idx && el) {
+                              el.scrollIntoView({ block: 'nearest' });
+                            }
+                          }}
                           className={`px-4 py-2.5 cursor-pointer text-sm font-semibold flex items-center gap-2 ${
                             mentionIndex === idx
                               ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
@@ -1418,6 +1558,11 @@ USER REQUEST:
                         <div
                           key={m}
                           id={`board-item-${idx}`}
+                          ref={(el) => {
+                            if (boardMentionIndex === idx && el) {
+                              el.scrollIntoView({ block: 'nearest' });
+                            }
+                          }}
                           className={`px-4 py-2.5 cursor-pointer text-sm font-semibold flex items-center gap-2 ${
                             boardMentionIndex === idx
                               ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'

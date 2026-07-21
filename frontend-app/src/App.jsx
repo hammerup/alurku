@@ -1269,6 +1269,7 @@ function App() {
           isDarkMode={isDarkMode}
           setIsDarkMode={setIsDarkMode}
           setLanguage={setLanguage}
+          setSelectedTask={setSelectedTask}
         />
       ) : (
         <div
@@ -2184,6 +2185,11 @@ function App() {
                           return filteredOptions.map((m, idx) => (
                             <div
                               key={m}
+                              ref={(el) => {
+                                if (projectMentionIndex === idx && el) {
+                                  el.scrollIntoView({ block: 'nearest' });
+                                }
+                              }}
                               className={`px-4 py-2.5 cursor-pointer text-sm text-black dark:text-white font-medium border-b border-neutral-100 dark:border-neutral-800/50 last:border-0 flex items-center gap-2 ${
                                 projectMentionIndex === idx
                                   ? 'bg-neutral-100 dark:bg-neutral-800'
