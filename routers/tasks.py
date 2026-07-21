@@ -209,20 +209,78 @@ def global_search_tasks(
     )
 
     conditions = []
+    has_overdue_filter = False
+    has_duetoday_filter = False
+    
+    # We clean up special keywords from standard text matching
+    text_keywords = []
     for kw in keywords:
+        kw_l = kw.lower()
+        if kw_l in ["overdue", "terlambat"]:
+            has_overdue_filter = True
+        elif kw_l in ["today", "hariini", "hari_ini"]:
+            has_duetoday_filter = True
+        elif kw_l in ["due"]:
+            pass
+        else:
+            text_keywords.append(kw)
+
+    # Check for phrases like "hari ini" or "due today" in full query
+    clean_q_lower = clean_q.lower()
+    if "hari ini" in clean_q_lower or "due today" in clean_q_lower:
+        has_duetoday_filter = True
+        text_keywords = [k for k in text_keywords if k.lower() not in ["hari", "ini", "due", "today"]]
+
+    # Date parsing from query (e.g. YYYY-MM-DD)
+    date_matches = re.findall(r'\b\d{4}-\d{2}-\d{2}\b', clean_q)
+    for dt_str in date_matches:
+        try:
+            dt = datetime.strptime(dt_str, "%Y-%m-%d")
+            dt_start = dt.replace(hour=0, minute=0, second=0)
+            dt_end = dt.replace(hour=23, minute=59, second=59)
+            conditions.append(or_(
+                and_(Request.deadline >= dt_start, Request.deadline <= dt_end),
+                and_(Request.start_date >= dt_start, Request.start_date <= dt_end)
+            ))
+            # Remove from text keywords
+            text_keywords = [k for k in text_keywords if k not in dt_str]
+        except ValueError:
+            pass
+
+    # Build the standard ilike queries for text keywords
+    for kw in text_keywords:
         search_term = f"%{kw}%"
         kw_subtask_match = db.query(Subtask.request_id).filter(
             or_(Subtask.assignee.ilike(search_term), Subtask.task_name.ilike(search_term))
         )
+        kw_board_match = db.query(Board.id).filter(Board.name.ilike(search_term))
+        
         kw_cond = or_(
             Request.project_name.ilike(search_term),
             Request.requester.ilike(search_term),
             Request.category.ilike(search_term),
             Request.owner_username.ilike(search_term),
             Request.description.ilike(search_term),
+            Request.board_id.in_(kw_board_match),
             Request.id.in_(kw_subtask_match),
         )
         conditions.append(kw_cond)
+
+    # Add special overdue/today filters if triggered
+    if has_overdue_filter:
+        conditions.append(and_(
+            Request.deadline < datetime.now(),
+            Request.status.notin_(["Done", "Rejected"])
+        ))
+        
+    if has_duetoday_filter:
+        today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+        conditions.append(and_(
+            Request.deadline >= today_start,
+            Request.deadline <= today_end,
+            Request.status.notin_(["Done", "Rejected"])
+        ))
 
     final_search_condition = and_(*conditions) if conditions else text("1=1")
 
