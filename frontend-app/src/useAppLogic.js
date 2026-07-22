@@ -517,6 +517,7 @@ export default function useAppLogic() {
 
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [globalSearchResults, setGlobalSearchResults] = useState([]);
+  const [globalSearchBoards, setGlobalSearchBoards] = useState([]);
   const [forceSearchAll, setForceSearchAll] = useState(false);
   const [isGlobalSearchClosing, setIsGlobalSearchClosing] = useState(false);
   const [accountStatus, setAccountStatus] = useState('active');
@@ -3749,6 +3750,7 @@ export default function useAppLogic() {
           .get(`/api/tasks/search?q=${encodeURIComponent(globalSearchQuery)}${filterParam}`)
           .then((res) => {
             setGlobalSearchResults(res.data.results || []);
+            setGlobalSearchBoards(res.data.boards || []);
             setIsGlobalSearchOpen(true);
           })
           .catch((err) => console.error('Search failed:', err));
@@ -3756,6 +3758,7 @@ export default function useAppLogic() {
       return () => clearTimeout(delayDebounceFn);
     } else {
       setGlobalSearchResults([]);
+      setGlobalSearchBoards([]);
       setIsGlobalSearchOpen(false);
     }
   }, [globalSearchQuery, forceSearchAll, selectedBoard, activeWorkspace]);
@@ -4964,6 +4967,7 @@ export default function useAppLogic() {
     globalSearchQuery,
     setGlobalSearchQuery,
     globalSearchResults,
+    globalSearchBoards,
     isGlobalSearchOpen,
     isGlobalSearchClosing,
     setIsGlobalSearchOpen,

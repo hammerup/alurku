@@ -385,7 +385,27 @@ def global_search_tasks(
         t_dict["priority_lvl"] = prio_lvl
         tasks_list.append(t_dict)
 
-    return {"results": tasks_list}
+    # Search matching boards/projects
+    boards_query = db.query(Board).filter(
+        or_(Board.owner_username == current_user, Board.id.in_(shared_subq)),
+        Board.name.ilike(f"%{clean_q}%")
+    )
+    if board_id and board_id != "global" and board_id != "undefined":
+        boards_query = boards_query.filter(Board.id == board_id)
+    elif workspace_id:
+        boards_query = boards_query.filter(Board.workspace_id == workspace_id)
+        
+    matching_boards = boards_query.limit(10).all()
+    matching_boards_list = []
+    for b in matching_boards:
+        matching_boards_list.append({
+            "id": b.id,
+            "name": b.name,
+            "owner_username": b.owner_username,
+            "workspace_name": b.workspace.name if b.workspace else "Unknown"
+        })
+
+    return {"results": tasks_list, "boards": matching_boards_list}
 
 
 @router.get("/api/tasks/{task_id}")

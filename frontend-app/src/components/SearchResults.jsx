@@ -2,20 +2,10 @@ import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
 
 export default function SearchResults({ query, onClose, onSelectTask, onSelectBoard }) {
-  const { boards, globalSearchResults, language, selectedBoard, forceSearchAll, setForceSearchAll, activeWorkspace } = useAppContext();
+  const { globalSearchResults, globalSearchBoards, language, forceSearchAll, activeWorkspace } = useAppContext();
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
-  const matchedBoards = React.useMemo(() => {
-    if (!query) return [];
-    const filtered = (boards || []).filter((b) =>
-      b.name?.toLowerCase().includes(query.toLowerCase())
-    );
-    if (!forceSearchAll && activeWorkspace && activeWorkspace.id) {
-      return filtered.filter(b => b.workspace_id === activeWorkspace.id);
-    }
-    return filtered;
-  }, [query, boards, activeWorkspace, forceSearchAll]);
-
+  const matchedBoards = globalSearchBoards;
   const matchedTasks = globalSearchResults;
 
   const formatDate = (dateStr) => {
