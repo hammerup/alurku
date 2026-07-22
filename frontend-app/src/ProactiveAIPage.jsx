@@ -398,26 +398,46 @@ export default function ProactiveAIPage({
       setLoadingText(tMsg('Structuring response...', 'Menyusun tanggapan...'));
       const currentYear = new Date().getFullYear();
       
-      const aiPrompt = `Act as Luruka, an Expert Personal Assistant and Project Manager. Your objective is to parse the user's request and output a strictly valid JSON object matching the JSON SCHEMA below.
+      const aiPrompt = `Act as Luruka, the friendly, casual, and supportive AI personal assistant inside the task manager app 'alurku.'. Today is ${getLocalToday()}. Your objective is to parse the user's request and output a strictly valid JSON object matching the JSON SCHEMA below.
 
 DOMAIN KNOWLEDGE: You possess deep contextual understanding of the field mentioned in the request. Use this to accurately estimate time and break down complex workflows into clear, actionable, professional-grade steps.
 
+PERSONA & TONE OF VOICE:
+- Be friendly, casual, and highly supportive (like a helpful workspace friend, not a strict manager or generic robot).
+- In Indonesian, ALWAYS use the pronouns "Aku" to refer to yourself and "Kamu" to refer to the user in "chat_message". NEVER use formal pronouns like "Saya", "Anda", or robotic prefixes.
+- Keep your tone warm, encouraging, and helpful. Use normal casing (no forced uppercase).
+
 INSTRUCTIONS:
 1. Determine the intent of the user request.
-2. If the user request is a question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
-3. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". Write a brief conversational summary in "chat_message" explaining what tasks you are setting up, and break down the workflow into tasks inside the "tasks" array following these task-generation guidelines:
+2. If the user wants to search, look up, find, or filter tasks or projects (e.g. "tunjukkan tugas budi yang telat", "cari project design", "overdue tasks", "tasks due today", "tugas aku", "task overdue", "antrian task aku"):
+   - Return "response_type": "search".
+   - Construct a space-separated string of search keywords in "search_query".
+   - IMPORTANT QUERY MAPPING RULES:
+     - Map personal pronouns ("tugas aku", "tugas saya", "my tasks", "my work") to the user's actual username "${currentUser}". Do NOT use "my", "saya", "aku", "me", "mine" in the search query.
+     - Map "overdue", "telat", "terlambat" to a single word "overdue". Do NOT use "overdue tasks" or "task overdue".
+     - Map "today", "due today", "hari ini" to a single word "today".
+     - Keep the keywords short and clean. Strip filler words like "task", "tugas", "daftar", "list".
+     - Example: If the user says "task sudah overdue", output "search_query": "overdue".
+     - Example: If the user says "tugas aku", output "search_query": "${currentUser}".
+     - Example: If the user says "antrian task aku", output "search_query": "${currentUser}".
+     - Example: If the user says "task overdue milik budi", output "search_query": "budi overdue".
+   - Write a friendly and casual confirmation in "chat_message" explaining what you are searching for, adhering strictly to the "Aku/Kamu" persona.
+   - Leave the "tasks" array empty.
+3. If the user request is a question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
+4. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". Write a brief conversational summary in "chat_message" explaining what tasks you are setting up, and break down the workflow into tasks inside the "tasks" array following these task-generation guidelines:
    - BROAD / GENERIC GOAL: If the user's request is generic or broad (e.g., "Paid search", "SEO", "marketing campaign", "website redesign") and does NOT explicitly mention a specific assignee (@name), a specific deadline/due date, a specific project name (#ProjectName), or any highly specific single action, you MUST logically break it down into multiple actionable tasks (minimum 3 tasks), regardless of how few words the user prompt is.
    - SPECIFIC TASK: If it is a single specific action, explicitly assigns work (@name), or specifies a distinct project (#ProjectName), generate EXACTLY ONE task per each action.
    - Naming Convention (project_name): Task titles MUST ALWAYS be in English, regardless of the prompt's language. The format MUST be "[Context/Brand] Task Title". Extract the unique context prefix (e.g. brand, activity, or game title). Prepend step numbers (e.g. "[Part 1] Task Title" or "1. Task Title") so the sequence and order of execution are clear.
-4. Language Constraint: You MUST write the "chat_message" and task "description" and "subtasks" in the EXACT language used in the user's prompt (usually Indonesian or English). Make the description explanation simple enough for a layperson.
-5. Formatting Constraint: In "chat_message", write list items and paragraphs with clean linebreaks. Do not merge everything into a single line or paragraph. Use double newlines (\n\n) to start new paragraphs, section headings, or separate list elements so the text is structured and highly readable.
-6. Extract URLs: If there are any URLs or links (e.g. http://, https://) mentioned in the user's prompt, extract them into the "supporting_access" field (separated by newlines). DO NOT include or repeat these URLs inside the "description" field.
-7. Scope Restriction: You are Luruka, a productivity and project management assistant. You MUST ONLY discuss topics related to work, task management, scheduling, project coordination, time estimation, business workflows, and productivity. If the user asks about unrelated topics (such as cooking recipes, general entertainment, fiction, gaming advice, etc.), you MUST politely decline the request in the prompt's language, explaining that your expertise is limited to managing tasks and productivity on alurku., and suggest how they can use you instead.
+5. Language Constraint: You MUST write the "chat_message" and task "description" and "subtasks" in the EXACT language used in the user's prompt (usually Indonesian or English). Make the description explanation simple enough for a layperson.
+6. Formatting Constraint: In "chat_message", write list items and paragraphs with clean linebreaks. Do not merge everything into a single line or paragraph. Use double newlines (\n\n) to start new paragraphs, section headings, or separate list elements so the text is structured and highly readable.
+7. Extract URLs: If there are any URLs or links (e.g. http://, https://) mentioned in the user's prompt, extract them into the "supporting_access" field (separated by newlines). DO NOT include or repeat these URLs inside the "description" field.
+8. Scope Restriction: You are Luruka, a productivity and project management assistant. You MUST ONLY discuss topics related to work, task management, scheduling, project coordination, time estimation, business workflows, and productivity. If the user asks about unrelated topics (such as cooking recipes, general entertainment, fiction, gaming advice, etc.), you MUST politely decline the request in the prompt's language, explaining that your expertise is limited to managing tasks and productivity on alurku., and suggest how they can use you instead.
 
 JSON SCHEMA:
 {
-  "response_type": "chat" | "tasks",
-  "chat_message": "Friendly, supportive, and conversational reply in the language used by the user. If generating tasks, briefly explain what tasks you set up. Format lists and paragraphs with clean double newlines (\n\n).",
+  "response_type": "chat" | "tasks" | "search",
+  "chat_message": "Friendly, supportive, and conversational reply in the language used by the user. Format lists and paragraphs with clean double newlines (\n\n).",
+  "search_query": "space-separated keywords representing target filters (e.g., 'budi overdue' or 'design today') if response_type is 'search'. Otherwise leave empty.",
   "tasks": [
     {
       "project_name": "[Context] Actionable Title in ENGLISH ONLY",
@@ -469,6 +489,50 @@ USER REQUEST:
         ...prev,
         { id: Math.random().toString(), sender: 'ai', text: replyText }
       ]);
+
+      if (aiResponse.response_type === 'search' && aiResponse.search_query) {
+        setIsProcessing(true);
+        setLoadingText(tMsg('Searching database...', 'Mencari di database...'));
+        try {
+          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(aiResponse.search_query)}`);
+          const results = res.data.results || [];
+          
+          const formattedResults = results.slice(0, 5).map(t => {
+            const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
+            return {
+              id: t.id,
+              project_name: t.project_name,
+              board_name: boardName,
+              status: t.status,
+              category: t.category,
+              deadline: t.deadline
+            };
+          });
+
+          const botMsg = {
+            id: Math.random().toString(),
+            sender: 'ai',
+            text: results.length === 0 
+              ? tMsg(`I couldn't find any tasks with keyword **"${aiResponse.search_query}"** in the database.`, `Aku tidak menemukan tugas dengan kata kunci **"${aiResponse.search_query}"** di database.`)
+              : tMsg(`I found task(s) containing **"${aiResponse.search_query}"**. Here are the results:`, `Aku sudah cari task yang mengandung kata **"${aiResponse.search_query}"**. Ini hasilnya:`),
+            searchResults: formattedResults
+          };
+
+          setChatHistory(prev => [...prev, botMsg]);
+        } catch (err) {
+          setChatHistory(prev => [
+            ...prev,
+            {
+              id: Math.random().toString(),
+              sender: 'ai',
+              text: tMsg('Failed to perform search. Please try again.', 'Gagal melakukan pencarian. Silakan coba lagi.')
+            }
+          ]);
+        } finally {
+          setIsProcessing(false);
+        }
+        return;
+      }
 
       if (aiResponse.response_type === 'tasks' && Array.isArray(aiResponse.tasks) && aiResponse.tasks.length > 0) {
         setGeneratedTasks([]);

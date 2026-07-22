@@ -1073,7 +1073,14 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
         // Pattern: message contains numbered or bulleted list items
         const hasListPattern = /[\n,;]\s*(?:\d+[.)\s]|[-•*]\s)/.test(data);
 
-        const isBulkTaskIntent = isBulkTaskKeyword || hasMultipleMentions || hasMultipleCommaItems || hasListPattern;
+        const searchIndicatorKeywords = [
+          'overdue', 'telat', 'terlambat', 'today', 'hari ini', 'due', 'deadline',
+          'show', 'view', 'tampilkan', 'lihat', 'mana', 'siapa', 'who', 'where',
+          'what', 'which', 'belum', 'not', 'my', 'saya', 'aku'
+        ];
+        const hasSearchIndicator = searchIndicatorKeywords.some((kw) => textLower.includes(kw));
+
+        const isBulkTaskIntent = (isBulkTaskKeyword || hasMultipleMentions || hasMultipleCommaItems || hasListPattern) && !hasSearchIndicator;
 
         if (isBulkTaskIntent) {
           // Pre-fill the planner prompt with the user's message and redirect
@@ -1107,6 +1114,21 @@ PERSONA & TONE OF VOICE:
 - Keep your tone warm, encouraging, and helpful. Use normal casing (no forced uppercase).
 
 CRITICAL RULE: You must stay strictly within the context of Alurku, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
+
+If the user wants to SEARCH, FIND, FILTER, LOOK UP, or VIEW TASKS/PROJECTS (e.g. "cari task mockup", "tampilkan tugas yang telat", "mana tugas budi yang due hari ini?", "cari project marketing", "tugas aku", "task overdue", "antrian task aku"):
+   - Reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
+     {"action": "search_tasks", "search_query": "space-separated keywords representing target filters"}
+   - IMPORTANT QUERY MAPPING RULES:
+     - Map personal pronouns ("tugas aku", "tugas saya", "my tasks", "my work") to the user's actual username "${currentUser}". Do NOT use "my", "saya", "aku", "me", "mine" in the search_query.
+     - Map "overdue", "telat", "terlambat" to a single word "overdue". Do NOT use "overdue tasks" or "task overdue".
+     - Map "belum overdue", "tidak overdue", "not overdue" to a single word "not_overdue".
+     - Map "today", "due today", "hari ini" to a single word "today".
+     - Keep the keywords short and clean. Strip filler words like "task", "tugas", "daftar", "list".
+     - Example: If the user says "task sudah overdue", output "search_query": "overdue".
+     - Example: If the user says "tugas aku", output "search_query": "${currentUser}".
+     - Example: If the user says "antrian task aku", output "search_query": "${currentUser}".
+     - Example: If the user says "task overdue milik budi", output "search_query": "budi overdue".
+     - Example: If the user says "task list yang belum overdue", output "search_query": "not_overdue".
 
 If the user wants to CREATE/ADD A TASK (e.g. "bikin task", "buatkan task", "create task"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "create_task", "project_name": "extracted title", "requester": "Assignee (with '@') OR Requester name (without '@') OR @${currentUser}", "category": "extracted or 'Other'", "deadline": "YYYY-MM-DD (format strictly like this)", "etc": "Estimate the time consumption in hours (integer) based on task complexity. If user specifies a time (e.g., 'this will take 4 hours'), use that. Default to 2 if unsure.", "description": "detailed description if provided, else empty", "subtasks": ["extracted subtask 1", "extracted subtask 2"]}
@@ -1257,6 +1279,15 @@ If it's a general question or conversation related to project/task management, o
                     ),
                     [tMsg('Yes, Submit', 'Ya, Kirim'), optCancel]
                   );
+                  return;
+                } else if (parsed.action === 'search_tasks') {
+                  if (parsed.search_query) {
+                    handleLocalSearch(parsed.search_query);
+                  } else {
+                    addBotMessage(
+                      tMsg('What would you like to search for?', 'Mau cari task apa?')
+                    );
+                  }
                   return;
                 }
               }

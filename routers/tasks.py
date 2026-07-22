@@ -211,6 +211,8 @@ def global_search_tasks(
     conditions = []
     has_overdue_filter = False
     has_duetoday_filter = False
+    has_not_overdue_filter = False
+    has_pending_filter = False
     
     # We clean up special keywords from standard text matching
     text_keywords = []
@@ -220,6 +222,10 @@ def global_search_tasks(
             has_overdue_filter = True
         elif kw_l in ["today", "hariini", "hari_ini"]:
             has_duetoday_filter = True
+        elif kw_l in ["not_overdue", "belum_overdue", "belum-overdue"]:
+            has_not_overdue_filter = True
+        elif kw_l in ["pending", "active", "aktif"]:
+            has_pending_filter = True
         elif kw_l in ["due"]:
             pass
         else:
@@ -281,6 +287,15 @@ def global_search_tasks(
             Request.deadline <= today_end,
             Request.status.notin_(["Done", "Rejected"])
         ))
+
+    if has_not_overdue_filter:
+        conditions.append(and_(
+            or_(Request.deadline >= datetime.now(), Request.deadline == None),
+            Request.status.notin_(["Done", "Rejected"])
+        ))
+
+    if has_pending_filter:
+        conditions.append(Request.status.notin_(["Done", "Rejected"]))
 
     final_search_condition = and_(*conditions) if conditions else text("1=1")
 
