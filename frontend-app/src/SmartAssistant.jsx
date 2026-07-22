@@ -303,8 +303,9 @@ export default function SmartAssistant({
         setIsGlobalSearchOpen(true);
       }
 
+      const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
       axios
-        .get(`/api/tasks/search?q=${encodeURIComponent(query)}`)
+        .get(`/api/tasks/search?q=${encodeURIComponent(query)}${boardParam}`)
         .then((res) => {
           const results = res.data.results || [];
           const resultsText = results.length === 0

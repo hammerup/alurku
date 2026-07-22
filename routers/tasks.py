@@ -183,9 +183,15 @@ def get_global_export(
     return {"tasks": tasks_list}
 
 
+from typing import Optional
+
 @router.get("/api/tasks/search")
 def global_search_tasks(
-    q: str, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+    q: str,
+    board_id: Optional[str] = None,
+    workspace_id: Optional[int] = None,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     if not q or len(q.strip()) < 2:
         return {"results": []}
@@ -297,6 +303,11 @@ def global_search_tasks(
     if has_pending_filter:
         conditions.append(Request.status.notin_(["Done", "Rejected"]))
 
+    if board_id and board_id != "global" and board_id != "undefined":
+        conditions.append(Request.board_id == board_id)
+    elif workspace_id:
+        conditions.append(Request.workspace_id == workspace_id)
+
     final_search_condition = and_(*conditions) if conditions else text("1=1")
 
     tasks = (
@@ -316,7 +327,13 @@ def global_search_tasks(
         .all()
     )  # Batasi 10 hasil agar dropdown sangat cepat
 
-    boards_dict = {b.id: b.name for b in db.query(Board).all()}
+    boards_info = {
+        b.id: {
+            "board_name": b.name,
+            "workspace_name": b.workspace.name if b.workspace else "Unknown"
+        }
+        for b in db.query(Board).all()
+    }
     leave_dates = get_leave_dates(db)
 
     personal_leaves_db = (
@@ -334,10 +351,12 @@ def global_search_tasks(
 
     tasks_list = []
     for task in tasks:
+        b_info = boards_info.get(task.board_id, {"board_name": "Unknown", "workspace_name": "Unknown"})
         t_dict = {
             "id": task.id,
             "board_id": task.board_id,
-            "board_name": boards_dict.get(task.board_id, "Unknown"),
+            "board_name": b_info["board_name"],
+            "workspace_name": b_info["workspace_name"],
             "timestamp": task.timestamp,
             "project_name": task.project_name,
             "requester": task.requester,

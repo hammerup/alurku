@@ -49,6 +49,8 @@ export default function HeaderNavigation({
     closeGlobalSearch,
     globalSearchResults,
     handleGlobalSearchSelect,
+    forceSearchAll,
+    setForceSearchAll,
     // Profile settings context
     isSuperAdmin,
     openAdminModal,
@@ -77,12 +79,17 @@ export default function HeaderNavigation({
   } = useAppContext();
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isScopeDropdownOpen, setIsScopeDropdownOpen] = useState(false);
   const profileMenuRef = useRef(null);
+  const scopeRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setIsProfileMenuOpen(false);
+      }
+      if (scopeRef.current && !scopeRef.current.contains(event.target)) {
+        setIsScopeDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -95,10 +102,14 @@ export default function HeaderNavigation({
 
   const matchedGlobalBoards = useMemo(() => {
     if (!globalSearchQuery) return [];
-    return (boards || []).filter((b) =>
+    const filtered = (boards || []).filter((b) =>
       b.name?.toLowerCase().includes(globalSearchQuery.toLowerCase())
     );
-  }, [globalSearchQuery, boards]);
+    if (!forceSearchAll && selectedBoard && selectedBoard.id !== 'global') {
+      return filtered.filter(b => b.id === selectedBoard.id);
+    }
+    return filtered;
+  }, [globalSearchQuery, boards, selectedBoard, forceSearchAll]);
 
   const formatDateMMM = (dateStr) => {
     if (!dateStr) return '';
@@ -164,29 +175,90 @@ export default function HeaderNavigation({
       </div>
 
       {/* Sleek, Center-Aligned Search everywhere bar */}
-      <div className="hidden lg:flex items-center justify-center flex-1 max-w-md mx-6 relative group">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </span>
-        <input
-          type="text"
-          placeholder={tMsg('Search everywhere...', 'Cari dimana saja...')}
-          value={globalSearchQuery}
-          onChange={(e) => setGlobalSearchQuery(e.target.value)}
-          onFocus={() => {
-            if (globalSearchQuery.length > 0) setIsGlobalSearchOpen(true);
-          }}
+      <div className="hidden lg:flex items-center flex-1 max-w-2xl mx-6 relative group bg-white/40 dark:bg-neutral-900/50 hover:bg-white/80 dark:hover:bg-neutral-900 border border-neutral-300/40 dark:border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black rounded-full shadow-xs pl-1">
+        
+        {/* Scope Dropdown Selector */}
+        {activeWorkspace && activeWorkspace.id ? (
+          <div className="relative shrink-0 flex items-center" ref={scopeRef}>
+            <button
+              onClick={() => setIsScopeDropdownOpen(!isScopeDropdownOpen)}
+              className="flex items-center gap-1.5 px-4 py-2 text-[#111E38] dark:text-neutral-200 text-xs font-bold transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-l-full select-none"
+            >
+              <span>
+                {forceSearchAll 
+                  ? tMsg('Semua Workspace', 'All Workspaces') 
+                  : (activeWorkspace.name.length > 20 ? `${activeWorkspace.name.substring(0, 20)}...` : activeWorkspace.name)
+                }
+              </span>
+              <span className="material-symbols-outlined text-sm font-bold transition-transform duration-200">
+                {isScopeDropdownOpen ? 'expand_less' : 'expand_more'}
+              </span>
+            </button>
+            
+            {/* Vertical Divider */}
+            <div className="h-6 w-[1px] bg-neutral-300 dark:bg-neutral-700 self-center"></div>
+
+            {/* Floating Dropdown Options */}
+            {isScopeDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-50 py-1 origin-top-left animate-in fade-in slide-in-from-top-1 duration-100">
+                <button
+                  onClick={() => {
+                    setForceSearchAll(false);
+                    setIsScopeDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-900 ${
+                    !forceSearchAll ? 'text-indigo-600 dark:text-indigo-400 bg-neutral-50/50 dark:bg-neutral-900/30' : 'text-[#111E38] dark:text-neutral-200'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">location_on</span>
+                  {activeWorkspace.name}
+                </button>
+                <button
+                  onClick={() => {
+                    setForceSearchAll(true);
+                    setIsScopeDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-900 ${
+                    forceSearchAll ? 'text-indigo-600 dark:text-indigo-400 bg-neutral-50/50 dark:bg-neutral-900/30' : 'text-[#111E38] dark:text-neutral-200'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-base">language</span>
+                  {tMsg('Semua Workspace', 'All Workspaces')}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {/* Search Icon & Input Field */}
+        <div className="flex-1 flex items-center pl-3 pr-8 relative">
+          <span className="text-neutral-400 mr-2 flex items-center shrink-0">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            placeholder={
+              activeWorkspace && activeWorkspace.id && !forceSearchAll
+                ? tMsg(`Cari di ${activeWorkspace.name}...`, `Search in ${activeWorkspace.name}...`)
+                : tMsg('Cari...', 'Search...')
+            }
+            value={globalSearchQuery}
+            onChange={(e) => setGlobalSearchQuery(e.target.value)}
+            onFocus={() => {
+              if (globalSearchQuery.length > 0) setIsGlobalSearchOpen(true);
+            }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && globalSearchQuery.trim()) {
               closeGlobalSearch();
               setViewMode('search-results');
             }
           }}
-          className="w-full bg-white/40 dark:bg-neutral-900/50 hover:bg-white/80 dark:hover:bg-neutral-900 border border-neutral-300/40 dark:border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 focus:bg-white dark:focus:bg-black text-black dark:text-white text-xs rounded-full pl-9 pr-8 py-2 outline-none transition-all placeholder-neutral-400 shadow-xs"
-        />
+            className="w-full bg-transparent text-black dark:text-white text-xs outline-none py-1 placeholder-neutral-400"
+          />
+        </div>
         {globalSearchQuery && (
           <button
             onClick={() => {
@@ -211,9 +283,12 @@ export default function HeaderNavigation({
             border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl overflow-hidden z-50 flex 
             flex-col max-h-100 origin-top ${isGlobalSearchClosing ? 'mac-exit' : 'mac-animate'}`}
             >
-              <div className="px-4 py-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
+              <div className="px-4 py-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 flex justify-between items-center">
                 <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">
-                  {tMsg('Global Search Results', 'Hasil Pencarian')}
+                  {activeWorkspace && activeWorkspace.id && !forceSearchAll
+                    ? tMsg(`Hasil Pencarian di ${activeWorkspace.name}`, `Search Results in ${activeWorkspace.name}`)
+                    : tMsg('Hasil Pencarian (Semua Workspace)', 'Search Results (All Workspaces)')
+                  }
                 </span>
               </div>
               {globalSearchResults.length > 0 || matchedGlobalBoards.length > 0 ? (
@@ -290,7 +365,7 @@ export default function HeaderNavigation({
                               <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                               </svg>
-                              <HighlightText text={t.board_name} query={globalSearchQuery} />
+                              <HighlightText text={t.workspace_name ? `${t.workspace_name} › ${t.board_name}` : t.board_name} query={globalSearchQuery} />
                             </span>
                             {t.category && (
                               <>

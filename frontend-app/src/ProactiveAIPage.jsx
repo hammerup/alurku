@@ -36,6 +36,7 @@ export default function ProactiveAIPage({
     setFilterAssignee,
     isUserAssigned,
     activeWorkspace,
+    selectedBoard,
   } = useAppContext();
 
   const destRef = useRef('/dashboard');
@@ -351,7 +352,8 @@ export default function ProactiveAIPage({
       setIsProcessing(true);
       setLoadingText(tMsg('Searching database...', 'Mencari di database...'));
       try {
-        const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}`);
+        const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+        const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}${boardParam}`);
         const results = res.data.results || [];
         
         const formattedResults = results.slice(0, 5).map(t => {
@@ -494,7 +496,8 @@ USER REQUEST:
         setIsProcessing(true);
         setLoadingText(tMsg('Searching database...', 'Mencari di database...'));
         try {
-          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(aiResponse.search_query)}`);
+          const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(aiResponse.search_query)}${boardParam}`);
           const results = res.data.results || [];
           
           const formattedResults = results.slice(0, 5).map(t => {

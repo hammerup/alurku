@@ -517,6 +517,7 @@ export default function useAppLogic() {
 
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [globalSearchResults, setGlobalSearchResults] = useState([]);
+  const [forceSearchAll, setForceSearchAll] = useState(false);
   const [isGlobalSearchClosing, setIsGlobalSearchClosing] = useState(false);
   const [accountStatus, setAccountStatus] = useState('active');
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -3730,10 +3731,22 @@ export default function useAppLogic() {
 
   // Logika Global Search (Menunggu 300ms setelah selesai ngetik sebelum memanggil API)
   useEffect(() => {
+    setForceSearchAll(false);
+  }, [globalSearchQuery]);
+
+  useEffect(() => {
     if (globalSearchQuery.trim().length >= 2) {
       const delayDebounceFn = setTimeout(() => {
+        let filterParam = '';
+        if (!forceSearchAll) {
+          if (selectedBoard && selectedBoard.id !== 'global') {
+            filterParam = `&board_id=${selectedBoard.id}`;
+          } else if (activeWorkspace && activeWorkspace.id) {
+            filterParam = `&workspace_id=${activeWorkspace.id}`;
+          }
+        }
         axios
-          .get(`/api/tasks/search?q=${encodeURIComponent(globalSearchQuery)}`)
+          .get(`/api/tasks/search?q=${encodeURIComponent(globalSearchQuery)}${filterParam}`)
           .then((res) => {
             setGlobalSearchResults(res.data.results || []);
             setIsGlobalSearchOpen(true);
@@ -3745,7 +3758,7 @@ export default function useAppLogic() {
       setGlobalSearchResults([]);
       setIsGlobalSearchOpen(false);
     }
-  }, [globalSearchQuery]);
+  }, [globalSearchQuery, forceSearchAll, selectedBoard, activeWorkspace]);
 
   const handleGlobalSearchSelect = (task) => {
     const board = boards.find((b) => b.id === task.board_id);
@@ -4955,6 +4968,8 @@ export default function useAppLogic() {
     isGlobalSearchClosing,
     setIsGlobalSearchOpen,
     handleGlobalSearchSelect,
+    forceSearchAll,
+    setForceSearchAll,
     pendingStatusChange,
     setPendingStatusChange,
     confirmPendingStatusChange,
