@@ -8,8 +8,43 @@ export default function ChangelogModal({ setIsChangelogOpen, language }) {
 
   const changelogs = [
     {
-      version: 'v1.16.0',
+      version: 'v2.0.0',
       date: 'Latest Update',
+      type: 'major',
+      title: tMsg(
+        'Luruka AI Chat History, Public Landing & Multi-Tenancy Workspaces',
+        'Riwayat Chat Luruka AI, Landing Page Publik & Workspace Multi-Tenancy'
+      ),
+      changes: [
+        tMsg(
+          'Persistent Luruka AI Chat History: Added full database persistence for AI chat sessions (AIChatSession), complete with a responsive left sidebar, session auto-saving, instant title search, pinning, and session deletion.',
+          'Riwayat Chat Luruka AI: Menambahkan sistem riwayat obrolan AI berbasis database (AIChatSession), lengkap dengan sidebar kiri yang responsif, penyimpanan pesan otomatis, pencarian judul instan, sematkan (pin), dan hapus riwayat.'
+        ),
+        tMsg(
+          'Commercial Public Landing & SEO Engine: Built a premium, high-converting public landing experience with dedicated permalinks (/masuk, /daftar, /lupa-sandi, /fitur, /harga, /panduan, /tentang, /dokumentasi), default Light Theme, JSON-LD schemas, and regional hreflang tags.',
+          'Landing Page Publik Komersial & Mesin SEO: Membangun landing page publik premium berkonversi tinggi dengan permalink khusus (/masuk, /daftar, /lupa-sandi, /fitur, /harga, /panduan, /tentang, /dokumentasi), Light Theme default, skema JSON-LD, serta tag hreflang regional.'
+        ),
+        tMsg(
+          'Workspace Multi-Tenancy & Management: Implemented isolated multi-company workspace architecture, enabling instant workspace switching, team invitation flows, and customizable role permissions.',
+          'Workspace Multi-Tenancy & Pengelolaan: Menerapkan arsitektur workspace terisolasi untuk banyak perusahaan, memungkinkan perpindahan workspace instan, alur undangan tim, dan pengelolaan hak akses peran.'
+        ),
+        tMsg(
+          'Enhanced Global Search: Upgraded global search with scope toggling (Current Workspace vs All Workspaces), keyboard shortcuts, project/task filtering, and auto-workspace switching upon selection.',
+          'Pencarian Global Tingkat Lanjut: Meningkatkan pencarian global dengan alih cakupan (Workspace Saat Ini vs Semua Workspace), pintasan keyboard, filter proyek/tugas, serta auto-switch workspace otomatis.'
+        ),
+        tMsg(
+          'Anti-Hallucination AI Safeguards: Injected security-scoped database context (real overdue counts, project list, team directory) into AI prompts, strictly enforcing friendly "Aku/Kamu" persona rules.',
+          'Pengaman AI Bebas Halusinasi: Menyuntikkan konteks database berhak akses (jumlah tugas terlambat nyata, daftar proyek, direktori tim) ke dalam prompt AI serta menegaskan aturan persona ramah "Aku/Kamu".'
+        ),
+        tMsg(
+          'Dashboard-First SaaS Flow: Refactored post-login user flow to direct users straight to the Personal Dashboard (/dashboard) with an AI Briefing Banner and Task List for immediate productivity.',
+          'Alur SaaS Dashboard-First: Merombak alur pasca-login untuk membawa pengguna langsung ke Dasbor Pribadi (/dashboard) yang dilengkapi Banner Ringkasan AI & Daftar Tugas untuk produktivitas instan.'
+        ),
+      ],
+    },
+    {
+      version: 'v1.16.0',
+      date: 'Previous Release',
       type: 'major',
       title: tMsg(
         'Conversational AI Guards & Smart View Refinements',
