@@ -62,6 +62,16 @@ export default function WorkspaceOverview() {
     confirmText: '',
   });
 
+  // Live timer tick state to re-render relative time labels every 10 seconds
+  const [nowTick, setNowTick] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTick(Date.now());
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
   const token = localStorage.getItem('alurku_token') || '';
   const { onlineUsers, activityFeed } = useWebSocket(activeWorkspace?.id, token, currentUser);
 
@@ -110,8 +120,16 @@ export default function WorkspaceOverview() {
   const formatTimeAgo = (dateStr) => {
     if (!dateStr) return '';
     try {
-      const t = new Date(dateStr.replace(' ', 'T'));
-      const diffMs = Date.now() - t.getTime();
+      let isoStr = String(dateStr).trim().replace(' ', 'T');
+      const timePart = isoStr.includes('T') ? isoStr.split('T')[1] : isoStr;
+      if (!isoStr.endsWith('Z') && !timePart.includes('+') && !timePart.includes('-')) {
+        isoStr += 'Z';
+      }
+      const t = new Date(isoStr);
+      let diffMs = nowTick - t.getTime();
+      if (isNaN(diffMs)) return dateStr;
+      if (diffMs < 0) diffMs = 0;
+
       const diffSec = Math.floor(diffMs / 1000);
       const diffMin = Math.floor(diffSec / 60);
       const diffHr = Math.floor(diffMin / 60);
@@ -803,7 +821,7 @@ export default function WorkspaceOverview() {
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">To Do ({todoTasks.length})</span>
                 </div>
                 {todoTasks.length > 0 ? (
-                  todoTasks.slice(0, 2).map(t => (
+                  todoTasks.slice(0, 3).map(t => (
                     <div 
                       key={t.id} 
                       onClick={() => setSelectedTask(t)}
@@ -835,7 +853,7 @@ export default function WorkspaceOverview() {
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Doing ({doingTasks.length})</span>
                 </div>
                 {doingTasks.length > 0 ? (
-                  doingTasks.slice(0, 2).map(t => (
+                  doingTasks.slice(0, 3).map(t => (
                     <div 
                       key={t.id} 
                       onClick={() => setSelectedTask(t)}
@@ -869,7 +887,7 @@ export default function WorkspaceOverview() {
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Done ({doneTasks.length})</span>
                 </div>
                 {doneTasks.length > 0 ? (
-                  doneTasks.slice(0, 2).map(t => (
+                  doneTasks.slice(0, 3).map(t => (
                     <div 
                       key={t.id} 
                       onClick={() => setSelectedTask(t)}
