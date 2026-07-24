@@ -64,11 +64,69 @@ export default function SmartAssistant({
   const [mentionIndex, setMentionIndex] = useState(0);
   const [aiProvider, setAiProvider] = useState('Smart Assistant');
   const [selectedModel, setSelectedModel] = useState('auto');
+  const [aiContext, setAiContext] = useState(null);
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const plannerEndRef = useRef(null);
   const prevBoardRef = useRef(selectedBoard?.id);
   const [noteSuggestions, setNoteSuggestions] = useState([]);
+
+  const checkUserAssigned = (t) => {
+    if (!t || !currentUser) return false;
+    const u = currentUser.toLowerCase();
+    const req = (t.requester || '').toLowerCase();
+    const isOwner = (t.owner_username || '').toLowerCase() === u;
+    const isReq = req.includes(`@${u}`) || req === u;
+    const isSub = (t.subtask_assignees || '').toLowerCase().includes(u);
+    return isReq || isSub || (isOwner && !req.includes('@'));
+  };
+
+  const buildContextPromptSnippet = () => {
+    const getLocalToday = () => {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    };
+
+    const todayStr = getLocalToday();
+    const allTasks = tasks || [];
+
+    // Calculate live user stats directly from tasks prop (100% accurate to UI cards)
+    const myActiveTasks = allTasks.filter((t) => checkUserAssigned(t) && t.status !== 'Done' && t.status !== 'Rejected');
+    const myDueTodayTasks = myActiveTasks.filter((t) => t.deadline && t.deadline.split(' ')[0] === todayStr);
+    const myOverdueTasks = myActiveTasks.filter((t) => t.deadline && t.deadline.split(' ')[0] < todayStr);
+
+    const activeCount = aiContext?.my_stats?.active ?? myActiveTasks.length;
+    const dueTodayCount = aiContext?.my_stats?.due_today ?? myDueTodayTasks.length;
+    const overdueCount = aiContext?.my_stats?.overdue ?? myOverdueTasks.length;
+
+    const projectList = (boards || []).map((b) => b.name).filter((b) => b && b.toLowerCase() !== 'global');
+    const teamMemberList = userDirectory
+      ? userDirectory.map((u) => '@' + u.username)
+      : teamMembers
+      ? teamMembers.map((m) => '@' + m)
+      : [`@${currentUser}`];
+
+    let str = `\n\nACTUAL WORKSPACE DATA (CRITICAL: Use ONLY this data to answer questions about projects, tasks, or team members. DO NOT invent or make up fake numbers/names under ANY circumstances!):\n`;
+    str += `- Current User: @${currentUser}\n`;
+    str += `- Projects/Boards Currently Existing in Workspace: ${projectList.length > 0 ? projectList.join(', ') : 'None'}\n`;
+    str += `- Team Members: ${teamMemberList.join(', ')}\n`;
+    str += `- Your Personal Workload (@${currentUser}) [matches top UI cards]: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}\n`;
+
+    if (myActiveTasks.length > 0) {
+      str += `- Your Active Tasks List (@${currentUser}):\n` +
+        myActiveTasks.slice(0, 10).map((t) => {
+          const dl = t.deadline ? t.deadline.split(' ')[0] : 'No deadline';
+          return `  • #${t.id} "${t.project_name}" (Status: ${t.status}, Deadline: ${dl}, Category: ${t.category || 'General'})`;
+        }).join('\n') + '\n';
+    } else {
+      str += `- Your Active Tasks List (@${currentUser}): None\n`;
+    }
+
+    str += `IMPORTANT RULES FOR ANSWERING:\n`;
+    str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
+    str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
+    return str;
+  };
 
   const globalMentionOptions =
     userDirectory && userDirectory.length > 0
@@ -1116,7 +1174,13 @@ PERSONA & TONE OF VOICE:
 
 CRITICAL RULE: You must stay strictly within the context of Alurku, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
 
-If the user wants to SEARCH, FIND, FILTER, LOOK UP, or VIEW TASKS/PROJECTS (e.g. "cari task mockup", "tampilkan tugas yang telat", "mana tugas budi yang due hari ini?", "cari project marketing", "tugas aku", "task overdue", "antrian task aku"):
+GENERAL QUESTIONS & COUNTS:
+If the user asks general questions about available projects/boards (e.g. "proyek apa saja yang ada?", "daftar project", "ada project apa saja?"), team members, or task counts/statistics (e.g. "berapa yang overdue?", "berapa task aku?", "ada berapa tugas yang terlambat?"):
+   - Reply directly, warmly, and conversationally in natural text (max 3 sentences) using ONLY the factual data from ACTUAL WORKSPACE DATA.
+   - Do NOT output JSON {"action": "search_tasks"} for general count or project list questions.
+
+EXPLICIT TASK SEARCHES:
+If the user explicitly asks to SEARCH, FILTER, or FIND specific tasks (e.g. "cari task mockup", "tampilkan tugas budi yang telat", "cari task overdue milik budi", "antrian task aku"):
    - Reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
      {"action": "search_tasks", "search_query": "space-separated keywords representing target filters"}
    - IMPORTANT QUERY MAPPING RULES:
@@ -1142,7 +1206,7 @@ If the user wants to SUBMIT A TICKET/FEEDBACK/SUPPORT (e.g. "bikin tiket", "crea
 
 If the user asks to conceptualize a program, workflow, architecture, or flowchart, provide a detailed, readable ASCII-art flowchart wrapped in a \`\`\` code block, and you may ignore the 3-sentence limit to provide a complete answer. Do NOT use leading spaces to center the flowchart; align it to the left edge.
 
-If it's a general question or conversation related to project/task management, office work, or work productivity, reply naturally in text (max 3 sentences) keeping the context of the conversation history, adhering strictly to the friendly, supportive, and casual 'Aku/Kamu' persona.`;
+If it's a general question or conversation related to project/task management, office work, or work productivity, reply naturally in text (max 3 sentences) keeping the context of the conversation history, adhering strictly to the friendly, supportive, and casual 'Aku/Kamu' persona.${buildContextPromptSnippet()}`;
 
         axios
           .post('/api/ai/generate', { prompt, provider: selectedModel })

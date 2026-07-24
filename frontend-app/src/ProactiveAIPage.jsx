@@ -55,6 +55,66 @@ export default function ProactiveAIPage({
   const [privateWarningOpen, setPrivateWarningOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [isCartVisible, setIsCartVisible] = useState(false);
+  const [aiContext, setAiContext] = useState(null);
+
+  useEffect(() => {
+    axios.get('/api/ai/context')
+      .then(res => setAiContext(res.data))
+      .catch(err => console.error('Failed to fetch AI context:', err));
+  }, []);
+
+  const checkUserAssigned = (t) => {
+    if (typeof isUserAssigned === 'function') return isUserAssigned(t, currentUser);
+    if (!t || !currentUser) return false;
+    const u = currentUser.toLowerCase();
+    const req = (t.requester || '').toLowerCase();
+    const isOwner = (t.owner_username || '').toLowerCase() === u;
+    const isReq = req.includes(`@${u}`) || req === u;
+    const isSub = (t.subtask_assignees || '').toLowerCase().includes(u);
+    return isReq || isSub || (isOwner && !req.includes('@'));
+  };
+
+  const buildContextPromptSnippet = () => {
+    const todayStr = getLocalToday();
+    const allTasks = tasks || [];
+
+    // Calculate live user stats directly from tasks prop (100% accurate to UI cards)
+    const myActiveTasks = allTasks.filter((t) => checkUserAssigned(t) && t.status !== 'Done' && t.status !== 'Rejected');
+    const myDueTodayTasks = myActiveTasks.filter((t) => t.deadline && t.deadline.split(' ')[0] === todayStr);
+    const myOverdueTasks = myActiveTasks.filter((t) => t.deadline && t.deadline.split(' ')[0] < todayStr);
+
+    const activeCount = aiContext?.my_stats?.active ?? myActiveTasks.length;
+    const dueTodayCount = aiContext?.my_stats?.due_today ?? myDueTodayTasks.length;
+    const overdueCount = aiContext?.my_stats?.overdue ?? myOverdueTasks.length;
+
+    const projectList = (boards || []).map((b) => b.name).filter((b) => b && b.toLowerCase() !== 'global');
+    const teamMemberList = userDirectory
+      ? userDirectory.map((u) => '@' + u.username)
+      : teamMembers
+      ? teamMembers.map((m) => '@' + m)
+      : [`@${currentUser}`];
+
+    let str = `\n\nACTUAL WORKSPACE DATA (CRITICAL: Use ONLY this data to answer questions about projects, tasks, or team members. DO NOT invent or make up fake numbers/names under ANY circumstances!):\n`;
+    str += `- Current User: @${currentUser}\n`;
+    str += `- Projects/Boards Currently Existing in Workspace: ${projectList.length > 0 ? projectList.join(', ') : 'None'}\n`;
+    str += `- Team Members: ${teamMemberList.join(', ')}\n`;
+    str += `- Your Personal Workload (@${currentUser}) [matches top UI cards]: Total Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}\n`;
+
+    if (myActiveTasks.length > 0) {
+      str += `- Your Active Tasks List (@${currentUser}):\n` +
+        myActiveTasks.slice(0, 10).map((t) => {
+          const dl = t.deadline ? t.deadline.split(' ')[0] : 'No deadline';
+          return `  • #${t.id} "${t.project_name}" (Status: ${t.status}, Deadline: ${dl}, Category: ${t.category || 'General'})`;
+        }).join('\n') + '\n';
+    } else {
+      str += `- Your Active Tasks List (@${currentUser}): None\n`;
+    }
+
+    str += `IMPORTANT RULES FOR ANSWERING:\n`;
+    str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
+    str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
+    return str;
+  };
 
   const [chatHistory, setChatHistory] = useState([
     {
@@ -411,7 +471,10 @@ PERSONA & TONE OF VOICE:
 
 INSTRUCTIONS:
 1. Determine the intent of the user request.
-2. If the user wants to search, look up, find, or filter tasks or projects (e.g. "tunjukkan tugas budi yang telat", "cari project design", "overdue tasks", "tasks due today", "tugas aku", "task overdue", "antrian task aku"):
+2. If the user asks general questions about available projects/boards (e.g., "Proyek apa saja yang ada?", "Daftar project", "Ada project apa saja?"), questions about team members, or questions about task statistics/counts:
+   - Return "response_type": "chat".
+   - Answer directly, warmly, and conversationally in "chat_message" using ONLY the project names, team members, or stats listed in ACTUAL WORKSPACE DATA. Do NOT classify general metadata questions as "search".
+3. If the user explicitly wants to SEARCH, FILTER, or FIND specific tasks (e.g. "tunjukkan tugas budi yang telat", "cari task mockup", "cari task overdue", "antrian task aku"):
    - Return "response_type": "search".
    - Construct a space-separated string of search keywords in "search_query".
    - IMPORTANT QUERY MAPPING RULES:
@@ -425,7 +488,7 @@ INSTRUCTIONS:
      - Example: If the user says "task overdue milik budi", output "search_query": "budi overdue".
    - Write a friendly and casual confirmation in "chat_message" explaining what you are searching for, adhering strictly to the "Aku/Kamu" persona.
    - Leave the "tasks" array empty.
-3. If the user request is a question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
+4. If the user request is a general question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
 4. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". Write a brief conversational summary in "chat_message" explaining what tasks you are setting up, and break down the workflow into tasks inside the "tasks" array following these task-generation guidelines:
    - BROAD / GENERIC GOAL: If the user's request is generic or broad (e.g., "Paid search", "SEO", "marketing campaign", "website redesign") and does NOT explicitly mention a specific assignee (@name), a specific deadline/due date, a specific project name (#ProjectName), or any highly specific single action, you MUST logically break it down into multiple actionable tasks (minimum 3 tasks), regardless of how few words the user prompt is.
    - SPECIFIC TASK: If it is a single specific action, explicitly assigns work (@name), or specifies a distinct project (#ProjectName), generate EXACTLY ONE task per each action.
@@ -458,7 +521,7 @@ JSON SCHEMA:
 }
 
 USER REQUEST:
-"""${userPrompt}"""`;
+"""${userPrompt}"""${buildContextPromptSnippet()}`;
 
       const resAi = await axios.post('/api/ai/generate', { prompt: aiPrompt, provider: 'auto' });
       let jsonStr = resAi.data.text
