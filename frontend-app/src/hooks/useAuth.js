@@ -120,7 +120,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
           localStorage.setItem('alurku_token', res.data.token);
           localStorage.setItem('alurku_username', res.data.username);
           sessionStorage.setItem('alurku_just_logged_in', 'true');
-          window.location.href = '/';
+          window.location.href = '/dashboard';
         })
         .catch((err) => {
           clearTimeout(wakeTimer);
@@ -176,7 +176,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
         localStorage.setItem('alurku_username', loginUsername.trim());
 
         sessionStorage.setItem('alurku_just_logged_in', 'true');
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       })
       .catch((err) => {
         clearTimeout(wakeTimer);

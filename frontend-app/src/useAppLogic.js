@@ -827,7 +827,7 @@ export default function useAppLogic() {
         if (!selectedBoard || selectedBoard.id === 'global') {
           localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
           setIsProactiveAIOpen(true);
-          window.history.pushState({}, '', '/');
+          window.history.pushState({}, '', '/proactive-ai');
           window.dispatchEvent(new CustomEvent('alurku-navigate'));
         } else {
           localStorage.setItem(`alurku_board_tour_done_v2_${currentUser}`, 'true');

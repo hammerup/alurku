@@ -43,7 +43,7 @@ export function useModals() {
   // isProactiveAIOpen is kept for sidebar/toolbar compatibility.
   // Routing is now URL-path-based: '/' = ProactiveAI, '/dashboard' = Dashboard.
   const [isProactiveAIOpen, setIsProactiveAIOpen] = useState(
-    typeof window !== 'undefined' && window.location.pathname !== '/dashboard'
+    typeof window !== 'undefined' && window.location.pathname === '/proactive-ai'
   );
   const [isProjectChatOpen, setIsProjectChatOpen] = useState(false);
   const [isChatSearchOpen, setIsChatSearchOpen] = useState(false);

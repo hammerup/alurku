@@ -1249,7 +1249,7 @@ function App() {
         color: #ef4444 !important;
       }
     `}</style>
-      {currentPath === '/' ? (
+      {currentPath === '/proactive-ai' ? (
         <ProactiveAIPage
           setIsProactiveAIOpen={setIsProactiveAIOpen}
           boards={boards}
