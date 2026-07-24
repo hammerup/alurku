@@ -670,6 +670,7 @@ export default function useAppLogic() {
     setTimeout(() => {
       setIsGlobalSearchOpen(false);
       setIsGlobalSearchClosing(false);
+      setForceSearchAll(false);
     }, 200);
   };
 
@@ -3731,9 +3732,6 @@ export default function useAppLogic() {
   };
 
   // Logika Global Search (Menunggu 300ms setelah selesai ngetik sebelum memanggil API)
-  useEffect(() => {
-    setForceSearchAll(false);
-  }, [globalSearchQuery]);
 
   useEffect(() => {
     if (globalSearchQuery.trim().length >= 2) {
