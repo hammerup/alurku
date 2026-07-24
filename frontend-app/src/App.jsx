@@ -1441,6 +1441,10 @@ function App() {
                 handleGlobalSearchSelect(task);
               }}
               onSelectBoard={(board) => {
+                if (board.workspace_id && (!activeWorkspace || activeWorkspace.id !== board.workspace_id)) {
+                  const ws = workspaces.find(w => w.id === board.workspace_id);
+                  if (ws) switchWorkspace(ws);
+                }
                 setSelectedBoard(board);
                 setViewMode('kanban');
               }}

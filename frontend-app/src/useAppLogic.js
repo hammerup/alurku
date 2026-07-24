@@ -3764,7 +3764,15 @@ export default function useAppLogic() {
   }, [globalSearchQuery, forceSearchAll, selectedBoard, activeWorkspace]);
 
   const handleGlobalSearchSelect = (task) => {
-    const board = boards.find((b) => b.id === task.board_id);
+    if (task.workspace_id && (!activeWorkspace || activeWorkspace.id !== task.workspace_id)) {
+      const ws = workspaces.find(w => w.id === task.workspace_id);
+      if (ws) switchWorkspace(ws);
+    }
+    
+    let board = boards.find((b) => b.id === task.board_id);
+    if (!board) {
+      board = { id: task.board_id, name: task.board_name, workspace_id: task.workspace_id };
+    }
     if (board) setSelectedBoard(board);
     setSelectedTask(task);
     if (viewMode !== 'search-results') {

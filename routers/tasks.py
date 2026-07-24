@@ -330,6 +330,7 @@ def global_search_tasks(
     boards_info = {
         b.id: {
             "board_name": b.name,
+            "workspace_id": b.workspace_id,
             "workspace_name": b.workspace.name if b.workspace else "Unknown"
         }
         for b in db.query(Board).all()
@@ -351,11 +352,12 @@ def global_search_tasks(
 
     tasks_list = []
     for task in tasks:
-        b_info = boards_info.get(task.board_id, {"board_name": "Unknown", "workspace_name": "Unknown"})
+        b_info = boards_info.get(task.board_id, {"board_name": "Unknown", "workspace_id": None, "workspace_name": "Unknown"})
         t_dict = {
             "id": task.id,
             "board_id": task.board_id,
             "board_name": b_info["board_name"],
+            "workspace_id": b_info["workspace_id"],
             "workspace_name": b_info["workspace_name"],
             "timestamp": task.timestamp,
             "project_name": task.project_name,
@@ -402,6 +404,7 @@ def global_search_tasks(
             "id": b.id,
             "name": b.name,
             "owner_username": b.owner_username,
+            "workspace_id": b.workspace_id,
             "workspace_name": b.workspace.name if b.workspace else "Unknown"
         })
 
