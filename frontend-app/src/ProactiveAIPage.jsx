@@ -94,10 +94,13 @@ export default function ProactiveAIPage({
       ? teamMembers.map((m) => '@' + m)
       : [`@${currentUser}`];
 
+    const wsName = aiContext?.workspace_name || activeWorkspace?.name || 'Workspace';
+
     let str = `\n\nACTUAL WORKSPACE DATA (CRITICAL: Use ONLY this data to answer questions about projects, tasks, or team members. DO NOT invent or make up fake numbers/names under ANY circumstances!):\n`;
     str += `- Current User: @${currentUser}\n`;
+    str += `- Workspace Name: "${wsName}"\n`;
     str += `- Projects/Boards Currently Existing in Workspace: ${projectList.length > 0 ? projectList.join(', ') : 'None'}\n`;
-    str += `- Team Members: ${teamMemberList.join(', ')}\n`;
+    str += `- Team Members in Workspace "${wsName}": ${teamMemberList.join(', ')}\n`;
     str += `- Your Personal Workload (@${currentUser}) [matches top UI cards]: Total Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}\n`;
 
     if (myActiveTasks.length > 0) {
@@ -113,6 +116,7 @@ export default function ProactiveAIPage({
     str += `IMPORTANT RULES FOR ANSWERING:\n`;
     str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
+    str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
     return str;
   };
 
