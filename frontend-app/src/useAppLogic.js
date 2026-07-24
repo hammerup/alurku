@@ -670,7 +670,6 @@ export default function useAppLogic() {
     setTimeout(() => {
       setIsGlobalSearchOpen(false);
       setIsGlobalSearchClosing(false);
-      setForceSearchAll(false);
     }, 200);
   };
 

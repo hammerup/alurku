@@ -263,6 +263,7 @@ export default function HeaderNavigation({
           <button
             onClick={() => {
               setGlobalSearchQuery('');
+              setForceSearchAll(false);
               closeGlobalSearch();
             }}
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white flex items-center justify-center"
