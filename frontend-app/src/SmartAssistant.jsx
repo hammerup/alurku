@@ -1217,9 +1217,10 @@ If it's a general question or conversation related to project/task management, o
         axios
           .post('/api/ai/generate', { prompt, provider: selectedModel })
           .then((res) => {
-            if (res.data.provider) setAiProvider(res.data.provider);
+            if (res.data?.provider) setAiProvider(res.data.provider);
             setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
-            const replyText = res.data.text.trim();
+            const rawText = res.data?.text || '';
+            const replyText = rawText.trim();
 
             try {
               let cleanJson = replyText

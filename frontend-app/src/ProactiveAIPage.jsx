@@ -37,6 +37,7 @@ export default function ProactiveAIPage({
     isUserAssigned,
     activeWorkspace,
     selectedBoard,
+    teamMembers,
   } = useAppContext();
 
   const destRef = useRef('/dashboard');
@@ -528,11 +529,8 @@ USER REQUEST:
 """${userPrompt}"""${buildContextPromptSnippet()}`;
 
       const resAi = await axios.post('/api/ai/generate', { prompt: aiPrompt, provider: 'auto' });
-      let jsonStr = resAi.data.text
-        .trim()
-        .replace(/```json/gi, '')
-        .replace(/```/g, '')
-        .trim();
+      const rawText = resAi?.data?.text || '';
+      let jsonStr = rawText.trim().replace(/```json/gi, '').replace(/```/g, '').trim();
       const startIdx = jsonStr.indexOf('{');
       const endIdx = jsonStr.lastIndexOf('}') + 1;
       if (startIdx >= 0 && endIdx > startIdx) {
@@ -541,23 +539,29 @@ USER REQUEST:
       
       let aiResponse = null;
       try {
-        const aiResponse_parsed = JSON.parse(jsonStr);
-        aiResponse = aiResponse_parsed;
+        if (jsonStr.startsWith('{')) {
+          aiResponse = JSON.parse(jsonStr);
+        }
       } catch (parseErr) {
-        // Jika JSON parse gagal (AI mengembalikan teks biasa), tampilkan sebagai pesan chat
+        console.warn('JSON parse failed, using plain text response:', parseErr);
+      }
+
+      if (!aiResponse || typeof aiResponse !== 'object') {
         aiResponse = {
           response_type: 'chat',
-          chat_message: resAi.data.text?.trim() || tMsg('Sorry, I could not parse the response.', 'Maaf, aku tidak bisa memproses respons ini.'),
+          chat_message: rawText || tMsg('Sorry, I could not parse the response.', 'Maaf, aku tidak bisa memproses respons ini.'),
           tasks: []
         };
       }
       setIsProcessing(false);
       
-      const replyText = aiResponse.chat_message || '';
-      setChatHistory((prev) => [
-        ...prev,
-        { id: Math.random().toString(), sender: 'ai', text: replyText }
-      ]);
+      const replyText = aiResponse.chat_message || rawText || '';
+      if (replyText) {
+        setChatHistory((prev) => [
+          ...prev,
+          { id: Math.random().toString(), sender: 'ai', text: replyText }
+        ]);
+      }
 
       if (aiResponse.response_type === 'search' && aiResponse.search_query) {
         setIsProcessing(true);
@@ -565,10 +569,10 @@ USER REQUEST:
         try {
           const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
           const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(aiResponse.search_query)}${boardParam}`);
-          const results = res.data.results || [];
+          const results = res.data?.results || [];
           
           const formattedResults = results.slice(0, 5).map(t => {
-            const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
+            const boardName = (boards || []).find((b) => b.id === t.board_id)?.name || 'General';
             return {
               id: t.id,
               project_name: t.project_name,
@@ -621,9 +625,9 @@ USER REQUEST:
           let matchedBoardId = targetBoard?.id || '';
           if (extractedTasks[i].suggested_project) {
             const sp = extractedTasks[i].suggested_project.replace('#', '').toLowerCase().trim();
-            let matched = boards.find((b) => b.name.toLowerCase() === sp);
+            let matched = (boards || []).find((b) => b.name.toLowerCase() === sp);
             if (!matched) {
-              matched = boards.find((b) => b.name.toLowerCase().includes(sp));
+              matched = (boards || []).find((b) => b.name.toLowerCase().includes(sp));
             }
             if (matched && matched.id !== 'global') {
               matchedBoardId = matched.id;
@@ -646,14 +650,15 @@ USER REQUEST:
     } catch (e) {
       console.error(e);
       setIsProcessing(false);
+      const errorDetail = e.response?.data?.detail || e.message || 'Unknown error';
       setChatHistory((prev) => [
         ...prev,
         {
           id: Math.random().toString(),
           sender: 'ai',
           text: language === 'id' 
-            ? 'Maaf, aku mengalami kendala koneksi atau format respons tidak sesuai. Mari kita coba lagi!' 
-            : 'Sorry, I encountered a connection issue or response format discrepancy. Let\'s try again!'
+            ? `Maaf, terjadi kesalahan: ${errorDetail}` 
+            : `Sorry, I encountered an issue: ${errorDetail}`
         }
       ]);
     }
