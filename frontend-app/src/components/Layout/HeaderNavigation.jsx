@@ -196,7 +196,7 @@ export default function HeaderNavigation({
             </button>
             
             {/* Vertical Divider */}
-            <div className="h-6 w-[1px] bg-neutral-300 dark:bg-neutral-700 self-center"></div>
+            <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-700 self-center"></div>
 
             {/* Floating Dropdown Options */}
             {isScopeDropdownOpen && (

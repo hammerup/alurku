@@ -1104,9 +1104,9 @@ USER REQUEST:
       />
 
       {/* Main Workspace layout */}
-      <div className="w-full max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-6 items-stretch min-h-screen lg:h-screen pt-28 pb-8 px-6 lg:overflow-hidden">
-        {/* Sidebar History */}
-        <div className={`shrink-0 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'} border-r ${isDarkMode ? 'border-neutral-800' : 'border-neutral-200'} pr-4 mr-4 hidden lg:flex`}>
+      <div className="w-full relative min-h-screen lg:h-screen lg:overflow-hidden">
+        {/* Sidebar History - Fixed to far left edge */}
+        <div className={`fixed left-4 lg:left-6 top-28 bottom-8 z-30 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'} border-r ${isDarkMode ? 'border-neutral-800' : 'border-neutral-200'} pr-4 hidden lg:flex`}>
           <button onClick={startNewChat} className={`w-full py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 mb-4 transition-all shadow-sm ${isDarkMode ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-white hover:bg-neutral-50 text-[#111E38] border border-neutral-200'}`}>
             <span className="material-symbols-outlined text-[18px]">add</span>
             {language === 'id' ? 'Chat Baru' : 'New Chat'}
@@ -1154,8 +1154,16 @@ USER REQUEST:
           </div>
         </div>
 
-        {/* Left Side: Input panel & AI task output */}
-        <div
+        {/* Main Content Area (Chat + Inbox) */}
+        <div className={`w-full mx-auto flex flex-col lg:flex-row gap-8 items-stretch min-h-screen lg:h-screen pt-28 pb-8 px-6 transition-all duration-300 ${
+          isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0
+            ? 'max-w-370'
+            : 'max-w-7xl'
+        } ${
+          isSidebarOpen ? 'lg:pl-72' : ''
+        }`}>
+          {/* Left Side: Input panel & AI task output */}
+          <div
           className={`flex-1 flex flex-col transition-all duration-500 min-h-0 ${
             isCartVisible || inboxTasks.length > 0 || generatedTasks.length > 0
               ? 'lg:pr-8 lg:border-r border-neutral-200 dark:border-neutral-800'
@@ -1479,7 +1487,7 @@ USER REQUEST:
                       >
                         {chat.sender === 'user' ? chat.text : renderChatText(chat.text)}
                         {chat.searchResults && chat.searchResults.length > 0 && (
-                          <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-200/50 dark:border-neutral-700/50 w-full min-w-[280px]">
+                          <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-200/50 dark:border-neutral-700/50 w-full min-w-70">
                             {chat.searchResults.map((task) => (
                               <div 
                                 key={task.id} 
@@ -2031,6 +2039,7 @@ USER REQUEST:
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* Discard draft confirmation dialog */}

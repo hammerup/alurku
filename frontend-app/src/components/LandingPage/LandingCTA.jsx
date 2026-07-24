@@ -33,7 +33,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
 
       {/* Panning glow effect BEHIND the card */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] sm:w-[700px] sm:h-[700px] rounded-full blur-[100px] sm:blur-[140px] opacity-30 dark:opacity-40 pointer-events-none mix-blend-screen"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 sm:w-175 sm:h-175 rounded-full blur-[100px] sm:blur-[140px] opacity-30 dark:opacity-40 pointer-events-none mix-blend-screen"
         style={{
           backgroundImage: 'linear-gradient(-45deg, #a5f3fc, #c084fc, #fef08a, #f472b6)',
           backgroundSize: '200% 200%',
@@ -41,7 +41,7 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
         }}
       />
 
-      <div className="max-w-[1440px] mx-auto px-8 lg:px-16 relative z-10">
+      <div className="max-w-360 mx-auto px-8 lg:px-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

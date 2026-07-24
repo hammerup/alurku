@@ -48,7 +48,7 @@ function DragCard() {
     <motion.div
       animate={{ y: [0, -8, 0], rotate: [0, 1.5, 0] }}
       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      className="absolute top-[80px] left-[30%] z-20 w-[178px] bg-white rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.18)] border border-neutral-200 p-2.5 cursor-grab"
+      className="absolute top-20 left-[30%] z-20 w-44.5 bg-white rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.18)] border border-neutral-200 p-2.5 cursor-grab"
       style={{ transform: 'rotate(2deg)' }}
     >
       <div className="flex items-center gap-1 mb-1.5">
@@ -76,7 +76,7 @@ export default function LandingDetailedFeature({ language, setCurrentTab }) {
 
   return (
     <section className="w-full bg-transparent overflow-hidden border-b border-neutral-200/50" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
-      <div className="max-w-[1440px] mx-auto px-8 lg:px-16 grid items-center" style={{ gridTemplateColumns: '400px 1fr', gap: '80px' }}>
+      <div className="max-w-360 mx-auto px-8 lg:px-16 grid items-center" style={{ gridTemplateColumns: '400px 1fr', gap: '80px' }}>
 
         {/* ── LEFT: Copy ── */}
         <motion.div
@@ -208,7 +208,7 @@ export default function LandingDetailedFeature({ language, setCurrentTab }) {
                 <div className="flex gap-4 h-full pb-6" style={{ minWidth: '900px' }}>
 
                   {/* ── To Do ── */}
-                  <div className="w-[200px] shrink-0">
+                  <div className="w-50 shrink-0">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-neutral-700">To Do</span>
@@ -235,7 +235,7 @@ export default function LandingDetailedFeature({ language, setCurrentTab }) {
                   </div>
 
                   {/* ── In Progress (with drag interaction) ── */}
-                  <div className="w-[220px] shrink-0 relative">
+                  <div className="w-55 shrink-0 relative">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-blue-600">In Progress</span>
@@ -250,7 +250,7 @@ export default function LandingDetailedFeature({ language, setCurrentTab }) {
                     {/* Floating dragged card */}
                     <DragCard />
                     {/* Arrow — clean straight downward arrow from card into drop zone */}
-                    <div className="absolute top-[54px] right-4 z-30">
+                    <div className="absolute top-13.5 right-4 z-30">
                       <svg width="20" height="48" viewBox="0 0 20 48" fill="none">
                         {/* Vertical dashed line */}
                         <line x1="10" y1="2" x2="10" y2="36" stroke="#9ca3af" strokeWidth="1.5" strokeDasharray="4 3" strokeLinecap="round"/>
@@ -267,7 +267,7 @@ export default function LandingDetailedFeature({ language, setCurrentTab }) {
                   </div>
 
                   {/* ── Done ── */}
-                  <div className="w-[200px] shrink-0">
+                  <div className="w-50 shrink-0">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-emerald-600">Done</span>
@@ -296,7 +296,7 @@ export default function LandingDetailedFeature({ language, setCurrentTab }) {
                   </div>
 
                   {/* ── Rejected ── */}
-                  <div className="w-[180px] shrink-0">
+                  <div className="w-45 shrink-0">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-red-500">Rejected</span>

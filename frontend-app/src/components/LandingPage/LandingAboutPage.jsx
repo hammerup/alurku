@@ -64,7 +64,7 @@ export default function LandingAboutPage({ language }) {
       `}</style>
 
       {/* Section 1: Mission-Driven Hero */}
-      <section className="relative min-h-[500px] flex items-center justify-center text-center px-6 overflow-hidden py-16">
+      <section className="relative min-h-125 flex items-center justify-center text-center px-6 overflow-hidden py-16">
         <div className="hero-gradient absolute inset-0 -z-10"></div>
         <div className="max-w-4xl mx-auto space-y-6">
           <span className="inline-block px-4 py-1.5 bg-[#e5eeff] dark:bg-slate-800 rounded-full text-[#111E38] dark:text-slate-300 font-semibold text-xs uppercase tracking-wider">
@@ -101,7 +101,7 @@ export default function LandingAboutPage({ language }) {
         />
         {/* Glow Torch (Follows Cursor) */}
         <div 
-          className="absolute w-[350px] h-[350px] rounded-full bg-[#FACC15]/20 blur-[120px] pointer-events-none z-10"
+          className="absolute w-87.5 h-87.5 rounded-full bg-[#FACC15]/20 blur-[120px] pointer-events-none z-10"
           style={{
             left: `${mousePos.x}%`,
             top: `${mousePos.y}%`,
@@ -110,9 +110,9 @@ export default function LandingAboutPage({ language }) {
           }}
         />
         {/* Dark Navy Gradient Overlay to blend with borders */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0d172b]/80 via-transparent to-[#0d172b]/80 dark:from-[#090D16]/80 dark:via-transparent dark:to-[#090D16]/80 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-linear-to-b from-[#0d172b]/80 via-transparent to-[#0d172b]/80 dark:from-[#090D16]/80 dark:via-transparent dark:to-[#090D16]/80 pointer-events-none"></div>
         {/* Glowing Orbs for ambient lighting */}
-        <div className="absolute left-[5%] bottom-[10%] w-[250px] h-[250px] rounded-full bg-sky-500/10 blur-[100px] pointer-events-none"></div>
+        <div className="absolute left-[5%] bottom-[10%] w-62.5 h-62.5 rounded-full bg-sky-500/10 blur-[100px] pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
           {/* Glassmorphic Content Card (Left) */}
@@ -155,7 +155,7 @@ export default function LandingAboutPage({ language }) {
             <h3 className="text-2xl font-bold text-white tracking-tight">
               {t("Why alurku.?", "Mengapa alurku.?")}
             </h3>
-            <div className="space-y-4 text-slate-350 text-white text-slate-300 text-base leading-relaxed font-medium">
+            <div className="space-y-4 text-slate-350 text-white text-base leading-relaxed font-medium">
               <p>
                 {t(
                   "We believe that productivity tools should adapt to human limits, not the other way around. By managing work balance, teams perform better and stay healthier.",
@@ -239,7 +239,7 @@ export default function LandingAboutPage({ language }) {
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             <div className="lg:col-span-5 space-y-4 group">
-              <div className="aspect-[4/5] overflow-hidden rounded-xl">
+              <div className="aspect-4/5 overflow-hidden rounded-xl">
                 <img 
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-550 scale-100 group-hover:scale-105" 
                   alt="Eka Hary" 
@@ -292,7 +292,7 @@ export default function LandingAboutPage({ language }) {
             </p>
             <div className="space-y-8">
               <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-full bg-[#e5eeff] dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-[#111E38] dark:text-[#FACC15]">
+                <div className="w-12 h-12 rounded-full bg-[#e5eeff] dark:bg-slate-800 flex items-center justify-center shrink-0 text-[#111E38] dark:text-[#FACC15]">
                   <span className="material-symbols-outlined">mail</span>
                 </div>
                 <div>
@@ -301,7 +301,7 @@ export default function LandingAboutPage({ language }) {
                 </div>
               </div>
               <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-full bg-[#e5eeff] dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-[#111E38] dark:text-[#FACC15]">
+                <div className="w-12 h-12 rounded-full bg-[#e5eeff] dark:bg-slate-800 flex items-center justify-center shrink-0 text-[#111E38] dark:text-[#FACC15]">
                   <span className="material-symbols-outlined">location_on</span>
                 </div>
                 <div>
@@ -312,7 +312,7 @@ export default function LandingAboutPage({ language }) {
             </div>
           </div>
           <div className="lg:w-1/2">
-            <div className="bg-[#f8f9ff] dark:bg-neutral-950 p-2 rounded-2xl overflow-hidden ambient-shadow h-[400px] border border-slate-200 dark:border-slate-800">
+            <div className="bg-[#f8f9ff] dark:bg-neutral-950 p-2 rounded-2xl overflow-hidden ambient-shadow h-100 border border-slate-200 dark:border-slate-800">
               <div className="w-full h-full relative rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800">
                 <div 
                   className="absolute inset-0 bg-cover bg-center" 
