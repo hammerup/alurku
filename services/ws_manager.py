@@ -79,7 +79,7 @@ class ConnectionManager:
             "action": action,
             "target_title": target_title,
             "extra_data": extra_data or {},
-            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         })
 
 

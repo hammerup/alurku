@@ -689,7 +689,7 @@ def get_workspace_activity(
             "action": log.action,
             "target_title": log.target_title,
             "extra_data": json.loads(log.extra_data) if log.extra_data else {},
-            "created_at": log.created_at.strftime("%Y-%m-%d %H:%M:%S") if log.created_at else None,
+            "created_at": log.created_at.strftime("%Y-%m-%dT%H:%M:%SZ") if log.created_at else None,
         })
     return result
 
