@@ -63,6 +63,14 @@ export default function ProactiveAIPage({
       .catch(err => console.error('Failed to fetch AI context:', err));
   }, []);
 
+  const getLocalToday = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(
+      2,
+      '0'
+    )}`;
+  };
+
   const checkUserAssigned = (t) => {
     if (typeof isUserAssigned === 'function') return isUserAssigned(t, currentUser);
     if (!t || !currentUser) return false;
@@ -351,14 +359,6 @@ export default function ProactiveAIPage({
     };
     if (!targetBoard) initBoard();
   }, [boards, targetBoard, fetchBoards]);
-
-  const getLocalToday = () => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(
-      2,
-      '0'
-    )}`;
-  };
 
   const extractSearchQuery = (textStr) => {
     const textL = textStr.toLowerCase().trim();
