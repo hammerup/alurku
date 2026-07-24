@@ -167,3 +167,15 @@ class WorkspaceInviteModel(BaseModel):
     username_or_email: str
     role: Optional[str] = "member"
 
+
+class AIChatSessionCreate(BaseModel):
+    id: str
+    title: str
+    messages: Optional[str] = "[]"
+    is_pinned: Optional[int] = 0
+
+class AIChatSessionUpdate(BaseModel):
+    title: Optional[str] = None
+    messages: Optional[str] = None
+    is_pinned: Optional[int] = None
+

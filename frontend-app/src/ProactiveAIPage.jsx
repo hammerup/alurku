@@ -57,6 +57,138 @@ export default function ProactiveAIPage({
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [isCartVisible, setIsCartVisible] = useState(false);
   const [aiContext, setAiContext] = useState(null);
+  const [chatHistory, setChatHistory] = useState([
+    {
+      id: 'welcome',
+      sender: 'ai',
+      text: language === 'id' 
+        ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
+        : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
+    }
+  ]);
+  const [chatSessions, setChatSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [searchSessionQuery, setSearchSessionQuery] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await axios.get('/api/ai/sessions');
+      setChatSessions(res.data.sessions || []);
+    } catch (e) {
+      console.error('Failed to fetch sessions', e);
+    }
+  };
+
+  const loadSession = (session) => {
+    setActiveSessionId(session.id);
+    if (session.messages) {
+      try {
+        const parsed = JSON.parse(session.messages);
+        setChatHistory(parsed.length ? parsed : [
+          {
+            id: 'welcome',
+            sender: 'ai',
+            text: language === 'id' 
+              ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
+              : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
+          }
+        ]);
+      } catch (e) {
+        setChatHistory([]);
+      }
+    }
+  };
+
+  const createNewSession = async (firstMessageText) => {
+    try {
+      const newId = 'session_' + Date.now();
+      const res = await axios.post('/api/ai/sessions', {
+        id: newId,
+        title: firstMessageText.substring(0, 30) + '...'
+      });
+      setActiveSessionId(res.data.id);
+      setChatSessions((prev) => [res.data, ...prev]);
+      return res.data.id;
+    } catch(e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  const updateSessionMessages = async (sessionId, messages) => {
+    try {
+      const messagesStr = JSON.stringify(messages);
+      await axios.put('/api/ai/sessions/' + sessionId, {
+        messages: messagesStr
+      });
+      setChatSessions(prev => prev.map(s => 
+        s.id === sessionId ? { ...s, messages: messagesStr } : s
+      ));
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  const togglePinSession = async (e, session) => {
+    e.stopPropagation();
+    try {
+      const newPinned = session.is_pinned ? 0 : 1;
+      await axios.put('/api/ai/sessions/' + session.id, {
+        is_pinned: newPinned
+      });
+      fetchSessions();
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  const deleteSession = async (e, sessionId) => {
+    e.stopPropagation();
+    try {
+      await axios.delete('/api/ai/sessions/' + sessionId);
+      if (activeSessionId === sessionId) {
+        startNewChat();
+      }
+      fetchSessions();
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  const startNewChat = () => {
+    setActiveSessionId(null);
+    setChatHistory([
+      {
+        id: 'welcome',
+        sender: 'ai',
+        text: language === 'id' 
+          ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
+          : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
+      }
+    ]);
+  };
+
+  // Sync to database whenever chatHistory changes and has at least 1 user message
+  useEffect(() => {
+    if (chatHistory.length > 1) {
+      const syncMessages = async () => {
+        let sid = activeSessionId;
+        if (!sid) {
+          const firstUserMsg = chatHistory.find(m => m.sender === 'user')?.text || 'New Chat';
+          sid = await createNewSession(firstUserMsg);
+        }
+        if (sid) {
+          updateSessionMessages(sid, chatHistory);
+        }
+      };
+      syncMessages();
+    }
+  }, [chatHistory]);
 
   useEffect(() => {
     axios.get('/api/ai/context')
@@ -131,15 +263,6 @@ export default function ProactiveAIPage({
     return str;
   };
 
-  const [chatHistory, setChatHistory] = useState([
-    {
-      id: 'welcome',
-      sender: 'ai',
-      text: language === 'id' 
-        ? 'Halo! Aku Luruka, asisten cerdas pribadimu di alurku. 😊\n\nKamu bisa menuliskan rencana kerjamu untuk kujabarkan menjadi tugas terstruktur secara otomatis, atau tanyakan apapun untuk berdiskusi!'
-        : 'Hello! I am Luruka, your personal smart assistant at alurku. 😊\n\nYou can describe your goals to automatically generate a to-do list, or ask me anything to discuss your work!'
-    }
-  ]);
   const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
   const [slashIndex, setSlashIndex] = useState(0);
   const [slashQuery, setSlashQuery] = useState('');
@@ -981,7 +1104,56 @@ USER REQUEST:
       />
 
       {/* Main Workspace layout */}
-      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-stretch min-h-screen lg:h-screen pt-28 pb-8 px-6 lg:overflow-hidden">
+      <div className="w-full max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-6 items-stretch min-h-screen lg:h-screen pt-28 pb-8 px-6 lg:overflow-hidden">
+        {/* Sidebar History */}
+        <div className={`shrink-0 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'} border-r ${isDarkMode ? 'border-neutral-800' : 'border-neutral-200'} pr-4 mr-4 hidden lg:flex`}>
+          <button onClick={startNewChat} className={`w-full py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 mb-4 transition-all shadow-sm ${isDarkMode ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-white hover:bg-neutral-50 text-[#111E38] border border-neutral-200'}`}>
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            {language === 'id' ? 'Chat Baru' : 'New Chat'}
+          </button>
+          
+          <div className="relative mb-4 shrink-0">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-neutral-400">search</span>
+            <input 
+              type="text" 
+              value={searchSessionQuery}
+              onChange={e => setSearchSessionQuery(e.target.value)}
+              placeholder={language === 'id' ? 'Cari riwayat...' : 'Search history...'}
+              className={`w-full pl-9 pr-3 py-2 rounded-lg text-xs outline-none transition-colors ${isDarkMode ? 'bg-neutral-900 focus:bg-neutral-800 text-white placeholder-neutral-500' : 'bg-neutral-100 focus:bg-white border focus:border-sky-400 text-[#111E38]'}`}
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar -mr-2 pr-2 space-y-1 pb-4 min-h-0">
+            {chatSessions.filter(s => s.title.toLowerCase().includes(searchSessionQuery.toLowerCase())).map(session => (
+              <div 
+                key={session.id}
+                onClick={() => loadSession(session)}
+                className={`group flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all ${activeSessionId === session.id ? (isDarkMode ? 'bg-[#FACC15]/20 text-[#FACC15]' : 'bg-[#FACC15]/20 text-[#111E38] font-bold') : (isDarkMode ? 'hover:bg-neutral-800/50 text-neutral-300' : 'hover:bg-neutral-100 text-neutral-600')}`}
+              >
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <span className={`material-symbols-outlined text-[14px] shrink-0 ${session.is_pinned ? 'text-[#FACC15]' : 'text-neutral-400'}`}>
+                    {session.is_pinned ? 'push_pin' : 'chat_bubble'}
+                  </span>
+                  <span className="text-xs truncate">{session.title}</span>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button onClick={(e) => togglePinSession(e, session)} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-[#FACC15] transition-colors">
+                    <span className="material-symbols-outlined text-[14px]">push_pin</span>
+                  </button>
+                  <button onClick={(e) => deleteSession(e, session.id)} className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 text-neutral-400 hover:text-red-500 transition-colors">
+                    <span className="material-symbols-outlined text-[14px]">delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+            {chatSessions.length === 0 && (
+              <div className="text-center p-4 text-xs text-neutral-500">
+                {language === 'id' ? 'Belum ada riwayat' : 'No history yet'}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Left Side: Input panel & AI task output */}
         <div
           className={`flex-1 flex flex-col transition-all duration-500 min-h-0 ${

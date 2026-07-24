@@ -10,7 +10,7 @@ import time
 import requests
 from google import genai
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember, get_security_log, set_security_log
+from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember, get_security_log, set_security_log, AIChatSession
 from routers.workspaces import get_active_workspace_id
 from schemas import *
 from dependencies import *
@@ -289,4 +289,62 @@ def get_ai_context(
         "my_active_tasks": my_active_tasks,
         "recent_team_tasks": recent_team_tasks
     }
+
+
+@router.get("/api/ai/sessions")
+def get_ai_sessions(current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    sessions = db.query(AIChatSession).filter(AIChatSession.user_username == current_user).order_by(AIChatSession.is_pinned.desc(), AIChatSession.updated_at.desc()).all()
+    # We can omit messages to save bandwidth if needed, but for simplicity we return them.
+    return {"sessions": sessions}
+
+
+@router.get("/api/ai/sessions/{session_id}")
+def get_ai_session(session_id: str, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    session = db.query(AIChatSession).filter(AIChatSession.id == session_id, AIChatSession.user_username == current_user).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return session
+
+
+@router.post("/api/ai/sessions")
+def create_ai_session(payload: AIChatSessionCreate, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    new_session = AIChatSession(
+        id=payload.id,
+        user_username=current_user,
+        title=payload.title,
+        messages="[]"
+    )
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+    return new_session
+
+
+@router.put("/api/ai/sessions/{session_id}")
+def update_ai_session(session_id: str, payload: AIChatSessionUpdate, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    session = db.query(AIChatSession).filter(AIChatSession.id == session_id, AIChatSession.user_username == current_user).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    if payload.title is not None:
+        session.title = payload.title
+    if payload.is_pinned is not None:
+        session.is_pinned = payload.is_pinned
+    if payload.messages is not None:
+        session.messages = payload.messages
+        
+    session.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+@router.delete("/api/ai/sessions/{session_id}")
+def delete_ai_session(session_id: str, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    session = db.query(AIChatSession).filter(AIChatSession.id == session_id, AIChatSession.user_username == current_user).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    db.delete(session)
+    db.commit()
+    return {"detail": "Deleted successfully"}
 

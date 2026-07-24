@@ -218,6 +218,17 @@ class Article(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class AIChatSession(Base):
+    __tablename__ = "ai_chat_sessions"
+    id = Column(String(50), primary_key=True, index=True)
+    user_username = Column(String(50), index=True)
+    title = Column(String(200), default="New Chat")
+    is_pinned = Column(Integer, default=0)
+    messages = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 def get_security_log(db, key: str, default_value=None):
     log = db.query(SecurityLog).filter(SecurityLog.key == key).first()
     if log and log.value:
