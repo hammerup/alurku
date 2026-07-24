@@ -88,9 +88,9 @@ export default function ProactiveAIPage({
     const overdueCount = aiContext?.my_stats?.overdue ?? myOverdueTasks.length;
 
     const projectList = (boards || []).map((b) => b.name).filter((b) => b && b.toLowerCase() !== 'global');
-    const teamMemberList = userDirectory
-      ? userDirectory.map((u) => '@' + u.username)
-      : teamMembers
+    const teamMemberList = (aiContext?.team_members && aiContext.team_members.length > 0)
+      ? aiContext.team_members.map((m) => '@' + m)
+      : (teamMembers && teamMembers.length > 0 && selectedBoard && selectedBoard.id !== 'global')
       ? teamMembers.map((m) => '@' + m)
       : [`@${currentUser}`];
 
