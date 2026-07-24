@@ -121,7 +121,8 @@ export default function SmartAssistant({
       str += `- Your Active Tasks List (@${currentUser}):\n` +
         myActiveTasks.slice(0, 10).map((t) => {
           const dl = t.deadline ? t.deadline.split(' ')[0] : 'No deadline';
-          return `  • #${t.id} "${t.project_name}" (Status: ${t.status}, Deadline: ${dl}, Category: ${t.category || 'General'})`;
+          const desc = t.description ? (t.description.length > 50 ? t.description.substring(0, 50) + '...' : t.description) : 'No description';
+          return `  • #${t.id} "${t.project_name}" (Status: ${t.status}, Deadline: ${dl}, Category: ${t.category || 'General'}, Description: ${desc})`;
         }).join('\n') + '\n';
     } else {
       str += `- Your Active Tasks List (@${currentUser}): None\n`;
@@ -131,6 +132,7 @@ export default function SmartAssistant({
     str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
     str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
+    str += `4. You CANNOT update or edit existing tasks. If the user asks to add or change a description, status, or any detail of an existing task, politely tell them that you currently do not have the ability to edit tasks, and they must click on the task card to edit it manually.\n`;
     return str;
   };
 
