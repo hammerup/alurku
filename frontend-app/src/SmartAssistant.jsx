@@ -1050,7 +1050,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
                   `• ${lblCompleted}: **${done} (${doneEtc}h)**\n` +
                   `• ${lblCritical}: **${critical}**\n` +
                   `• ${lblBottleneck}: **${bottleneckTasks}**\n\n` +
-                  `✨ **${providerName} ${lblInsight}:**\n${res.data.text}`,
+                  `✨ **AI ${lblInsight}:**\n${res.data.text}`,
                 [optStartOver, optClose]
               );
               setStep('end');
