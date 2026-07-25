@@ -1884,9 +1884,17 @@ export default function useAppLogic() {
     if (!isAuthenticated) return;
 
     if (!selectedBoard || selectedBoard.id === 'global') {
-      setTeamMembers(
-        userDirectory.filter((u) => isSuperAdmin || u.is_connected || u.username === currentUser).map((u) => u.username)
-      );
+      if (activeWorkspace?.id) {
+        axios
+          .get(`/api/workspaces/${activeWorkspace.id}/members`)
+          .then((res) => {
+            const memberUsernames = (res.data || []).map((m) => m.username);
+            setTeamMembers(memberUsernames.length > 0 ? memberUsernames : [currentUser]);
+          })
+          .catch(() => setTeamMembers([currentUser]));
+      } else {
+        setTeamMembers([currentUser]);
+      }
       return;
     }
 

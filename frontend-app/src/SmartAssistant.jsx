@@ -102,11 +102,19 @@ export default function SmartAssistant({
     const overdueCount = aiContext?.my_stats?.overdue ?? myOverdueTasks.length;
 
     const projectList = (boards || []).map((b) => b.name).filter((b) => b && b.toLowerCase() !== 'global');
-    const teamMemberList = (aiContext?.team_members && aiContext.team_members.length > 0)
-      ? aiContext.team_members.map((m) => '@' + m)
-      : (teamMembers && teamMembers.length > 0 && selectedBoard && selectedBoard.id !== 'global')
-      ? teamMembers.map((m) => '@' + m)
-      : [`@${currentUser}`];
+    const validMemberSet = new Set(
+      (teamMembers && teamMembers.length > 0)
+        ? teamMembers.map((m) => (typeof m === 'string' ? m.replace(/^@/, '') : m.username))
+        : (aiContext?.team_members && aiContext.team_members.length > 0)
+        ? aiContext.team_members.map((m) => m.replace(/^@/, ''))
+        : [currentUser]
+    );
+
+    const teamMemberList = (userDirectory && userDirectory.length > 0)
+      ? userDirectory
+          .filter((u) => validMemberSet.has(u.username))
+          .map((u) => `@${u.username}${u.full_name ? ` (${u.full_name})` : ''}`)
+      : Array.from(validMemberSet).map((m) => '@' + m);
 
     const wsName = aiContext?.workspace_name || activeWorkspace?.name || 'Workspace';
 
@@ -114,7 +122,7 @@ export default function SmartAssistant({
     str += `- Current User: @${currentUser}\n`;
     str += `- Workspace Name: "${wsName}"\n`;
     str += `- Projects/Boards Currently Existing in Workspace: ${projectList.length > 0 ? projectList.join(', ') : 'None'}\n`;
-    str += `- Team Members in Workspace "${wsName}": ${teamMemberList.join(', ')}\n`;
+    str += `- User Directory / Team Members in Workspace "${wsName}": ${teamMemberList.join(', ')}\n`;
     str += `- Your Personal Workload (@${currentUser}) [matches top UI cards]: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}\n`;
 
     if (myActiveTasks.length > 0) {
@@ -133,6 +141,7 @@ export default function SmartAssistant({
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
     str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
     str += `4. When the user wants to UPDATE or EDIT an existing task (change status, deadline, assignee, category, title, or any detail), you MUST return the structured JSON action {\"action\": \"update_task\", ...} as specified in your instructions. Use the task list above to extract the correct search_query. NEVER say you cannot update tasks — you have this capability.\n`;
+    str += `5. EXACT USERNAME & ASSIGNEE MAPPING RULE: When assigning a task, setting a requester, or searching for assignees, you MUST ONLY use exact valid usernames from the User Directory list above (${teamMemberList.join(', ')}). Match display names or full names (e.g. "Budi Santoso") to their exact system username (e.g. "@budi_santoso"). DO NOT guess or generate fake/shortened usernames.\n`;
     return str;
   };
 
@@ -1153,6 +1162,37 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           // Pre-fill the planner prompt with the user's message and redirect
           setPlannerPrompt(data);
           setAssistantMode('planner');
+          return;
+        }
+
+        // --- Intercept Off-topic Questions (Scope Guardrail) ---
+        const isOffTopicQuery = (textStr) => {
+          if (!textStr) return false;
+          const t = textStr.toLowerCase().trim();
+          const explicitOffTopicKeywords = [
+            'resep', 'masak', 'makanan', 'memasak', 'kuliner', 'dadar gulung', 'nasi goreng', 'kue', 'bahan masakan',
+            'resep makanan', 'menu makan', 'resep masakan',
+            'joke', 'lelucon', 'humor', 'cerita lucu', 'tebak-tebakan',
+            'ramalan', 'zodiak', 'horoskop', 'cuaca', 'prakiraan cuaca',
+            'lirik', 'chord', 'lagu', 'puisi', 'pantun', 'novel', 'cerpen',
+            'prediksi bola', 'skor pertandingan', 'sepak bola', 'klasemen'
+          ];
+          const professionalWorkDomains = [
+            'marketing', 'seo', 'software', 'app', 'ui', 'ux', 'code', 'sistem', 'server', 
+            'database', 'desain', 'design', 'bug', 'feature', 'bisnis', 'resto', 'restoran', 
+            'toko', 'usaha', 'launching', 'outlet', 'cabang', 'operasional', 'supplier', 
+            'inventaris', 'stok', 'event', 'promo', 'pemasaran', 'sop', 'audit'
+          ];
+          const hasProfessionalDomain = professionalWorkDomains.some(w => t.includes(w));
+          if (hasProfessionalDomain) return false;
+          return explicitOffTopicKeywords.some(kw => t.includes(kw));
+        };
+
+        if (isOffTopicQuery(data)) {
+          const refusalMsg = language === 'id'
+            ? 'Maaf ya, Aku adalah asisten Alurku yang khusus membantu mengelola tugas, proyek, dan alur kerja timmu! 🚀\n\nYuk tanyakan hal seputar tugas, jadwal kerja, atau koordinasi proyekmu!'
+            : 'Sorry, I am Luruka, an Alurku assistant specifically focused on helping you manage tasks, projects, and team workflows! 🚀\n\nFeel free to ask me anything about your tasks, work schedule, or project coordination!';
+          addBotMessage(refusalMsg);
           return;
         }
 
