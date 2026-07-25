@@ -125,6 +125,7 @@ export default function SmartAssistantChat({
   setSelectedTask,
   setIsEditing,
   closeDrawer,
+  onTaskCardClick,
 }) {
   return (
     <div className="flex-1 flex flex-col w-full h-full bg-white dark:bg-neutral-950 relative z-20">
@@ -270,7 +271,9 @@ export default function SmartAssistantChat({
                         key={task.id} 
                         className="flex flex-col p-2.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl hover:border-sky-400 dark:hover:border-[#FACC15] transition-all cursor-pointer shadow-sm group/task"
                         onClick={() => {
-                          if (setSelectedTask) {
+                          if (onTaskCardClick) {
+                            onTaskCardClick(task);
+                          } else if (setSelectedTask) {
                             setSelectedTask(task);
                           }
                         }}

@@ -259,7 +259,7 @@ export default function ProactiveAIPage({
     str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
     str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
-    str += `4. You CANNOT update or edit existing tasks. If the user asks to add or change a description, status, or any detail of an existing task, politely tell them that you currently do not have the ability to edit tasks, and they must click on the task card to edit it manually.\n`;
+    str += `4. When the user wants to UPDATE or EDIT an existing task (change status, deadline, assignee, category, title, or any detail), you MUST output "response_type": "update_task" as specified in your JSON SCHEMA. Use the task list above to extract the correct search_query. NEVER say you cannot update tasks — you have this capability.\n`;
     return str;
   };
 
@@ -627,20 +627,33 @@ INSTRUCTIONS:
    - Write a friendly and casual confirmation in "chat_message" explaining what you are searching for, adhering strictly to the "Aku/Kamu" persona.
    - Leave the "tasks" array empty.
 4. If the user request is a general question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
-5. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". Write a brief conversational summary in "chat_message" explaining what tasks you are setting up, and break down the workflow into tasks inside the "tasks" array following these task-generation guidelines:
+5. If the user wants to UPDATE or EDIT AN EXISTING TASK (e.g. "ubah status task X", "update task", "edit task", "ganti deadline", "tandai selesai", "mark as done", "change status", "update deadline", "pindah status", "set status to"):
+   - Return "response_type": "update_task".
+   - Set "search_query" to key words to find the task (title keywords, assignee, etc).
+   - Put requested changes inside "updates" object: {"status": "Open/In Progress/Done/Rejected", "deadline": "YYYY-MM-DD", "project_name": "new title", "category": "new category", "requester": "new assignee", "description": "new description"}. Only include fields inside 'updates' that the user actually wants to change.
+   - Write a clear conversational confirmation in "chat_message" explaining what updates you are applying.
+6. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". Write a brief conversational summary in "chat_message" explaining what tasks you are setting up, and break down the workflow into tasks inside the "tasks" array following these task-generation guidelines:
    - BROAD / GENERIC GOAL: If the user's request is generic or broad (e.g., "Paid search", "SEO", "marketing campaign", "website redesign") and does NOT explicitly mention a specific assignee (@name), a specific deadline/due date, a specific project name (#ProjectName), or any highly specific single action, you MUST logically break it down into multiple actionable tasks (minimum 3 tasks), regardless of how few words the user prompt is.
    - SPECIFIC TASK: If it is a single specific action, explicitly assigns work (@name), or specifies a distinct project (#ProjectName), generate EXACTLY ONE task per each action.
    - Naming Convention (project_name): Task titles MUST ALWAYS be in English, regardless of the prompt's language. The format MUST be "[Context/Brand] Task Title". Extract the unique context prefix (e.g. brand, activity, or game title). Prepend step numbers (e.g. "[Part 1] Task Title" or "1. Task Title") so the sequence and order of execution are clear.
-6. Language Constraint: You MUST write the "chat_message" and task "description" and "subtasks" in the EXACT language used in the user's prompt (usually Indonesian or English). Make the description explanation simple enough for a layperson.
-7. Formatting Constraint: In "chat_message", write list items and paragraphs with clean linebreaks. Do not merge everything into a single line or paragraph. Use double newlines (\n\n) to start new paragraphs, section headings, or separate list elements so the text is structured and highly readable.
-8. Extract URLs: If there are any URLs or links (e.g. http://, https://) mentioned in the user's prompt, extract them into the "supporting_access" field (separated by newlines). DO NOT include or repeat these URLs inside the "description" field.
-9. Scope Restriction: You are Luruka, a productivity and project management assistant. You MUST ONLY discuss topics related to work, task management, scheduling, project coordination, time estimation, business workflows, and productivity. If the user asks about unrelated topics (such as cooking recipes, general entertainment, fiction, gaming advice, etc.), you MUST politely decline the request in the prompt's language, explaining that your expertise is limited to managing tasks and productivity on alurku., and suggest how they can use you instead.
+7. Language Constraint: You MUST write the "chat_message" and task "description" and "subtasks" in the EXACT language used in the user's prompt (usually Indonesian or English). Make the description explanation simple enough for a layperson.
+8. Formatting Constraint: In "chat_message", write list items and paragraphs with clean linebreaks. Do not merge everything into a single line or paragraph. Use double newlines (\n\n) to start new paragraphs, section headings, or separate list elements so the text is structured and highly readable.
+9. Extract URLs: If there are any URLs or links (e.g. http://, https://) mentioned in the user's prompt, extract them into the "supporting_access" field (separated by newlines). DO NOT include or repeat these URLs inside the "description" field.
+10. Scope Restriction: You are Luruka, a productivity and project management assistant. You MUST ONLY discuss topics related to work, task management, scheduling, project coordination, time estimation, business workflows, and productivity. If the user asks about unrelated topics (such as cooking recipes, general entertainment, fiction, gaming advice, etc.), you MUST politely decline the request in the prompt's language, explaining that your expertise is limited to managing tasks and productivity on alurku., and suggest how they can use you instead.
 
 JSON SCHEMA:
 {
-  "response_type": "chat" | "tasks" | "search",
+  "response_type": "chat" | "tasks" | "search" | "update_task",
   "chat_message": "Friendly, supportive, and conversational reply in the language used by the user. Format lists and paragraphs with clean double newlines (\n\n).",
-  "search_query": "space-separated keywords representing target filters (e.g., 'budi overdue' or 'design today') if response_type is 'search'. Otherwise leave empty.",
+  "search_query": "space-separated keywords representing target filters (e.g., 'budi overdue' or 'design today') if response_type is 'search' or 'update_task'. Otherwise leave empty.",
+  "updates": {
+    "status": "Optional new status (Open/In Progress/Done/Rejected)",
+    "deadline": "Optional YYYY-MM-DD",
+    "project_name": "Optional new title",
+    "category": "Optional new category",
+    "requester": "Optional new assignee (@name)",
+    "description": "Optional new description"
+  },
   "tasks": [
     {
       "project_name": "[Context] Actionable Title in ENGLISH ONLY",
@@ -733,6 +746,97 @@ USER REQUEST:
               id: Math.random().toString(),
               sender: 'ai',
               text: tMsg('Failed to perform search. Please try again.', 'Gagal melakukan pencarian. Silakan coba lagi.')
+            }
+          ]);
+        } finally {
+          setIsProcessing(false);
+        }
+        return;
+      }
+
+      if (aiResponse.response_type === 'update_task') {
+        setIsProcessing(true);
+        setLoadingText(tMsg('Locating task to update...', 'Mencari task untuk diperbarui...'));
+        try {
+          const searchQuery = aiResponse.search_query || '';
+          const updates = aiResponse.updates || {};
+          const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}${boardParam}`);
+          const results = res.data?.results || [];
+
+          if (results.length === 0) {
+            setChatHistory(prev => [
+              ...prev,
+              {
+                id: Math.random().toString(),
+                sender: 'ai',
+                text: tMsg(`I couldn't find any task matching **"${searchQuery}"** to update.`, `Aku tidak menemukan task dengan kata kunci **"${searchQuery}"** untuk diperbarui.`)
+              }
+            ]);
+          } else {
+            const targetTask = results[0];
+            setLoadingText(tMsg('Applying task updates...', 'Menerapkan pembaruan task...'));
+
+            // Parse or format deadline if provided
+            let formattedDeadline = updates.deadline || targetTask.deadline || '';
+            if (updates.deadline) {
+              const d = new Date(updates.deadline);
+              if (!isNaN(d.getTime())) {
+                formattedDeadline = d.toISOString().split('T')[0];
+              }
+            }
+
+            const promises = [];
+            if (updates.status) {
+              promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: updates.status }));
+            }
+
+            // Build FULL TaskEditModel payload so FastAPI validation passes
+            const detailsPayload = {
+              project_name: updates.project_name || targetTask.project_name || '',
+              requester: updates.requester || targetTask.requester || `@${currentUser}`,
+              category: updates.category || targetTask.category || 'General',
+              description: updates.description !== undefined ? updates.description : (targetTask.description || ''),
+              supporting_access: targetTask.supporting_access || '',
+              start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+              deadline: formattedDeadline,
+              impact: targetTask.impact || 'Medium',
+              etc: targetTask.etc || 2.0,
+              auto_nudge: targetTask.auto_nudge || false,
+              recurring: targetTask.recurring || 'none',
+              status: updates.status || targetTask.status || 'Open',
+              board_id: targetTask.board_id || null,
+            };
+
+            promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
+
+            await Promise.all(promises);
+            if (fetchTasks) fetchTasks();
+            const updateSummary = Object.entries(updates)
+              .filter(([, v]) => v)
+              .map(([k, v]) => `**${k}** → ${v}`)
+                .join(', ');
+
+            setChatHistory(prev => [
+              ...prev,
+              {
+                id: Math.random().toString(),
+                sender: 'ai',
+                text: tMsg(
+                  `✅ Task **"${targetTask.project_name}"** updated successfully! (${updateSummary})`,
+                  `✅ Task **"${targetTask.project_name}"** berhasil diperbarui! (${updateSummary})`
+                )
+              }
+            ]);
+          }
+        } catch (err) {
+          console.error(err);
+          setChatHistory(prev => [
+            ...prev,
+            {
+              id: Math.random().toString(),
+              sender: 'ai',
+              text: tMsg('Failed to update task. Please try again.', 'Gagal memperbarui task. Silakan coba lagi.')
             }
           ]);
         } finally {

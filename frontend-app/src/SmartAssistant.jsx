@@ -132,7 +132,7 @@ export default function SmartAssistant({
     str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
     str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
-    str += `4. You CANNOT update or edit existing tasks. If the user asks to add or change a description, status, or any detail of an existing task, politely tell them that you currently do not have the ability to edit tasks, and they must click on the task card to edit it manually.\n`;
+    str += `4. When the user wants to UPDATE or EDIT an existing task (change status, deadline, assignee, category, title, or any detail), you MUST return the structured JSON action {\"action\": \"update_task\", ...} as specified in your instructions. Use the task list above to extract the correct search_query. NEVER say you cannot update tasks — you have this capability.\n`;
     return str;
   };
 
@@ -1206,6 +1206,10 @@ If the user explicitly asks to SEARCH, FILTER, or FIND specific tasks (e.g. "car
 If the user wants to CREATE/ADD A TASK (e.g. "bikin task", "buatkan task", "create task"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "create_task", "project_name": "extracted title", "requester": "Assignee (with '@') OR Requester name (without '@') OR @${currentUser}", "category": "extracted or 'Other'", "deadline": "YYYY-MM-DD (format strictly like this)", "etc": "Estimate the time consumption in hours (integer) based on task complexity. If user specifies a time (e.g., 'this will take 4 hours'), use that. Default to 2 if unsure.", "description": "detailed description if provided, else empty", "subtasks": ["extracted subtask 1", "extracted subtask 2"]}
 
+If the user wants to UPDATE/EDIT AN EXISTING TASK (e.g. "ubah status task X", "update task", "edit task", "ganti deadline", "tandai selesai", "mark as done", "change status", "update deadline", "change assignee", "pindah status", "set status to"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
+{"action": "update_task", "search_query": "keywords to find the task (title keywords, assignee, etc)", "updates": {"status": "new status if changing (Open/In Progress/Done/Rejected)", "deadline": "YYYY-MM-DD if changing deadline", "project_name": "new title if renaming", "category": "new category if changing", "requester": "new assignee if changing", "description": "new description if changing"}}
+IMPORTANT: Only include fields inside 'updates' that the user actually wants to change. Valid status values are: Open, In Progress, Done, Rejected.
+
 If the user wants to ADD A LEAVE/TIME OFF (e.g. "bikin cuti", "tambah libur", "add leave"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "create_leave", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "description": "extracted reason or 'Personal Leave'"}
 
@@ -1363,6 +1367,91 @@ If it's a general question or conversation related to project/task management, o
                     );
                   }
                   return;
+                } else if (parsed.action === 'update_task') {
+                  // Save the pending update data and search for the task first
+                  if (!parsed.search_query) {
+                    addBotMessage(
+                      tMsg(
+                        "I need to know which task you'd like to update. What's the task name or keyword?",
+                        'Aku perlu tahu task mana yang ingin kamu perbarui. Apa nama atau kata kunci task-nya?'
+                      )
+                    );
+                    setStep('ask_update_task_search');
+                    setTaskData({ pending_updates: parsed.updates || {} });
+                    return;
+                  }
+
+                  // Search for the task
+                  const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+                  addBotMessage(getThinkingPhrase());
+                  const pendingUpdates = parsed.updates || {};
+
+                  axios
+                    .get(`/api/tasks/search?q=${encodeURIComponent(parsed.search_query)}${boardParam}`)
+                    .then((res) => {
+                      setMessages((prev) => prev.filter((m) => !thinkingPhrases.some((p) => m.text === p)));
+                      const results = res.data.results || [];
+                      if (results.length === 0) {
+                        addBotMessage(
+                          tMsg(
+                            `Hmm, aku tidak menemukan task dengan kata kunci **"${parsed.search_query}"**. Coba kata kunci lain?`,
+                            `Hmm, aku tidak menemukan task dengan kata kunci **"${parsed.search_query}"**. Coba kata kunci lain?`
+                          ),
+                          [optStartOver, optClose]
+                        );
+                        setStep('end');
+                        return;
+                      }
+
+                      if (results.length === 1) {
+                        // Only one result — go straight to confirm
+                        const t = results[0];
+                        const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
+                        setTaskData({ target_task: t, target_board_name: boardName, pending_updates: pendingUpdates });
+                        setStep('confirm_task_update');
+                        const updateSummary = Object.entries(pendingUpdates)
+                          .filter(([, v]) => v)
+                          .map(([k, v]) => `• **${k}** → ${v}`)
+                          .join('\n');
+                        addBotMessage(
+                          tMsg(
+                            `Found task **"${t.project_name}"** in **${boardName}**.\n\nI will apply these changes:\n${updateSummary}\n\nShould I proceed?`,
+                            `Aku menemukan task **"${t.project_name}"** di **${boardName}**.\n\nPerubahan yang akan diterapkan:\n${updateSummary}\n\nLanjutkan?`
+                          ),
+                          [tMsg('Yes, Update', 'Ya, Perbarui'), optCancel]
+                        );
+                      } else {
+                        // Multiple results — let user pick
+                        const searchResultsPayload = results.slice(0, 5).map((t) => ({
+                          id: t.id,
+                          project_name: t.project_name,
+                          board_name: boards?.find((b) => b.id === t.board_id)?.name || 'General',
+                          status: t.status,
+                          category: t.category,
+                          deadline: t.deadline,
+                        }));
+                        setTaskData({ pending_updates: pendingUpdates, search_results: searchResultsPayload });
+                        setStep('ask_pick_task_to_update');
+                        addBotMessage(
+                          tMsg(
+                            `I found ${results.length} tasks matching **"${parsed.search_query}"**. Which one do you want to update? (Click a task card below)`,
+                            `Aku menemukan ${results.length} task yang cocok dengan **"${parsed.search_query}"**. Mana yang mau diperbarui? (Klik kartu task di bawah)`
+                          ),
+                          null,
+                          false,
+                          searchResultsPayload
+                        );
+                      }
+                    })
+                    .catch(() => {
+                      setMessages((prev) => prev.filter((m) => !thinkingPhrases.some((p) => m.text === p)));
+                      addBotMessage(
+                        tMsg('Gagal mencari task. Coba lagi ya.', 'Gagal mencari task. Coba lagi ya.'),
+                        [optStartOver, optClose]
+                      );
+                      setStep('end');
+                    });
+                  return;
                 }
               }
             } catch (e) {
@@ -1394,6 +1483,165 @@ If it's a general question or conversation related to project/task management, o
           });
         return;
       }
+
+      // ─── UPDATE TASK STEP HANDLERS ───────────────────────────────────────
+      if (currentStep === 'ask_update_task_search') {
+        if (data === optCancel) {
+          addBotMessage(tMsg('No problem! Anything else?', 'Tidak masalah! Ada yang lain?'), [optStartOver, optClose]);
+          setStep('end');
+          return;
+        }
+        // Search for the task with user's typed keyword
+        const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+        const pendingUpdates = taskData.pending_updates || {};
+        addBotMessage(getThinkingPhrase());
+        axios
+          .get(`/api/tasks/search?q=${encodeURIComponent(data)}${boardParam}`)
+          .then((res) => {
+            setMessages((prev) => prev.filter((m) => !thinkingPhrases.some((p) => m.text === p)));
+            const results = res.data.results || [];
+            if (results.length === 0) {
+              addBotMessage(
+                tMsg(
+                  `Aku tidak menemukan task dengan kata kunci **"${data}"**. Coba kata kunci lain?`,
+                  `Aku tidak menemukan task dengan kata kunci **"${data}"**. Coba kata kunci lain?`
+                ),
+                [optStartOver, optClose]
+              );
+              setStep('end');
+              return;
+            }
+            if (results.length === 1) {
+              const t = results[0];
+              const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
+              setTaskData((prev) => ({ ...prev, target_task: t, target_board_name: boardName }));
+              setStep('confirm_task_update');
+              const updateSummary = Object.entries(pendingUpdates)
+                .filter(([, v]) => v)
+                .map(([k, v]) => `• **${k}** → ${v}`)
+                .join('\n');
+              addBotMessage(
+                tMsg(
+                  `Found **"${t.project_name}"** in **${boardName}**.\n\nChanges to apply:\n${updateSummary}\n\nProceed?`,
+                  `Ketemu! **"${t.project_name}"** di **${boardName}**.\n\nPerubahan:\n${updateSummary}\n\nLanjutkan?`
+                ),
+                [tMsg('Yes, Update', 'Ya, Perbarui'), optCancel]
+              );
+            } else {
+              const searchResultsPayload = results.slice(0, 5).map((t) => ({
+                id: t.id,
+                project_name: t.project_name,
+                board_name: boards?.find((b) => b.id === t.board_id)?.name || 'General',
+                status: t.status,
+                category: t.category,
+                deadline: t.deadline,
+              }));
+              setTaskData((prev) => ({ ...prev, search_results: searchResultsPayload }));
+              setStep('ask_pick_task_to_update');
+              addBotMessage(
+                tMsg(
+                  `Found ${results.length} tasks. Which one should I update? (Click a card below)`,
+                  `Ketemu ${results.length} task. Mana yang mau diperbarui? (Klik kartu di bawah)`
+                ),
+                null,
+                false,
+                searchResultsPayload
+              );
+            }
+          })
+          .catch(() => {
+            setMessages((prev) => prev.filter((m) => !thinkingPhrases.some((p) => m.text === p)));
+            addBotMessage(
+              tMsg('Failed to search. Try again?', 'Gagal mencari. Coba lagi?'),
+              [optStartOver, optClose]
+            );
+            setStep('end');
+          });
+        return;
+      }
+
+      if (currentStep === 'confirm_task_update') {
+        if (data !== tMsg('Yes, Update', 'Ya, Perbarui')) {
+          addBotMessage(tMsg('Update cancelled.', 'Pembaruan dibatalkan.'), [optStartOver, optClose]);
+          setStep('end');
+          return;
+        }
+
+        const target = taskData.target_task;
+        const updates = taskData.pending_updates || {};
+        if (!target || !target.id) {
+          addBotMessage(tMsg('Something went wrong, no task selected.', 'Terjadi kesalahan, tidak ada task yang dipilih.'), [optStartOver]);
+          setStep('end');
+          return;
+        }
+
+        addBotMessage(tMsg('Updating task... ⏳', 'Memperbarui task... ⏳'));
+
+        // Parse or format deadline if provided
+        let formattedDeadline = updates.deadline || target.deadline || '';
+        if (updates.deadline) {
+          const d = new Date(updates.deadline);
+          if (!isNaN(d.getTime())) {
+            formattedDeadline = d.toISOString().split('T')[0];
+          }
+        }
+
+        const promises = [];
+        if (updates.status) {
+          promises.push(axios.put(`/api/tasks/${target.id}`, { status: updates.status }));
+        }
+
+        // Build FULL TaskEditModel payload so FastAPI validation passes
+        const detailsPayload = {
+          project_name: updates.project_name || target.project_name || '',
+          requester: updates.requester || target.requester || `@${currentUser}`,
+          category: updates.category || target.category || 'General',
+          description: updates.description !== undefined ? updates.description : (target.description || ''),
+          supporting_access: target.supporting_access || '',
+          start_date: target.start_date ? target.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+          deadline: formattedDeadline,
+          impact: target.impact || 'Medium',
+          etc: target.etc || 2.0,
+          auto_nudge: target.auto_nudge || false,
+          recurring: target.recurring || 'none',
+          status: updates.status || target.status || 'Open',
+          board_id: target.board_id || null,
+        };
+
+        promises.push(axios.put(`/api/tasks/${target.id}/details`, detailsPayload));
+
+        Promise.all(promises)
+          .then(() => {
+            setMessages((prev) => prev.filter((m) => !m.text.includes('⏳')));
+            if (fetchTasks) fetchTasks();
+            const changedList = Object.entries(updates)
+              .filter(([, v]) => v)
+              .map(([k, v]) => `**${k}** → ${v}`)
+              .join(', ');
+            addBotMessage(
+              tMsg(
+                `✅ Task **"${target.project_name}"** has been updated! (${changedList})`,
+                `✅ Task **"${target.project_name}"** berhasil diperbarui! (${changedList})`
+              ),
+              [optCreate, optSearch, optStartOver, optClose]
+            );
+            setStep('end');
+          })
+          .catch((err) => {
+            setMessages((prev) => prev.filter((m) => !m.text.includes('⏳')));
+            const errMsg = err.response?.data?.detail || err.message || 'Unknown error';
+            addBotMessage(
+              tMsg(
+                `⚠️ Failed to update task: ${errMsg}`,
+                `⚠️ Gagal memperbarui task: ${errMsg}`
+              ),
+              [optStartOver, optClose]
+            );
+            setStep('end');
+          });
+        return;
+      }
+      // ─── END UPDATE TASK STEP HANDLERS ──────────────────────────────────────
 
       if (currentStep === 'ask_meeting_context') {
         if (data === optCancel) {
@@ -2770,6 +3018,32 @@ USER REQUEST:
       setSelectedTask={setSelectedTask}
       setIsEditing={setIsEditing}
       closeDrawer={closeDrawer}
+      onTaskCardClick={step === 'ask_pick_task_to_update' ? (task) => {
+        // User clicked a task card in the update picker — confirm the update
+        const boardName = boards?.find((b) => b.id === task.board_id)?.name || task.board_name || 'General';
+        const pendingUpdates = taskData.pending_updates || {};
+        setTaskData((prev) => ({ ...prev, target_task: task, target_board_name: boardName }));
+        setStep('confirm_task_update');
+        const updateSummary = Object.entries(pendingUpdates)
+          .filter(([, v]) => v)
+          .map(([k, v]) => `• **${k}** → ${v}`)
+          .join('\n');
+        const optYesUpdate = tMsg('Yes, Update', 'Ya, Perbarui');
+        const optCancelLocal = tMsg('Cancel', 'Batal');
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + Math.random(),
+            sender: 'bot',
+            text: tMsg(
+              `You selected **"${task.project_name}"** in **${boardName}**.\n\nChanges to apply:\n${updateSummary || '(none specified)'}\n\nProceed?`,
+              `Kamu pilih **"${task.project_name}"** di **${boardName}**.\n\nPerubahan:\n${updateSummary || '(tidak ada)'}\n\nLanjutkan?`
+            ),
+            options: [optYesUpdate, optCancelLocal],
+            timestamp: new Date().toLocaleString(),
+          },
+        ]);
+      } : null}
     />
   );
 }

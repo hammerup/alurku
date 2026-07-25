@@ -36,12 +36,12 @@ export default function LandingFeaturesPage({ language }) {
     <div className="relative z-0 min-h-screen py-24 bg-[#f8f9ff] text-slate-900 transition-colors duration-200 overflow-hidden">
       
       {/* ─── Background Blur Blobs for Bluish Tint / Color Shifts (Exact Stitch Feel) ─── */}
-      <div className="absolute top-10 left-10 w-[400px] h-[400px] bg-[#dce9ff] rounded-full opacity-50 blur-[100px] pointer-events-none -z-10" />
-      <div className="absolute top-[500px] right-10 w-[500px] h-[500px] bg-[#d3e4fe] rounded-full opacity-50 blur-[120px] pointer-events-none -z-10" />
-      <div className="absolute bottom-[300px] left-5 w-[450px] h-[450px] bg-[#e5eeff] rounded-full opacity-45 blur-[110px] pointer-events-none -z-10" />
+      <div className="absolute top-10 left-10 w-100 h-100 bg-[#dce9ff] rounded-full opacity-50 blur-[100px] pointer-events-none -z-10" />
+      <div className="absolute top-125 right-10 w-125 h-125 bg-[#d3e4fe] rounded-full opacity-50 blur-[120px] pointer-events-none -z-10" />
+      <div className="absolute bottom-75 left-5 w-112.5 h-112.5 bg-[#e5eeff] rounded-full opacity-45 blur-[110px] pointer-events-none -z-10" />
 
       {/* ─── Hero Section ─── */}
-      <section className="relative py-20 px-4 md:px-10 max-w-[1280px] mx-auto text-center overflow-hidden">
+      <section className="relative py-20 px-4 md:px-10 max-w-7xl mx-auto text-center overflow-hidden">
         <div className="max-w-4xl mx-auto space-y-6">
           <span className="bg-[#FACC15] text-[#111E38] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest inline-block">
             {tMsg('Product Capabilities', 'Kapasitas Produk')}
@@ -59,7 +59,7 @@ export default function LandingFeaturesPage({ language }) {
       </section>
 
       {/* ─── Bento Grid Section (Exact 1280px Container Width & 40px Padding) ─── */}
-      <section className="py-12 px-4 md:px-10 max-w-[1280px] mx-auto">
+      <section className="py-12 px-4 md:px-10 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
           {/* Feature 1: AI Planning (Col-span 7) - White Background */}
@@ -109,7 +109,7 @@ export default function LandingFeaturesPage({ language }) {
                 <div className="h-6 bg-white rounded-md w-3/4 animate-pulse" />
                 <div className="h-20 bg-[#001f3f] rounded-xl w-full flex items-center justify-center relative overflow-hidden">
                   <span className="text-[#FACC15] font-black text-xs uppercase tracking-widest animate-pulse">AI Calculating...</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
                 </div>
                 <div className="flex gap-2">
                   <div className="h-5 bg-[#FACC15]/25 rounded-md w-1/4" />
@@ -275,7 +275,7 @@ export default function LandingFeaturesPage({ language }) {
             </div>
             
             {/* Visual simulation: Split panel with 3D illustration and top text as shown in Stitch */}
-            <div className="flex-1 bg-[#111E38] relative min-h-[260px]">
+            <div className="flex-1 bg-[#111E38] relative min-h-65">
               <img 
                 alt="Integrations Illustration" 
                 className="absolute inset-0 w-full h-full object-cover opacity-100" 
@@ -289,7 +289,7 @@ export default function LandingFeaturesPage({ language }) {
       </section>
 
       {/* ─── Workspace Chat & Collaboration Section (Exact Stitch Mockup & Markup) ─── */}
-      <section className="py-12 px-4 md:px-10 max-w-[1280px] mx-auto">
+      <section className="py-12 px-4 md:px-10 max-w-7xl mx-auto">
         <div className="bg-[#111E38] rounded-3xl overflow-hidden shadow-xl border border-[#000613] flex flex-col md:flex-row group transition-all duration-300">
           
           {/* Chat Interface Copy (Left) */}
@@ -324,7 +324,7 @@ export default function LandingFeaturesPage({ language }) {
           </div>
 
           {/* Split Screen Visual (Right) - Match Stitch exactly with vertical divider border */}
-          <div className="flex-1 bg-white/5 border-l border-white/10 p-6 flex gap-4 min-h-[320px]">
+          <div className="flex-1 bg-white/5 border-l border-white/10 p-6 flex gap-4 min-h-80">
             
             {/* Chat Mockup - Pure Stitch styling */}
             <div className="flex-1 bg-white/10 backdrop-blur-md rounded-lg p-4 space-y-3 border border-white/20">
@@ -362,7 +362,7 @@ export default function LandingFeaturesPage({ language }) {
       </section>
 
       {/* ─── Bottom CTA Section ─── */}
-      <section className="py-24 px-4 md:px-10 max-w-[1280px] mx-auto">
+      <section className="py-24 px-4 md:px-10 max-w-7xl mx-auto">
         <div className="bg-[#FACC15] rounded-3xl p-12 text-center relative overflow-hidden shadow-xl shadow-[#FACC15]/10">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#111E38]/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
