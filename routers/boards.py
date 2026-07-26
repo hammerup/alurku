@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 import os
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace
+from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember
 from schemas import *
 from dependencies import *
 from utils import *
@@ -944,7 +944,7 @@ def invite_board_member(
             errors.append(f"'{identifier}' (Sudah menjadi anggota project ini)")
             continue
 
-        new_invite = BoardMember(board_id=board_id, member_username=target.username)
+        new_invite = BoardMember(board_id=board_id, member_username=target.username, status="accepted")
         db.add(new_invite)
 
         # Auto-provision workspace membership as VIEWER (Guest/Client Role) to prevent internal workspace activity leaks
