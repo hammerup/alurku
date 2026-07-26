@@ -807,22 +807,54 @@ export default function WorkspaceOverview() {
                         <h3 className="text-lg font-black text-[#111E38] dark:text-white mb-2 group-hover:text-sky-600 dark:group-hover:text-[#FACC15] transition-colors truncate">
                           {proj.name}
                         </h3>
-                        <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium mb-6 line-clamp-2">
+                        <p className="text-neutral-500 dark:text-neutral-400 text-xs font-medium mb-3 line-clamp-2">
                           {proj.description || tMsg('No description provided.', 'Tidak ada deskripsi.')}
                         </p>
                       </div>
                       
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                          <span className="text-neutral-500 dark:text-neutral-400">Progress</span>
-                          <span className="text-[#111E38] dark:text-white">{progress}%</span>
+                      {/* Owner & Team Members Info */}
+                      <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800/60 text-xs mb-4">
+                          <div className="flex items-center gap-1.5" title={`Owner: @${proj.owner_username}`}>
+                            <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">{tMsg('Owner:', 'Pemilik:')}</span>
+                            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-800/40">
+                              <Avatar name={proj.owner_username} url={avatarsMap[proj.owner_username]} size="w-3.5 h-3.5 text-[8px]" />
+                              <span className="text-[10px] font-bold">@{proj.owner_username}</span>
+                            </div>
+                          </div>
+
+                          {proj.team_preview && proj.team_preview.length > 0 && (
+                            <div className="flex items-center gap-1" title={`${proj.team_preview.length} member(s)`}>
+                              <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mr-0.5">{tMsg('Team:', 'Tim:')}</span>
+                              <div className="flex -space-x-1.5 overflow-hidden">
+                                {proj.team_preview.slice(0, 4).map((memberUsername) => (
+                                  <Avatar 
+                                    key={memberUsername}
+                                    name={memberUsername} 
+                                    url={avatarsMap[memberUsername]} 
+                                    size="w-5 h-5 text-[9px] ring-2 ring-white dark:ring-[#121B2D]" 
+                                  />
+                                ))}
+                                {proj.team_preview.length > 4 && (
+                                  <div className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 text-[8px] font-bold flex items-center justify-center ring-2 ring-white dark:ring-[#121B2D]">
+                                    +{proj.team_preview.length - 4}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="w-full bg-neutral-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                          <div className="bg-[#FACC15] h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                            <span className="text-neutral-500 dark:text-neutral-400">Progress</span>
+                            <span className="text-[#111E38] dark:text-white">{progress}%</span>
+                          </div>
+                          <div className="w-full bg-neutral-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div className="bg-[#FACC15] h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
                 </div>
               );
             })}
