@@ -395,3 +395,30 @@ def remove_workspace_member(
     }
 
 
+@router.delete("/{workspace_id}")
+def delete_workspace(
+    workspace_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Menghapus workspace secara permanen. Hanya Owner workspace yang dapat menghapus.
+    """
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+        
+    if workspace.owner_username != current_user:
+        raise HTTPException(
+            status_code=403, 
+            detail="Hanya Pemilik (Owner) workspace yang dapat menghapus workspace secara permanen."
+        )
+        
+    ws_name = workspace.name
+    db.delete(workspace)
+    db.commit()
+    
+    return {"message": f"Workspace '{ws_name}' berhasil dihapus secara permanen."}
+
+
+

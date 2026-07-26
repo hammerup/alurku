@@ -8,6 +8,7 @@ export default function WorkspaceOverview() {
   const {
     activeWorkspace,
     renameWorkspace,
+    deleteWorkspace,
     renameProject,
     setBoardToDelete,
     archiveBoard,
@@ -61,6 +62,10 @@ export default function WorkspaceOverview() {
     onConfirm: null,
     confirmText: '',
   });
+
+  // Dedicated High-Security Workspace Deletion State
+  const [deleteWsModal, setDeleteWsModal] = useState({ isOpen: false, id: null, name: '' });
+  const [deleteWsInputText, setDeleteWsInputText] = useState('');
 
   // Live timer tick state to re-render relative time labels every 10 seconds
   const [nowTick, setNowTick] = useState(() => Date.now());
@@ -308,6 +313,15 @@ export default function WorkspaceOverview() {
             showNotification(err.response?.data?.detail || "Failed to leave workspace!", "error");
           });
       }
+    });
+  };
+
+  const handleDeleteWorkspaceClick = (id, name) => {
+    setDeleteWsInputText('');
+    setDeleteWsModal({
+      isOpen: true,
+      id,
+      name
     });
   };
 
@@ -600,13 +614,22 @@ export default function WorkspaceOverview() {
                     {activeWorkspace?.name || 'Main Workspace'}
                   </h1>
                   {activeWorkspace?.owner_username === currentUser && (
-                    <button 
-                      onClick={() => { setWsNameInput(activeWorkspace?.name || ''); setIsEditingWsName(true); }} 
-                      className="p-1 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-400 hover:text-slate-800 dark:hover:text-white transition-colors"
-                      title="Rename Workspace"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={() => { setWsNameInput(activeWorkspace?.name || ''); setIsEditingWsName(true); }} 
+                        className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                        title={tMsg('Rename Workspace', 'Ubah Nama Workspace')}
+                      >
+                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteWorkspaceClick(activeWorkspace.id, activeWorkspace.name)}
+                        className="p-1.5 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-400 hover:text-rose-600 transition-colors"
+                        title={tMsg('Delete Workspace', 'Hapus Workspace')}
+                      >
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
@@ -1007,6 +1030,100 @@ export default function WorkspaceOverview() {
           </div>
         </div>
       </section>
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-[#111E38]/20 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-200">
+          <div className="bg-white dark:bg-[#121B2D] p-6 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl w-full max-w-sm">
+            <h3 className="text-base font-extrabold text-[#111E38] dark:text-white mb-2">
+              {confirmModal.title}
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6 leading-relaxed">
+              {confirmModal.message}
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                {tMsg('Cancel', 'Batal')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirmModal.onConfirm) confirmModal.onConfirm();
+                  setConfirmModal({ ...confirmModal, isOpen: false });
+                }}
+                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer"
+              >
+                {confirmModal.confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Danger-Zone Type-to-Confirm Workspace Deletion Modal */}
+      {deleteWsModal.isOpen && (
+        <div className="fixed inset-0 bg-[#111E38]/40 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-200">
+          <div className="bg-white dark:bg-[#121B2D] p-6 md:p-7 border border-rose-200 dark:border-rose-900/50 shadow-2xl rounded-2xl w-full max-w-md">
+            <div className="flex items-center gap-3 mb-3 text-rose-600 dark:text-rose-400">
+              <span className="material-symbols-outlined text-2xl">warning</span>
+              <h3 className="text-lg font-black tracking-tight">
+                {tMsg('Delete Workspace Permanently', 'Hapus Workspace Secara Permanen')}
+              </h3>
+            </div>
+            
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-4 leading-relaxed font-medium">
+              {tMsg(
+                'This action CANNOT be undone. All projects, task cards, timelines, and data inside workspace ',
+                'Tindakan ini TIDAK DAPAT DIBATALKAN. Seluruh proyek, kartu tugas, timeline, dan data di dalam workspace '
+              )}
+              <span className="font-extrabold text-[#111E38] dark:text-white">"{deleteWsModal.name}"</span>
+              {tMsg(' will be permanently deleted.', ' akan terhapus secara permanen.')}
+            </p>
+
+            <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-xl p-3.5 mb-5">
+              <label className="block text-[11px] font-extrabold text-rose-700 dark:text-rose-300 uppercase tracking-wider mb-2">
+                {tMsg('Type the workspace name to confirm:', 'Ketik nama workspace di bawah untuk mengonfirmasi:')}
+              </label>
+              <div className="font-mono text-xs font-bold text-rose-800 dark:text-rose-200 select-all mb-2 bg-white/60 dark:bg-black/30 px-2.5 py-1 rounded border border-rose-200/60 dark:border-rose-900/40 inline-block">
+                {deleteWsModal.name}
+              </div>
+              <input
+                type="text"
+                value={deleteWsInputText}
+                onChange={(e) => setDeleteWsInputText(e.target.value)}
+                placeholder={deleteWsModal.name}
+                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 rounded-lg text-sm font-semibold text-[#111E38] dark:text-white outline-none focus:ring-2 focus:ring-rose-500"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setDeleteWsModal({ isOpen: false, id: null, name: '' })}
+                className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                {tMsg('Cancel', 'Batal')}
+              </button>
+              <button
+                type="button"
+                disabled={deleteWsInputText.trim() !== deleteWsModal.name}
+                onClick={() => {
+                  if (deleteWsInputText.trim() === deleteWsModal.name) {
+                    deleteWorkspace(deleteWsModal.id);
+                    setDeleteWsModal({ isOpen: false, id: null, name: '' });
+                  }
+                }}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-extrabold transition-all shadow-md cursor-pointer"
+              >
+                {tMsg('Permanently Delete Workspace', 'Hapus Workspace Permanen')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

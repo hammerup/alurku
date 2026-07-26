@@ -1757,6 +1757,25 @@ export default function useAppLogic() {
       });
   };
 
+  const deleteWorkspace = (id) => {
+    if (!id) return Promise.reject();
+    return axios
+      .delete(`/api/workspaces/${id}`)
+      .then((res) => {
+        showNotification(res.data?.message || (language === 'id' ? 'Workspace berhasil dihapus!' : 'Workspace deleted successfully!'), 'success');
+        return fetchWorkspaces().then((list) => {
+          if (list && list.length > 0) {
+            setActiveWorkspace(list[0]);
+          }
+          return list;
+        });
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || 'Failed to delete workspace', 'error');
+        throw err;
+      });
+  };
+
   const renameProject = (id, name, description = null) => {
     if (!name.trim()) return;
     const payload = { name: name.trim() };
@@ -4660,6 +4679,7 @@ export default function useAppLogic() {
     createWorkspace,
     switchWorkspace,
     renameWorkspace,
+    deleteWorkspace,
     renameProject,
     archiveBoard,
     isAuthenticated,
