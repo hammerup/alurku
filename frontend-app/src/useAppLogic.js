@@ -5107,6 +5107,8 @@ export default function useAppLogic() {
     setBoardSortBy,
     favoriteBoards,
     setFavoriteBoards,
+    workspaceBoards,
+    setWorkspaceBoards,
     isInstallable,
     handleInstallClick,
     showTosUpdate,
