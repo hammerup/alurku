@@ -546,6 +546,8 @@ def update_task_status(
 
     if not has_task_read_access(db, task, current_user):
         raise HTTPException(status_code=403, detail="Access denied")
+    if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
+        raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat mengubah tugas.")
     assignees = {a.lower() for a in get_assignees(task.requester)}
     if not is_task_admin(db, task, current_user) and current_user.lower() not in assignees:
         raise HTTPException(
@@ -627,6 +629,8 @@ def edit_task_details(
 
     if not has_task_read_access(db, task, current_user):
         raise HTTPException(status_code=403, detail="Access denied")
+    if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
+        raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat merubah detail tugas.")
     assignees = {a.lower() for a in get_assignees(task.requester)}
     if not is_task_admin(db, task, current_user) and current_user.lower() not in assignees:
         raise HTTPException(
@@ -797,6 +801,8 @@ def delete_task(
 
     if not has_task_read_access(db, task, current_user):
         raise HTTPException(status_code=403, detail="Access denied")
+    if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
+        raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat menghapus tugas.")
     if not is_task_admin(db, task, current_user):
         raise HTTPException(
             status_code=403,

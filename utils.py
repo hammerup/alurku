@@ -476,6 +476,18 @@ def is_user_involved_in_task(db: Session, task: Request, username: str) -> bool:
     return False
 
 
+def is_workspace_viewer(db: Session, workspace_id: Optional[int], username: str) -> bool:
+    if not workspace_id:
+        return False
+    from database import WorkspaceMember
+    membership = db.query(WorkspaceMember).filter(
+        WorkspaceMember.workspace_id == workspace_id,
+        WorkspaceMember.username == username
+    ).first()
+    return membership is not None and membership.role == "viewer"
+
+
+
 def spawn_recurring_task(db: Session, original_task: Request):
     if not getattr(original_task, "recurring", None) or original_task.recurring == "none":
         return None

@@ -10,7 +10,7 @@ from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDa
 from schemas import *
 from dependencies import *
 from utils import *
-from routers.workspaces import get_active_workspace_id
+from routers.workspaces import get_active_workspace_id, get_write_active_workspace_id
 
 router = APIRouter()
 
@@ -272,7 +272,7 @@ def create_board(
     payload: BoardModel,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
-    workspace_id: int = Depends(get_active_workspace_id)
+    workspace_id: int = Depends(get_write_active_workspace_id)
 ):
     if not payload.name or len(payload.name.strip()) == 0 or len(payload.name) > 100:
         raise HTTPException(
@@ -641,7 +641,7 @@ def create_task(
     task: RequestFormModel,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
-    workspace_id: int = Depends(get_active_workspace_id)
+    workspace_id: int = Depends(get_write_active_workspace_id)
 ):
     if len(task.project_name) > 255 or len(task.description) > 10000:
         raise HTTPException(

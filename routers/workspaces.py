@@ -36,6 +36,24 @@ def get_active_workspace_id(
     return x_workspace_id
 
 
+def get_write_active_workspace_id(
+    workspace_id: int = Depends(get_active_workspace_id),
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> int:
+    membership = db.query(WorkspaceMember).filter(
+        WorkspaceMember.workspace_id == workspace_id,
+        WorkspaceMember.username == current_user
+    ).first()
+    if membership and membership.role == "viewer":
+        raise HTTPException(
+            status_code=403, 
+            detail="Akses Ditolak: Pengguna dengan role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat menambah, mengedit, atau menghapus data."
+        )
+    return workspace_id
+
+
+
 @router.get("")
 def list_workspaces(current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
     """
