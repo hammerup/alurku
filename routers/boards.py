@@ -75,6 +75,25 @@ def get_boards(
         if (b := db.query(Board).filter(Board.id == m.board_id, Board.workspace_id == workspace_id).first()) is not None
     ]
 
+    # Workspace Owners & Admins can access ALL public (non-private) boards in their workspace
+    ws_obj = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    is_ws_owner = (ws_obj and ws_obj.owner_username == current_user)
+    ws_membership = db.query(WorkspaceMember).filter(
+        WorkspaceMember.workspace_id == workspace_id,
+        WorkspaceMember.username == current_user
+    ).first()
+    is_ws_admin = is_ws_owner or (ws_membership and ws_membership.role == "admin") or is_user_superadmin(db, current_user)
+
+    if is_ws_admin:
+        public_ws_boards = db.query(Board).filter(
+            Board.workspace_id == workspace_id,
+            or_(Board.is_private == 0, Board.is_private == None),
+            or_(Board.is_archived == 0, Board.is_archived == None)
+        ).all()
+        for pb in public_ws_boards:
+            if not any(b.id == pb.id for b in owned) and not any(b.id == pb.id for b in shared):
+                shared.append(pb)
+
     # Auto-access System Feedback board for superadmins
     is_sa = db.query(User).filter(User.username == current_user, User.is_superadmin == 1).first()
     if is_sa:
