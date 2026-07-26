@@ -4440,6 +4440,33 @@ export default function useAppLogic() {
       });
   };
 
+  const [isJoiningProject, setIsJoiningProject] = useState(false);
+
+  const handleJoinProject = (boardId) => {
+    const targetId = boardId || selectedBoard?.id;
+    if (!targetId) return;
+    setIsJoiningProject(true);
+    axios
+      .post(`/api/boards/${targetId}/join`)
+      .then((res) => {
+        showNotification(
+          tMsg(
+            `Successfully joined project "${selectedBoard?.name || 'Project'}"!`,
+            `Berhasil bergabung dengan proyek "${selectedBoard?.name || 'Proyek'}"!`
+          ),
+          'success'
+        );
+        fetchBoards();
+        if (selectedBoard) {
+          fetchTasks(true);
+        }
+      })
+      .catch((err) => {
+        showNotification(err.response?.data?.detail || 'Failed to join project!', 'error');
+      })
+      .finally(() => setIsJoiningProject(false));
+  };
+
   const handleCreateBoard = (e) => {
     e.preventDefault();
     if (!newBoardName.trim()) return;
@@ -5109,6 +5136,8 @@ export default function useAppLogic() {
     setFavoriteBoards,
     workspaceBoards,
     setWorkspaceBoards,
+    handleJoinProject,
+    isJoiningProject,
     isInstallable,
     handleInstallClick,
     showTosUpdate,

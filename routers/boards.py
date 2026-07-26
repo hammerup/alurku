@@ -380,6 +380,41 @@ def create_board(
     }
 
 
+@router.post("/api/boards/{board_id}/join")
+def join_board(
+    board_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_write_active_workspace_id)
+):
+    board = db.query(Board).filter(Board.id == board_id, Board.workspace_id == workspace_id).first()
+    if not board:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if getattr(board, "is_private", 0) == 1 and board.owner_username != current_user:
+        raise HTTPException(status_code=403, detail="Cannot join a private project without an invitation.")
+
+    existing_member = db.query(BoardMember).filter(
+        BoardMember.board_id == board_id,
+        BoardMember.member_username == current_user
+    ).first()
+
+    if existing_member:
+        if existing_member.status != "accepted":
+            existing_member.status = "accepted"
+            db.commit()
+    else:
+        new_member = BoardMember(
+            board_id=board_id,
+            member_username=current_user,
+            status="accepted"
+        )
+        db.add(new_member)
+        db.commit()
+
+    return {"message": f"Successfully joined project '{board.name}'!"}
+
+
 @router.put("/api/boards/{board_id}/settings")
 def update_board_settings(
     board_id: int,
@@ -704,6 +739,11 @@ def create_task(
     board = db.query(Board).filter(Board.id == board_id, Board.workspace_id == workspace_id).first()
     if not board:
         raise HTTPException(status_code=403, detail="Access denied")
+    if not is_board_writer(db, board_id, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Mode Pengawas Workspace (Read-Only): Anda sedang memantau proyek ini sebagai Admin. Silakan klik 'Bergabung dengan Proyek' terlebih dahulu untuk mulai membuat tugas."
+        )
 
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")

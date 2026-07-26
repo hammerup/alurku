@@ -447,6 +447,27 @@ def check_board_access(db: Session, board_id: int, username: str):
     return False
 
 
+def is_board_writer(db: Session, board_id: int, username: str) -> bool:
+    board = db.query(Board).filter(Board.id == board_id).first()
+    if not board:
+        return False
+    if board.owner_username == username:
+        return True
+    if is_user_superadmin(db, username):
+        return True
+
+    member = (
+        db.query(BoardMember)
+        .filter(
+            BoardMember.board_id == board_id,
+            BoardMember.member_username == username,
+            BoardMember.status == "accepted",
+        )
+        .first()
+    )
+    return bool(member)
+
+
 def has_task_read_access(db: Session, task: Request, username: str) -> bool:
     if check_board_access(db, task.board_id, username):
         return True

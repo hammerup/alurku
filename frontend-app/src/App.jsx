@@ -129,6 +129,8 @@ function App() {
     myTeam,
     boards,
     selectedBoard,
+    handleJoinProject,
+    isJoiningProject,
     isCreateBoardOpen,
     newBoardName,
     boardToDelete,
@@ -1496,6 +1498,45 @@ function App() {
                         language={language}
                       />
                     )}
+
+                    {/* Supervisor Read-Only Banner for Workspace Owners / Admins watching non-joined public projects */}
+                    {(() => {
+                      const isGlobal = !selectedBoard || selectedBoard.id === 'global';
+                      if (isGlobal || !selectedBoard || viewMode === 'overview') return null;
+                      const isOwner = selectedBoard.owner_username === currentUser;
+                      const isMember = (selectedBoard.team_preview || []).includes(currentUser);
+                      const isPrivate = !!selectedBoard.is_private;
+                      const isSupervisorOnly = !isOwner && !isMember && !isPrivate;
+
+                      return isSupervisorOnly ? (
+                        <div className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200/80 dark:border-amber-800/40 px-6 py-3 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+                              <span className="material-symbols-outlined text-lg">visibility</span>
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                                {tMsg('Supervisor Read-Only Mode', 'Mode Pengawas Workspace (Read-Only)')}
+                              </p>
+                              <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                                {tMsg(
+                                  `You are viewing @${selectedBoard.owner_username}'s project as Workspace Admin. Join this project to edit tasks or change status.`,
+                                  `Anda sedang memantau proyek milik @${selectedBoard.owner_username} sebagai Workspace Admin. Bergabunglah dengan proyek ini untuk mengedit atau menggeser status tugas.`
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleJoinProject(selectedBoard.id)}
+                            disabled={isJoiningProject}
+                            className="px-4 py-2 bg-[#111E38] hover:bg-slate-800 dark:bg-[#FACC15] dark:hover:bg-yellow-400 text-white dark:text-[#111E38] text-xs font-extrabold rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-sm">person_add</span>
+                            {isJoiningProject ? tMsg('Joining...', 'Menghubungkan...') : tMsg('Join Project', 'Bergabung dengan Proyek')}
+                          </button>
+                        </div>
+                      ) : null;
+                    })()}
 
                     {viewMode === 'kanban' && (
                       <KanbanBoard

@@ -548,6 +548,11 @@ def update_task_status(
         raise HTTPException(status_code=403, detail="Access denied")
     if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
         raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat mengubah tugas.")
+    if not is_board_writer(db, task.board_id, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Mode Pengawas Workspace (Read-Only): Anda sedang memantau proyek ini sebagai Admin. Silakan klik 'Bergabung dengan Proyek' terlebih dahulu untuk mulai mengubah tugas."
+        )
     assignees = {a.lower() for a in get_assignees(task.requester)}
     if not is_task_admin(db, task, current_user) and current_user.lower() not in assignees:
         raise HTTPException(
@@ -633,6 +638,11 @@ def edit_task_details(
         raise HTTPException(status_code=403, detail="Access denied")
     if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
         raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat merubah detail tugas.")
+    if not is_board_writer(db, task.board_id, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Mode Pengawas Workspace (Read-Only): Anda sedang memantau proyek ini sebagai Admin. Silakan klik 'Bergabung dengan Proyek' terlebih dahulu untuk mulai mengubah tugas."
+        )
     assignees = {a.lower() for a in get_assignees(task.requester)}
     if not is_task_admin(db, task, current_user) and current_user.lower() not in assignees:
         raise HTTPException(
@@ -805,6 +815,11 @@ def delete_task(
         raise HTTPException(status_code=403, detail="Access denied")
     if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
         raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca (Read-Only) dan tidak dapat menghapus tugas.")
+    if not is_board_writer(db, task.board_id, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Mode Pengawas Workspace (Read-Only): Anda sedang memantau proyek ini sebagai Admin. Silakan klik 'Bergabung dengan Proyek' terlebih dahulu untuk mulai menghapus tugas."
+        )
     if not is_task_admin(db, task, current_user):
         raise HTTPException(
             status_code=403,
