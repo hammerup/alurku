@@ -102,3 +102,29 @@ export const renderRichText = (text) => {
 
   return <div dangerouslySetInnerHTML={{ __html: formattedText }} className="space-y-1" />;
 };
+
+export const safeParseJSON = (text) => {
+  if (!text || typeof text !== 'string') return null;
+  let clean = text.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
+
+  const firstBrace = clean.indexOf('{');
+  const lastBrace = clean.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    clean = clean.substring(firstBrace, lastBrace + 1);
+  }
+
+  try {
+    return JSON.parse(clean);
+  } catch (_) {}
+
+  try {
+    const sanitized = clean
+      .replace(/,\s*([}\]])/g, '$1')
+      .replace(/(['"])?([a-zA-Z0-9_]+)\1\s*:/g, '"$2":')
+      .replace(/:\s*'([^'\\]*(?:\\.[^'\\]*)*)'/g, ': "$1"');
+    return JSON.parse(sanitized);
+  } catch (_) {}
+
+  return null;
+};
+

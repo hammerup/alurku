@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { useCloseAnimation, LoadingSpinner } from './Utils';
+import { useCloseAnimation, LoadingSpinner, safeParseJSON } from './Utils';
 import { Avatar } from './SharedUI';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
 import { useAppContext } from './hooks/useAppContext';
@@ -700,9 +700,10 @@ INSTRUCTIONS:
 
 JSON SCHEMA:
 {
-  "response_type": "chat" | "tasks" | "search" | "update_task" | "invite_member",
+  "response_type": "chat" | "tasks" | "search" | "update_task" | "invite_member" | "create_subtasks",
   "chat_message": "Friendly, supportive, and conversational reply in the language used by the user. Format lists and paragraphs with clean double newlines (\n\n).",
-  "search_query": "space-separated keywords representing target filters (e.g., 'budi overdue' or 'Design High') if response_type is 'search' or 'update_task'. Otherwise leave empty.",
+  "search_query": "space-separated keywords representing target filters (e.g., 'budi overdue' or 'Design High') if response_type is 'search', 'update_task', or 'create_subtasks'. Otherwise leave empty.",
+  "subtasks": ["subtask 1", "subtask 2"],
   "username_or_email": "Target username or email if response_type is 'invite_member'. Otherwise leave empty.",
   "role": "Target role (member/admin/viewer) if response_type is 'invite_member'. Default 'member'.",
   "updates": {
@@ -735,21 +736,7 @@ USER REQUEST:
 
       const resAi = await axios.post('/api/ai/generate', { prompt: aiPrompt, provider: 'auto' });
       const rawText = resAi?.data?.text || '';
-      let jsonStr = rawText.trim().replace(/```json/gi, '').replace(/```/g, '').trim();
-      const startIdx = jsonStr.indexOf('{');
-      const endIdx = jsonStr.lastIndexOf('}') + 1;
-      if (startIdx >= 0 && endIdx > startIdx) {
-        jsonStr = jsonStr.substring(startIdx, endIdx);
-      }
-      
-      let aiResponse = null;
-      try {
-        if (jsonStr.startsWith('{')) {
-          aiResponse = JSON.parse(jsonStr);
-        }
-      } catch (parseErr) {
-        console.warn('JSON parse failed, using plain text response:', parseErr);
-      }
+      let aiResponse = safeParseJSON(rawText);
 
       if (!aiResponse || typeof aiResponse !== 'object') {
         aiResponse = {

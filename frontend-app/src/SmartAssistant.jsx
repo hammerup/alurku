@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ChatMessage from './ChatMessage';
-import { LoadingSpinner } from './Utils';
+import { LoadingSpinner, safeParseJSON } from './Utils';
 import SmartAssistantLanding from './components/SmartAssistant/SmartAssistantLanding';
 import SmartAssistantQuickTodo from './components/SmartAssistant/SmartAssistantQuickTodo';
 import SmartAssistantPlanner from './components/SmartAssistant/SmartAssistantPlanner';
@@ -1252,6 +1252,9 @@ If the user wants to UPDATE/EDIT AN EXISTING TASK (e.g. "ubah status task X", "u
 {"action": "update_task", "search_query": "keywords to find the task (title keywords, assignee, etc)", "updates": {"status": "new status if changing (Open/In Progress/Done/Rejected)", "deadline": "YYYY-MM-DD if changing deadline", "project_name": "new title if renaming", "category": "new category if changing", "requester": "new assignee if changing", "description": "new description if changing"}}
 IMPORTANT: Only include fields inside 'updates' that the user actually wants to change. Valid status values are: Open, In Progress, Done, Rejected.
 
+If the user wants to ADD SUBTASKS or BREAK DOWN AN EXISTING TASK into subtasks (e.g. "tambahkan subtask X ke task Y", "pecah task X menjadi subtask A, B", "add subtask", "subtask untuk task X"), reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
+{"action": "create_subtasks", "search_query": "keywords to find target task (title keywords or task ID)", "subtasks": ["subtask title 1", "subtask title 2"]}
+
 If the user wants to INVITE A MEMBER to the workspace (e.g. "invite @budi ke workspace", "undang siti@email.com", "tambahkan @john ke tim", "invite member"), extract details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "invite_member", "username_or_email": "extracted username or email", "role": "member/admin/viewer"}
 
@@ -1325,12 +1328,8 @@ If it's a general question or conversation related to project/task management, o
               }
               // --- End multi-JSON detection ---
 
-              const startIdx = cleanJson.indexOf('{');
-              const endIdx = cleanJson.lastIndexOf('}');
-
-              if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
-                cleanJson = cleanJson.substring(startIdx, endIdx + 1);
-                const parsed = JSON.parse(cleanJson);
+              const parsed = safeParseJSON(replyText);
+              if (parsed) {
                 if (parsed.action === 'create_task') {
                   const deadlineDate = new Date(parsed.deadline);
                   const today = new Date();
@@ -1524,6 +1523,64 @@ If it's a general question or conversation related to project/task management, o
                         [optStartOver, optClose]
                       );
                       setStep('end');
+                    });
+                  return;
+                } else if (parsed.action === 'create_subtasks') {
+                  const searchQuery = parsed.search_query || '';
+                  const subtaskList = Array.isArray(parsed.subtasks) ? parsed.subtasks : [];
+                  if (!searchQuery || subtaskList.length === 0) {
+                    addBotMessage(
+                      tMsg(
+                        'Please specify which task you want to add subtasks to, and provide the subtask titles.',
+                        'Sebutkan tugas mana yang ingin ditambah subtask dan apa saja judul subtask-nya ya!'
+                      )
+                    );
+                    return;
+                  }
+
+                  const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+                  axios
+                    .get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}${boardParam}`)
+                    .then((res) => {
+                      const results = res.data.results || [];
+                      if (results.length === 0) {
+                        addBotMessage(
+                          tMsg(
+                            `Tidak menemukan tugas dengan kata kunci **"${searchQuery}"**. Coba sebutkan judul tugas lebih spesifik?`,
+                            `Tidak menemukan tugas dengan kata kunci **"${searchQuery}"**. Coba sebutkan judul tugas lebih spesifik?`
+                          )
+                        );
+                        return;
+                      }
+
+                      const targetTask = results[0];
+                      const promises = subtaskList.map((stTitle) =>
+                        axios.post(`/api/tasks/${targetTask.id}/subtasks`, {
+                          title: stTitle,
+                          assignee: currentUser,
+                          etc: 1
+                        })
+                      );
+
+                      Promise.all(promises)
+                        .then(() => {
+                          if (fetchTasks) fetchTasks();
+                          addBotMessage(
+                            tMsg(
+                              `Successfully added ${subtaskList.length} subtask(s) to **"${targetTask.project_name}"**! 🚀\n\n${subtaskList.map((s) => `• ${s}`).join('\n')}`,
+                              `Berhasil menambahkan ${subtaskList.length} subtask baru ke **"${targetTask.project_name}"**! 🚀\n\n${subtaskList.map((s) => `• ${s}`).join('\n')}`
+                            )
+                          );
+                        })
+                        .catch((err) => {
+                          addBotMessage(
+                            err.response?.data?.detail ||
+                            tMsg('Gagal menambahkan subtask. Pastikan kamu memiliki akses ke tugas ini.', 'Gagal menambahkan subtask. Pastikan kamu memiliki akses ke tugas ini.')
+                          );
+                        });
+                    })
+                    .catch(() => {
+                      addBotMessage(tMsg('Gagal mencari tugas sasaran.', 'Gagal mencari tugas sasaran.'));
                     });
                   return;
                 }
