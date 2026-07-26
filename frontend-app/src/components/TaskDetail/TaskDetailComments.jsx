@@ -109,11 +109,11 @@ export default function TaskDetailComments({
       })}
       {isAiReplying && (
         <div className="flex gap-3 w-full p-1.5 -mx-1.5 flex-row chat-animate group/bubble">
-          <Avatar name="Smart Assistant" url="" size="w-8 h-8 shrink-0" textClass="text-[10px]" />
+          <Avatar name="Luruka" url="" size="w-8 h-8 shrink-0" textClass="text-[10px]" />
           <div className="flex flex-col items-start min-w-0 max-w-[92%]">
             <div className="flex items-baseline gap-2 mb-1 flex-row">
-              <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
-                @Smart Assistant
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                @Luruka
               </span>
             </div>
             <div className="p-3 text-sm font-medium leading-relaxed shadow-sm shrink min-w-0 bg-white dark:bg-neutral-800 text-black dark:text-white border border-neutral-100 dark:border-neutral-700 rounded-2xl rounded-tl-sm flex gap-1.5 items-center h-10">

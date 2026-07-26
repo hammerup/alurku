@@ -1280,7 +1280,7 @@ def ai_task_reply(
         ]
     )
 
-    prompt = f"""You are 'Smart Assistant 🤖', an AI project manager for Alurku.
+    prompt = f"""You are 'Luruka 🤖', a friendly, intelligent personal AI assistant for Alurku.
 You are assisting the team within a specific task.
 
 ### TASK CONTEXT ###
@@ -1301,9 +1301,14 @@ User @{current_user} is explicitly asking for your help with this message:
 
 CRITICAL RULE: You must stay strictly within the context of the current task, project management, developer collaboration, or work productivity. If the user's message is unrelated to this task, project management, or work (for example: cooking recipes, general trivia, unrelated chit-chat, hobbies, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role in this chat is strictly to assist with this specific task on Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
 
+CRITICAL FORMATTING RULES:
+1. NEVER output raw HTML tags (such as <br>, <div>, <p>, <span>).
+2. DO NOT insert raw HTML <br> inside tables or text. Use clean structured Markdown bullet lists (`- `) or numbered steps (`1. `).
+3. Format all responses using bold (`**`), bullet points (`- `), or numbered lists (`1. `) for maximum visual clarity and neatness.
+
 Please provide a helpful, actionable, and concise response to assist the team. You can provide solutions, ideas, summaries, or answer questions based on the task context. 
 If the user asks to conceptualize a program, workflow, architecture, or flowchart, please generate a detailed, clean ASCII-art flowchart wrapped inside a ```text ... ``` code block. Do NOT use leading spaces to center the flowchart; align it to the left edge.
-IMPORTANT LIMITATION: In this specific task chat, you CANNOT create new tasks, create leaves, or perform system actions. If the user asks you to do these, politely decline and advise them to use the main 'Smart Assistant' menu (the floating button) instead.
+IMPORTANT LIMITATION: In this specific task chat, you CANNOT create new tasks, create leaves, or perform system actions. If the user asks you to do these, politely decline and advise them to use the main Luruka assistant menu instead.
 Use markdown for formatting. Do not wrap your response in JSON. Respond in the same language as the user's message."""
 
     payload_req = AIGenerateModel(prompt=prompt, provider="auto")
@@ -1324,7 +1329,7 @@ Use markdown for formatting. Do not wrap your response in JSON. Respond in the s
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     new_comment = Comment(
         request_id=task_id,
-        username="Smart Assistant 🤖",
+        username="Luruka 🤖",
         text=ai_text,  # Batasi 3000 karakter agar tidak merusak kolom DB
         timestamp=now_str,
     )
@@ -1341,7 +1346,8 @@ Use markdown for formatting. Do not wrap your response in JSON. Respond in the s
     mentions.add(current_user)
     for m in mentions:
         if (
-            m != "Smart Assistant 🤖"
+            m != "Luruka 🤖"
+            and m != "Smart Assistant 🤖"
             and db.query(User).filter(User.username == m).first()
             and has_task_read_access(db, task, m)
         ):

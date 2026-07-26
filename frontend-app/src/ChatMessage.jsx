@@ -11,6 +11,45 @@ export const renderChatMessageContent = (text, isMe) => {
     return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
   });
 
+  // Clean raw <br> or <br/> tags to newline before HTML escaping
+  escaped = escaped.replace(/<br\s*\/?>/gi, '\n');
+
+  // Parse Markdown Tables
+  const tableBlocks = [];
+  escaped = escaped.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[-:\s|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (match, tableStr) => {
+    const lines = tableStr.trim().split(/\r?\n/);
+    if (lines.length < 3) return match;
+
+    const parseRow = (rowStr) =>
+      rowStr
+        .trim()
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map((cell) => cell.trim());
+
+    const headers = parseRow(lines[0]);
+    const bodyRows = lines.slice(2).map(parseRow);
+
+    let html = `<div class="overflow-x-auto my-3 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-xs"><table class="w-full text-left text-xs border-collapse"><thead class="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold border-b border-neutral-200 dark:border-neutral-700"><tr>`;
+    headers.forEach((h) => {
+      html += `<th class="px-3 py-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-700">${h}</th>`;
+    });
+    html += `</tr></thead><tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">`;
+
+    bodyRows.forEach((row, rIdx) => {
+      html += `<tr class="${rIdx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-50/50 dark:bg-neutral-850'}">`;
+      row.forEach((cell) => {
+        html += `<td class="px-3 py-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200">${cell}</td>`;
+      });
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    tableBlocks.push(html);
+    return `\n__TABLE_BLOCK_${tableBlocks.length - 1}__\n`;
+  });
+
   escaped = escaped
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -27,13 +66,17 @@ export const renderChatMessageContent = (text, isMe) => {
     .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
     .replace(/\n/g, '<br/>')
     .replace(
-      /(@[\w.-]+|@Smart Assistant|@AI \(Team\)|@AI \(Private\))/gi,
+      /(@[\w.-]+|@Luruka|@Smart Assistant|@AI \(Team\)|@AI \(Private\))/gi,
       '<span class="font-black opacity-100">$1</span>'
     )
     .replace(
       /(https?:\/\/[^\s]+)/g,
       '<a href="$1" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:opacity-80 break-all">$1</a>'
     );
+
+  tableBlocks.forEach((tb, i) => {
+    escaped = escaped.replace(`__TABLE_BLOCK_${i}__`, tb);
+  });
 
   codeBlocks.forEach((code, i) => {
     let cleanCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
