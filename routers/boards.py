@@ -882,15 +882,15 @@ def invite_board_member(
             .first()
         )
         if not target:
-            errors.append(f"{identifier} (Not found)")
+            errors.append(f"'{identifier}' (Belum terdaftar di alurku.)")
             continue
 
         if target.username == "admin":
-            errors.append(f"{identifier} (Cannot invite system admin)")
+            errors.append(f"'{identifier}' (Tidak dapat mengundang system admin)")
             continue
 
         if target.username == current_user:
-            errors.append(f"{identifier} (Cannot invite yourself)")
+            errors.append(f"'{identifier}' (Tidak dapat mengundang diri sendiri)")
             continue
 
         existing_connection = (
@@ -902,11 +902,26 @@ def invite_board_member(
             .first()
         )
         if existing_connection:
-            errors.append(f"{identifier} (Already in project)")
+            errors.append(f"'{identifier}' (Sudah menjadi anggota project ini)")
             continue
 
         new_invite = BoardMember(board_id=board_id, member_username=target.username)
         db.add(new_invite)
+
+        # Auto-provision workspace membership if user is not yet a member of the board's workspace
+        if board.workspace_id:
+            ws_membership = db.query(WorkspaceMember).filter(
+                WorkspaceMember.workspace_id == board.workspace_id,
+                WorkspaceMember.username == target.username
+            ).first()
+            if not ws_membership:
+                new_ws_member = WorkspaceMember(
+                    workspace_id=board.workspace_id,
+                    username=target.username,
+                    role="member"
+                )
+                db.add(new_ws_member)
+
         create_notification(
             db,
             target.username,
