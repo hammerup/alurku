@@ -451,9 +451,9 @@ def is_board_writer(db: Session, board_id: int, username: str) -> bool:
     board = db.query(Board).filter(Board.id == board_id).first()
     if not board:
         return False
-    if board.owner_username == username:
+    if board.owner_username and board.owner_username.lower() == username.lower():
         return True
-    if is_user_superadmin(db, username):
+    if board.name == "System Feedback" and is_user_superadmin(db, username):
         return True
 
     member = (
@@ -479,7 +479,7 @@ def has_task_read_access(db: Session, task: Request, username: str) -> bool:
 
 def is_system_feedback_board(db: Session, board_id: int) -> bool:
     board = db.query(Board).filter(Board.id == board_id).first()
-    return board and board.name == "System Feedback"
+    return bool(board and board.name == "System Feedback")
 
 
 def can_modify_system_ticket(db: Session, username: str) -> bool:
@@ -494,12 +494,12 @@ def is_user_superadmin(db: Session, username: str):
 
 
 def is_task_admin(db: Session, task: Request, username: str):
-    if is_user_superadmin(db, username):
-        return True
     if task.owner_username and task.owner_username.lower() == username.lower():
         return True
     board = db.query(Board).filter(Board.id == task.board_id).first()
     if board and board.owner_username and board.owner_username.lower() == username.lower():
+        return True
+    if board and board.name == "System Feedback" and is_user_superadmin(db, username):
         return True
     return False
 
