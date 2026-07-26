@@ -280,6 +280,7 @@ def get_boards(
                     "is_private": getattr(b, "is_private", 0),
                     "access_requests_count": requests_count,
                 }
+            )
     ws_res = list(res)
     if is_ws_admin and ws_public_boards:
         existing_ids = {b["id"] for b in ws_res}
