@@ -151,14 +151,16 @@ def invite_to_workspace(
     """
     Mengundang pengguna lain ke workspace. Hanya Admin workspace yang dapat mengundang.
     """
-    # Verify current user is admin of this workspace
+    # Verify current user is admin of this workspace or system administrator
+    from utils import is_user_superadmin
+    is_sa = is_user_superadmin(db, current_user)
     admin_check = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == workspace_id,
         WorkspaceMember.username == current_user,
         WorkspaceMember.role == "admin"
     ).first()
-    if not admin_check:
-        raise HTTPException(status_code=403, detail="Only workspace admins can invite new members")
+    if not admin_check and not is_sa:
+        raise HTTPException(status_code=403, detail="Only workspace admins or system administrators can invite new members")
         
     # Find target user by username or email
     target_user = db.query(User).filter(
@@ -306,14 +308,16 @@ def update_workspace_member_role(
     if payload.role not in ["admin", "member", "viewer"]:
         raise HTTPException(status_code=400, detail="Invalid role. Must be 'admin', 'member', or 'viewer'.")
         
-    # Verify current user is admin
+    # Verify current user is admin or system administrator
+    from utils import is_user_superadmin
+    is_sa = is_user_superadmin(db, current_user)
     admin_check = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == workspace_id,
         WorkspaceMember.username == current_user,
         WorkspaceMember.role == "admin"
     ).first()
-    if not admin_check:
-        raise HTTPException(status_code=403, detail="Only workspace admins can update member roles")
+    if not admin_check and not is_sa:
+        raise HTTPException(status_code=403, detail="Only workspace admins or system administrators can update member roles")
         
     # Find target membership
     membership = db.query(WorkspaceMember).filter(
@@ -372,7 +376,10 @@ def remove_workspace_member(
     # Check authorization:
     # 1. Admin of workspace deleting someone else
     # 2. User deleting themselves (leaving the workspace)
+    # 3. System Administrator
     is_self = (current_user == username)
+    from utils import is_user_superadmin
+    is_sa = is_user_superadmin(db, current_user)
     
     admin_check = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == workspace_id,
@@ -380,8 +387,8 @@ def remove_workspace_member(
         WorkspaceMember.role == "admin"
     ).first()
     
-    if not is_self and not admin_check:
-        raise HTTPException(status_code=403, detail="Only admins can remove other members")
+    if not is_self and not admin_check and not is_sa:
+        raise HTTPException(status_code=403, detail="Only admins or system administrators can remove other members")
         
     # Prevent owner from leaving without transferring ownership
     workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()

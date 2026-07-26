@@ -849,6 +849,7 @@ def invite_board_member(
         raise HTTPException(status_code=444, detail="Project not found")
 
     is_owner = (board.owner_username == current_user)
+    is_sa = is_user_superadmin(db, current_user)
     is_ws_admin = False
     if board.workspace_id:
         ws_member = db.query(WorkspaceMember).filter(
@@ -859,12 +860,12 @@ def invite_board_member(
         if ws_member:
             is_ws_admin = True
 
-    if not is_owner and not is_ws_admin:
+    if not is_owner and not is_ws_admin and not is_sa:
         raise HTTPException(
-            status_code=403, detail="Hanya Pemilik Project atau Admin Workspace yang dapat mengundang anggota."
+            status_code=403, detail="Hanya Pemilik Project, Admin Workspace, atau System Administrator yang dapat mengundang anggota."
         )
 
-    if getattr(board, "is_private", 0) == 1 and not is_owner:
+    if getattr(board, "is_private", 0) == 1 and not is_owner and not is_sa:
         raise HTTPException(status_code=403, detail="Tidak dapat mengundang anggota ke project pribadi milik pengguna lain.")
 
     owned_boards = (
