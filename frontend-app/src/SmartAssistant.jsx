@@ -303,18 +303,18 @@ export default function SmartAssistant({
   // Randomized thinking phrases so Luruka doesn't feel like a stuck bot
   const thinkingPhrases = language === 'id'
     ? [
-        'Sebentar, aku cek dulu... 🔍',
-        'Oke, biarkan aku pikirkan itu... 💭',
-        'Baik, aku proses ya... ⚙️',
-        'Hmm, menarik. Aku cari jawaban terbaik... ✨',
-        'Bentar ya, lagi aku analisis... 📊',
+        'Sebentar, aku cek dulu...',
+        'Oke, biarkan aku pikirkan itu...',
+        'Baik, aku proses ya...',
+        'Aku cari jawaban terbaik untukmu...',
+        'Bentar ya, lagi aku analisis...',
       ]
     : [
-        'On it! Let me figure that out... 🔍',
-        'Give me a second... 💭',
-        'Processing your request... ⚙️',
-        'Interesting! Let me think... ✨',
-        'Analyzing that for you... 📊',
+        'On it! Let me figure that out...',
+        'Give me a second...',
+        'Processing your request...',
+        'Let me think...',
+        'Analyzing that for you...',
       ];
   const getThinkingPhrase = () => thinkingPhrases[Math.floor(Math.random() * thinkingPhrases.length)];
 
@@ -1218,7 +1218,8 @@ Please respond in the same language that the user used in their message.
 PERSONA & TONE OF VOICE:
 - Be friendly, casual, and highly supportive (like a helpful workspace friend, not a strict manager or generic robot).
 - In Indonesian, ALWAYS use the pronouns "Aku" to refer to yourself and "Kamu" to refer to the user. NEVER use formal pronouns like "Saya", "Anda", or robotic prefixes.
-- Keep your tone warm, encouraging, and helpful. Use normal casing (no forced uppercase).
+- Keep your tone warm, encouraging, clean, and helpful. Use normal casing.
+- BRAND ICONOGRAPHY RULE: Use clean, professional Markdown typography (bolding, clean line breaks, bullet points, code blocks). Do NOT overuse raw OS emojis (such as 🚀, ✨, 🎉, 📌, ⚠️, 🔍) in every sentence. Keep output text clean, modern, and aligned with alurku.'s flat design identity.
 
 CRITICAL RULE: You must stay strictly within the context of Alurku, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
 
