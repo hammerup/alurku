@@ -845,12 +845,27 @@ def invite_board_member(
     db: Session = Depends(get_db),
 ):
     board = db.query(Board).filter(Board.id == board_id).first()
-    if not board or board.owner_username != current_user:
+    if not board:
+        raise HTTPException(status_code=444, detail="Project not found")
+
+    is_owner = (board.owner_username == current_user)
+    is_ws_admin = False
+    if board.workspace_id:
+        ws_member = db.query(WorkspaceMember).filter(
+            WorkspaceMember.workspace_id == board.workspace_id,
+            WorkspaceMember.username == current_user,
+            WorkspaceMember.role == "admin"
+        ).first()
+        if ws_member:
+            is_ws_admin = True
+
+    if not is_owner and not is_ws_admin:
         raise HTTPException(
-            status_code=403, detail="Only the project owner can invite members."
+            status_code=403, detail="Hanya Pemilik Project atau Admin Workspace yang dapat mengundang anggota."
         )
-    if getattr(board, "is_private", 0) == 1:
-        raise HTTPException(status_code=403, detail="Cannot invite members to a private workspace.")
+
+    if getattr(board, "is_private", 0) == 1 and not is_owner:
+        raise HTTPException(status_code=403, detail="Tidak dapat mengundang anggota ke project pribadi milik pengguna lain.")
 
     owned_boards = (
         db.query(Board.id).filter(Board.owner_username == current_user).subquery()
