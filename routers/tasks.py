@@ -570,7 +570,9 @@ def update_task_status(
         log_activity(
             db, task.id, f"**@{current_user}** changed status to **{update.status}**."
         )
-        if getattr(task, "workspace_id", None):
+        task_board = db.query(Board).filter(Board.id == task.board_id).first()
+        is_private_board = task_board and getattr(task_board, "is_private", 0) == 1
+        if getattr(task, "workspace_id", None) and not is_private_board:
             log_and_broadcast_activity(
                 db, 
                 task.workspace_id, 
@@ -814,7 +816,9 @@ def delete_task(
     db.query(Subtask).filter(Subtask.request_id == task_id).delete()
     db.delete(task)
     db.commit()
-    if ws_id:
+    task_board = db.query(Board).filter(Board.id == task.board_id).first()
+    is_private_board = task_board and getattr(task_board, "is_private", 0) == 1
+    if ws_id and not is_private_board:
         log_and_broadcast_activity(
             db, 
             ws_id, 

@@ -712,7 +712,7 @@ def create_task(
 
         db.commit()
         log_activity(db, new_task.id, f"**@{current_user}** created this task.")
-        if workspace_id:
+        if workspace_id and getattr(board, "is_private", 0) != 1:
             log_and_broadcast_activity(
                 db,
                 workspace_id,
