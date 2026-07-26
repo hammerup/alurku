@@ -229,6 +229,11 @@ export default function ProactiveAIPage({
     const overdueCount = aiContext?.my_stats?.overdue ?? myOverdueTasks.length;
 
     const projectList = (boards || []).map((b) => b.name).filter((b) => b && b.toLowerCase() !== 'global');
+    const projectBreakdown = (boards || [])
+      .filter((b) => b && b.name && b.name.toLowerCase() !== 'global')
+      .map((b) => `"${b.name}" (Pemilik: @${b.owner_username || currentUser})`)
+      .join(', ');
+
     const validMemberSet = new Set(
       (teamMembers && teamMembers.length > 0)
         ? teamMembers.map((m) => (typeof m === 'string' ? m.replace(/^@/, '') : m.username))
@@ -248,7 +253,7 @@ export default function ProactiveAIPage({
     let str = `\n\nACTUAL WORKSPACE DATA (CRITICAL: Use ONLY this data to answer questions about projects, tasks, or team members. DO NOT invent or make up fake numbers/names under ANY circumstances!):\n`;
     str += `- Current User: @${currentUser}\n`;
     str += `- Workspace Name: "${wsName}"\n`;
-    str += `- Projects/Boards Currently Existing in Workspace: ${projectList.length > 0 ? projectList.join(', ') : 'None'}\n`;
+    str += `- Projects/Boards Currently Existing in Workspace (with Owner): ${projectBreakdown.length > 0 ? projectBreakdown : 'None'}\n`;
     str += `- User Directory / Team Members in Workspace "${wsName}": ${teamMemberList.join(', ')}\n`;
     str += `- Your Personal Workload (@${currentUser}) [matches top UI cards]: Total Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}\n`;
 
