@@ -882,6 +882,29 @@ def invite_board_member(
             .first()
         )
         if not target:
+            if "@" in identifier and "." in identifier:
+                try:
+                    from services.email_service import send_email_async
+                    subject = f"Undangan Bergabung ke Project '{board.name}' di alurku."
+                    html_content = f"""
+                    <div style="font-family: Arial, sans-serif; padding: 20px; color: #111E38;">
+                        <h2>Undangan Project alurku.</h2>
+                        <p>Halo,</p>
+                        <p><strong>@{current_user}</strong> mengundang Anda untuk bergabung dan berkolaborasi di project <strong>"{board.name}"</strong> pada aplikasi alurku.</p>
+                        <p>Silakan mendaftar akun alurku. untuk langsung mengakses project Anda:</p>
+                        <p style="margin-top: 20px;">
+                            <a href="http://localhost:5173/daftar?email={identifier}" style="background-color: #FACC15; color: #111E38; padding: 12px 24px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">Daftar Akun alurku.</a>
+                        </p>
+                        <br/>
+                        <p style="font-size: 12px; color: #666;">alurku. - Master your time, smooth your flow.</p>
+                    </div>
+                    """
+                    send_email_async(identifier, subject, html_content)
+                    success_count += 1
+                    continue
+                except Exception as err_email:
+                    print(f"Failed to send invite email: {err_email}")
+
             errors.append(f"'{identifier}' (Belum terdaftar di alurku.)")
             continue
 
@@ -908,7 +931,7 @@ def invite_board_member(
         new_invite = BoardMember(board_id=board_id, member_username=target.username)
         db.add(new_invite)
 
-        # Auto-provision workspace membership if user is not yet a member of the board's workspace
+        # Auto-provision workspace membership as VIEWER (Guest/Client Role) to prevent internal workspace activity leaks
         if board.workspace_id:
             ws_membership = db.query(WorkspaceMember).filter(
                 WorkspaceMember.workspace_id == board.workspace_id,
@@ -918,7 +941,7 @@ def invite_board_member(
                 new_ws_member = WorkspaceMember(
                     workspace_id=board.workspace_id,
                     username=target.username,
-                    role="member"
+                    role="viewer"
                 )
                 db.add(new_ws_member)
 

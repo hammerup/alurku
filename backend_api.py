@@ -681,6 +681,27 @@ def get_workspace_activity(
         .all()
     )
 
+    # Privacy Protection for Guest / Viewer Role (Clients)
+    if member.role == "viewer":
+        from database import BoardMember, Request
+        user_boards = db.query(BoardMember.board_id).filter(
+            BoardMember.member_username == current_user,
+            BoardMember.status == "accepted"
+        ).all()
+        allowed_board_ids = {b[0] for b in user_boards}
+
+        filtered_logs = []
+        for log in logs:
+            extra = json.loads(log.extra_data) if log.extra_data else {}
+            task_id = extra.get("task_id")
+            if log.username == current_user:
+                filtered_logs.append(log)
+            elif task_id:
+                task = db.query(Request).filter(Request.id == task_id).first()
+                if task and task.board_id in allowed_board_ids:
+                    filtered_logs.append(log)
+        logs = filtered_logs
+
     result = []
     for log in logs:
         result.append({
