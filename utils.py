@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, date
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func, text
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, get_leave_dates
+from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember, get_leave_dates
 import os
 import re
 import json
@@ -402,10 +402,24 @@ def check_board_access(db: Session, board_id: int, username: str):
         return False
     if board.owner_username == username:
         return True
-    if board.name == "System Feedback" and is_user_superadmin(db, username):
+    if is_user_superadmin(db, username):
         return True
+
+    # If the board is private, only owner and accepted board members can access it
     if getattr(board, "is_private", 0) == 1:
-        return False
+        member = (
+            db.query(BoardMember)
+            .filter(
+                BoardMember.board_id == board_id,
+                BoardMember.member_username == username,
+                BoardMember.status == "accepted",
+            )
+            .first()
+        )
+        return bool(member)
+
+    # For public workspace boards:
+    # 1. Explicit accepted board members have access
     member = (
         db.query(BoardMember)
         .filter(
@@ -415,7 +429,22 @@ def check_board_access(db: Session, board_id: int, username: str):
         )
         .first()
     )
-    return bool(member)
+    if member:
+        return True
+
+    # 2. Workspace Owners and Workspace Admins have supervision access to ALL public boards in their workspace
+    if board.workspace_id:
+        ws_obj = db.query(Workspace).filter(Workspace.id == board.workspace_id).first()
+        if ws_obj and ws_obj.owner_username == username:
+            return True
+        ws_membership = db.query(WorkspaceMember).filter(
+            WorkspaceMember.workspace_id == board.workspace_id,
+            WorkspaceMember.username == username
+        ).first()
+        if ws_membership and ws_membership.role == "admin":
+            return True
+
+    return False
 
 
 def has_task_read_access(db: Session, task: Request, username: str) -> bool:
