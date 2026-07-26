@@ -675,6 +675,11 @@ export default function TableList({
                             .map((m, idx) => (
                               <div
                                 key={m}
+                                ref={(el) => {
+                                  if (mentionIndex === idx && el) {
+                                    el.scrollIntoView({ block: 'nearest' });
+                                  }
+                                }}
                                 className={`px-4 py-2 cursor-pointer text-xs text-black dark:text-white font-bold border-b border-neutral-100 dark:border-neutral-800/50 last:border-0 ${
                                   mentionIndex === idx
                                     ? 'bg-neutral-100 dark:bg-neutral-800'

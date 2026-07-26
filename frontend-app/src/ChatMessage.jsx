@@ -28,19 +28,31 @@ export const renderChatMessageContent = (text, isMe) => {
         .split('|')
         .map((cell) => cell.trim());
 
+    const formatCellRichText = (str) => {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-neutral-200 dark:bg-neutral-800 rounded font-mono text-[11px]">$1</code>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-black">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:opacity-80 break-all">$1</a>');
+    };
+
     const headers = parseRow(lines[0]);
     const bodyRows = lines.slice(2).map(parseRow);
 
     let html = `<div class="overflow-x-auto my-3 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-xs"><table class="w-full text-left text-xs border-collapse"><thead class="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-bold border-b border-neutral-200 dark:border-neutral-700"><tr>`;
     headers.forEach((h) => {
-      html += `<th class="px-3 py-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-700">${h}</th>`;
+      html += `<th class="px-3 py-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-700">${formatCellRichText(h)}</th>`;
     });
     html += `</tr></thead><tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">`;
 
     bodyRows.forEach((row, rIdx) => {
       html += `<tr class="${rIdx % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-neutral-50/50 dark:bg-neutral-850'}">`;
       row.forEach((cell) => {
-        html += `<td class="px-3 py-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200">${cell}</td>`;
+        html += `<td class="px-3 py-2 border-r last:border-r-0 border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200">${formatCellRichText(cell)}</td>`;
       });
       html += `</tr>`;
     });

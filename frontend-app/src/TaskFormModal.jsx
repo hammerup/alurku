@@ -360,6 +360,11 @@ Format:
                               .map((m, idx) => (
                                 <div
                                   key={m}
+                                  ref={(el) => {
+                                    if (mentionIndex === idx && el) {
+                                      el.scrollIntoView({ block: 'nearest' });
+                                    }
+                                  }}
                                   className={`px-4 py-3 cursor-pointer text-xs text-black dark:text-white font-bold border-b border-neutral-200 dark:border-neutral-800 last:border-0 flex items-center gap-2 ${
                                     mentionIndex === idx
                                       ? 'bg-neutral-200 dark:bg-neutral-800'
