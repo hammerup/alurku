@@ -654,12 +654,18 @@ export default function WorkspaceOverview() {
                 </div>
               )}
             </div>
-            <button 
-              onClick={() => setIsViewingMembers(true)} 
-              className="bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 px-4 py-2 rounded-xl text-sm font-bold text-[#111E38] dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
-            >
-              {tMsg('Manage Member', 'Kelola Anggota')}
-            </button>
+            {(() => {
+              const currentUserMember = (members || []).find((m) => m.username === currentUser);
+              const isCurrentUserAdmin = currentUserMember?.role === 'admin' || activeWorkspace?.owner_username === currentUser;
+              return (
+                <button 
+                  onClick={() => setIsViewingMembers(true)} 
+                  className="bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 px-4 py-2 rounded-xl text-sm font-bold text-[#111E38] dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm"
+                >
+                  {isCurrentUserAdmin ? tMsg('Manage Members', 'Kelola Anggota') : tMsg('View Members', 'Lihat Anggota')}
+                </button>
+              );
+            })()}
           </div>
         </div>
       </section>
@@ -769,39 +775,48 @@ export default function WorkspaceOverview() {
                           </div>
                           
                           {/* Project action menu dropdown */}
-                          <div className="relative" onClick={(e) => e.stopPropagation()}>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); setActiveProjMenu(activeProjMenu === proj.id ? null : proj.id); }} 
-                              className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-sm">more_vert</span>
-                            </button>
-                            {activeProjMenu === proj.id && (
-                              <>
-                                <div className="fixed inset-0 z-30" onClick={() => setActiveProjMenu(null)}></div>
-                                <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-lg z-40 p-1 text-left">
-                                  <button 
-                                    onClick={() => startEditingProject(proj)} 
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-semibold"
-                                  >
-                                    <span className="material-symbols-outlined text-xs">edit</span> {tMsg('Edit Details', 'Ubah Detail')}
-                                  </button>
-                                  <button 
-                                    onClick={() => { archiveBoard(proj); setActiveProjMenu(null); }} 
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-semibold"
-                                  >
-                                    <span className="material-symbols-outlined text-xs">archive</span> {tMsg('Archive', 'Arsipkan')}
-                                  </button>
-                                  <button 
-                                    onClick={() => { setBoardToDelete(proj); setActiveProjMenu(null); }} 
-                                    className="w-full text-left px-3 py-2 text-xs hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg text-red-600 flex items-center gap-1.5 font-semibold"
-                                  >
-                                    <span className="material-symbols-outlined text-xs text-red-600">delete</span> {tMsg('Delete', 'Hapus')}
-                                  </button>
-                                </div>
-                              </>
-                            )}
-                          </div>
+                          {(() => {
+                            const currentUserMember = (members || []).find((m) => m.username === currentUser);
+                            const isCurrentUserAdmin = currentUserMember?.role === 'admin' || activeWorkspace?.owner_username === currentUser;
+                            const isCurrentUserViewer = currentUserMember?.role === 'viewer';
+                            const canManageProject = !isCurrentUserViewer && (isCurrentUserAdmin || proj.owner_username === currentUser);
+
+                            return canManageProject ? (
+                              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setActiveProjMenu(activeProjMenu === proj.id ? null : proj.id); }} 
+                                  className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 transition-colors"
+                                >
+                                  <span className="material-symbols-outlined text-sm">more_vert</span>
+                                </button>
+                                {activeProjMenu === proj.id && (
+                                  <>
+                                    <div className="fixed inset-0 z-30" onClick={() => setActiveProjMenu(null)}></div>
+                                    <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-lg z-40 p-1 text-left">
+                                      <button 
+                                        onClick={() => startEditingProject(proj)} 
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-semibold"
+                                      >
+                                        <span className="material-symbols-outlined text-xs">edit</span> {tMsg('Edit Details', 'Ubah Detail')}
+                                      </button>
+                                      <button 
+                                        onClick={() => { archiveBoard(proj); setActiveProjMenu(null); }} 
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-semibold"
+                                      >
+                                        <span className="material-symbols-outlined text-xs">archive</span> {tMsg('Archive', 'Arsipkan')}
+                                      </button>
+                                      <button 
+                                        onClick={() => { setBoardToDelete(proj); setActiveProjMenu(null); }} 
+                                        className="w-full text-left px-3 py-2 text-xs hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg text-red-600 flex items-center gap-1.5 font-semibold"
+                                      >
+                                        <span className="material-symbols-outlined text-xs text-red-600">delete</span> {tMsg('Delete', 'Hapus')}
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                         
                         <h3 className="text-lg font-black text-[#111E38] dark:text-white mb-2 group-hover:text-sky-600 dark:group-hover:text-[#FACC15] transition-colors truncate">
