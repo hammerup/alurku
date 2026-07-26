@@ -371,6 +371,7 @@ export default function useAppLogic() {
   const [avatarsMap, setAvatarsMap] = useState({});
   const [myTeam, setMyTeam] = useState([]);
   const [boards, setBoards] = useState([]);
+  const [workspaceBoards, setWorkspaceBoards] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [selectedBoard, setSelectedBoard] = useState(() => {
@@ -1824,7 +1825,10 @@ export default function useAppLogic() {
     setIsBoardsLoading(true);
     axios
       .get('/api/boards')
-      .then((res) => setBoards(res.data.boards || []))
+      .then((res) => {
+        setBoards(res.data.boards || []);
+        setWorkspaceBoards(res.data.workspace_boards || res.data.boards || []);
+      })
       .catch((err) => {
         if (err.response?.status !== 401) console.error(err);
       })
@@ -4751,6 +4755,7 @@ export default function useAppLogic() {
     avatarsMap,
     myTeam,
     boards,
+    workspaceBoards,
     selectedBoard,
     isCreateBoardOpen,
     newBoardName,

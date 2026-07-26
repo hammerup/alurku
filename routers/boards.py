@@ -75,7 +75,7 @@ def get_boards(
         if (b := db.query(Board).filter(Board.id == m.board_id, Board.workspace_id == workspace_id).first()) is not None
     ]
 
-    # Workspace Owners & Admins can access ALL public (non-private) boards in their workspace
+    # Workspace Owners & Admins can supervision-access ALL public workspace boards
     ws_obj = db.query(Workspace).filter(Workspace.id == workspace_id).first()
     is_ws_owner = (ws_obj and ws_obj.owner_username == current_user)
     ws_membership = db.query(WorkspaceMember).filter(
@@ -84,15 +84,13 @@ def get_boards(
     ).first()
     is_ws_admin = is_ws_owner or (ws_membership and ws_membership.role == "admin") or is_user_superadmin(db, current_user)
 
+    ws_public_boards = []
     if is_ws_admin:
-        public_ws_boards = db.query(Board).filter(
+        ws_public_boards = db.query(Board).filter(
             Board.workspace_id == workspace_id,
             or_(Board.is_private == 0, Board.is_private == None),
             or_(Board.is_archived == 0, Board.is_archived == None)
         ).all()
-        for pb in public_ws_boards:
-            if not any(b.id == pb.id for b in owned) and not any(b.id == pb.id for b in shared):
-                shared.append(pb)
 
     # Auto-access System Feedback board for superadmins
     is_sa = db.query(User).filter(User.username == current_user, User.is_superadmin == 1).first()
@@ -282,8 +280,42 @@ def get_boards(
                     "is_private": getattr(b, "is_private", 0),
                     "access_requests_count": requests_count,
                 }
-            )
-    return {"boards": res}
+    ws_res = list(res)
+    if is_ws_admin and ws_public_boards:
+        existing_ids = {b["id"] for b in ws_res}
+        for pb in ws_public_boards:
+            if pb and pb.id not in existing_ids and not evaluate_board_lifecycle(db, pb):
+                total, done, my_pending, alert_msg, requests_count = get_metrics(pb.id)
+                members_db = (
+                    db.query(BoardMember.member_username)
+                    .filter(BoardMember.board_id == pb.id, BoardMember.status == "accepted")
+                    .limit(19)
+                    .all()
+                )
+                team = [pb.owner_username] + [
+                    m[0] for m in members_db if m[0] != pb.owner_username
+                ]
+                ws_res.append(
+                    {
+                        "id": pb.id,
+                        "name": pb.name,
+                        "owner_username": pb.owner_username,
+                        "role": "workspace_admin" if pb.owner_username != current_user else "owner",
+                        "total_tasks": total,
+                        "done_tasks": done,
+                        "my_pending": my_pending,
+                        "statuses": pb.statuses,
+                        "categories": pb.categories,
+                        "deletion_date": pb.deletion_date,
+                        "created_at": pb.created_at,
+                        "team_preview": team[:20],
+                        "health_alert": alert_msg,
+                        "is_private": getattr(pb, "is_private", 0),
+                        "access_requests_count": requests_count,
+                    }
+                )
+
+    return {"boards": res, "workspace_boards": ws_res}
 
 
 @router.post("/api/boards")

@@ -14,6 +14,7 @@ export default function WorkspaceOverview() {
     archiveBoard,
     isSuperAdmin,
     boards,
+    workspaceBoards,
     tasks,
     filteredTasks,
     avatarsMap,
@@ -325,13 +326,14 @@ export default function WorkspaceOverview() {
     });
   };
 
-  // Active projects mapping
+  // Active projects mapping (uses workspaceBoards for Workspace Overview)
   const activeProjects = useMemo(() => {
-    return boards.filter(b => {
+    const targetBoards = workspaceBoards && workspaceBoards.length > 0 ? workspaceBoards : boards;
+    return targetBoards.filter(b => {
       const nameLower = (b.name || '').toLowerCase().trim();
       return nameLower !== 'to-do list' && nameLower !== 'to-do-list' && nameLower !== 'to do list';
     });
-  }, [boards]);
+  }, [boards, workspaceBoards]);
 
   // Paginated/Limited projects
   const displayedProjects = useMemo(() => {
