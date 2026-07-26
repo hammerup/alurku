@@ -132,6 +132,11 @@ export default function ChatMessage({
 }) {
   const isMe = c.username === currentUser;
 
+  const displayUsername = (c.username || '')
+    .replace('Smart Assistant 🤖', 'Luruka')
+    .replace('Luruka 🤖', 'Luruka')
+    .replace(' 🤖', '');
+
   return (
     <React.Fragment>
       {showDivider && (
@@ -156,10 +161,10 @@ export default function ChatMessage({
           isMe ? 'flex-row-reverse' : 'flex-row'
         } chat-animate scroll-mt-20 group/bubble`}
       >
-        <Avatar name={c.username} url={avatarsMap[c.username]} size="w-8 h-8 shrink-0" textClass="text-[10px]" />
+        <Avatar name={displayUsername} url={avatarsMap[c.username]} size="w-8 h-8 shrink-0" textClass="text-[10px]" />
         <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} min-w-0 max-w-[92%]`}>
           <div className={`flex items-baseline gap-2 mb-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-            <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400">@{c.username}</span>
+            <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400">@{displayUsername}</span>
             <span className="text-[8px] font-bold text-neutral-400 opacity-70">
               {new Date(c.timestamp.replace(/-/g, '/')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
