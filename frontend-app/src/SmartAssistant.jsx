@@ -1228,20 +1228,22 @@ If the user asks general questions about available projects/boards (e.g. "proyek
    - Do NOT output JSON {"action": "search_tasks"} for general count or project list questions.
 
 EXPLICIT TASK SEARCHES:
-If the user explicitly asks to SEARCH, FILTER, or FIND specific tasks (e.g. "cari task mockup", "tampilkan tugas budi yang telat", "cari task overdue milik budi", "antrian task aku"):
+If the user explicitly asks to SEARCH, FILTER, or FIND specific tasks (e.g. "cari task mockup", "tampilkan tugas budi yang telat", "cari task overdue milik budi", "antrian task aku", "cari task category Design", "task High impact", "task deadline 2026-07-30"):
    - Reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
      {"action": "search_tasks", "search_query": "space-separated keywords representing target filters"}
    - IMPORTANT QUERY MAPPING RULES:
      - Map personal pronouns ("tugas aku", "tugas saya", "my tasks", "my work") to the user's actual username "${currentUser}". Do NOT use "my", "saya", "aku", "me", "mine" in the search_query.
-     - Map "overdue", "telat", "terlambat" to a single word "overdue". Do NOT use "overdue tasks" or "task overdue".
-     - Map "belum overdue", "tidak overdue", "not overdue" to a single word "not_overdue".
+     - Map "overdue", "telat", "terlambat" to a single word "overdue".
      - Map "today", "due today", "hari ini" to a single word "today".
+     - Map "not overdue", "belum overdue", "tidak overdue" to a single word "not_overdue".
+     - Map "pending", "active", "aktif", "belum selesai" to a single word "pending".
+     - Map team member names ("budi", "siti") to exact system usernames (e.g. "budi_santoso").
+     - Include category names (e.g., "Design", "Marketing"), status names (e.g., "Done", "In Progress"), or project/board names (e.g., "SEO") in "search_query" when specified.
+     - Include date strings formatted as YYYY-MM-DD if user specifies an exact deadline date.
      - Keep the keywords short and clean. Strip filler words like "task", "tugas", "daftar", "list".
      - Example: If the user says "task sudah overdue", output "search_query": "overdue".
      - Example: If the user says "tugas aku", output "search_query": "${currentUser}".
-     - Example: If the user says "antrian task aku", output "search_query": "${currentUser}".
-     - Example: If the user says "task overdue milik budi", output "search_query": "budi overdue".
-     - Example: If the user says "task list yang belum overdue", output "search_query": "not_overdue".
+     - Example: If the user says "task High impact category Design", output "search_query": "High Design".
 
 If the user wants to CREATE/ADD A TASK (e.g. "bikin task", "buatkan task", "create task"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "create_task", "project_name": "extracted title", "requester": "Assignee (with '@') OR Requester name (without '@') OR @${currentUser}", "category": "extracted or 'Other'", "deadline": "YYYY-MM-DD (format strictly like this)", "etc": "Estimate the time consumption in hours (integer) based on task complexity. If user specifies a time (e.g., 'this will take 4 hours'), use that. Default to 2 if unsure.", "description": "detailed description if provided, else empty", "subtasks": ["extracted subtask 1", "extracted subtask 2"]}
@@ -1249,6 +1251,9 @@ If the user wants to CREATE/ADD A TASK (e.g. "bikin task", "buatkan task", "crea
 If the user wants to UPDATE/EDIT AN EXISTING TASK (e.g. "ubah status task X", "update task", "edit task", "ganti deadline", "tandai selesai", "mark as done", "change status", "update deadline", "change assignee", "pindah status", "set status to"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "update_task", "search_query": "keywords to find the task (title keywords, assignee, etc)", "updates": {"status": "new status if changing (Open/In Progress/Done/Rejected)", "deadline": "YYYY-MM-DD if changing deadline", "project_name": "new title if renaming", "category": "new category if changing", "requester": "new assignee if changing", "description": "new description if changing"}}
 IMPORTANT: Only include fields inside 'updates' that the user actually wants to change. Valid status values are: Open, In Progress, Done, Rejected.
+
+If the user wants to INVITE A MEMBER to the workspace (e.g. "invite @budi ke workspace", "undang siti@email.com", "tambahkan @john ke tim", "invite member"), extract details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
+{"action": "invite_member", "username_or_email": "extracted username or email", "role": "member/admin/viewer"}
 
 If the user wants to ADD A LEAVE/TIME OFF (e.g. "bikin cuti", "tambah libur", "add leave"), extract the details and reply ONLY with this valid JSON format (do not wrap in markdown quotes, just the raw JSON object):
 {"action": "create_leave", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD", "description": "extracted reason or 'Personal Leave'"}
@@ -1397,6 +1402,35 @@ If it's a general question or conversation related to project/task management, o
                     ),
                     [tMsg('Yes, Submit', 'Ya, Kirim'), optCancel]
                   );
+                  return;
+                } else if (parsed.action === 'invite_member') {
+                  if (parsed.username_or_email && activeWorkspace?.id) {
+                    const inviteTarget = parsed.username_or_email.replace(/^@/, '').trim();
+                    const inviteRole = parsed.role || 'member';
+                    axios
+                      .post(`/api/workspaces/${activeWorkspace.id}/invite`, {
+                        username_or_email: inviteTarget,
+                        role: inviteRole,
+                      })
+                      .then(() => {
+                        addBotMessage(
+                          tMsg(
+                            `Successfully sent invite to **@${inviteTarget}** as ${inviteRole}! 🚀`,
+                            `Berhasil mengirimkan undangan untuk **@${inviteTarget}** sebagai ${inviteRole}! 🚀`
+                          )
+                        );
+                      })
+                      .catch((err) => {
+                        addBotMessage(
+                          err.response?.data?.detail ||
+                          tMsg(`Failed to send invite to @${inviteTarget}.`, `Gagal mengirimkan undangan ke @${inviteTarget}.`)
+                        );
+                      });
+                  } else {
+                    addBotMessage(
+                      tMsg('Whom would you like to invite? (Provide username or email)', 'Siapa yang ingin kamu undang? (Sebutkan username atau email)')
+                    );
+                  }
                   return;
                 } else if (parsed.action === 'search_tasks') {
                   if (parsed.search_query) {
