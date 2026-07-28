@@ -329,24 +329,43 @@ export default function HomeDashboard() {
   };
 
   const projectDistribution = React.useMemo(() => {
-    if (!myTasks.length) return [];
-    const counts = {};
-    myTasks.forEach(t => {
-      const bId = t.board_id || 'global';
-      counts[bId] = (counts[bId] || 0) + 1;
-    });
-    
-    const dist = Object.entries(counts).map(([bId, count]) => {
-      const board = boards.find(b => parseInt(b.id) === parseInt(bId));
-      return {
-        id: bId,
-        name: board ? board.name : 'Global',
-        percentage: Math.round((count / myTasks.length) * 100)
-      };
-    }).sort((a, b) => b.percentage - a.percentage).slice(0, 3);
-    
-    return dist;
-  }, [myTasks, boards]);
+    // 1. Primary: user's assigned active tasks in workspace
+    // 2. Secondary: all workspace tasks
+    const targetTasks = myTasks.length > 0 ? myTasks : wsTasks;
+
+    if (targetTasks.length > 0) {
+      const counts = {};
+      targetTasks.forEach(t => {
+        const bId = t.board_id || 'global';
+        counts[bId] = (counts[bId] || 0) + 1;
+      });
+      
+      return Object.entries(counts).map(([bId, count]) => {
+        const board = (wsBoards || []).find(b => parseInt(b.id) === parseInt(bId));
+        return {
+          id: bId,
+          name: board ? board.name : (bId === 'global' ? tMsg('Global Tasks', 'Tugas Global') : `Project #${bId}`),
+          percentage: Math.round((count / targetTasks.length) * 100),
+          taskCount: count
+        };
+      }).sort((a, b) => b.percentage - a.percentage).slice(0, 4);
+    }
+
+    // 3. Fallback: if no tasks exist yet, show active projects in workspace
+    if (wsBoards && wsBoards.length > 0) {
+      const activeBoardsOnly = wsBoards.filter(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list');
+      const targetList = activeBoardsOnly.length > 0 ? activeBoardsOnly : wsBoards;
+      const share = Math.round(100 / targetList.length);
+      return targetList.slice(0, 4).map(b => ({
+        id: b.id,
+        name: b.name,
+        percentage: share,
+        taskCount: 0
+      }));
+    }
+
+    return [];
+  }, [myTasks, wsTasks, wsBoards, language]);
 
   return (
     <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
