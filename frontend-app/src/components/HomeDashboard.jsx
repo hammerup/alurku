@@ -147,22 +147,45 @@ export default function HomeDashboard() {
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
+  const activeWsId = activeWorkspace?.id;
+
+  // Multitenancy Isolation: Filter boards strictly belonging to active workspace
+  const wsBoards = React.useMemo(() => {
+    if (!activeWsId) return boards || [];
+    return (boards || []).filter(b => b.workspace_id && parseInt(b.workspace_id) === parseInt(activeWsId));
+  }, [boards, activeWsId]);
+
+  // Multitenancy Isolation: Filter tasks strictly belonging to active workspace
+  const wsTasks = React.useMemo(() => {
+    if (!activeWsId) return tasks || [];
+    return (tasks || []).filter(t => t.workspace_id && parseInt(t.workspace_id) === parseInt(activeWsId));
+  }, [tasks, activeWsId]);
+
+  // Multitenancy Isolation: Filter inbox chats strictly belonging to active workspace
+  const wsInboxChats = React.useMemo(() => {
+    if (!activeWsId) return inboxChats || [];
+    return (inboxChats || []).filter(chat => {
+      if (chat.workspace_id) return parseInt(chat.workspace_id) === parseInt(activeWsId);
+      return true;
+    });
+  }, [inboxChats, activeWsId]);
+
   const today = new Date();
   const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   const formattedDate = today.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', dateOptions);
 
-  // Sync logic: tasks that belong to the user
-  const myTasks = tasks.filter(t => {
+  // Sync logic: tasks that belong to the user in current workspace
+  const myTasks = wsTasks.filter(t => {
     const status = (t.status || '').toLowerCase();
     return status !== 'done' && status !== 'rejected' && isUserAssigned(t, currentUser);
   });
   
   // Filter out default 'To-do List' from Projects count to prevent confusion
-  const activeProjectsCount = boards.filter(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list').length;
-  const criticalProjectsCount = boards.filter(b => b.health_alert?.includes('Attention')).length;
+  const activeProjectsCount = wsBoards.filter(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list').length;
+  const criticalProjectsCount = wsBoards.filter(b => b.health_alert?.includes('Attention')).length;
   
-  // Overdue logic
-  const overdueTasksCount = tasks.filter(t => {
+  // Overdue logic in current workspace
+  const overdueTasksCount = wsTasks.filter(t => {
     if (!t.deadline) return false;
     const status = (t.status || '').toLowerCase();
     if (status === 'done' || status === 'rejected') return false;
@@ -173,8 +196,8 @@ export default function HomeDashboard() {
     return end < now;
   }).length;
 
-  const visibleChatsForKey = inboxChats.filter(chat => !(chat.latest_message || '').includes('<!--PRIVATE:'));
-  const dataKey = `${myTasks.length}_${overdueTasksCount}_${activeProjectsCount}_${visibleChatsForKey.length}_${language}`;
+  const visibleChatsForKey = wsInboxChats.filter(chat => !(chat.latest_message || '').includes('<!--PRIVATE:'));
+  const dataKey = `${activeWsId}_${myTasks.length}_${overdueTasksCount}_${activeProjectsCount}_${visibleChatsForKey.length}_${language}`;
 
   const fetchAiSummary = async (currentDataKey) => {
     // Prevent spamming the API on every mount
@@ -325,8 +348,8 @@ export default function HomeDashboard() {
   }, [myTasks, boards]);
 
   return (
-    <div className="bg-transparent p-4 md:p-6 lg:p-10 w-full h-auto relative">
-      <div className="max-w-7xl mx-auto space-y-8 mt-12 md:mt-4 relative z-10">
+    <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
+      <div className="w-full space-y-8 relative z-10">
         
         {/* Header Section */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -520,14 +543,14 @@ export default function HomeDashboard() {
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center mb-8 relative py-6">
-              <svg className="w-48 h-48 md:w-52 md:h-52 transform -rotate-90">
-                <circle cx="50%" cy="50%" fill="none" r="35%" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="10"></circle>
+              <svg className="w-48 h-48 md:w-52 md:h-52 transform -rotate-90" viewBox="0 0 200 200">
+                <circle cx="100" cy="100" fill="none" r="70" className="stroke-neutral-200 dark:stroke-neutral-800" strokeWidth="14"></circle>
                 <circle 
-                  cx="50%" cy="50%" fill="none" r="35%" 
-                  className="stroke-indigo-900 dark:stroke-yellow-400 transition-all duration-1000 ease-in-out" 
-                  strokeWidth="10" strokeLinecap="round"
-                  strokeDasharray="251.2"
-                  strokeDashoffset={251.2 - (251.2 * (myTotalWorkloadEtc > 0 ? (myWorkload.done_etc / myTotalWorkloadEtc) : 0))}
+                  cx="100" cy="100" fill="none" r="70" 
+                  className="stroke-[#111E38] dark:stroke-[#FACC15] transition-all duration-1000 ease-in-out" 
+                  strokeWidth="14" strokeLinecap="round"
+                  strokeDasharray="439.8"
+                  strokeDashoffset={439.8 - (439.8 * (myTotalWorkloadEtc > 0 ? Math.min(myWorkload.done_etc / myTotalWorkloadEtc, 1) : 0))}
                 ></circle>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
