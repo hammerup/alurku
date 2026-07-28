@@ -670,6 +670,93 @@ export default function WorkspaceOverview() {
         </div>
       </section>
 
+      {/* Bento Grid Metric Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {/* Metric 1: Active Projects */}
+        <div className="bg-white dark:bg-[#121B2D] p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-amber-300 dark:hover:border-amber-500/40 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              {tMsg('Active Projects', 'Proyek Aktif')}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-lg">folder</span>
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-[#111E38] dark:text-white">{activeProjects.length}</span>
+            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+              {tMsg('Public workspace boards', 'Papan publik')}
+            </span>
+          </div>
+        </div>
+
+        {/* Metric 2: Completed Tasks */}
+        <div className="bg-white dark:bg-[#121B2D] p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-500/40 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              {tMsg('Completed Tasks', 'Tugas Selesai')}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-lg">task_alt</span>
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black text-[#111E38] dark:text-white">{globalDoneTasks.length}</span>
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 font-bold">
+              / {tasks.length} {tMsg('total', 'total')}
+            </span>
+          </div>
+        </div>
+
+        {/* Metric 3: Overall Completion Rate */}
+        <div className="bg-white dark:bg-[#121B2D] p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-sky-300 dark:hover:border-sky-500/40 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              {tMsg('Completion Velocity', 'Kecepatan Selesai')}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-lg">trending_up</span>
+            </div>
+          </div>
+          {(() => {
+            const pct = tasks.length > 0 ? Math.round((globalDoneTasks.length / tasks.length) * 100) : 0;
+            return (
+              <div>
+                <div className="flex items-baseline justify-between mb-1.5">
+                  <span className="text-3xl font-black text-[#111E38] dark:text-white">{pct}%</span>
+                  <span className="text-[11px] font-bold text-neutral-500">{globalDoingTasks.length} {tMsg('in progress', 'sedang jalan')}</span>
+                </div>
+                <div className="w-full bg-neutral-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div className="bg-[#FACC15] h-full rounded-full transition-all duration-700" style={{ width: `${pct}%` }}></div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Metric 4: Team Participation */}
+        <div className="bg-white dark:bg-[#121B2D] p-5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 shadow-xs hover:border-purple-300 dark:hover:border-purple-500/40 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              {tMsg('Team Members', 'Anggota Ruang Kerja')}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+              <span className="material-symbols-outlined text-lg">groups</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-3xl font-black text-[#111E38] dark:text-white">{members.length}</span>
+            <button
+              onClick={() => setIsViewingMembers(true)}
+              className="text-xs font-extrabold text-[#111E38] dark:text-[#FACC15] bg-[#FACC15]/20 dark:bg-[#FACC15]/10 px-3 py-1.5 rounded-xl hover:bg-[#FACC15]/30 transition-all flex items-center gap-1 cursor-pointer"
+            >
+              {tMsg('Manage', 'Kelola')}
+              <span className="material-symbols-outlined text-xs">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-12 gap-6">
         {/* Project Management Section (8 columns) */}
