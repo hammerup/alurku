@@ -111,8 +111,14 @@ def generate_ai_text(
         )
 
     # Jika kedua AI gagal terhubung
+    combined_err = " | ".join(error_msgs) if error_msgs else "All AI models failed."
+    if any(k in combined_err for k in ["getaddrinfo failed", "NameResolutionError", "Max retries exceeded", "ConnectionError", "Failed to resolve"]):
+        clean_detail = "Koneksi internet atau server AI sedang mengalami masalah. Silakan periksa jaringan Anda dan coba beberapa saat lagi."
+    else:
+        clean_detail = f"AI generation failed. {combined_err}"
+
     raise HTTPException(
-        status_code=500, detail="AI generation failed. " + " | ".join(error_msgs)
+        status_code=500, detail=clean_detail
     )
 
 

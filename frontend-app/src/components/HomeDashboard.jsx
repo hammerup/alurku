@@ -867,9 +867,13 @@ export default function HomeDashboard() {
                       </div>
                     </div>
                   )) : (
-                    <div className="text-sm text-slate-500 flex flex-col items-center h-full justify-center text-center gap-2 py-8">
-                      <div className="text-4xl">🎉</div>
-                      <div>{tMsg('Tidak ada tugas tertunda!', 'Tidak ada tugas tertunda!')}</div>
+                    <div className="text-sm text-neutral-400 dark:text-neutral-500 flex flex-col items-center h-full justify-center text-center gap-2 py-8">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-2xl">task_alt</span>
+                      </div>
+                      <div className="font-semibold text-xs text-neutral-600 dark:text-neutral-400">
+                        {tMsg('All tasks completed! Great job.', 'Tidak ada tugas tertunda!')}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -931,9 +935,13 @@ export default function HomeDashboard() {
                         </div>
                       );
                     }) : (
-                      <div className="text-sm text-slate-500 flex flex-col items-center justify-center h-32 text-center gap-2">
-                        <div className="text-3xl">💭</div>
-                        <div>{tMsg('No recent comments.', 'Tidak ada komentar terbaru.')}</div>
+                      <div className="text-sm text-neutral-400 dark:text-neutral-500 flex flex-col items-center justify-center h-36 text-center gap-2">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-2xl">forum</span>
+                        </div>
+                        <div className="font-semibold text-xs text-neutral-600 dark:text-neutral-400">
+                          {tMsg('No recent comments.', 'Tidak ada komentar terbaru.')}
+                        </div>
                       </div>
                     );
                   })()}
