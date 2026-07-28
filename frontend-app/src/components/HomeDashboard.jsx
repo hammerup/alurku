@@ -557,60 +557,40 @@ export default function HomeDashboard() {
                 )}
               </div>
 
-              {/* Sleek Modern Arc Gauge + Centered Metrics */}
+              {/* Sleek Modern Linear Capacity Meter Bar (No SVG circles, zero empty space!) */}
               {(() => {
                 const capacityPct = myTotalWorkloadEtc > 0 ? Math.min(Math.round((myWorkload.done_etc / myTotalWorkloadEtc) * 100), 100) : 0;
                 const hoursDone = Math.round((myWorkload.done_etc || 0) * 10) / 10;
                 const hoursTotal = Math.round((myTotalWorkloadEtc || 0) * 10) / 10;
                 const hoursRemaining = Math.max(0, Math.round((hoursTotal - hoursDone) * 10) / 10);
 
-                // Arc Gauge Math: 240 degree arc (from 135deg to 375deg)
-                // Circumference for r=72 is ~452.39. 240 deg arc length is (240/360) * 452.39 = 301.6px
-                const maxArc = 301.6;
-                const offset = maxArc - (maxArc * (capacityPct / 100));
-
                 return (
-                  <div className="relative py-2 flex flex-col items-center">
-                    {/* Semi-Arc SVG Gauge */}
-                    <div className="relative w-56 h-36 flex items-center justify-center overflow-hidden">
-                      <svg className="w-56 h-56 transform rotate-[135deg]" viewBox="0 0 200 200">
-                        {/* Background Arc */}
-                        <circle
-                          cx="100"
-                          cy="100"
-                          r="72"
-                          fill="none"
-                          className="stroke-neutral-150 dark:stroke-neutral-800"
-                          strokeWidth="14"
-                          strokeDasharray="301.6 150.8"
-                          strokeLinecap="round"
-                        />
-                        {/* Active Progress Arc */}
-                        <circle
-                          cx="100"
-                          cy="100"
-                          r="72"
-                          fill="none"
-                          className="stroke-[#111E38] dark:stroke-[#FACC15] transition-all duration-1000 ease-out"
-                          strokeWidth="14"
-                          strokeLinecap="round"
-                          strokeDasharray="301.6 150.8"
-                          strokeDashoffset={offset}
-                        />
-                      </svg>
-                      {/* Gauge Center Text */}
-                      <div className="absolute inset-0 top-3 flex flex-col items-center justify-center text-center">
-                        <span className="text-4xl font-black text-[#111E38] dark:text-white tracking-tight">
+                  <div className="space-y-4 py-2">
+                    {/* Big Percentage Header + Subtitle */}
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <span className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-white tracking-tight">
                           {capacityPct}%
                         </span>
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mt-0.5">
+                        <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 ml-2 uppercase tracking-widest">
                           {tMsg('Capacity Done', 'Kapasitas Selesai')}
                         </span>
                       </div>
+                      <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">
+                        {hoursDone}h / {hoursTotal}h
+                      </span>
                     </div>
 
-                    {/* Compact Workload Pill Stats (No Empty Space!) */}
-                    <div className="grid grid-cols-2 gap-3 w-full mt-2">
+                    {/* Full-width Multi-color Stacked Progress Bar */}
+                    <div className="w-full bg-neutral-150 dark:bg-slate-800 h-3.5 rounded-full overflow-hidden flex p-0.5 border border-neutral-200/60 dark:border-neutral-800">
+                      <div 
+                        className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full transition-all duration-1000" 
+                        style={{ width: `${capacityPct}%` }}
+                      ></div>
+                    </div>
+
+                    {/* Metric Cards Row */}
+                    <div className="grid grid-cols-2 gap-3 pt-1">
                       <div className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800/80 flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
                           <span className="material-symbols-outlined text-base">task_alt</span>
