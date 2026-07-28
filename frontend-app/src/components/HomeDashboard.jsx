@@ -533,40 +533,120 @@ export default function HomeDashboard() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Analitik Performa (1 Col) */}
-          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 rounded-2xl p-6 shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{tMsg('Performance Analytics', 'Analitik Performa')}</h3>
-              {(isWeeklyOverload || isMonthlyOverload) && (
-                <span className="text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded-md border border-red-200 dark:border-red-800/50 uppercase tracking-wider">
-                  ⚠️ Overload
-                </span>
-              )}
+          <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block mb-1">
+                    {tMsg('Workload Status', 'Status Beban Kerja')}
+                  </span>
+                  <h3 className="text-lg font-black text-[#111E38] dark:text-white leading-tight">
+                    {tMsg('Performance Analytics', 'Analitik Performa')}
+                  </h3>
+                </div>
+                {(isWeeklyOverload || isMonthlyOverload) ? (
+                  <span className="text-[10px] font-extrabold bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 px-2.5 py-1 rounded-lg border border-rose-300/60 dark:border-rose-800/40 uppercase tracking-wider animate-pulse flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">warning</span>
+                    Overload
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-300/60 dark:border-emerald-800/40 uppercase tracking-wider flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">check_circle</span>
+                    Optimal
+                  </span>
+                )}
+              </div>
+
+              {/* Sleek Modern Arc Gauge + Centered Metrics */}
+              {(() => {
+                const capacityPct = myTotalWorkloadEtc > 0 ? Math.min(Math.round((myWorkload.done_etc / myTotalWorkloadEtc) * 100), 100) : 0;
+                const hoursDone = Math.round((myWorkload.done_etc || 0) * 10) / 10;
+                const hoursTotal = Math.round((myTotalWorkloadEtc || 0) * 10) / 10;
+                const hoursRemaining = Math.max(0, Math.round((hoursTotal - hoursDone) * 10) / 10);
+
+                // Arc Gauge Math: 240 degree arc (from 135deg to 375deg)
+                // Circumference for r=72 is ~452.39. 240 deg arc length is (240/360) * 452.39 = 301.6px
+                const maxArc = 301.6;
+                const offset = maxArc - (maxArc * (capacityPct / 100));
+
+                return (
+                  <div className="relative py-2 flex flex-col items-center">
+                    {/* Semi-Arc SVG Gauge */}
+                    <div className="relative w-56 h-36 flex items-center justify-center overflow-hidden">
+                      <svg className="w-56 h-56 transform rotate-[135deg]" viewBox="0 0 200 200">
+                        {/* Background Arc */}
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="72"
+                          fill="none"
+                          className="stroke-neutral-150 dark:stroke-neutral-800"
+                          strokeWidth="14"
+                          strokeDasharray="301.6 150.8"
+                          strokeLinecap="round"
+                        />
+                        {/* Active Progress Arc */}
+                        <circle
+                          cx="100"
+                          cy="100"
+                          r="72"
+                          fill="none"
+                          className="stroke-[#111E38] dark:stroke-[#FACC15] transition-all duration-1000 ease-out"
+                          strokeWidth="14"
+                          strokeLinecap="round"
+                          strokeDasharray="301.6 150.8"
+                          strokeDashoffset={offset}
+                        />
+                      </svg>
+                      {/* Gauge Center Text */}
+                      <div className="absolute inset-0 top-3 flex flex-col items-center justify-center text-center">
+                        <span className="text-4xl font-black text-[#111E38] dark:text-white tracking-tight">
+                          {capacityPct}%
+                        </span>
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mt-0.5">
+                          {tMsg('Capacity Done', 'Kapasitas Selesai')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Compact Workload Pill Stats (No Empty Space!) */}
+                    <div className="grid grid-cols-2 gap-3 w-full mt-2">
+                      <div className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800/80 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+                          <span className="material-symbols-outlined text-base">task_alt</span>
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block truncate">
+                            {tMsg('Done', 'Selesai')}
+                          </span>
+                          <span className="text-sm font-black text-[#111E38] dark:text-white">
+                            {hoursDone} <span className="text-[10px] font-normal text-neutral-500">jam</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800/80 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shrink-0">
+                          <span className="material-symbols-outlined text-base">pending_actions</span>
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 block truncate">
+                            {tMsg('Remaining', 'Sisa')}
+                          </span>
+                          <span className="text-sm font-black text-[#111E38] dark:text-white">
+                            {hoursRemaining} <span className="text-[10px] font-normal text-neutral-500">jam</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center mb-8 relative py-6">
-              <svg className="w-48 h-48 md:w-52 md:h-52 transform -rotate-90" viewBox="0 0 200 200">
-                <circle cx="100" cy="100" fill="none" r="70" className="stroke-neutral-200 dark:stroke-neutral-800" strokeWidth="14"></circle>
-                <circle 
-                  cx="100" cy="100" fill="none" r="70" 
-                  className="stroke-[#111E38] dark:stroke-[#FACC15] transition-all duration-1000 ease-in-out" 
-                  strokeWidth="14" strokeLinecap="round"
-                  strokeDasharray="439.8"
-                  strokeDashoffset={439.8 - (439.8 * (myTotalWorkloadEtc > 0 ? Math.min(myWorkload.done_etc / myTotalWorkloadEtc, 1) : 0))}
-                ></circle>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
-                  {myTotalWorkloadEtc > 0 ? Math.round((myWorkload.done_etc / myTotalWorkloadEtc) * 100) : 0}%
-                </span>
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{tMsg('Capacity', 'Kapasitas')}</span>
-              </div>
-              <div className="mt-4 text-xs font-medium text-slate-500 dark:text-slate-400 text-center">
-                {Math.round(myWorkload.done_etc * 10) / 10}h {tMsg('Done', 'Selesai')} / {Math.round(myTotalWorkloadEtc * 10) / 10}h {tMsg('Total', 'Total')}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tMsg('Project Distribution', 'Distribusi Proyek')}</h4>
+            {/* Project Distribution Progress Bars */}
+            <div className="space-y-3 mt-6 pt-5 border-t border-neutral-150 dark:border-neutral-800/80">
+              <h4 className="text-xs font-extrabold text-[#111E38] dark:text-white uppercase tracking-wider">{tMsg('Project Distribution', 'Distribusi Proyek')}</h4>
               <div className="space-y-3">
                 {projectDistribution.length > 0 ? projectDistribution.map((dist, idx) => (
                   <div key={dist.id}>
