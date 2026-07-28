@@ -27,6 +27,7 @@ const cleanMarkdown = (text) => {
 export default function HomeDashboard() {
   const {
     activeWorkspace,
+    workspaceBoards,
     currentUser,
     boards,
     tasks,
@@ -71,6 +72,35 @@ export default function HomeDashboard() {
       setSelectedTask(task);
     }, 100);
   };
+
+  const tMsg = (en, id) => (language === 'id' ? id : en);
+
+  const activeWsId = activeWorkspace?.id;
+
+  // Active workspace boards
+  const wsBoards = React.useMemo(() => {
+    return workspaceBoards && workspaceBoards.length > 0 ? workspaceBoards : (boards || []);
+  }, [workspaceBoards, boards]);
+
+  const wsBoardIds = React.useMemo(() => {
+    return new Set((wsBoards || []).map(b => parseInt(b.id)));
+  }, [wsBoards]);
+
+  // Tasks belonging to active workspace boards
+  const wsTasks = React.useMemo(() => {
+    if (!wsBoardIds.size) return tasks || [];
+    return (tasks || []).filter(t => t.board_id && wsBoardIds.has(parseInt(t.board_id)));
+  }, [tasks, wsBoardIds]);
+
+  // Multitenancy Isolation: Filter inbox chats for active workspace
+  const wsInboxChats = React.useMemo(() => {
+    if (!activeWsId) return inboxChats || [];
+    return (inboxChats || []).filter(chat => {
+      if (chat.workspace_id) return parseInt(chat.workspace_id) === parseInt(activeWsId);
+      if (chat.board_id) return wsBoardIds.has(parseInt(chat.board_id));
+      return true;
+    });
+  }, [inboxChats, activeWsId, wsBoardIds]);
 
   // Urutkan tugas aktif user berdasarkan aturan Master View secara global (semua project)
   const sortedUserTasks = React.useMemo(() => {
@@ -134,7 +164,7 @@ export default function HomeDashboard() {
     });
   }, [tasks, currentUser, sortBy]);
 
-  const topQueueTasks = sortedUserTasks.slice(0, 3);
+  const topQueueTasks = sortedUserTasks.slice(0, 5);
 
   const myWorkload = teamWorkloadStats?.[currentUser] || { total_etc: 0, done_etc: 0 };
   const myActiveWorkloadEtc = myWorkload.total_etc - myWorkload.done_etc;
@@ -145,31 +175,6 @@ export default function HomeDashboard() {
 
   const [aiSummary, setAiSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
-
-  const tMsg = (en, id) => (language === 'id' ? id : en);
-
-  const activeWsId = activeWorkspace?.id;
-
-  // Multitenancy Isolation: Filter boards strictly belonging to active workspace
-  const wsBoards = React.useMemo(() => {
-    if (!activeWsId) return boards || [];
-    return (boards || []).filter(b => b.workspace_id && parseInt(b.workspace_id) === parseInt(activeWsId));
-  }, [boards, activeWsId]);
-
-  // Multitenancy Isolation: Filter tasks strictly belonging to active workspace
-  const wsTasks = React.useMemo(() => {
-    if (!activeWsId) return tasks || [];
-    return (tasks || []).filter(t => t.workspace_id && parseInt(t.workspace_id) === parseInt(activeWsId));
-  }, [tasks, activeWsId]);
-
-  // Multitenancy Isolation: Filter inbox chats strictly belonging to active workspace
-  const wsInboxChats = React.useMemo(() => {
-    if (!activeWsId) return inboxChats || [];
-    return (inboxChats || []).filter(chat => {
-      if (chat.workspace_id) return parseInt(chat.workspace_id) === parseInt(activeWsId);
-      return true;
-    });
-  }, [inboxChats, activeWsId]);
 
   const today = new Date();
   const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -329,32 +334,56 @@ export default function HomeDashboard() {
   };
 
   const projectDistribution = React.useMemo(() => {
-    // 1. Primary: user's assigned active tasks in workspace
-    // 2. Secondary: all workspace tasks
-    const targetTasks = myTasks.length > 0 ? myTasks : wsTasks;
+    const wsBoardsList = workspaceBoards && workspaceBoards.length > 0 ? workspaceBoards : boards;
+    const wsBoardMap = new Map((wsBoardsList || []).map(b => [parseInt(b.id), b]));
+
+    // 1. User's active assigned tasks
+    const userAssigned = (tasks || []).filter(t => isUserAssigned(t, currentUser));
+    
+    // Filter user tasks belonging to current workspace boards
+    let targetTasks = userAssigned.filter(t => t.board_id && wsBoardMap.has(parseInt(t.board_id)));
+
+    // Fallback A: If user has assigned tasks globally (even if board_id mapping is loose)
+    if (targetTasks.length === 0 && userAssigned.length > 0) {
+      targetTasks = userAssigned;
+    }
+
+    // Fallback B: If user has no assigned tasks, use all workspace tasks
+    if (targetTasks.length === 0) {
+      targetTasks = (tasks || []).filter(t => t.board_id && wsBoardMap.has(parseInt(t.board_id)));
+    }
+
+    // Fallback C: If workspace has tasks in general
+    if (targetTasks.length === 0 && (tasks || []).length > 0) {
+      targetTasks = tasks;
+    }
 
     if (targetTasks.length > 0) {
       const counts = {};
       targetTasks.forEach(t => {
-        const bId = t.board_id || 'global';
-        counts[bId] = (counts[bId] || 0) + 1;
+        const bIdStr = t.board_id ? String(t.board_id) : 'global';
+        counts[bIdStr] = (counts[bIdStr] || 0) + 1;
       });
       
-      return Object.entries(counts).map(([bId, count]) => {
-        const board = (wsBoards || []).find(b => parseInt(b.id) === parseInt(bId));
+      return Object.entries(counts).map(([bIdStr, count]) => {
+        const bId = parseInt(bIdStr);
+        const board = wsBoardMap.get(bId) || (boards || []).find(b => parseInt(b.id) === bId);
         return {
-          id: bId,
-          name: board ? board.name : (bId === 'global' ? tMsg('Global Tasks', 'Tugas Global') : `Project #${bId}`),
+          id: bIdStr,
+          name: board ? board.name : (bIdStr === 'global' ? tMsg('Global Tasks', 'Tugas Global') : `Project #${bIdStr}`),
           percentage: Math.round((count / targetTasks.length) * 100),
           taskCount: count
         };
       }).sort((a, b) => b.percentage - a.percentage).slice(0, 4);
     }
 
-    // 3. Fallback: if no tasks exist yet, show active projects in workspace
-    if (wsBoards && wsBoards.length > 0) {
-      const activeBoardsOnly = wsBoards.filter(b => b.name.toLowerCase() !== 'to-do list' && b.name.toLowerCase() !== 'to-do-list');
-      const targetList = activeBoardsOnly.length > 0 ? activeBoardsOnly : wsBoards;
+    // Fallback D: If no tasks exist at all, show active workspace projects
+    if (wsBoardsList && wsBoardsList.length > 0) {
+      const activeBoardsOnly = wsBoardsList.filter(b => {
+        const nameLower = (b.name || '').toLowerCase().trim();
+        return nameLower !== 'to-do list' && nameLower !== 'to-do-list' && nameLower !== 'to do list';
+      });
+      const targetList = activeBoardsOnly.length > 0 ? activeBoardsOnly : wsBoardsList;
       const share = Math.round(100 / targetList.length);
       return targetList.slice(0, 4).map(b => ({
         id: b.id,
@@ -365,7 +394,7 @@ export default function HomeDashboard() {
     }
 
     return [];
-  }, [myTasks, wsTasks, wsBoards, language]);
+  }, [tasks, boards, workspaceBoards, currentUser, language]);
 
   return (
     <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
@@ -859,7 +888,7 @@ export default function HomeDashboard() {
                     </div>
                   ) : (() => {
                     const visibleChats = inboxChats.filter(chat => !(chat.latest_message || '').includes('<!--PRIVATE:'));
-                    return visibleChats.length > 0 ? visibleChats.slice(0, 3).map(chat => {
+                    return visibleChats.length > 0 ? visibleChats.slice(0, 5).map(chat => {
                       const isUnread = (() => {
                         if (chat.latest_sender === currentUser) return false;
                         if (chat.is_dm) return chat.unread_count > 0;
