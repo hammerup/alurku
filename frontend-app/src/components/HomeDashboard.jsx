@@ -581,7 +581,7 @@ export default function HomeDashboard() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Analitik Performa (1 Col) */}
-          <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+          <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col justify-start space-y-6">
             <div>
               <div className="flex justify-between items-center mb-4">
                 <div>
@@ -663,6 +663,33 @@ export default function HomeDashboard() {
                           </span>
                           <span className="text-sm font-black text-[#111E38] dark:text-white">
                             {hoursRemaining} <span className="text-[10px] font-normal text-neutral-500">jam</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Task Priority Breakdown (Fills middle height seamlessly) */}
+                    <div className="pt-4 border-t border-neutral-150 dark:border-neutral-800/80 space-y-2.5">
+                      <div className="flex justify-between items-center text-xs font-extrabold text-[#111E38] dark:text-white uppercase tracking-wider">
+                        <span>{tMsg('Task Priority Breakdown', 'Rincian Prioritas Tugas')}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-2.5 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
+                          <span className="text-[10px] font-extrabold uppercase text-rose-600 dark:text-rose-400 block mb-0.5">High</span>
+                          <span className="text-base font-black text-[#111E38] dark:text-white">
+                            {myTasks.filter(t => (t.impact || '').toLowerCase() === 'high').length}
+                          </span>
+                        </div>
+                        <div className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-2.5 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
+                          <span className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 block mb-0.5">Medium</span>
+                          <span className="text-base font-black text-[#111E38] dark:text-white">
+                            {myTasks.filter(t => (t.impact || '').toLowerCase() === 'medium' || !t.impact).length}
+                          </span>
+                        </div>
+                        <div className="bg-[#F3F4F6] dark:bg-[#0d0f11] p-2.5 rounded-xl border border-neutral-200/60 dark:border-neutral-800">
+                          <span className="text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 block mb-0.5">Low</span>
+                          <span className="text-base font-black text-[#111E38] dark:text-white">
+                            {myTasks.filter(t => (t.impact || '').toLowerCase() === 'low').length}
                           </span>
                         </div>
                       </div>
@@ -837,7 +864,7 @@ export default function HomeDashboard() {
                   <span className="material-symbols-outlined text-[18px]">forum</span>
                   {tMsg('Recent Comments', 'Komentar Terbaru')}
                 </h4>
-                <div className="space-y-4 flex-1">
+                <div className="space-y-3 flex-1">
                   {isInboxLoading && inboxChats.length === 0 ? (
                     <div className="flex justify-center items-center h-32">
                       <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-900 dark:border-yellow-400 border-t-transparent"></div>
@@ -867,21 +894,32 @@ export default function HomeDashboard() {
                               handleNotificationTaskClick(chat.task_id);
                             }
                           }}
-                          className={`flex gap-3 cursor-pointer group p-2 -mx-2 rounded-xl transition-all ${isUnread ? 'bg-indigo-50/50 dark:bg-yellow-400/5' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                          className={`p-4 bg-white dark:bg-slate-900 border rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-3 ${
+                            isUnread 
+                              ? 'border-yellow-400/80 bg-yellow-50/20 dark:bg-yellow-400/5' 
+                              : 'border-slate-200 dark:border-slate-800'
+                          }`}
                         >
-                          <div className="w-9 h-9 shrink-0 relative mt-0.5">
-                            <Avatar name={chat.latest_sender} url={avatarsMap?.[chat.latest_sender]} size="w-9 h-9" />
-                            {isUnread && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full"></span>}
+                          <div className="w-8 h-8 shrink-0 relative mt-0.5">
+                            <Avatar name={chat.latest_sender} url={avatarsMap?.[chat.latest_sender]} size="w-8 h-8" />
+                            {isUnread && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full"></span>}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-baseline mb-1 gap-2">
+                          <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center gap-2">
                               <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                                @{chat.latest_sender} <span className="text-slate-400 font-normal">in {chat.is_dm ? 'DM' : chat.project_name || chat.board_name}</span>
+                                @{chat.latest_sender}
                               </span>
                               <span className="text-[10px] font-medium text-slate-400 shrink-0">{formatDateMMM(chat.timestamp)}</span>
                             </div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-xl rounded-tl-sm border border-slate-200 dark:border-slate-700/50 line-clamp-2 leading-relaxed group-hover:border-indigo-200 dark:group-hover:border-yellow-400/30 transition-colors">
+                            <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed font-normal">
                               {cleanMarkdown(chat.latest_message || '...')}
+                            </div>
+                            <div className="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-[10px] pt-0.5">
+                              <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold rounded truncate">
+                                <span>{chat.is_dm ? '💬 DM' : chat.is_project_chat ? '📢 Project' : '📋 Task'}</span>
+                                <span>•</span>
+                                <span className="truncate max-w-30">{chat.is_dm ? chat.partner_username : chat.project_name || chat.board_name || 'General'}</span>
+                              </span>
                             </div>
                           </div>
                         </div>
