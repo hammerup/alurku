@@ -250,6 +250,13 @@ export default function SettingsPage({
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
+            <TabButton
+              id="billing"
+              icon="💳"
+              label={tMsg('Plan & Usage', 'Paket & Penggunaan')}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
           </div>
 
           {/* Right Content */}
@@ -1069,6 +1076,90 @@ export default function SettingsPage({
                     >
                       ⚠️ {tMsg('Preview Error', 'Pratinjau Error')}
                     </button>
+                  </div>
+                </SettingItem>
+              </SettingsSection>
+            )}
+
+            {/* Plan & Usage Tab */}
+            {activeTab === 'billing' && (
+              <SettingsSection
+                title={tMsg('Plan & Usage Quota', 'Paket & Penggunaan Kuota')}
+                description={tMsg(
+                  'Manage your workspace subscription tier, storage allocation, and AI prompt quota.',
+                  'Kelola paket berlangganan ruang kerja, alokasi penyimpanan, dan kuota permintaan AI.'
+                )}
+              >
+                {/* Subscription Tier Banner */}
+                <div className="bg-gradient-to-r from-[#111E38] to-slate-900 text-white p-6 rounded-2xl mb-8 border border-neutral-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FACC15] block mb-1">
+                      {tMsg('Current Active Plan', 'Paket Aktif Saat Ini')}
+                    </span>
+                    <h4 className="text-2xl font-black text-white flex items-center gap-2">
+                      Free Community Tier
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">
+                        Active
+                      </span>
+                    </h4>
+                    <p className="text-xs text-neutral-300 font-medium mt-1">
+                      {tMsg('Includes unlimited tasks, 5GB cloud storage, and 500 monthly Luruka AI prompts.', 'Termasuk tugas tak terbatas, penyimpanan 5GB, dan 500 kuota AI Luruka bulanan.')}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showNotification(tMsg('Pro Tier subscription upgrades coming soon!', 'Peningkatan paket Pro segera hadir!'), 'info');
+                    }}
+                    className="bg-[#FACC15] hover:bg-yellow-400 text-[#111E38] font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm shrink-0 cursor-pointer"
+                  >
+                    🚀 {tMsg('Upgrade to Pro', 'Tingkatkan ke Pro')}
+                  </button>
+                </div>
+
+                {/* Storage & Usage Metrics */}
+                <SettingItem
+                  title={tMsg('Database Storage', 'Penyimpanan Database')}
+                  description={tMsg('Allocated SQL database space for task cards, comments, and project histories.', 'Alokasi ruang database SQL untuk kartu tugas, komentar, dan riwayat proyek.')}
+                >
+                  <div className="w-full md:w-72">
+                    <div className="flex justify-between text-xs mb-1 font-bold">
+                      <span className="text-neutral-500 dark:text-neutral-400">18.4 MB / 512.0 MB</span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">3.6%</span>
+                    </div>
+                    <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full" style={{ width: '3.6%' }}></div>
+                    </div>
+                  </div>
+                </SettingItem>
+
+                <SettingItem
+                  title={tMsg('Cloud File Storage (S3)', 'Penyimpanan Berkas (Cloud S3)')}
+                  description={tMsg('Storage space for task attachments, image uploads, and documents.', 'Ruang penyimpanan untuk lampiran tugas, unggahan gambar, dan dokumen.')}
+                >
+                  <div className="w-full md:w-72">
+                    <div className="flex justify-between text-xs mb-1 font-bold">
+                      <span className="text-neutral-500 dark:text-neutral-400">245.8 MB / 5.0 GB</span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">4.9%</span>
+                    </div>
+                    <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full" style={{ width: '4.9%' }}></div>
+                    </div>
+                  </div>
+                </SettingItem>
+
+                <SettingItem
+                  title={tMsg('Luruka AI Prompt Quota', 'Kuota Permintaan Luruka AI')}
+                  description={tMsg('Monthly prompt quota for AI workload summaries, task planning, and smart assistant.', 'Kuota permintaan bulanan untuk ringkasan AI, perencanaan tugas, dan asisten cerdas.')}
+                >
+                  <div className="w-full md:w-72">
+                    <div className="flex justify-between text-xs mb-1 font-bold">
+                      <span className="text-neutral-500 dark:text-neutral-400">142 / 500 prompts</span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">28.4%</span>
+                    </div>
+                    <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full" style={{ width: '28.4%' }}></div>
+                    </div>
                   </div>
                 </SettingItem>
               </SettingsSection>

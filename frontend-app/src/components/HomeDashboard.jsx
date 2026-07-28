@@ -694,54 +694,6 @@ export default function HomeDashboard() {
                 )}
               </div>
             </div>
-
-            <div className="space-y-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                <span>{tMsg('Database Storage', 'Penyimpanan Database')}</span>
-                <span className="text-[10px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">Free Tier</span>
-              </h4>
-              <div>
-                <div className="flex justify-between text-xs mb-1.5 font-medium">
-                  <span className="text-slate-500 dark:text-slate-400">18.4 MB / 512.0 MB</span>
-                  <span className="text-slate-900 dark:text-white font-bold">3.6%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                  <div className="h-2 rounded-full bg-yellow-400" style={{ width: '3.6%' }}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 mt-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                <span>{tMsg('File Storage', 'Penyimpanan Berkas')}</span>
-                <span className="text-[10px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">Cloud S3</span>
-              </h4>
-              <div>
-                <div className="flex justify-between text-xs mb-1.5 font-medium">
-                  <span className="text-slate-500 dark:text-slate-400">245.8 MB / 5.0 GB</span>
-                  <span className="text-slate-900 dark:text-white font-bold">4.9%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                  <div className="h-2 rounded-full bg-yellow-400" style={{ width: '4.9%' }}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 mt-4">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
-                <span>{tMsg('AI Usage Quota', 'Kuota Penggunaan AI')}</span>
-                <span className="text-[10px] bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 px-2 py-0.5 rounded font-bold">Luruka AI</span>
-              </h4>
-              <div>
-                <div className="flex justify-between text-xs mb-1.5 font-medium">
-                  <span className="text-slate-500 dark:text-slate-400">142 / 500 {tMsg('prompts', 'permintaan')}</span>
-                  <span className="text-slate-900 dark:text-white font-bold">28.4%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                  <div className="h-2 rounded-full bg-yellow-400" style={{ width: '28.4%' }}></div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Workspace Focus (2 Cols) */}
