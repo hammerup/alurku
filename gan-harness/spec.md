@@ -1,17 +1,19 @@
-# GAN Design Spec: Workspace Overview & Dashboard Elevation
+# GAN Design Spec: Home Dashboard Elevation
 
 ## Target Component & Scope
-- **Target File:** `frontend-app/src/components/WorkspaceOverview.jsx` and related dashboard widgets.
-- **Brand Identity:** **alurku.** (lowercase with period, Plus Jakarta Sans, Deep Navy `#111E38`, Flat Yellow `#FACC15`, Calm Gray `#F3F4F6` background, Off-White `#FAFAFA` surface cards).
+- **Target File:** `frontend-app/src/components/HomeDashboard.jsx`
+- **Brand Identity:** **alurku.** (lowercase with trailing period, Plus Jakarta Sans typography, Deep Navy `#111E38`, Flat Yellow `#FACC15`, Calm Gray `#F3F4F6` background, Off-White `#FAFAFA` surface cards).
 
-## Design Objectives
-1. **Bento Grid Layout:**
-   - Transform Workspace Overview metrics (Total Active Projects, Workload Distribution, Member Participation, Supervised Projects) into a clean, gapless, high-contrast Bento Grid layout.
-2. **Visual Hierarchy & Typography:**
-   - Bold, crisp headings with Plus Jakarta Sans. High contrast text (Deep Navy `#111E38` in Light Mode) for zero eye strain.
-3. **Card Polish & Micro-Interactions:**
-   - Elevated project cards with subtle hover scale, crisp borders (`border-neutral-200/80`), smooth status badges, project owner `@username` tags with avatars, and team member avatar stacks (`+N`).
-4. **Role & Governance Indicators:**
-   - Supervisor Read-Only badge indicator for public projects watched by Workspace Admins/Owners.
-5. **Workload & Progress Analytics:**
-   - Visual progress bars, workload balance gauges, and clean task completion indicators without heavy blurry shadows or skeuomorphism.
+## Key UI/UX Objectives
+1. **Hero Welcome & Quick Action Header:**
+   - Personal greeting (`Selamat Pagi/Siang/Malam, @username`) with date indicator and "Proyek Baru" CTA button.
+2. **AI Workload Briefing Center:**
+   - Bento card with `tips_and_updates` icon, ambient glow background, executive workload summary with bold Markdown highlighting, and quick filter triggers.
+3. **Bento Quick Stats Grid:**
+   - Total Tasks, Active Projects, Overdue Tasks (with red warning accent), and Critical Projects.
+   - Micro-interactions: Subtle scale on hover, crisp border highlights, clear status badges.
+4. **Performance & Capacity Analytics:**
+   - Circular capacity gauge showing completed vs total workload hours (ETC).
+   - Project Distribution progress bars with percentage breakdown.
+5. **My Top Queue & Priority Task Cards:**
+   - Priority-ranked task cards with impact pills (High/Medium/Low), deadline countdown badges, and single-click task modal trigger.

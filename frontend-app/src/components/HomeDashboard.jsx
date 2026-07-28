@@ -410,7 +410,7 @@ export default function HomeDashboard() {
           </div>
         </section>
 
-        {/* Key Metrics */}
+        {/* Key Metrics Bento Grid */}
         <section className="tour-quick-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div 
             onClick={() => {
@@ -419,14 +419,14 @@ export default function HomeDashboard() {
               setShowOverdueOnly(false);
               setShowDueTodayOnly(false);
             }}
-            className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md hover:border-indigo-200 dark:hover:border-yellow-400/30 cursor-pointer transition-all hover:-translate-y-0.5 group"
+            className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 p-6 rounded-2xl shadow-xs flex items-start justify-between hover:shadow-md hover:border-indigo-300 dark:hover:border-[#FACC15]/40 cursor-pointer transition-all hover:-translate-y-0.5 group"
           >
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Total Tasks', 'Total Tugas')}</p>
-              <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
-                {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : myTasks.length}
+              <p className="text-[11px] font-extrabold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-1">{tMsg('Total Tasks', 'Total Tugas')}</p>
+              <div className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-white">
+                {isLoading ? <div className="w-12 h-10 bg-neutral-200 dark:bg-slate-800 rounded animate-pulse"></div> : myTasks.length}
               </div>
-              <p className="text-xs font-medium text-indigo-600 dark:text-yellow-400 mt-2 flex items-center gap-1 group-hover:underline">
+              <p className="text-xs font-bold text-indigo-600 dark:text-[#FACC15] mt-2 flex items-center gap-1 group-hover:underline">
                 {tMsg('See all tasks', 'Lihat semua tugas')} &rarr;
               </p>
             </div>
@@ -435,13 +435,13 @@ export default function HomeDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md transition-shadow">
+          <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 p-6 rounded-2xl shadow-xs flex items-start justify-between hover:shadow-md transition-all">
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Active Projects', 'Proyek Aktif')}</p>
-              <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
-                {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : activeProjectsCount}
+              <p className="text-[11px] font-extrabold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-1">{tMsg('Active Projects', 'Proyek Aktif')}</p>
+              <div className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-white">
+                {isLoading ? <div className="w-12 h-10 bg-neutral-200 dark:bg-slate-800 rounded animate-pulse"></div> : activeProjectsCount}
               </div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
+              <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 mt-2 flex items-center gap-1">
                 {tMsg('Projects followed', 'Proyek yang diikuti')}
               </p>
             </div>
@@ -457,19 +457,19 @@ export default function HomeDashboard() {
               setShowMyTasks(false);
               setShowDueTodayOnly(false);
             }}
-            className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-l-4 border-l-red-500 border-y border-r border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between cursor-pointer hover:shadow-md transition-shadow group"
+            className="bg-white dark:bg-[#121B2D] border-l-4 border-l-rose-500 border-y border-r border-neutral-200/80 dark:border-neutral-800 p-6 rounded-2xl shadow-xs flex items-start justify-between cursor-pointer hover:shadow-md transition-all group"
           >
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Overdue Tasks', 'Tugas Terlambat')}</p>
-              <div className="text-3xl md:text-4xl font-black text-red-600 dark:text-red-400">
-                {isLoading ? <div className="w-12 h-10 bg-red-100 dark:bg-red-900/20 rounded animate-pulse"></div> : overdueTasksCount}
+              <p className="text-[11px] font-extrabold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-1">{tMsg('Overdue Tasks', 'Tugas Terlambat')}</p>
+              <div className="text-3xl md:text-4xl font-black text-rose-600 dark:text-rose-400">
+                {isLoading ? <div className="w-12 h-10 bg-rose-100 dark:bg-rose-900/20 rounded animate-pulse"></div> : overdueTasksCount}
               </div>
-              <p className="text-xs font-medium text-red-600/80 dark:text-red-400/80 mt-2 flex items-center gap-1">
+              <p className="text-xs font-bold text-rose-600/90 dark:text-rose-400/90 mt-2 flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">warning</span>
                 {tMsg('Action required', 'Perlu tindakan')}
               </p>
             </div>
-            <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-600 dark:text-red-400 shrink-0 group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-rose-50 dark:bg-rose-900/30 rounded-xl text-rose-600 dark:text-rose-400 shrink-0 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined">schedule</span>
             </div>
           </div>
@@ -487,19 +487,19 @@ export default function HomeDashboard() {
                 setShowOverdueOnly(false);
               }
             }}
-            className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-l-4 border-l-yellow-400 border-y border-r border-white/50 dark:border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_24px_rgba(17,30,56,0.04)] flex items-start justify-between hover:shadow-md hover:border-yellow-400/30 cursor-pointer transition-all hover:-translate-y-0.5 group"
+            className="bg-white dark:bg-[#121B2D] border-l-4 border-l-[#FACC15] border-y border-r border-neutral-200/80 dark:border-neutral-800 p-6 rounded-2xl shadow-xs flex items-start justify-between hover:shadow-md cursor-pointer transition-all hover:-translate-y-0.5 group"
           >
             <div>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">{tMsg('Critical Projects', 'Proyek Kritis')}</p>
-              <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white">
-                {isLoading ? <div className="w-12 h-10 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"></div> : criticalProjectsCount}
+              <p className="text-[11px] font-extrabold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-1">{tMsg('Critical Projects', 'Proyek Kritis')}</p>
+              <div className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-white">
+                {isLoading ? <div className="w-12 h-10 bg-neutral-200 dark:bg-slate-800 rounded animate-pulse"></div> : criticalProjectsCount}
               </div>
-              <p className="text-xs font-medium text-orange-600 dark:text-orange-400 mt-2 flex items-center gap-1 group-hover:underline">
+              <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mt-2 flex items-center gap-1 group-hover:underline">
                 <span className="material-symbols-outlined text-[14px]">priority_high</span>
                 {criticalProjectsCount > 0 ? tMsg('Needs attention', 'Perlu perhatian') : tMsg('All safe', 'Semua aman')}
               </p>
             </div>
-            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-yellow-700 dark:text-yellow-500 shrink-0 group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl text-amber-600 dark:text-amber-400 shrink-0 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined">flag</span>
             </div>
           </div>
