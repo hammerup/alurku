@@ -73,11 +73,10 @@ export default function Sidebar() {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_sidebar_collapsed') === 'true';
     return false;
   });
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [activeBoardMenuId, setActiveBoardMenuId] = useState(null);
   const [newWsName, setNewWsName] = useState('');
   const [isCreatingWs, setIsCreatingWs] = useState(false);
-  const [isQuickActionsExpanded, setIsQuickActionsExpanded] = useState(false);
 
   const handleCreateWsSubmit = (e) => {
     e.preventDefault();
@@ -245,14 +244,14 @@ export default function Sidebar() {
             window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }
         }}
-        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+        className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111E38] ${
           isActive
-            ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white'
-            : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
+            ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
         }`}
       >
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-black dark:bg-white rounded-r-md"></div>
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
         )}
         <div className="flex items-center gap-3 min-w-0">
           <div
@@ -275,78 +274,76 @@ export default function Sidebar() {
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          {unreadChats > 0 && (
+            <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none" title={`${unreadChats} unread`}>
+              {unreadChats > 9 ? '9+' : unreadChats}
+            </span>
+          )}
+          {board.health_alert?.includes('Attention') && unreadChats === 0 && (
+            <span className="w-2 h-2 rounded-full bg-amber-500" title="Attention Needed"></span>
+          )}
           {!isCollapsed && (
-            <div className="flex items-center gap-1">
+            <div className="relative">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (favoriteBoards.includes(board.id)) {
-                    setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
-                  } else {
-                    setFavoriteBoards([...favoriteBoards, board.id]);
-                  }
+                  const menuKey = `${isFavoriteSection ? 'fav' : 'all'}-${board.id}`;
+                  setActiveBoardMenuId(activeBoardMenuId === menuKey ? null : menuKey);
                 }}
-                className={`p-1 rounded transition-opacity ${
-                  favoriteBoards.includes(board.id)
-                    ? 'opacity-100'
-                    : 'opacity-0 group-hover:opacity-100'
-                }`}
-                title={
-                  favoriteBoards.includes(board.id)
-                    ? tMsg('Unpin Project', 'Lepas Sematan')
-                    : tMsg('Pin Project', 'Sematkan Proyek')
-                }
+                className="p-1 rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                title={tMsg('Project Options', 'Opsi Proyek')}
               >
-                {favoriteBoards.includes(board.id) ? (
-                  <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4 text-neutral-300 hover:text-amber-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                )}
+                <span className="material-symbols-outlined text-[16px]">more_vert</span>
               </button>
-              {(isSuperAdmin || board.owner_username === currentUser) && (
+              {activeBoardMenuId === `${isFavoriteSection ? 'fav' : 'all'}-${board.id}` && (
                 <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      archiveBoard(board);
-                    }}
-                    className="p-1 rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                    title={tMsg('Archive Project', 'Arsipkan Proyek')}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <polyline points="21 8 21 21 3 21 3 8" />
-                      <rect x="1" y="3" width="22" height="5" rx="1" />
-                      <line x1="10" y1="12" x2="14" y2="12" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setBoardToDelete(board);
-                    }}
-                    className="p-1 rounded text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title={tMsg('Delete Project', 'Hapus Proyek')}
-                  >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    ></path>
-                  </svg>
-                </button>
+                  <div className="fixed inset-0 z-45" onClick={(e) => { e.stopPropagation(); setActiveBoardMenuId(null); }}></div>
+                  <div className="absolute right-0 bottom-0 mb-6 w-40 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 py-1 text-xs">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveBoardMenuId(null);
+                        if (favoriteBoards.includes(board.id)) {
+                          setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
+                        } else {
+                          setFavoriteBoards([...favoriteBoards, board.id]);
+                        }
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                    >
+                      <span className="material-symbols-outlined text-sm">{favoriteBoards.includes(board.id) ? 'star_half' : 'star'}</span>
+                      {favoriteBoards.includes(board.id) ? tMsg('Unpin', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
+                    </button>
+                    {(isSuperAdmin || board.owner_username === currentUser) && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveBoardMenuId(null);
+                            archiveBoard(board);
+                          }}
+                          className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                        >
+                          <span className="material-symbols-outlined text-sm">inventory_2</span>
+                          {tMsg('Archive', 'Arsipkan')}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveBoardMenuId(null);
+                            setBoardToDelete(board);
+                          }}
+                          className="w-full text-left px-3 py-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                          {tMsg('Delete', 'Hapus')}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>
-          )}
-          {unreadChats > 0 && <span className="w-2 h-2 rounded-full bg-red-500" title={`${unreadChats} unread`}></span>}
-          {board.health_alert?.includes('Attention') && unreadChats === 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-500" title="Attention Needed"></span>
           )}
         </div>
       </div>
@@ -474,181 +471,42 @@ export default function Sidebar() {
               {/* Vertical divider line */}
               <div className="w-8 h-px bg-neutral-200 dark:bg-neutral-800 my-1"></div>
 
-              {/* Collapsed mode Top Toolbar Quick Actions */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsQuickActionsExpanded(!isQuickActionsExpanded)}
-                  className={`w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-all ${
-                    isQuickActionsExpanded ? 'bg-neutral-200 dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 font-bold' : ''
-                  }`}
-                  title={tMsg('Quick Menu', 'Menu Cepat')}
-                >
-                  <span className="material-symbols-outlined text-lg leading-none">widgets</span>
-                </button>
-
-                {/* Submenu popover expanding horizontally next to the collapsed sidebar */}
-                {isQuickActionsExpanded && (
-                  <>
-                    <div className="fixed inset-0 z-45" onClick={() => setIsQuickActionsExpanded(false)}></div>
-                    <div className="absolute left-full top-0 ml-2 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 p-1.5 rounded-xl shadow-xl z-50 flex gap-1.5 animate-fadeIn">
-                      <button
-                        onClick={() => {
-                          setIsChatWorkspaceOpen(true);
-                          setIsQuickActionsExpanded(false);
-                        }}
-                        className="w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors relative"
-                        title={tMsg('Chat', 'Obrolan')}
-                      >
-                        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                        </svg>
-                        {totalUnreadChats > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-[#FACC15] text-[#111E38] text-[8px] font-black px-1.5 py-0.5 rounded-full scale-75 leading-none">
-                            {totalUnreadChats}
-                          </span>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setExportMode('global');
-                          setIsExportModalOpen(true);
-                          setIsQuickActionsExpanded(false);
-                        }}
-                        className="w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
-                        title={tMsg('Get All My Data', 'Dapatkan Semua Data')}
-                      >
-                        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setIsNotifOpen(!isNotifOpen);
-                          setIsQuickActionsExpanded(false);
-                        }}
-                        className="w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors relative"
-                        title={tMsg('Notifications', 'Notifikasi')}
-                      >
-                        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                        {unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full scale-75 leading-none">
-                            {unreadCount}
-                          </span>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setIsSettingsOpen(true);
-                          setIsQuickActionsExpanded(false);
-                        }}
-                        className="w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
-                        title={tMsg('Settings', 'Pengaturan')}
-                      >
-                        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <circle cx="12" cy="12" r="3" />
-                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </>
+              {/* Collapsed mode Quick Actions — individual icon buttons */}
+              {/* Chat */}
+              <button
+                onClick={() => setIsChatWorkspaceOpen(true)}
+                className={`w-8 h-8 flex justify-center items-center rounded-lg transition-colors relative ${
+                  totalUnreadChats > 0
+                    ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] hover:bg-[#FACC15]/30'
+                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
+                }`}
+                title={tMsg('Team Chat', 'Obrolan Tim')}
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+                {totalUnreadChats > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#FACC15] text-[#111E38] text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                    {totalUnreadChats > 9 ? '9' : totalUnreadChats}
+                  </span>
                 )}
-              </div>
+              </button>
 
-              {/* Floating notification panel next to the sidebar notifications button! */}
-              {isNotifOpen && (
-                <>
-                  <div className="fixed inset-0 z-45" onClick={() => setIsNotifOpen(false)}></div>
-                  <div 
-                    className="absolute bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl z-50 flex flex-col max-h-112.5 overflow-hidden animate-fadeIn"
-                    style={{
-                      top: '110px',
-                      left: '60px',
-                      width: '320px',
-                    }}
-                  >
-                    <div className="p-3 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center bg-white dark:bg-neutral-900">
-                      <h3 className="font-bold text-sm text-black dark:text-white">
-                        {tMsg('Notifications', 'Notifikasi')}
-                      </h3>
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={handleReadAllNotifications}
-                          className="text-xs text-indigo-500 font-bold hover:underline"
-                        >
-                          {tMsg('Mark all read', 'Tandai semua dibaca')}
-                        </button>
-                      )}
-                    </div>
-                    <div className="overflow-y-auto flex-1">
-                      {notifications.length === 0 ? (
-                        <div className="p-8 text-center text-neutral-400 text-sm">
-                          <span className="material-symbols-outlined text-4xl text-neutral-300 dark:text-neutral-700 block mb-2">search_off</span>
-                          {tMsg('No notifications yet.', 'Belum ada notifikasi.')}
-                        </div>
-                      ) : (
-                        notifications.map((n) => (
-                          <div
-                            key={n.id}
-                            onClick={() => {
-                              if (!n.is_read) handleReadNotification(n.id);
-                              if (
-                                n.related_task_id &&
-                                n.type !== 'team_chat' &&
-                                n.type !== 'team_chat_no_email' &&
-                                n.type !== 'team_invite' &&
-                                n.type !== 'access_request'
-                              ) {
-                                handleNotificationTaskClick(n.related_task_id);
-                              } else if (n.type === 'team_invite') {
-                                setIsInvitesModalOpen(true);
-                              }
-                              setIsNotifOpen(false);
-                            }}
-                            className={`p-3 border-b border-neutral-100 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors ${
-                              !n.is_read ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''
-                            }`}
-                          >
-                            <div className="flex gap-2.5 items-start">
-                              <span className="text-lg shrink-0">
-                                {n.type === 'task_assigned'
-                                  ? '👉'
-                                  : n.type === 'task_completed'
-                                  ? '✅'
-                                  : n.type === 'comment' || n.type === 'mention' || n.type === 'team_chat'
-                                  ? '💬'
-                                  : n.type === 'team_invite' || n.type === 'access_request'
-                                  ? '🤝'
-                                  : '🔔'}
-                              </span>
-                              <div className="flex-1 min-w-0">
-                                <p
-                                  className={`text-xs leading-snug ${
-                                    !n.is_read
-                                      ? 'font-bold text-black dark:text-white'
-                                      : 'text-neutral-600 dark:text-neutral-400'
-                                  }`}
-                                >
-                                  {n.message?.replace(/<!--TASK_ID:\d+-->/g, '')}
-                                </p>
-                                <p className="text-[10px] text-neutral-400 mt-0.5">{formatDateMMM(n.timestamp)}</p>
-                              </div>
-                              {!n.is_read && <div className="w-2 h-2 bg-indigo-500 rounded-full shrink-0 mt-1"></div>}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
+
+              {/* Export */}
+              <button
+                onClick={() => { setExportMode('global'); setIsExportModalOpen(true); }}
+                className="w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
+                title={tMsg('Export Data', 'Ekspor Data')}
+              >
+                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </button>
+
+
             </>
           ) : (
             <>
@@ -673,25 +531,33 @@ export default function Sidebar() {
                   {isWorkspaceMenuOpen && (
                     <div className="absolute left-0 w-60 mt-2 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5">
                       <div className="max-h-48 overflow-y-auto space-y-0.5">
-                        {workspaces.map((ws) => (
-                          <button
-                            key={`ws-opt-${ws.id}`}
-                            onClick={() => {
-                              switchWorkspace(ws);
-                              setIsWorkspaceMenuOpen(false);
-                            }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
-                              ws.id === activeWorkspace?.id
-                                ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
-                                : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
-                            }`}
-                          >
-                            <span className="truncate">{ws.name}</span>
-                            {ws.id === activeWorkspace?.id && (
-                              <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
-                            )}
-                          </button>
-                        ))}
+                        {workspaces.map((ws) => {
+                          const wsProjectCount = (boards || []).filter(b => b.workspace_id === ws.id || (!b.workspace_id && ws.id === 1)).length;
+                          return (
+                            <button
+                              key={`ws-opt-${ws.id}`}
+                              onClick={() => {
+                                switchWorkspace(ws);
+                                setIsWorkspaceMenuOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                                ws.id === activeWorkspace?.id
+                                  ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
+                                  : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 truncate">
+                                <span className="truncate">{ws.name}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-neutral-200/50 dark:bg-neutral-800 text-neutral-500 font-semibold shrink-0">
+                                  {wsProjectCount} proj
+                                </span>
+                              </div>
+                              {ws.id === activeWorkspace?.id && (
+                                <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
 
                       <div className="border-t border-slate-100 dark:border-neutral-800 mt-1.5 pt-1.5 px-1.5">
@@ -760,38 +626,46 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* Quick actions row below the header in expanded mode */}
+        {/* Quick actions row — expanded mode: Chat + Export */}
+        {/* Note: Notifications is in the top HeaderNavigation — not duplicated here */}
         {!isCollapsed && (
-          <div className="px-4 py-2 border-b border-neutral-200/50 dark:border-neutral-800/50 shrink-0 relative bg-white/20 dark:bg-neutral-950/20">
-            <div className="flex items-center justify-between gap-1.5 tour-quick-actions">
+          <div className="px-3 py-2 border-b border-neutral-200/50 dark:border-neutral-800/50 shrink-0">
+            <div className="flex items-center gap-1 tour-quick-actions">
+
+              {/* Chat */}
               <button
                 onClick={() => setIsChatWorkspaceOpen(true)}
-                className="flex-1 flex justify-center items-center py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors relative"
-                title={tMsg('Chat', 'Obrolan')}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1.5 rounded-xl transition-all text-xs font-semibold relative ${
+                  totalUnreadChats > 0
+                    ? 'bg-[#FACC15]/15 text-[#111E38] dark:text-[#FACC15] hover:bg-[#FACC15]/25'
+                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
+                }`}
+                title={tMsg('Team Chat', 'Obrolan Tim')}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                 </svg>
+                <span className="truncate">{tMsg('Chat', 'Obrolan')}</span>
                 {totalUnreadChats > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#FACC15] text-[#111E38] text-[8px] font-black px-1.5 py-0.5 rounded-full scale-90 min-w-4 text-center leading-none">
-                    {totalUnreadChats}
+                  <span className="bg-[#FACC15] text-[#111E38] text-[9px] font-black px-1.5 rounded-full min-w-4 text-center leading-4 shrink-0">
+                    {totalUnreadChats > 9 ? '9+' : totalUnreadChats}
                   </span>
                 )}
               </button>
+
+              {/* Export */}
               <button
-                onClick={() => {
-                  setExportMode('global');
-                  setIsExportModalOpen(true);
-                }}
-                className="flex-1 flex justify-center items-center py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
-                title={tMsg('Get All My Data', 'Dapatkan Semua Data')}
+                onClick={() => { setExportMode('global'); setIsExportModalOpen(true); }}
+                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 transition-all"
+                title={tMsg('Export Data', 'Ekspor Data')}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
               </button>
+
             </div>
           </div>
         )}
@@ -811,15 +685,18 @@ export default function Sidebar() {
                 window.history.pushState({}, '', '/dashboard');
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all relative ${
                 window.location.pathname === '/dashboard' && !selectedBoard
-                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
-                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                  ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('Personal Dashboard', 'Dasbor Pribadi')}
             >
+              {(window.location.pathname === '/dashboard' && !selectedBoard) && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+              )}
               <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl text-slate-500 dark:text-slate-400">home</span>
+                <span className="material-symbols-outlined text-[20px]">home</span>
               </div>
               {!isCollapsed && (
                 <span className="text-sm truncate">{tMsg('Personal Dashboard', 'Dasbor Pribadi')}</span>
@@ -840,15 +717,18 @@ export default function Sidebar() {
                 window.history.pushState({}, '', `/workspace/${slug}`);
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all relative ${
                 window.location.pathname.startsWith('/workspace') && !selectedBoard
-                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
-                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                  ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}
             >
+              {(window.location.pathname.startsWith('/workspace') && !selectedBoard) && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+              )}
               <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl text-slate-500 dark:text-slate-400">dashboard</span>
+                <span className="material-symbols-outlined text-[20px]">dashboard</span>
               </div>
               {!isCollapsed && (
                 <span className="text-sm truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
@@ -876,19 +756,18 @@ export default function Sidebar() {
                 window.history.pushState({}, '', targetUrl);
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all tour-global-board ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all tour-global-board relative ${
                 selectedBoard?.id === 'global'
-                  ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
-                  : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                  ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('See the Big Picture', 'Lihat Gambaran Besar')}
             >
+              {selectedBoard?.id === 'global' && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+              )}
               <div className="w-6 h-6 flex items-center justify-center">
-                <svg className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M2 12h20" />
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
+                <span className="material-symbols-outlined text-[20px]">public</span>
               </div>
               {!isCollapsed && (
                 <span className="text-sm truncate">{tMsg('See the Big Picture', 'Lihat Gambaran Besar')}</span>
@@ -910,18 +789,18 @@ export default function Sidebar() {
                   window.history.pushState({}, '', targetUrl);
                   window.dispatchEvent(new CustomEvent('alurku-navigate'));
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all relative ${
                   selectedBoard?.id === todoListBoard.id
-                    ? 'bg-neutral-100 dark:bg-neutral-800/50 text-black dark:text-white font-bold'
-                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                    ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
                 } ${isCollapsed ? 'justify-center' : ''}`}
                 title={tMsg('My To-Do List', 'Daftar Tugas Saya')}
               >
+                {selectedBoard?.id === todoListBoard.id && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                )}
                 <div className="w-6 h-6 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path d="M9 11l3 3L22 4" />
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                  </svg>
+                  <span className="material-symbols-outlined text-[20px]">checklist</span>
                 </div>
                 {!isCollapsed && <span className="text-sm truncate">{tMsg('My To-Do List', 'Daftar Tugas Saya')}</span>}
               </button>
@@ -996,20 +875,16 @@ export default function Sidebar() {
             onClick={() => {
               setIsArchivedOpen(true);
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
             title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
           >
             <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <polyline points="21 8 21 21 3 21 3 8" />
-                <rect x="1" y="3" width="22" height="5" rx="1" />
-                <line x1="10" y1="12" x2="14" y2="12" />
-              </svg>
+              <span className="material-symbols-outlined text-[20px]">inventory_2</span>
             </div>
             {!isCollapsed && <span className="text-sm truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>}
           </button>
 
-          {/* Chat Luruka — brand yellow bolt */}
+          {/* Chat Luruka — Brand Yellow AI CTA */}
           <button
             onClick={() => {
               setSelectedBoard(null);
@@ -1018,36 +893,74 @@ export default function Sidebar() {
               window.history.pushState({}, '', '/proactive-ai');
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all border ${
               window.location.pathname === '/proactive-ai' && !selectedBoard
-                ? 'bg-[#FACC15]/10 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                : 'hover:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/10 text-slate-600 dark:text-slate-400 font-medium'
+                ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-sm'
+                : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
             } ${isCollapsed ? 'justify-center' : ''}`}
             title="Chat Luruka"
           >
-            <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-[#FACC15] fill-[#FACC15]" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
               </svg>
             </div>
-            {!isCollapsed && <span className="text-sm truncate font-bold text-[#111E38] dark:text-[#FACC15]">Chat Luruka</span>}
+            {!isCollapsed && (
+              <span className="text-sm truncate">
+                {tMsg('Ask Luruka', 'Tanya Luruka')}
+              </span>
+            )}
           </button>
 
           {/* Help & Support */}
           <button
             onClick={() => setIsSupportOpen(true)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
             title={tMsg('Help & Support', 'Bantuan & Dukungan')}
           >
             <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
+              <span className="material-symbols-outlined text-[20px]">help</span>
             </div>
             {!isCollapsed && <span className="text-sm truncate">{tMsg('Help & Support', 'Bantuan & Dukungan')}</span>}
           </button>
+
+          {/* ── User Profile Card — identity anchor, bukan shortcut settings ── */}
+          {/* Settings sudah ada di HeaderNavigation (gear + avatar dropdown) */}
+          <div className={`mt-1 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/60`}>
+            <div
+              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl ${isCollapsed ? 'justify-center' : ''}`}
+              title={isCollapsed ? `${currentUser} — ${accountStatus === 'free' ? tMsg('Free Plan', 'Paket Gratis') : tMsg('Pro Plan', 'Paket Pro')}` : undefined}
+            >
+              <div className="shrink-0">
+                <Avatar username={currentUser} size={28} avatarUrl={avatarsMap?.[currentUser]} />
+              </div>
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-slate-800 dark:text-neutral-200 truncate">{currentUser}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {accountStatus === 'free' ? (
+                      <>
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{tMsg('Free Plan', 'Paket Gratis')}</span>
+                        <span className="text-neutral-300 dark:text-neutral-700 text-[10px]">·</span>
+                        <button
+                          onClick={() => {
+                            window.history.pushState({}, '', '/billing');
+                            window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                          }}
+                          className="text-[10px] font-bold text-[#111E38] dark:text-[#FACC15] hover:underline transition-colors"
+                        >
+                          {tMsg('Upgrade', 'Upgrade')} ↑
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">{tMsg('Pro Plan', 'Paket Pro')} ✓</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
 
         </div>
 
