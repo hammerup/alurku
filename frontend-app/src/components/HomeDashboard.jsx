@@ -26,6 +26,7 @@ const cleanMarkdown = (text) => {
 
 export default function HomeDashboard() {
   const {
+    activeWorkspace,
     currentUser,
     boards,
     tasks,
