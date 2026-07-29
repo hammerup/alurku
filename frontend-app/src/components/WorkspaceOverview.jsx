@@ -1094,20 +1094,18 @@ export default function WorkspaceOverview() {
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar relative max-h-[520px]">
-              {/* Vertical connector line */}
-              {activityFeed.length > 0 && (
-                <div className="absolute left-11 top-10 bottom-10 w-px bg-neutral-200 dark:bg-neutral-850"></div>
-              )}
-              
-              {activityFeed.slice(0, 10).map((act) => (
+            <div className="flex-1 p-6 space-y-6 relative">
+              {activityFeed.slice(0, 10).map((act, index, arr) => (
                 <div key={act.id} className="flex gap-4 relative z-10 animate-activity-item">
-                  <div className="shrink-0">
-                    <div className="ring-2 ring-white dark:ring-[#121B2D] rounded-full">
+                  <div className="shrink-0 flex flex-col items-center relative">
+                    <div className="ring-2 ring-white dark:ring-[#121B2D] bg-white dark:bg-[#121B2D] rounded-full z-10">
                       <Avatar name={act.username} url={avatarsMap[act.username]} size="w-10 h-10" />
                     </div>
+                    {index < arr.length - 1 && (
+                      <div className="w-px bg-neutral-200 dark:bg-neutral-800 absolute top-10 bottom-[-24px] left-1/2 -translate-x-1/2 z-0"></div>
+                    )}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 pt-0.5">
                     {formatActivityMessage(act.username, act.action, act.target_title, act.extra_data)}
                     <p className="text-[11px] text-neutral-400 mt-0.5">{formatTimeAgo(act.created_at)}</p>
                   </div>
