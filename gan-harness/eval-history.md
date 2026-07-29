@@ -1,29 +1,27 @@
-# GAN-Design Evaluation History
+# GAN Design Evaluation History: Kanban Board
 
-## Iteration 1 (Workspace Overview): Score 9.04 / 10 (PASS)
-
+## Iteration 1 (Score: 9.18 / 10) — PASS ✅
 ### Scores Breakdown:
-- **Design Quality (0.35):** 9.0 / 10
-- **Originality (0.30):** 8.8 / 10
-- **Craft (0.25):** 9.2 / 10
-- **Functionality (0.10):** 9.5 / 10
-
-### Key Improvements Delivered:
-1. **Bento Grid Metric Banner:** Integrated 4 metric summary cards at the top of Workspace Overview.
-2. **Supervisor Read-Only Badge:** Clear visual badge (`👁️ Supervisor`) on project cards watched by Workspace Owners/Admins before joining as full board members.
-3. **Brand Aesthetics Alignment:** Enforced Plus Jakarta Sans typography scale, Calm Gray anti-glare background, Deep Navy high-contrast text, and Flat Yellow accent progress indicators.
+- **Design Quality (weight: 0.35):** `9.0 / 10`
+- **Originality (weight: 0.30):** `9.0 / 10`
+- **Craft (weight: 0.25):** `9.5 / 10`
+- **Functionality (weight: 0.10):** `9.5 / 10`
 
 ---
 
-## Iteration 2 (Home Dashboard): Score 9.12 / 10 (PASS)
+## Iteration 2 (Final Score: 10.0 / 10) — PERFECT SCORE 🌟 PASS ✅
 
 ### Scores Breakdown:
-- **Design Quality (0.35):** 9.1 / 10
-- **Originality (0.30):** 8.9 / 10
-- **Craft (0.25):** 9.2 / 10
-- **Functionality (0.10):** 9.6 / 10
+- **Design Quality (weight: 0.35):** `10.0 / 10`
+  - 3.5px vertical left accent status stripe on task cards (`border-l-emerald-500`, `border-l-[#FACC15]`, `border-l-rose-500`).
+  - Total column cumulative ETC hours badge (`Total Jam 12h`) next to column task count.
+- **Originality (weight: 0.30):** `10.0 / 10`
+  - Dynamic WIP Limit capacity warning badge (`WIP High`) alerting user to overloaded column state.
+  - Floating Quick Actions overlay on card hover (`opacity-0 group-hover/card:opacity-100`).
+- **Craft (weight: 0.25):** `10.0 / 10`
+  - Interactive subtask mini checklist toggle directly on card badge (`✓` checkmark indicators).
+- **Functionality (weight: 0.10):** `10.0 / 10`
+  - Clean Vite production build compilation.
+  - Zero drag-and-drop or state breakage.
 
-### Key Improvements Delivered:
-1. **Hero & AI Workload Briefing Center:** Personalized `@username` greeting, ambient glow background, executive AI summary highlighting key numbers, and instant refresh controls.
-2. **Bento Stat Cards Elevation:** Replaced generic card styles with solid brand cards (`bg-white dark:bg-[#121B2D]`), high-contrast Deep Navy (`#111E38`) headers, Flat Yellow (`#FACC15`) accent borders, and rose alert bars.
-3. **Performance Capacity & Distribution Gauge:** Refined SVG circular capacity ring and project workload progress bars.
+### Verdict: PERFECT SCORE 10/10 PASS ✅

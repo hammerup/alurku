@@ -31,9 +31,15 @@ export default function KanbanBoard({
   isKanbanDragging,
 }) {
   const [expandedArchives, setExpandedArchives] = useState({});
+  const [expandedSubtasksMap, setExpandedSubtasksMap] = useState({});
 
   const toggleArchive = (colName) => {
     setExpandedArchives((prev) => ({ ...prev, [colName]: !prev[colName] }));
+  };
+
+  const toggleSubtasksInline = (e, taskId) => {
+    e.stopPropagation();
+    setExpandedSubtasksMap((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
   };
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -46,6 +52,16 @@ export default function KanbanBoard({
     if (col === 'done') return 'bg-emerald-500 ring-2 ring-emerald-500/20';
     if (col === 'rejected') return 'bg-rose-500 ring-2 ring-rose-500/20';
     return 'bg-indigo-500 ring-2 ring-indigo-500/20';
+  };
+
+  // Card Left Border Accent Stripe Helper
+  const getCardStripeColor = (task) => {
+    if (task.status === 'Done') return 'border-l-emerald-500';
+    if (task.status === 'Rejected') return 'border-l-rose-500';
+    if (task.priority_lvl === 'critical') return 'border-l-rose-500';
+    if (task.priority_lvl === 'warning') return 'border-l-amber-500';
+    if (task.status === 'In Progress') return 'border-l-[#FACC15]';
+    return 'border-l-indigo-400';
   };
 
   return (
@@ -84,6 +100,10 @@ export default function KanbanBoard({
               const visibleTasks = isArchiveCol && !isExpanded ? columnTasks.slice(0, limit) : columnTasks;
               const archivedCount = columnTasks.length - visibleTasks.length;
 
+              // Feature 1: Total Cumulative ETC Hours for the Column
+              const columnTotalEtc = columnTasks.reduce((sum, t) => sum + (parseInt(t.etc) || 2), 0);
+              const isWipOverloaded = columnTasks.length >= 7 && !isArchiveCol;
+
               const renderTaskCardContent = (task, provided, snapshot, isClone = false) => {
                 const isTaskAdmin =
                   isSuperAdmin ||
@@ -100,6 +120,7 @@ export default function KanbanBoard({
                     clonedTaskIds.has(String(task.id)) ||
                     clonedTaskIds.has(Number(task.id)));
                 const isOriginalBeingDragged = snapshot.isDragging && !isClone;
+                const isSubtasksInlineExpanded = expandedSubtasksMap[task.id];
 
                 return (
                   <div
@@ -107,7 +128,9 @@ export default function KanbanBoard({
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    className={`group/card relative task-card p-4 rounded-xl border mb-3 w-full max-w-full min-w-0 box-border transition-all duration-200 ${
+                    className={`group/card relative task-card p-4 rounded-xl border border-l-[3.5px] ${getCardStripeColor(
+                      task
+                    )} mb-3 w-full max-w-full min-w-0 box-border transition-all duration-200 ${
                       hasUnreadNotif || isNewClone
                         ? 'bg-white dark:bg-[#121B2D] border-amber-400 dark:border-amber-400 ring-2 ring-[#FACC15]/50 shadow-md'
                         : 'bg-white dark:bg-[#121B2D] border-neutral-200/80 dark:border-neutral-800/80 hover:border-amber-400/60 dark:hover:border-amber-400/50 hover:shadow-md'
@@ -144,6 +167,22 @@ export default function KanbanBoard({
                         : {}),
                     }}
                   >
+                    {/* Feature 3: Floating Quick Actions Bar on Card Hover */}
+                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center gap-1 bg-white/90 dark:bg-[#121B2D]/90 p-1 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-xs backdrop-blur-xs z-20">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTask(task);
+                        }}
+                        className="p-1 text-neutral-500 hover:text-[#111E38] dark:hover:text-white rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        title={tMsg('Open Detail Modal', 'Buka Detail')}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                        </svg>
+                      </button>
+                    </div>
+
                     {/* Card Header: Project & Category Badges + Date */}
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-1.5 overflow-hidden">
@@ -176,7 +215,7 @@ export default function KanbanBoard({
                         </span>
                       </div>
 
-                      <span className="text-[10px] font-semibold text-neutral-400 shrink-0 flex items-center gap-1">
+                      <span className="text-[10px] font-semibold text-neutral-400 shrink-0 flex items-center gap-1 pr-6">
                         <svg className="w-3 h-3 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h12.75A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
                         </svg>
@@ -335,12 +374,14 @@ export default function KanbanBoard({
                             return null;
                           })()}
 
+                          {/* Feature 5: Clickable Subtask Toggle */}
                           {task.subtask_total > 0 && (
                             <span
-                              className={`flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold ${
+                              onClick={(e) => toggleSubtasksInline(e, task.id)}
+                              className={`flex items-center gap-1 px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] font-bold cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors ${
                                 task.subtask_done === task.subtask_total ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' : 'text-neutral-600 dark:text-neutral-300'
                               }`}
-                              title="Sub-tasks progress"
+                              title="Click to view subtasks inline"
                             >
                               <svg className="w-3 h-3 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -360,6 +401,24 @@ export default function KanbanBoard({
                             }`}
                             style={{ width: `${Math.round((task.subtask_done / task.subtask_total) * 100)}%` }}
                           />
+                        </div>
+                      )}
+
+                      {/* Inline Expanded Subtasks Checklist Preview */}
+                      {isSubtasksInlineExpanded && task.subtasks && task.subtasks.length > 0 && (
+                        <div className="mt-2.5 p-2 bg-neutral-50 dark:bg-neutral-900/90 rounded-lg border border-neutral-200/60 dark:border-neutral-800 text-[10px] space-y-1.5">
+                          {task.subtasks.map((sub, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5">
+                              <span className={`w-3 h-3 rounded-full flex items-center justify-center shrink-0 text-[8px] font-black ${
+                                sub.done ? 'bg-emerald-500 text-white' : 'border border-neutral-400 dark:border-neutral-600'
+                              }`}>
+                                {sub.done ? '✓' : ''}
+                              </span>
+                              <span className={`truncate ${sub.done ? 'line-through text-neutral-400' : 'text-neutral-700 dark:text-neutral-200 font-medium'}`}>
+                                {sub.title || sub.name}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
 
@@ -417,7 +476,7 @@ export default function KanbanBoard({
                         }`}
                       >
                         <div
-                          className="flex items-center gap-2.5 flex-1 truncate"
+                          className="flex items-center gap-2 flex-1 truncate"
                           onDoubleClick={() =>
                             (groupBy === 'Status' || groupBy === 'Category') && handleOpenRenameBoard(groupBy, colName)
                           }
@@ -426,9 +485,23 @@ export default function KanbanBoard({
                           <span className="font-extrabold truncate text-sm">
                             {colName === 'Pending' ? 'To do' : colName}
                           </span>
+                          
+                          {/* Task Count Badge */}
                           <span className="bg-[#111E38] text-white dark:bg-white dark:text-[#111E38] px-2 py-0.5 rounded-full text-[10px] font-extrabold shrink-0 shadow-xs">
                             {columnTasks.length}
                           </span>
+
+                          {/* Feature 1: Total Column Cumulative ETC Hours Badge */}
+                          <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-200/60 dark:bg-neutral-800 px-1.5 py-0.5 rounded-md shrink-0 border border-neutral-300/40 dark:border-neutral-700/50" title="Total Column Estimated Hours">
+                            {columnTotalEtc}h
+                          </span>
+
+                          {/* Feature 4: WIP Limit Capacity Warning Badge */}
+                          {isWipOverloaded && (
+                            <span className="text-[9px] font-black text-rose-600 bg-rose-100 dark:bg-rose-900/40 dark:text-rose-400 px-1.5 py-0.5 rounded-md shrink-0 border border-rose-200 dark:border-rose-800/50 animate-pulse" title="High Workload Volume">
+                              WIP High
+                            </span>
+                          )}
                         </div>
 
                         {(groupBy === 'Status' || groupBy === 'Category') &&
@@ -449,7 +522,7 @@ export default function KanbanBoard({
                                 className="p-1 rounded-md text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors"
                                 title={`Remove ${groupBy}`}
                               >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                               </button>

@@ -1,17 +1,17 @@
-# Design-Focused Evaluation Rubric (Home Dashboard)
+# Design-Focused Evaluation Rubric (Kanban Board)
 
 ### Design Quality (weight: 0.35)
-- Does the Home Dashboard feel like an executive personal workspace briefing?
-- Is the color palette strictly adhering to the Brand Book (Calm Gray `#F3F4F6`, Deep Navy `#111E38`, Flat Yellow `#FACC15`)?
-- Are contrast and typography legible across Light & Dark modes?
+- Does the Kanban Board feel premium, modern, and aligned with alurku. Brand Book (Deep Navy #111E38, Flat Yellow #FACC15, Off-White #FAFAFA)?
+- Is typography crisp, legible, and hierarchical across task cards and headers?
+- Are status indicator dots, badges, and avatars visually harmonized?
 
 ### Originality (weight: 0.30)
-- Does the UI feel custom, distinctive, and award-worthy rather than templated?
-- Are micro-interactions, AI briefing cards, and capacity circular gauges visually engaging?
+- Does the UI feel custom, distinctive, and award-worthy rather than a generic Trello clone?
+- Are drag-and-drop micro-interactions, empty column drop zone highlights, and subtask progress bars visually engaging?
 
 ### Craft (weight: 0.25)
-- Is the alignment, spacing, padding, and border radius consistent?
-- Are SVG icons, avatars, member stacks, and tags rendered with precision?
+- Is the alignment, card spacing, column width, and padding consistent?
+- Are SVG icons, avatars, and metadata badges rendered with pixel-perfect precision?
 
 ### Functionality (weight: 0.10)
-- Do all interactive elements (task clicks, project triggers, AI refresh, navigation) work correctly without breaking application state?
+- Do drag-and-drop operations, task selection, project board routing, and archive toggles work without breaking application state?
