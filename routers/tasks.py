@@ -323,9 +323,9 @@ def global_search_tasks(
             final_search_condition,
         )
         .order_by(Request.id.desc())
-        .limit(15)
+        .limit(100)
         .all()
-    )  # Batasi 10 hasil agar dropdown sangat cepat
+    )  # Limit 100 results so search can paginate smoothly
 
     boards_info = {
         b.id: {

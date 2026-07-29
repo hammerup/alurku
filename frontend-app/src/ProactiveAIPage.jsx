@@ -57,6 +57,8 @@ export default function ProactiveAIPage({
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [isCartVisible, setIsCartVisible] = useState(false);
   const [aiContext, setAiContext] = useState(null);
+  const [lastSearchResults, setLastSearchResults] = useState(null); // Full search results for pagination
+  const [lastSearchDisplayed, setLastSearchDisplayed] = useState(0); // How many results already shown
   const [chatHistory, setChatHistory] = useState([
     {
       id: 'welcome',
@@ -502,6 +504,23 @@ export default function ProactiveAIPage({
 
   const extractSearchQuery = (textStr) => {
     const textL = textStr.toLowerCase().trim();
+
+    // EXCLUSION: Metadata/listing questions should NOT be intercepted as search
+    // These should fall through to the AI prompt for intelligent handling
+    const metadataPatterns = [
+      'list project', 'daftar project', 'daftar proyek', 'proyek apa saja',
+      'project apa saja', 'ada proyek apa', 'ada project apa', 'berapa project',
+      'berapa proyek', 'berapa tugas', 'berapa task', 'jumlah tugas', 'jumlah task',
+      'jumlah proyek', 'jumlah project', 'siapa saja', 'anggota tim', 'tim siapa',
+      'team member', 'list task di', 'daftar tugas di', 'tugas di project',
+      'task di project', 'tugas di proyek', 'task di proyek',
+      'ada berapa', 'berapa banyak', 'how many', 'list all', 'show all',
+      'tampilkan semua', 'lihat semua', 'semua project', 'semua proyek',
+      'apa saja', 'what projects', 'which projects',
+    ];
+    if (metadataPatterns.some(p => textL.includes(p))) {
+      return null;
+    }
     
     const searchIndex = textL.indexOf('cari ');
     const slashCariIndex = textL.indexOf('/cari ');
@@ -575,6 +594,52 @@ export default function ProactiveAIPage({
     setPrompt('');
     setIsSlashMenuOpen(false);
 
+    // Intercept "show more" / "tampilkan lainnya" pagination request
+    const showMorePatterns = [
+      'show more', 'more results', 'tampilkan lainnya', 'lainnya', 'sisanya',
+      'tampilkan sisanya', 'lihat lainnya', 'lihat sisanya', 'show the rest',
+      'next page', 'halaman berikutnya', 'berikutnya', 'selanjutnya',
+      'tampilkan lebih', 'tampilkan lebih banyak', 'yang lain',
+    ];
+    const userLower = userPrompt.toLowerCase().trim();
+    if (showMorePatterns.some(p => userLower === p || userLower.includes(p))) {
+      if (lastSearchResults && lastSearchDisplayed < lastSearchResults.length) {
+        const PAGE_SIZE = 5;
+        const nextPage = lastSearchResults.slice(lastSearchDisplayed, lastSearchDisplayed + PAGE_SIZE);
+        const newDisplayed = lastSearchDisplayed + nextPage.length;
+        setLastSearchDisplayed(newDisplayed);
+
+        const remaining = lastSearchResults.length - newDisplayed;
+        const moreText = remaining > 0
+          ? tMsg(
+              `Menampilkan ${nextPage.length} hasil lagi (${newDisplayed} dari ${lastSearchResults.length} total). Ketik "lainnya" untuk melihat sisanya.`,
+              `Menampilkan ${nextPage.length} hasil lagi (${newDisplayed} dari ${lastSearchResults.length} total). Ketik "lainnya" untuk melihat sisanya.`
+            )
+          : tMsg(
+              `Menampilkan ${nextPage.length} hasil terakhir (${newDisplayed} dari ${lastSearchResults.length} total). Semua hasil sudah ditampilkan.`,
+              `Menampilkan ${nextPage.length} hasil terakhir (${newDisplayed} dari ${lastSearchResults.length} total). Semua hasil sudah ditampilkan.`
+            );
+
+        setChatHistory(prev => [...prev, {
+          id: Math.random().toString(),
+          sender: 'ai',
+          text: moreText,
+          searchResults: nextPage
+        }]);
+        return;
+      } else {
+        setChatHistory(prev => [...prev, {
+          id: Math.random().toString(),
+          sender: 'ai',
+          text: tMsg(
+            'Semua hasil pencarian sudah ditampilkan sebelumnya. Mau cari hal lain?',
+            'Semua hasil pencarian sudah ditampilkan sebelumnya. Mau cari hal lain?'
+          )
+        }]);
+        return;
+      }
+    }
+
     // Intercept off-topic questions (Strict Scope Guardrail)
     if (isOffTopicQuery(userPrompt)) {
       const refusalMsg = language === 'id'
@@ -594,11 +659,29 @@ export default function ProactiveAIPage({
       setIsProcessing(true);
       setLoadingText(tMsg('Searching database...', 'Mencari di database...'));
       try {
-        const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+        let searchBoardId = (selectedBoard && selectedBoard.id !== 'global') ? selectedBoard.id : null;
+        let matchedBoardObj = null;
+        const textToCheck = (userPrompt + ' ' + searchQuery).toLowerCase();
+        const foundBoard = (boards || []).find(b => {
+          const cleanBName = b.name.toLowerCase();
+          return textToCheck.includes(`#${cleanBName}`) || 
+                 textToCheck.includes(`project ${cleanBName}`) ||
+                 textToCheck.includes(`proyek ${cleanBName}`) ||
+                 textToCheck.includes(`board ${cleanBName}`) ||
+                 textToCheck.includes(`project name ${cleanBName}`) ||
+                 textToCheck.includes(`di project ${cleanBName}`);
+        });
+        if (foundBoard) {
+          matchedBoardObj = foundBoard;
+          searchBoardId = foundBoard.id;
+        }
+
+        const boardParam = searchBoardId ? `&board_id=${searchBoardId}` : '';
         const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}${boardParam}`);
         const results = res.data.results || [];
         
-        const formattedResults = results.slice(0, 5).map(t => {
+        // Store ALL results for pagination
+        const allResults = results.map(t => {
           const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
           return {
             id: t.id,
@@ -610,16 +693,33 @@ export default function ProactiveAIPage({
           };
         });
 
-        const botMsg = {
+        const PAGE_SIZE = 5;
+        const firstPage = allResults.slice(0, PAGE_SIZE);
+        const hasMore = allResults.length > PAGE_SIZE;
+
+        // Save full results for "show more" pagination
+        setLastSearchResults(allResults.length > 0 ? allResults : null);
+        setLastSearchDisplayed(allResults.length > 0 ? PAGE_SIZE : 0);
+
+        const boardLabel = matchedBoardObj ? ` di project **"${matchedBoardObj.name}"**` : '';
+        const botText = results.length === 0 
+          ? tMsg(`Aku tidak menemukan tugas dengan kata kunci **"${searchQuery}"**${boardLabel} di database.`, `Aku tidak menemukan tugas dengan kata kunci **"${searchQuery}"**${boardLabel} di database.`)
+          : hasMore
+            ? tMsg(
+                `Aku menemukan **${allResults.length} task**${boardLabel}. Menampilkan ${PAGE_SIZE} pertama. Ketik "lainnya" untuk melihat sisanya.`,
+                `Aku menemukan **${allResults.length} task**${boardLabel}. Menampilkan ${PAGE_SIZE} pertama. Ketik "lainnya" untuk melihat sisanya.`
+              )
+            : tMsg(
+                `Aku menemukan **${allResults.length} task**${boardLabel}. Ini hasilnya:`,
+                `Aku menemukan **${allResults.length} task**${boardLabel}. Ini hasilnya:`
+              );
+
+        setChatHistory(prev => [...prev, {
           id: Math.random().toString(),
           sender: 'ai',
-          text: results.length === 0 
-            ? tMsg(`I couldn't find any tasks with keyword **"${searchQuery}"** in the database.`, `Aku tidak menemukan tugas dengan kata kunci **"${searchQuery}"** di database.`)
-            : tMsg(`I found task(s) containing **"${searchQuery}"**. Here are the results:`, `Aku sudah cari task yang mengandung kata **"${searchQuery}"**. Ini hasilnya:`),
-          searchResults: formattedResults
-        };
-
-        setChatHistory(prev => [...prev, botMsg]);
+          text: botText,
+          searchResults: firstPage
+        }]);
       } catch (err) {
         setChatHistory(prev => [
           ...prev,
@@ -664,9 +764,10 @@ INSTRUCTIONS:
 2. If the user asks general questions about available projects/boards (e.g., "Proyek apa saja yang ada?", "Daftar project", "Ada project apa saja?"), questions about team members, or questions about task statistics/counts:
    - Return "response_type": "chat".
    - Answer directly, warmly, and conversationally in "chat_message" using ONLY the project names, team members, or stats listed in ACTUAL WORKSPACE DATA. Do NOT classify general metadata questions as "search".
-3. If the user explicitly wants to SEARCH, FILTER, or FIND specific tasks (e.g. "tunjukkan tugas budi yang telat", "cari task mockup", "cari task overdue", "antrian task aku", "cari task category Design", "task High impact", "task deadline 2026-07-30"):
+3. If the user explicitly wants to SEARCH, FILTER, or FIND specific tasks (e.g. "tunjukkan tugas budi yang telat", "cari task mockup", "cari task overdue", "antrian task aku", "cari task category Design", "task High impact", "task deadline 2026-07-30", "tampilkan task di project #Design"):
    - Return "response_type": "search".
    - Construct a space-separated string of search keywords in "search_query".
+   - CRITICAL BOARD EXTRACTION RULE: If the user specifies a project or board name (e.g. using '#BoardName', 'project X', 'project name X', 'board X', 'di project X'), you MUST populate "target_board_name" with the exact board name (e.g. "Design").
    - IMPORTANT QUERY MAPPING RULES:
      - Map personal pronouns ("tugas aku", "tugas saya", "my tasks", "my work") to the user's actual username "${currentUser}". Do NOT use "my", "saya", "aku", "me", "mine" in the search query.
      - Map "overdue", "telat", "terlambat" to a single word "overdue".
@@ -785,15 +886,48 @@ USER REQUEST:
           });
       }
 
-      if (aiResponse.response_type === 'search' && aiResponse.search_query) {
+      if (aiResponse.response_type === 'search' && (aiResponse.search_query || aiResponse.target_board_name)) {
         setIsProcessing(true);
         setLoadingText(tMsg('Searching database...', 'Mencari di database...'));
         try {
-          const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
-          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(aiResponse.search_query)}${boardParam}`);
+          let targetBoardName = (aiResponse.target_board_name || '').trim();
+
+          // Fallback: If target_board_name was not extracted by LLM, inspect user prompt
+          if (!targetBoardName) {
+            const textToCheck = (userPrompt + ' ' + (aiResponse.search_query || '')).toLowerCase();
+            const foundBoard = (boards || []).find(b => {
+              const bName = b.name.toLowerCase();
+              return textToCheck.includes(`#${bName}`) || 
+                     textToCheck.includes(`project ${bName}`) ||
+                     textToCheck.includes(`proyek ${bName}`) ||
+                     textToCheck.includes(`board ${bName}`) ||
+                     textToCheck.includes(`project name ${bName}`) ||
+                     textToCheck.includes(`di project ${bName}`) ||
+                     textToCheck.includes(`di board ${bName}`);
+            });
+            if (foundBoard) {
+              targetBoardName = foundBoard.name;
+            }
+          }
+
+          let searchBoardId = (selectedBoard && selectedBoard.id !== 'global') ? selectedBoard.id : null;
+          let matchedBoardObj = null;
+
+          if (targetBoardName) {
+            const targetClean = targetBoardName.toLowerCase().replace(/^#/, '').trim();
+            matchedBoardObj = (boards || []).find(b => 
+              b.name.toLowerCase() === targetClean || b.name.toLowerCase().includes(targetClean)
+            );
+            if (matchedBoardObj) searchBoardId = matchedBoardObj.id;
+          }
+
+          const boardParam = searchBoardId ? `&board_id=${searchBoardId}` : '';
+          const queryToSearch = aiResponse.search_query || targetBoardName || '';
+          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(queryToSearch)}${boardParam}`);
           const results = res.data?.results || [];
           
-          const formattedResults = results.slice(0, 5).map(t => {
+          // Store ALL results for pagination
+          const allResults = results.map(t => {
             const boardName = (boards || []).find((b) => b.id === t.board_id)?.name || 'General';
             return {
               id: t.id,
@@ -805,16 +939,33 @@ USER REQUEST:
             };
           });
 
-          const botMsg = {
+          const PAGE_SIZE = 5;
+          const firstPage = allResults.slice(0, PAGE_SIZE);
+          const hasMore = allResults.length > PAGE_SIZE;
+
+          // Save full results for "show more" pagination
+          setLastSearchResults(allResults.length > 0 ? allResults : null);
+          setLastSearchDisplayed(allResults.length > 0 ? PAGE_SIZE : 0);
+
+          const boardLabel = matchedBoardObj ? ` di project **"${matchedBoardObj.name}"**` : '';
+          const botText = results.length === 0 
+            ? tMsg(`Aku tidak menemukan tugas${boardLabel} di database.`, `Aku tidak menemukan tugas${boardLabel} di database.`)
+            : hasMore
+              ? tMsg(
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Menampilkan ${PAGE_SIZE} pertama. Ketik "lainnya" untuk melihat sisanya.`,
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Menampilkan ${PAGE_SIZE} pertama. Ketik "lainnya" untuk melihat sisanya.`
+                )
+              : tMsg(
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Ini hasilnya:`,
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Ini hasilnya:`
+                );
+
+          setChatHistory(prev => [...prev, {
             id: Math.random().toString(),
             sender: 'ai',
-            text: results.length === 0 
-              ? tMsg(`I couldn't find any tasks with keyword **"${aiResponse.search_query}"** in the database.`, `Aku tidak menemukan tugas dengan kata kunci **"${aiResponse.search_query}"** di database.`)
-              : tMsg(`I found task(s) containing **"${aiResponse.search_query}"**. Here are the results:`, `Aku sudah cari task yang mengandung kata **"${aiResponse.search_query}"**. Ini hasilnya:`),
-            searchResults: formattedResults
-          };
-
-          setChatHistory(prev => [...prev, botMsg]);
+            text: botText,
+            searchResults: firstPage
+          }]);
         } catch (err) {
           setChatHistory(prev => [
             ...prev,
@@ -898,52 +1049,16 @@ USER REQUEST:
                 )
               }
             ]);
-          } else {
-            setLoadingText(tMsg(`Applying updates to ${matchingTasks.length} task(s)...`, `Menerapkan pembaruan pada ${matchingTasks.length} task...`));
-
-            const updatePromises = matchingTasks.map(targetTask => {
-              let formattedDeadline = updates.deadline || targetTask.deadline || '';
-              if (updates.deadline) {
-                const d = new Date(updates.deadline);
-                if (!isNaN(d.getTime())) {
-                  formattedDeadline = d.toISOString().split('T')[0];
-                }
-              }
-
-              const promises = [];
-              if (updates.status) {
-                promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: updates.status }));
-              }
-
-              const detailsPayload = {
-                project_name: updates.project_name || targetTask.project_name || '',
-                requester: updates.requester || targetTask.requester || `@${currentUser}`,
-                category: updates.category || targetTask.category || 'General',
-                description: updates.description !== undefined ? updates.description : (targetTask.description || ''),
-                supporting_access: targetTask.supporting_access || '',
-                start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
-                deadline: formattedDeadline,
-                impact: targetTask.impact || 'Medium',
-                etc: targetTask.etc || 2.0,
-                auto_nudge: targetTask.auto_nudge || false,
-                recurring: targetTask.recurring || 'none',
-                status: updates.status || targetTask.status || 'Open',
-                board_id: targetTask.board_id || null,
-              };
-
-              promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
-              return Promise.all(promises);
-            });
-
-            await Promise.all(updatePromises);
-            if (fetchTasks) fetchTasks();
-
-            const updateSummary = Object.entries(updates)
-              .filter(([, v]) => v)
-              .map(([k, v]) => `**${k}** → ${v}`)
-              .join(', ');
-
-            const taskTitlesList = matchingTasks.map(t => `• **"${t.project_name}"**`).join('\n');
+          } else if (matchingTasks.length > 1) {
+            // SAFETY: Reject bulk update softly — only 1 task at a time
+            const taskListCards = matchingTasks.slice(0, 5).map(t => ({
+              id: t.id,
+              project_name: t.project_name,
+              board_name: (boards || []).find((b) => b.id === t.board_id)?.name || 'General',
+              status: t.status,
+              category: t.category,
+              deadline: t.deadline
+            }));
 
             setChatHistory(prev => [
               ...prev,
@@ -951,8 +1066,63 @@ USER REQUEST:
                 id: Math.random().toString(),
                 sender: 'ai',
                 text: tMsg(
-                  `✅ Successfully updated **${matchingTasks.length} task(s)** (${updateSummary}):\n\n${taskTitlesList}`,
-                  `✅ Berhasil memperbarui **${matchingTasks.length} task** (${updateSummary}):\n\n${taskTitlesList}`
+                  `Demi keamanan datamu, aku hanya bisa update satu task dalam satu waktu ya. Aku menemukan **${matchingTasks.length} task** yang cocok — coba sebutkan judul task yang lebih spesifik, atau klik salah satu task di bawah ini untuk melihat detailnya:`,
+                  `Demi keamanan datamu, aku hanya bisa update satu task dalam satu waktu ya. Aku menemukan **${matchingTasks.length} task** yang cocok — coba sebutkan judul task yang lebih spesifik, atau klik salah satu task di bawah ini untuk melihat detailnya:`
+                ),
+                searchResults: taskListCards
+              }
+            ]);
+          } else {
+            // Single task match — safe to update
+            setLoadingText(tMsg('Applying update...', 'Menerapkan pembaruan...'));
+            const targetTask = matchingTasks[0];
+
+            let formattedDeadline = updates.deadline || targetTask.deadline || '';
+            if (updates.deadline) {
+              const d = new Date(updates.deadline);
+              if (!isNaN(d.getTime())) {
+                formattedDeadline = d.toISOString().split('T')[0];
+              }
+            }
+
+            const promises = [];
+            if (updates.status) {
+              promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: updates.status }));
+            }
+
+            const detailsPayload = {
+              project_name: updates.project_name || targetTask.project_name || '',
+              requester: updates.requester || targetTask.requester || `@${currentUser}`,
+              category: updates.category || targetTask.category || 'General',
+              description: updates.description !== undefined ? updates.description : (targetTask.description || ''),
+              supporting_access: targetTask.supporting_access || '',
+              start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+              deadline: formattedDeadline,
+              impact: targetTask.impact || 'Medium',
+              etc: targetTask.etc || 2.0,
+              auto_nudge: targetTask.auto_nudge || false,
+              recurring: targetTask.recurring || 'none',
+              status: updates.status || targetTask.status || 'Open',
+              board_id: targetTask.board_id || null,
+            };
+
+            promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
+            await Promise.all(promises);
+            if (fetchTasks) fetchTasks();
+
+            const updateSummary = Object.entries(updates)
+              .filter(([, v]) => v)
+              .map(([k, v]) => `**${k}** → ${v}`)
+              .join(', ');
+
+            setChatHistory(prev => [
+              ...prev,
+              {
+                id: Math.random().toString(),
+                sender: 'ai',
+                text: tMsg(
+                  `✅ Berhasil memperbarui task **"${targetTask.project_name}"** (${updateSummary})`,
+                  `✅ Berhasil memperbarui task **"${targetTask.project_name}"** (${updateSummary})`
                 )
               }
             ]);

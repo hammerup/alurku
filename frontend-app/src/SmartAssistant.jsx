@@ -67,6 +67,8 @@ export default function SmartAssistant({
   const [aiProvider, setAiProvider] = useState('Smart Assistant');
   const [selectedModel, setSelectedModel] = useState('auto');
   const [aiContext, setAiContext] = useState(null);
+  const [lastSearchResults, setLastSearchResults] = useState(null); // Full search results for pagination
+  const [lastSearchDisplayed, setLastSearchDisplayed] = useState(0); // How many results already shown
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const plannerEndRef = useRef(null);
@@ -377,31 +379,55 @@ export default function SmartAssistant({
     setIsMentioning(false);
 
     // Global Search API integration to prevent local board boundary issues
-    const handleLocalSearch = (query) => {
+    const handleLocalSearch = (query, boardIdOverride = null) => {
       if (setGlobalSearchQuery && setIsGlobalSearchOpen) {
         setGlobalSearchQuery(query);
         setIsGlobalSearchOpen(true);
       }
 
-      const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
+      let searchBoardId = boardIdOverride;
+      let matchedBoardObj = null;
+      if (searchBoardId) {
+        matchedBoardObj = (boards || []).find(b => parseInt(b.id) === parseInt(searchBoardId));
+      }
+      if (!searchBoardId) {
+        matchedBoardObj = (boards || []).find(b => {
+          const cleanBName = b.name.toLowerCase();
+          const qLower = (query || '').toLowerCase();
+          return qLower.includes(`#${cleanBName}`) || 
+                 qLower.includes(`project ${cleanBName}`) ||
+                 qLower.includes(`proyek ${cleanBName}`) ||
+                 qLower.includes(`board ${cleanBName}`) ||
+                 qLower.includes(`project name ${cleanBName}`) ||
+                 qLower.includes(`di project ${cleanBName}`);
+        });
+        if (matchedBoardObj) searchBoardId = matchedBoardObj.id;
+      }
+      if (!searchBoardId && selectedBoard && selectedBoard.id !== 'global') {
+        searchBoardId = selectedBoard.id;
+        matchedBoardObj = selectedBoard;
+      }
+
+      const boardParam = searchBoardId ? `&board_id=${searchBoardId}` : '';
       axios
         .get(`/api/tasks/search?q=${encodeURIComponent(query)}${boardParam}`)
         .then((res) => {
           const results = res.data.results || [];
-          const resultsText = results.length === 0
-            ? tMsg(
-                `Aku tidak menemukan tugas dengan kata kunci **"${query}"** di database. Coba kata kunci lain?`,
-                `Aku tidak menemukan tugas dengan kata kunci **"${query}"** di database. Coba kata kunci lain?`
-              )
-            : tMsg(
-                `Aku sudah cari task yang mengandung kata **"${query}"**. Ini hasilnya:`,
-                `Aku sudah cari task yang mengandung kata **"${query}"**. Ini hasilnya:`
-              );
-
+          
+          const boardLabel = matchedBoardObj ? ` di project **"${matchedBoardObj.name}"**` : '';
           if (results.length === 0) {
-            addBotMessage(resultsText, [optStartOver, optClose]);
+            setLastSearchResults(null);
+            setLastSearchDisplayed(0);
+            addBotMessage(
+              tMsg(
+                `Aku tidak menemukan tugas dengan kata kunci **"${query}"**${boardLabel} di database. Coba kata kunci lain?`,
+                `Aku tidak menemukan tugas dengan kata kunci **"${query}"**${boardLabel} di database. Coba kata kunci lain?`
+              ),
+              [optStartOver, optClose]
+            );
           } else {
-            const searchResultsPayload = results.slice(0, 5).map(t => {
+            // Store ALL results for pagination
+            const allResults = results.map(t => {
               const boardName = boards?.find((b) => b.id === t.board_id)?.name || 'General';
               return {
                 id: t.id,
@@ -412,8 +438,29 @@ export default function SmartAssistant({
                 deadline: t.deadline
               };
             });
+
+            // Show first 5 results
+            const PAGE_SIZE = 5;
+            const firstPage = allResults.slice(0, PAGE_SIZE);
+            const hasMore = allResults.length > PAGE_SIZE;
             
-            addBotMessage(resultsText, [optStartOver, optClose], false, searchResultsPayload);
+            // Save full results for "show more" pagination
+            setLastSearchResults(allResults);
+            setLastSearchDisplayed(PAGE_SIZE);
+
+            const resultsText = hasMore
+              ? tMsg(
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Menampilkan ${PAGE_SIZE} pertama:`,
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Menampilkan ${PAGE_SIZE} pertama:`
+                )
+              : tMsg(
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Ini hasilnya:`,
+                  `Aku menemukan **${allResults.length} task**${boardLabel}. Ini hasilnya:`
+                );
+
+            const optShowMore = tMsg('Show More Results', 'Tampilkan Lainnya');
+            const options = hasMore ? [optShowMore, optStartOver, optClose] : [optStartOver, optClose];
+            addBotMessage(resultsText, options, false, firstPage);
           }
         })
         .catch(() => {
@@ -428,9 +475,59 @@ export default function SmartAssistant({
       setStep('end');
     };
 
+    // Show More Search Results handler (pagination)
+    const handleShowMoreResults = () => {
+      if (!lastSearchResults || lastSearchDisplayed >= lastSearchResults.length) {
+        addBotMessage(
+          tMsg(
+            'Semua hasil pencarian sudah ditampilkan. Tidak ada lagi yang tersisa.',
+            'Semua hasil pencarian sudah ditampilkan. Tidak ada lagi yang tersisa.'
+          ),
+          [optStartOver, optClose]
+        );
+        return;
+      }
+
+      const PAGE_SIZE = 5;
+      const nextPage = lastSearchResults.slice(lastSearchDisplayed, lastSearchDisplayed + PAGE_SIZE);
+      const newDisplayed = lastSearchDisplayed + nextPage.length;
+      setLastSearchDisplayed(newDisplayed);
+
+      const remaining = lastSearchResults.length - newDisplayed;
+      const optShowMore = tMsg('Show More Results', 'Tampilkan Lainnya');
+      const options = remaining > 0 ? [optShowMore, optStartOver, optClose] : [optStartOver, optClose];
+
+      addBotMessage(
+        tMsg(
+          `Menampilkan ${nextPage.length} hasil lagi (${newDisplayed} dari ${lastSearchResults.length} total):`,
+          `Menampilkan ${nextPage.length} hasil lagi (${newDisplayed} dari ${lastSearchResults.length} total):`
+        ),
+        options,
+        false,
+        nextPage
+      );
+    };
+
     // Query Extractor from natural sentences
     const extractSearchQuery = (textStr) => {
       const textL = textStr.toLowerCase().trim();
+
+      // EXCLUSION: Metadata/listing questions should NOT be intercepted as search
+      // These should fall through to the AI prompt for intelligent handling
+      const metadataPatterns = [
+        'list project', 'daftar project', 'daftar proyek', 'proyek apa saja',
+        'project apa saja', 'ada proyek apa', 'ada project apa', 'berapa project',
+        'berapa proyek', 'berapa tugas', 'berapa task', 'jumlah tugas', 'jumlah task',
+        'jumlah proyek', 'jumlah project', 'siapa saja', 'anggota tim', 'tim siapa',
+        'team member', 'list task di', 'daftar tugas di', 'tugas di project',
+        'task di project', 'tugas di proyek', 'task di proyek',
+        'ada berapa', 'berapa banyak', 'how many', 'list all', 'show all',
+        'tampilkan semua', 'lihat semua', 'semua project', 'semua proyek',
+        'apa saja', 'what projects', 'which projects',
+      ];
+      if (metadataPatterns.some(p => textL.includes(p))) {
+        return null;
+      }
       
       const searchIndex = textL.indexOf('cari ');
       const searchIndexEn = textL.indexOf('search ');
@@ -495,6 +592,29 @@ export default function SmartAssistant({
       }
       if (['close', 'tutup'].includes(textLower)) {
         closeDrawer();
+        return;
+      }
+
+      // Intercept "Show More Results" / "Tampilkan Lainnya" (pagination for search results)
+      const optShowMore = tMsg('Show More Results', 'Tampilkan Lainnya');
+      const showMorePatterns = [
+        'show more', 'more results', 'tampilkan lainnya', 'lainnya', 'sisanya',
+        'tampilkan sisanya', 'lihat lainnya', 'lihat sisanya', 'show the rest',
+        'next page', 'halaman berikutnya', 'berikutnya', 'selanjutnya',
+        'tampilkan lebih', 'tampilkan lebih banyak', 'more', 'yang lain',
+      ];
+      if (data === optShowMore || showMorePatterns.some(p => textLower === p || textLower.includes(p))) {
+        if (lastSearchResults && lastSearchDisplayed < lastSearchResults.length) {
+          handleShowMoreResults();
+        } else {
+          addBotMessage(
+            tMsg(
+              'Semua hasil pencarian sudah ditampilkan sebelumnya. Mau cari hal lain?',
+              'Semua hasil pencarian sudah ditampilkan sebelumnya. Mau cari hal lain?'
+            ),
+            [optStartOver, optClose]
+          );
+        }
         return;
       }
 
@@ -1438,8 +1558,17 @@ If it's a general question or conversation related to project/task management, o
                   }
                   return;
                 } else if (parsed.action === 'search_tasks') {
-                  if (parsed.search_query) {
-                    handleLocalSearch(parsed.search_query);
+                  const searchQuery = (parsed.search_query || '').trim();
+                  const targetBoardName = (parsed.target_board_name || '').trim();
+                  let matchedBoardId = null;
+                  if (targetBoardName) {
+                    const targetClean = targetBoardName.toLowerCase().replace(/^#/, '').trim();
+                    const matchedBoard = (boards || []).find(b => b.name.toLowerCase() === targetClean || b.name.toLowerCase().includes(targetClean));
+                    if (matchedBoard) matchedBoardId = matchedBoard.id;
+                  }
+
+                  if (searchQuery || targetBoardName) {
+                    handleLocalSearch(searchQuery || targetBoardName, matchedBoardId);
                   } else {
                     addBotMessage(
                       tMsg('What would you like to search for?', 'Mau cari task apa?')
@@ -1511,43 +1640,66 @@ If it's a general question or conversation related to project/task management, o
                     return;
                   }
 
-                  // Perform updates directly
+                  // SAFETY: Only allow updating 1 task at a time
+                  if (matchingTasks.length > 1) {
+                    // Reject bulk update softly — show matching tasks so user can pick one
+                    const searchResultsPayload = matchingTasks.slice(0, 5).map((t) => ({
+                      id: t.id,
+                      project_name: t.project_name,
+                      board_name: boards?.find((b) => b.id === t.board_id)?.name || 'General',
+                      status: t.status,
+                      category: t.category,
+                      deadline: t.deadline,
+                    }));
+                    setTaskData((prev) => ({ ...prev, pending_updates: pendingUpdates, search_results: searchResultsPayload }));
+                    setStep('ask_pick_task_to_update');
+                    addBotMessage(
+                      tMsg(
+                        `Demi keamanan datamu, aku hanya bisa update satu task dalam satu waktu ya. Aku menemukan **${matchingTasks.length} task** yang cocok — pilih salah satu yang mau diperbarui:`,
+                        `Demi keamanan datamu, aku hanya bisa update satu task dalam satu waktu ya. Aku menemukan **${matchingTasks.length} task** yang cocok — pilih salah satu yang mau diperbarui:`
+                      ),
+                      null,
+                      false,
+                      searchResultsPayload
+                    );
+                    return;
+                  }
+
+                  // Single task match — proceed with update directly
                   addBotMessage(getThinkingPhrase());
-                  const updatePromises = matchingTasks.map(targetTask => {
-                    let formattedDeadline = pendingUpdates.deadline || targetTask.deadline || '';
-                    if (pendingUpdates.deadline) {
-                      const d = new Date(pendingUpdates.deadline);
-                      if (!isNaN(d.getTime())) {
-                        formattedDeadline = d.toISOString().split('T')[0];
-                      }
+                  const targetTask = matchingTasks[0];
+                  let formattedDeadline = pendingUpdates.deadline || targetTask.deadline || '';
+                  if (pendingUpdates.deadline) {
+                    const d = new Date(pendingUpdates.deadline);
+                    if (!isNaN(d.getTime())) {
+                      formattedDeadline = d.toISOString().split('T')[0];
                     }
+                  }
 
-                    const promises = [];
-                    if (pendingUpdates.status) {
-                      promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: pendingUpdates.status }));
-                    }
+                  const promises = [];
+                  if (pendingUpdates.status) {
+                    promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: pendingUpdates.status }));
+                  }
 
-                    const detailsPayload = {
-                      project_name: pendingUpdates.project_name || targetTask.project_name || '',
-                      requester: pendingUpdates.requester || targetTask.requester || `@${currentUser}`,
-                      category: pendingUpdates.category || targetTask.category || 'General',
-                      description: pendingUpdates.description !== undefined ? pendingUpdates.description : (targetTask.description || ''),
-                      supporting_access: targetTask.supporting_access || '',
-                      start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
-                      deadline: formattedDeadline,
-                      impact: targetTask.impact || 'Medium',
-                      etc: targetTask.etc || 2.0,
-                      auto_nudge: targetTask.auto_nudge || false,
-                      recurring: targetTask.recurring || 'none',
-                      status: pendingUpdates.status || targetTask.status || 'Open',
-                      board_id: targetTask.board_id || null,
-                    };
+                  const detailsPayload = {
+                    project_name: pendingUpdates.project_name || targetTask.project_name || '',
+                    requester: pendingUpdates.requester || targetTask.requester || `@${currentUser}`,
+                    category: pendingUpdates.category || targetTask.category || 'General',
+                    description: pendingUpdates.description !== undefined ? pendingUpdates.description : (targetTask.description || ''),
+                    supporting_access: targetTask.supporting_access || '',
+                    start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+                    deadline: formattedDeadline,
+                    impact: targetTask.impact || 'Medium',
+                    etc: targetTask.etc || 2.0,
+                    auto_nudge: targetTask.auto_nudge || false,
+                    recurring: targetTask.recurring || 'none',
+                    status: pendingUpdates.status || targetTask.status || 'Open',
+                    board_id: targetTask.board_id || null,
+                  };
 
-                    promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
-                    return Promise.all(promises);
-                  });
+                  promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
 
-                  Promise.all(updatePromises)
+                  Promise.all(promises)
                     .then(() => {
                       setMessages((prev) => prev.filter((m) => !thinkingPhrases.some((p) => m.text === p)));
                       if (fetchTasks) fetchTasks();
@@ -1557,12 +1709,10 @@ If it's a general question or conversation related to project/task management, o
                         .map(([k, v]) => `• **${k}** → ${v}`)
                         .join('\n');
 
-                      const taskTitlesList = matchingTasks.map(t => `• **"${t.project_name}"**`).join('\n');
-
                       addBotMessage(
                         tMsg(
-                          `✅ Successfully updated **${matchingTasks.length} task(s)**!\n\nPerubahan:\n${updateSummary}\n\nDaftar Task:\n${taskTitlesList}`,
-                          `✅ Berhasil memperbarui **${matchingTasks.length} task**!\n\nPerubahan:\n${updateSummary}\n\nDaftar Task:\n${taskTitlesList}`
+                          `✅ Berhasil memperbarui task **"${targetTask.project_name}"**!\n\nPerubahan:\n${updateSummary}`,
+                          `✅ Berhasil memperbarui task **"${targetTask.project_name}"**!\n\nPerubahan:\n${updateSummary}`
                         ),
                         [optStartOver, optClose]
                       );
