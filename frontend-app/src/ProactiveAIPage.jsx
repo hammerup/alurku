@@ -853,9 +853,13 @@ USER REQUEST:
       let aiResponse = safeParseJSON(rawText);
 
       if (!aiResponse || typeof aiResponse !== 'object') {
+        const cleanText = (rawText || '').trim();
+        const isRawJson = cleanText.startsWith('{') || cleanText.includes('"response_type"') || cleanText.includes('"action"');
         aiResponse = {
           response_type: 'chat',
-          chat_message: rawText || tMsg('Sorry, I could not parse the response.', 'Maaf, aku tidak bisa memproses respons ini.'),
+          chat_message: isRawJson 
+            ? tMsg('Aku mengerti maksudmu, tapi bisakah kamu sebutkan detailnya satu per satu supaya aku bisa bantu dengan rapi? (ง •̀_•́)ง', 'Aku mengerti maksudmu, tapi bisakah kamu sebutkan detailnya satu per satu supaya aku bisa bantu dengan rapi? (ง •̀_•́)ง')
+            : (rawText || tMsg('Sorry, I could not parse the response.', 'Maaf, aku tidak bisa memproses respons ini.')),
           tasks: []
         };
       }

@@ -1493,6 +1493,19 @@ If it's a general question or conversation related to project/task management, o
                 .replace(/```/g, '')
                 .trim();
 
+              // --- Detect MULTIPLE update_task JSON objects ---
+              const multiUpdateMatches = cleanJson.match(/\{[^{}]*"action"\s*:\s*"update_task"[^{}]*\}/g);
+              if (multiUpdateMatches && multiUpdateMatches.length >= 2) {
+                setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
+                addBotMessage(
+                  tMsg(
+                    'Demi keamanan datamu, aku hanya bisa update satu task dalam satu waktu ya. Coba sebutkan judul task yang lebih spesifik satu per satu yang mau diperbarui! 😊',
+                    'Demi keamanan datamu, aku hanya bisa update satu task dalam satu waktu ya. Coba sebutkan judul task yang lebih spesifik satu per satu yang mau diperbarui! 😊'
+                  )
+                );
+                return;
+              }
+
               // --- Detect MULTIPLE create_task JSON objects (AI hallucination pattern) ---
               // When AI returns multiple JSON objects instead of redirecting to planner,
               // we catch them here and convert them into planner tasks.
@@ -1539,7 +1552,29 @@ If it's a general question or conversation related to project/task management, o
               }
               // --- End multi-JSON detection ---
 
-              const parsed = safeParseJSON(replyText);
+              let parsed = safeParseJSON(replyText);
+
+              // Fallback: If safeParseJSON failed on full text but text contains valid single JSON object
+              if (!parsed && (cleanJson.startsWith('{') || cleanJson.includes('"action"'))) {
+                const singleJsonMatch = cleanJson.match(/\{[^{}]*"action"[^{}]*\}/);
+                if (singleJsonMatch) {
+                  try {
+                    parsed = JSON.parse(singleJsonMatch[0]);
+                  } catch (_) {}
+                }
+              }
+
+              // Guardrail against raw JSON leakage into UI
+              if (!parsed && (cleanJson.startsWith('{') || cleanJson.includes('"action"'))) {
+                setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
+                addBotMessage(
+                  tMsg(
+                    'Aku mengerti maksudmu, tapi bisakah kamu berikan detailnya satu per satu supaya aku bisa proses dengan tepat? (ง •̀_•́)ง',
+                    'Aku mengerti maksudmu, tapi bisakah kamu berikan detailnya satu per satu supaya aku bisa proses dengan tepat? (ง •̀_•́)ง'
+                  )
+                );
+                return;
+              }
               if (parsed) {
                 if (parsed.action === 'create_task') {
                   const deadlineDate = new Date(parsed.deadline);
