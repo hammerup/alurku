@@ -14,7 +14,7 @@ export function useWebSocket(workspaceId, token, currentUser) {
     if (!workspaceId) return;
 
     axios
-      .get(`/api/workspaces/${workspaceId}/activity`)
+      .get(`/api/workspaces/${workspaceId}/activity?limit=100`)
       .then((res) => {
         setActivityFeed(res.data || []);
       })

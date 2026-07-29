@@ -47,6 +47,7 @@ export default function WorkspaceOverview() {
 
   // Project pagination state
   const [showAllProjects, setShowAllProjects] = useState(false);
+  const [visibleActivityCount, setVisibleActivityCount] = useState(20);
 
   // Workspace member management states
   const [isViewingMembers, setIsViewingMembers] = useState(false);
@@ -1072,19 +1073,26 @@ export default function WorkspaceOverview() {
         <div className="col-span-12 xl:col-span-4 flex">
           <div className="bg-white dark:bg-[#121B2D] rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden shadow-sm w-full h-full">
             <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-[#111E38] dark:text-white">{tMsg('Team Activity', 'Aktivitas Tim')}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-[#111E38] dark:text-white">{tMsg('Team Activity', 'Aktivitas Tim')}</h2>
+                {activityFeed.length > 0 && (
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                    {activityFeed.length}
+                  </span>
+                )}
+              </div>
               <span className="bg-[#FACC15] text-[#111E38] text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
                 Live
               </span>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar relative">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar relative max-h-[500px]">
               {/* Vertical connector line */}
               {activityFeed.length > 0 && (
                 <div className="absolute left-11 top-10 bottom-10 w-px bg-neutral-200 dark:bg-neutral-850"></div>
               )}
               
-              {activityFeed.slice(0, 10).map((act) => (
+              {activityFeed.slice(0, visibleActivityCount).map((act) => (
                 <div key={act.id} className="flex gap-4 relative z-10">
                   <div className="shrink-0">
                     <div className="ring-2 ring-white dark:ring-[#121B2D] rounded-full">
@@ -1097,6 +1105,29 @@ export default function WorkspaceOverview() {
                   </div>
                 </div>
               ))}
+
+              {/* Load More / Show Less Controls */}
+              {activityFeed.length > visibleActivityCount && (
+                <div className="pt-2 text-center relative z-20">
+                  <button
+                    onClick={() => setVisibleActivityCount((prev) => prev + 20)}
+                    className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-bold text-[#111E38] dark:text-white rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                  >
+                    {tMsg(`Load More (${activityFeed.length - visibleActivityCount} left)`, `Tampilkan Lebih Banyak (${activityFeed.length - visibleActivityCount} lainnya)`)}
+                  </button>
+                </div>
+              )}
+
+              {visibleActivityCount > 20 && activityFeed.length <= visibleActivityCount && (
+                <div className="pt-2 text-center relative z-20">
+                  <button
+                    onClick={() => setVisibleActivityCount(20)}
+                    className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-bold text-neutral-500 dark:text-neutral-400 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+                  >
+                    {tMsg('Show Less', 'Tampilkan Lebih Sedikit')}
+                  </button>
+                </div>
+              )}
 
               {activityFeed.length === 0 && (
                 <div className="text-center py-10 text-xs text-neutral-450 dark:text-neutral-500">

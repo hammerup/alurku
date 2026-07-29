@@ -655,7 +655,7 @@ app.include_router(ws_router)
 @app.get("/api/workspaces/{workspace_id}/activity")
 def get_workspace_activity(
     workspace_id: int,
-    limit: int = 20,
+    limit: int = 100,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -677,7 +677,7 @@ def get_workspace_activity(
         db.query(ActivityLog)
         .filter(ActivityLog.workspace_id == workspace_id)
         .order_by(ActivityLog.created_at.desc())
-        .limit(min(limit, 50))
+        .limit(min(limit, 100))
         .all()
     )
 
