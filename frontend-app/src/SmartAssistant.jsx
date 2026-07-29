@@ -73,6 +73,7 @@ export default function SmartAssistant({
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const plannerEndRef = useRef(null);
+  const prevBoardRef = useRef(selectedBoard?.id);
   const [noteSuggestions, setNoteSuggestions] = useState([]);
   const [chatSessions, setChatSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
