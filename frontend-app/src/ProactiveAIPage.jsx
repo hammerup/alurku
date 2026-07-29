@@ -683,10 +683,12 @@ INSTRUCTIONS:
    - Write a friendly and casual confirmation in "chat_message" explaining what you are searching for, adhering strictly to the "Aku/Kamu" persona.
    - Leave the "tasks" array empty.
 4. If the user request is a general question, asks for advice, or is conversational in nature (and does NOT imply creating structured tasks immediately), return "response_type": "chat" and write your advice in "chat_message". Leave the "tasks" array empty.
-5. If the user wants to UPDATE or EDIT AN EXISTING TASK (e.g. "ubah status task X", "update task", "edit task", "ganti deadline", "tandai selesai", "mark as done", "change status", "update deadline", "pindah status", "set status to"):
+5. If the user wants to UPDATE or EDIT EXISTING TASK(S) (e.g. "ubah status task X", "update task", "edit task", "ganti deadline", "tandai selesai", "mark as done", "change status", "update deadline", "pindah status", "set status to", "ubah semua task pending di board #Design jadi inprogress"):
    - Return "response_type": "update_task".
-   - Set "search_query" to key words to find the task (title keywords, assignee, etc).
-   - Put requested changes inside "updates" object: {"status": "Open/In Progress/Done/Rejected", "deadline": "YYYY-MM-DD", "project_name": "new title", "category": "new category", "requester": "new assignee", "description": "new description"}. Only include fields inside 'updates' that the user actually wants to change.
+   - If the user specifies a board/project using '#BoardName' or 'di board X' or 'di project X', extract that board name into "target_board_name" (e.g. "Design" if user mentions "#Design" or "board Design"). DO NOT put board/project names inside search_query unless the task title itself contains that word!
+   - If the user specifies a current status filter (e.g., "semua task pending", "task open"), extract it into "target_status_filter" ("Open", "Pending", "In Progress", "Done", "Rejected").
+   - Set "search_query" to key words to match the task title/content if specific task names are mentioned. If user asks to update ALL tasks in a board or with a status, leave "search_query" clean or empty.
+   - Put requested changes inside "updates" object: {"status": "Open/In Progress/Done/Rejected", "deadline": "YYYY-MM-DD", "project_name": "new title", "category": "new category", "requester": "new assignee", "description": "new description"}. Map informal status values ("inprogress", "in progress", "jalan", "dikerjakan") to standard status string "In Progress", "pending"/"open" to "Open", "done"/"selesai" to "Done".
    - Write a clear conversational confirmation in "chat_message" explaining what updates you are applying.
 6. If the user request implies creating tasks, assigning work, setting up projects, or breaking down a plan, return "response_type": "tasks". In "chat_message", write a brief conversational summary introducing the PROPOSED DRAFT TASKS for the user to review.
    - CRITICAL DRAFT TASK MICROCOPY RULE: The generated tasks are ONLY draft suggestions placed in the user's review panel/inbox for their consideration. They are NOT automatically saved or added to the database board yet. You MUST explicitly invite the user to review, edit, or select which draft tasks to save (e.g. "Aku sudah siapkan draft tugasnya di bawah ini! Yuk tinjau dan tentukan mana saja yang mau kamu simpan ke board:"). NEVER say "Semua task ini sudah masuk ke board" or "Sudah saya simpan ke database" — that is factually false!
@@ -708,6 +710,8 @@ JSON SCHEMA:
 {
   "response_type": "chat" | "tasks" | "search" | "update_task" | "invite_member" | "create_subtasks",
   "chat_message": "Friendly, supportive, and conversational reply in the language used by the user. Format lists and paragraphs with clean double newlines (\n\n).",
+  "target_board_name": "Optional board/project name extracted from #BoardName or 'board X' if specified in prompt",
+  "target_status_filter": "Optional current status filter (Open/In Progress/Done/Rejected) if user specifies updating tasks with a specific status",
   "search_query": "space-separated keywords representing target filters (e.g., 'budi overdue' or 'Design High') if response_type is 'search', 'update_task', or 'create_subtasks'. Otherwise leave empty.",
   "subtasks": ["subtask 1", "subtask 2"],
   "username_or_email": "Target username or email if response_type is 'invite_member'. Otherwise leave empty.",
@@ -828,66 +832,118 @@ USER REQUEST:
 
       if (aiResponse.response_type === 'update_task') {
         setIsProcessing(true);
-        setLoadingText(tMsg('Locating task to update...', 'Mencari task untuk diperbarui...'));
+        setLoadingText(tMsg('Locating tasks to update...', 'Mencari task untuk diperbarui...'));
         try {
-          const searchQuery = aiResponse.search_query || '';
+          const searchQuery = (aiResponse.search_query || '').trim();
+          const targetBoardName = (aiResponse.target_board_name || '').trim();
+          const targetStatusFilter = (aiResponse.target_status_filter || '').trim();
           const updates = aiResponse.updates || {};
-          const boardParam = (selectedBoard && selectedBoard.id !== 'global') ? `&board_id=${selectedBoard.id}` : '';
-          const res = await axios.get(`/api/tasks/search?q=${encodeURIComponent(searchQuery)}${boardParam}`);
-          const results = res.data?.results || [];
 
-          if (results.length === 0) {
+          // Standardize requested status string
+          if (updates.status) {
+            const stLower = updates.status.toLowerCase().replace(/[^a-z]/g, '');
+            if (stLower === 'inprogress') updates.status = 'In Progress';
+            else if (stLower === 'open' || stLower === 'pending') updates.status = 'Open';
+            else if (stLower === 'done' || stLower === 'completed') updates.status = 'Done';
+            else if (stLower === 'rejected') updates.status = 'Rejected';
+          }
+
+          // Resolve board ID if board name specified
+          let matchedBoardId = null;
+          if (targetBoardName) {
+            const targetClean = targetBoardName.toLowerCase().replace(/^#/, '');
+            const matchedBoard = (boards || []).find(b => b.name.toLowerCase() === targetClean || b.name.toLowerCase().includes(targetClean));
+            if (matchedBoard) matchedBoardId = matchedBoard.id;
+          } else if (selectedBoard && selectedBoard.id !== 'global') {
+            matchedBoardId = selectedBoard.id;
+          }
+
+          let matchingTasks = [];
+          if (matchedBoardId) {
+            matchingTasks = (tasks || []).filter(t => parseInt(t.board_id) === parseInt(matchedBoardId));
+          } else {
+            matchingTasks = [...(tasks || [])];
+          }
+
+          // Filter by status if specified (e.g. pending/open)
+          if (targetStatusFilter) {
+            const filterLower = targetStatusFilter.toLowerCase().replace(/[^a-z]/g, '');
+            matchingTasks = matchingTasks.filter(t => {
+              const curStatus = (t.status || 'Open').toLowerCase().replace(/[^a-z]/g, '');
+              if (filterLower === 'pending' || filterLower === 'open') return curStatus === 'open' || curStatus === 'pending';
+              if (filterLower === 'inprogress') return curStatus === 'inprogress';
+              return curStatus === filterLower;
+            });
+          }
+
+          // Filter by title search query if present
+          if (searchQuery) {
+            const qLower = searchQuery.toLowerCase();
+            matchingTasks = matchingTasks.filter(t => 
+              (t.project_name || '').toLowerCase().includes(qLower) || 
+              (t.category || '').toLowerCase().includes(qLower)
+            );
+          }
+
+          if (matchingTasks.length === 0) {
+            const targetLabel = targetBoardName ? ` board **#${targetBoardName}**` : '';
             setChatHistory(prev => [
               ...prev,
               {
                 id: Math.random().toString(),
                 sender: 'ai',
-                text: tMsg(`I couldn't find any task matching **"${searchQuery}"** to update.`, `Aku tidak menemukan task dengan kata kunci **"${searchQuery}"** untuk diperbarui.`)
+                text: tMsg(
+                  `I couldn't find any tasks matching your update criteria in${targetLabel}.`,
+                  `Aku tidak menemukan task yang cocok dengan kriteria pembaruanmu di${targetLabel}.`
+                )
               }
             ]);
           } else {
-            const targetTask = results[0];
-            setLoadingText(tMsg('Applying task updates...', 'Menerapkan pembaruan task...'));
+            setLoadingText(tMsg(`Applying updates to ${matchingTasks.length} task(s)...`, `Menerapkan pembaruan pada ${matchingTasks.length} task...`));
 
-            // Parse or format deadline if provided
-            let formattedDeadline = updates.deadline || targetTask.deadline || '';
-            if (updates.deadline) {
-              const d = new Date(updates.deadline);
-              if (!isNaN(d.getTime())) {
-                formattedDeadline = d.toISOString().split('T')[0];
+            const updatePromises = matchingTasks.map(targetTask => {
+              let formattedDeadline = updates.deadline || targetTask.deadline || '';
+              if (updates.deadline) {
+                const d = new Date(updates.deadline);
+                if (!isNaN(d.getTime())) {
+                  formattedDeadline = d.toISOString().split('T')[0];
+                }
               }
-            }
 
-            const promises = [];
-            if (updates.status) {
-              promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: updates.status }));
-            }
+              const promises = [];
+              if (updates.status) {
+                promises.push(axios.put(`/api/tasks/${targetTask.id}`, { status: updates.status }));
+              }
 
-            // Build FULL TaskEditModel payload so FastAPI validation passes
-            const detailsPayload = {
-              project_name: updates.project_name || targetTask.project_name || '',
-              requester: updates.requester || targetTask.requester || `@${currentUser}`,
-              category: updates.category || targetTask.category || 'General',
-              description: updates.description !== undefined ? updates.description : (targetTask.description || ''),
-              supporting_access: targetTask.supporting_access || '',
-              start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
-              deadline: formattedDeadline,
-              impact: targetTask.impact || 'Medium',
-              etc: targetTask.etc || 2.0,
-              auto_nudge: targetTask.auto_nudge || false,
-              recurring: targetTask.recurring || 'none',
-              status: updates.status || targetTask.status || 'Open',
-              board_id: targetTask.board_id || null,
-            };
+              const detailsPayload = {
+                project_name: updates.project_name || targetTask.project_name || '',
+                requester: updates.requester || targetTask.requester || `@${currentUser}`,
+                category: updates.category || targetTask.category || 'General',
+                description: updates.description !== undefined ? updates.description : (targetTask.description || ''),
+                supporting_access: targetTask.supporting_access || '',
+                start_date: targetTask.start_date ? targetTask.start_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+                deadline: formattedDeadline,
+                impact: targetTask.impact || 'Medium',
+                etc: targetTask.etc || 2.0,
+                auto_nudge: targetTask.auto_nudge || false,
+                recurring: targetTask.recurring || 'none',
+                status: updates.status || targetTask.status || 'Open',
+                board_id: targetTask.board_id || null,
+              };
 
-            promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
+              promises.push(axios.put(`/api/tasks/${targetTask.id}/details`, detailsPayload));
+              return Promise.all(promises);
+            });
 
-            await Promise.all(promises);
+            await Promise.all(updatePromises);
             if (fetchTasks) fetchTasks();
+
             const updateSummary = Object.entries(updates)
               .filter(([, v]) => v)
               .map(([k, v]) => `**${k}** → ${v}`)
-                .join(', ');
+              .join(', ');
+
+            const taskTitlesList = matchingTasks.map(t => `• **"${t.project_name}"**`).join('\n');
 
             setChatHistory(prev => [
               ...prev,
@@ -895,8 +951,8 @@ USER REQUEST:
                 id: Math.random().toString(),
                 sender: 'ai',
                 text: tMsg(
-                  `✅ Task **"${targetTask.project_name}"** updated successfully! (${updateSummary})`,
-                  `✅ Task **"${targetTask.project_name}"** berhasil diperbarui! (${updateSummary})`
+                  `✅ Successfully updated **${matchingTasks.length} task(s)** (${updateSummary}):\n\n${taskTitlesList}`,
+                  `✅ Berhasil memperbarui **${matchingTasks.length} task** (${updateSummary}):\n\n${taskTitlesList}`
                 )
               }
             ]);
@@ -908,7 +964,7 @@ USER REQUEST:
             {
               id: Math.random().toString(),
               sender: 'ai',
-              text: tMsg('Failed to update task. Please try again.', 'Gagal memperbarui task. Silakan coba lagi.')
+              text: tMsg('Failed to update task(s). Please try again.', 'Gagal memperbarui task. Silakan coba lagi.')
             }
           ]);
         } finally {

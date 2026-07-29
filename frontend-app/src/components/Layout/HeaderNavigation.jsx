@@ -57,7 +57,9 @@ export default function HeaderNavigation({
     setIsSettingsOpen,
     setIsLeaveModalOpen,
     accountStatus,
+    isProjectChatOpen,
     setIsProjectChatOpen,
+    drawerTab,
     setDrawerTab,
     setIsMyTicketsOpen,
     setIsDocsOpen,
@@ -83,6 +85,8 @@ export default function HeaderNavigation({
   const profileMenuRef = useRef(null);
   const scopeRef = useRef(null);
 
+  const searchInputRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
@@ -92,9 +96,21 @@ export default function HeaderNavigation({
         setIsScopeDropdownOpen(false);
       }
     };
+
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -231,7 +247,7 @@ export default function HeaderNavigation({
         ) : null}
 
         {/* Search Icon & Input Field */}
-        <div className="flex-1 flex items-center pl-3 pr-8 relative">
+        <div className="flex-1 flex items-center pl-3 pr-3 relative">
           <span className="text-neutral-400 mr-2 flex items-center shrink-0">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" />
@@ -239,6 +255,7 @@ export default function HeaderNavigation({
             </svg>
           </span>
           <input
+            ref={searchInputRef}
             type="text"
             placeholder={
               activeWorkspace && activeWorkspace.id && !forceSearchAll
@@ -250,14 +267,19 @@ export default function HeaderNavigation({
             onFocus={() => {
               if (globalSearchQuery.length > 0) setIsGlobalSearchOpen(true);
             }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && globalSearchQuery.trim()) {
-              closeGlobalSearch();
-              setViewMode('search-results');
-            }
-          }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && globalSearchQuery.trim()) {
+                closeGlobalSearch();
+                setViewMode('search-results');
+              }
+            }}
             className="w-full bg-transparent text-black dark:text-white text-xs outline-none py-1 placeholder-neutral-400"
           />
+          {!globalSearchQuery && (
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-800 text-neutral-400 select-none border border-neutral-300/40 dark:border-neutral-700/50">
+              ⌘K
+            </kbd>
+          )}
         </div>
         {globalSearchQuery && (
           <button
@@ -406,80 +428,86 @@ export default function HeaderNavigation({
         )}
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Stylish Light/Dark Theme Switch Toggle */}
         <div className="flex items-center">
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`relative w-14 h-8 rounded-full transition-all duration-500 ease-in-out p-1 flex items-center shadow-inner ${
-              isDarkMode ? 'bg-neutral-800 border border-white/5' : 'bg-neutral-200 border border-black/5'
+            className={`relative w-12 h-7 rounded-full transition-all duration-300 ease-in-out p-0.5 flex items-center shadow-inner ${
+              isDarkMode ? 'bg-neutral-800 border border-neutral-700/50' : 'bg-neutral-200 border border-neutral-300/60'
             }`}
             aria-label="Toggle theme"
+            title={tMsg('Toggle Theme', 'Ganti Tema')}
           >
             <div
-              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-500 ease-in-out shadow-md ${
+              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ease-in-out shadow-sm ${
                 isDarkMode 
-                  ? 'translate-x-6 bg-[#001f3f] text-[#FACC15]' 
-                  : 'translate-x-0 bg-white text-[#FACC15]'
+                  ? 'translate-x-5 bg-[#111E38] text-[#FACC15]' 
+                  : 'translate-x-0 bg-white text-[#111E38]'
               }`}
             >
-              <span className="material-symbols-outlined text-[16px] select-none font-bold">
+              <span className="material-symbols-outlined text-[14px] select-none font-bold">
                 {isDarkMode ? 'dark_mode' : 'light_mode'}
               </span>
             </div>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <button
             onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
-            className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider transition-all border ${
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all border ${
               isDarkMode
-                ? 'border-white/10 hover:border-white/30 text-white bg-white/5'
-                : 'border-[#0b1c30]/10 hover:border-[#0b1c30]/30 text-[#001f3f] bg-black/5'
+                ? 'border-neutral-800 hover:border-neutral-700 text-neutral-300 bg-neutral-900/60'
+                : 'border-neutral-200 hover:border-neutral-300 text-slate-700 bg-white'
             }`}
+            title={tMsg('Switch Language', 'Ganti Bahasa')}
           >
             {language}
           </button>
         </div>
 
-        {/* Luruka AI Trigger (Only if floating assistant button is off) */}
-        {!showAssistantButton && (
-          <button
-            onClick={() => {
+        {/* Luruka AI Trigger (Toggle right drawer AI assistant) */}
+        <button
+          onClick={() => {
+            if (isProjectChatOpen && drawerTab === 'assistant') {
+              setIsProjectChatOpen(false);
+            } else {
               setIsProjectChatOpen(true);
               setDrawerTab('assistant');
-            }}
-            className={`p-2 rounded-full transition-all border flex items-center justify-center hover:scale-105 duration-200 active:scale-95 ${
-              isDarkMode
-                ? 'border-white/10 hover:border-white/30 text-white bg-white/5'
-                : 'border-[#0b1c30]/10 hover:border-[#0b1c30]/30 text-[#001f3f] bg-black/5'
-            }`}
-            title="Luruka AI"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.187L15 15l-5.187.904zM18.007 7.007L17.5 10l-.507-2.993L14 6.5l2.993-.507L17.5 3l.507 2.993L21 6.5l-2.993.507z" />
-            </svg>
-          </button>
-        )}
+            }
+          }}
+          className={`p-2 rounded-xl transition-all border flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
+            isProjectChatOpen && drawerTab === 'assistant'
+              ? 'border-[#EAB308] dark:border-[#FACC15] bg-yellow-50 dark:bg-yellow-950/30'
+              : (isDarkMode
+                  ? 'border-neutral-800 text-neutral-300 bg-neutral-900/60'
+                  : 'border-neutral-200 text-slate-700 bg-white')
+          }`}
+          title={isProjectChatOpen && drawerTab === 'assistant' ? tMsg('Tutup Luruka AI', 'Close Luruka AI') : tMsg('Buka Luruka AI', 'Open Luruka AI')}
+        >
+          <svg className="w-4.5 h-4.5 text-[#EAB308] dark:text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.187L15 15l-5.187.904zM18.007 7.007L17.5 10l-.507-2.993L14 6.5l2.993-.507L17.5 3l.507 2.993L21 6.5l-2.993.507z" />
+          </svg>
+        </button>
 
         {/* Direct Notification Bell Button with local Dropdown positioning */}
         <div className="relative">
           <button
             onClick={() => setIsNotifOpen(!isNotifOpen)}
-            className={`relative p-2 rounded-full transition-all border flex items-center justify-center hover:scale-105 duration-200 active:scale-95 ${
+            className={`relative p-2 rounded-xl transition-all border flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
               isDarkMode
-                ? 'border-white/10 hover:border-white/30 text-white bg-white/5'
-                : 'border-[#0b1c30]/10 hover:border-[#0b1c30]/30 text-[#001f3f] bg-black/5'
+                ? 'border-neutral-800 text-neutral-300 bg-neutral-900/60'
+                : 'border-neutral-200 text-slate-700 bg-white'
             }`}
             title={tMsg('Notifications', 'Notifikasi')}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             {unreadCount > 0 && (
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-rose-500 ring-1 ring-white dark:ring-neutral-900" />
+              <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-neutral-900" />
             )}
           </button>
 
@@ -568,17 +596,17 @@ export default function HeaderNavigation({
           )}
         </div>
 
-        {/* Direct Setting Button */}
+        {/* Direct Setting Gear Button */}
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className={`p-2 rounded-full transition-all border flex items-center justify-center hover:scale-105 duration-200 active:scale-95 ${
+          className={`p-2 rounded-xl transition-all border flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
             isDarkMode
-              ? 'border-white/10 hover:border-white/30 text-white bg-white/5'
-              : 'border-[#0b1c30]/10 hover:border-[#0b1c30]/30 text-[#001f3f] bg-black/5'
+              ? 'border-neutral-800 text-neutral-300 bg-neutral-900/60'
+              : 'border-neutral-200 text-slate-700 bg-white'
           }`}
           title={tMsg('Settings', 'Pengaturan')}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
