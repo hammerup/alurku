@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAppContext } from '../contexts/AppContext';
 import { isUserAssigned, getTaskAssignee } from '../useAppLogic';
 import { Avatar } from '../SharedUI';
+import { getLurukaSystemPrompt } from '../utils/lurukaPersona';
 
 const cleanMarkdown = (text) => {
   if (!text) return '';
@@ -249,12 +250,23 @@ export default function HomeDashboard() {
       const weeklyOverloadWarning = isWeeklyOverload ? tMsg('The user is currently experiencing a weekly overload. ', 'Pengguna saat ini mengalami kelebihan beban kerja mingguan. ') : '';
       const monthlyOverloadWarning = isMonthlyOverload ? tMsg("The user's total assigned work for this period indicates a monthly overload. ", 'Total pekerjaan yang ditugaskan pada pengguna untuk periode ini menunjukkan kelebihan beban bulanan. ') : '';
 
-      const prompt = `As an AI assistant, provide a super brief (max 2 sentences) executive summary of the user's workload. Address the user directly (e.g., "You have..."). Use markdown bold syntax (**text**) to highlight key numbers, statuses, or action items (like overdue tasks or overload warnings). Here's the data: The user has ${myTasks.length} tasks, ${overdueTasksCount} overdue tasks, and is involved in ${activeProjectsCount} active projects. ` +
-        workloadInfo + weeklyOverloadWarning + monthlyOverloadWarning +
-        (topQueue ? `Their top queue priorities are: ${topQueue}. ` : '') +
-        (recentComments ? `Their recent chat activity (may already be read): ${recentComments}. ` : '') +
-        (trulyUnreadCount > 0 ? `They have ${trulyUnreadCount} unread message(s) that still need a response. ` : `All recent messages have been read. `) +
-        `Use a professional, motivating tone. If there are overload warnings, mention them directly. Reply in ${language === 'id' ? 'Indonesian' : 'English'}.`;
+      const personaBase = getLurukaSystemPrompt({
+        contextType: 'briefing',
+        currentUser: currentUser || 'User',
+        todayStr: new Date().toISOString().split('T')[0],
+      });
+
+      const prompt = `${personaBase}
+TASK & WORKLOAD DATA FOR EXECUTIVE BRIEFING:
+- Active tasks: ${myTasks.length}
+- Overdue tasks: ${overdueTasksCount}
+- Active projects: ${activeProjectsCount}
+- Workload status: ${workloadInfo} ${weeklyOverloadWarning} ${monthlyOverloadWarning}
+- Top queue priorities: ${topQueue || 'None'}
+- Unread messages: ${trulyUnreadCount}
+
+INSTRUCTIONS FOR DAILY BRIEFING:
+Provide a super concise (max 2-3 sentences) executive briefing for @${currentUser} about their day. Address the user using 'Aku/Kamu'. Highlight key numbers or statuses using markdown bold syntax (**text**). If there are overload warnings or overdue tasks, give a warm but firm supportive warning. End with an encouraging kaomoji. Reply strictly in ${language === 'id' ? 'Indonesian' : 'English'}.`;
       
       const response = await axios.post('/api/ai/generate', {
         prompt: prompt,
