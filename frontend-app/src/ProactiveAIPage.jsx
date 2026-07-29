@@ -4,6 +4,7 @@ import { useCloseAnimation, LoadingSpinner, safeParseJSON } from './Utils';
 import { Avatar } from './SharedUI';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
 import { useAppContext } from './hooks/useAppContext';
+import { getLurukaSystemPrompt } from './utils/lurukaPersona';
 
 export default function ProactiveAIPage({
   setIsProactiveAIOpen,
@@ -747,17 +748,19 @@ export default function ProactiveAIPage({
         .map((msg) => `${msg.sender === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
         .join('\n');
 
-      const aiPrompt = `Act as Luruka, the friendly, casual, and supportive AI personal assistant inside the task manager app 'alurku.'. Today is ${getLocalToday()}. Your objective is to parse the user's request and output a strictly valid JSON object matching the JSON SCHEMA below.
+      const personaBase = getLurukaSystemPrompt({
+        contextType: 'chat',
+        currentUser: currentUser || 'User',
+        todayStr: getLocalToday()
+      });
+
+      const aiPrompt = `${personaBase}
+Your objective is to parse the user's request and output a strictly valid JSON object matching the JSON SCHEMA below.
 
 DOMAIN KNOWLEDGE: You possess deep contextual understanding of the field mentioned in the request. Use this to accurately estimate time and break down complex workflows into clear, actionable, professional-grade steps.
 
 Recent Conversation History:
 ${recentHistory}
-
-PERSONA & TONE OF VOICE:
-- Be friendly, casual, and highly supportive (like a helpful workspace friend, not a strict manager or generic robot).
-- In Indonesian, ALWAYS use the pronouns "Aku" to refer to yourself and "Kamu" to refer to the user in "chat_message". NEVER use formal pronouns like "Saya", "Anda", or robotic prefixes.
-- Keep your tone warm, encouraging, and helpful. Use normal casing (no forced uppercase).
 
 INSTRUCTIONS:
 1. Determine the intent of the user request.

@@ -7,6 +7,7 @@ import SmartAssistantQuickTodo from './components/SmartAssistant/SmartAssistantQ
 import SmartAssistantPlanner from './components/SmartAssistant/SmartAssistantPlanner';
 import SmartAssistantChat from './components/SmartAssistant/SmartAssistantChat';
 import { useAppContext } from './hooks/useAppContext';
+import { getLurukaSystemPrompt, LURUKA_THINKING_PHRASES } from './utils/lurukaPersona';
 
 export default function SmartAssistant({
   currentUser,
@@ -310,6 +311,7 @@ export default function SmartAssistant({
   // Randomized thinking phrases so Luruka doesn't feel like a stuck bot
   const thinkingPhrases = language === 'id'
     ? [
+        ...LURUKA_THINKING_PHRASES,
         'Sebentar, aku cek dulu...',
         'Oke, biarkan aku pikirkan itu...',
         'Baik, aku proses ya...',
@@ -1322,32 +1324,29 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
         }
 
         // --- General AI Conversation & Command Executor Fallback ---
+        const thinkingPhrases = [...LURUKA_THINKING_PHRASES];
         addBotMessage(getThinkingPhrase());
         const todayStr = getLocalToday();
 
         const recentHistory = messages
           .filter(
-            (m) => m.sender === 'user' || (m.sender === 'bot' && !m.text.includes('🤔') && !m.text.includes('⏳'))
+            (m) => m.sender === 'user' || (m.sender === 'bot' && !thinkingPhrases.includes(m.text))
           )
           .slice(-6)
           .map((m) => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text.replace(/<[^>]*>?/gm, '')}`)
           .join('\n');
 
-        const prompt = `You are 'Luruka', the friendly, casual, and supportive AI personal assistant inside the task manager app 'alurku.'. Today is ${todayStr}. User @${currentUser} says: "${data}".
+        const personaBase = getLurukaSystemPrompt({
+          contextType: 'chat',
+          currentUser: currentUser || 'User',
+          todayStr,
+        });
+
+        const prompt = `${personaBase}
+User @${currentUser} says: "${data}".
 
 Recent Conversation History:
 ${recentHistory}
-
-Please respond in the same language that the user used in their message.
-
-PERSONA & TONE OF VOICE:
-- Be friendly, casual, and highly supportive (like a helpful workspace friend, not a strict manager or generic robot).
-- In Indonesian, ALWAYS use the pronouns "Aku" to refer to yourself and "Kamu" to refer to the user. NEVER use formal pronouns like "Saya", "Anda", or robotic prefixes.
-- Keep your tone warm, encouraging, clean, and helpful. Use normal casing.
-- STRUCTURED LIST RULE: Whenever providing advice, recommendations, next steps, priorities, or multi-point answers, ALWAYS present your answer using a clean Markdown bulleted list (e.g. "- **Judul Poin** - Penjelasan singkat"). NEVER output advice or recommendations as a dense essay paragraph.
-- BRAND ICONOGRAPHY RULE: Use clean, professional Markdown typography (bolding, clean line breaks, bullet points, code blocks). Do NOT overuse raw OS emojis (such as 🚀, ✨, 🎉, 📌, ⚠️, 🔍) in every sentence. Keep output text clean, modern, and aligned with alurku.'s flat design identity.
-
-CRITICAL RULE: You must stay strictly within the context of Alurku, project/task management, office work, scheduling, or developer/work collaboration. If the user's message is unrelated to these topics (e.g., cooking recipes, general chit-chat about hobbies, movies, trivia, sports, personal life, etc.), you must politely decline to answer, explaining in the user's language that your role is strictly to assist with project management, tasks, and productivity in Alurku. Do not provide information or perform tasks for out-of-context topics under any circumstances.
 
 GENERAL QUESTIONS & COUNTS:
 If the user asks general questions about available projects/boards (e.g. "proyek apa saja yang ada?", "daftar project", "ada project apa saja?"), team members, or task counts/statistics (e.g. "berapa yang overdue?", "berapa task aku?", "ada berapa tugas yang terlambat?"):
