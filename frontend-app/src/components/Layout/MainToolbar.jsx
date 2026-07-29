@@ -381,8 +381,9 @@ export default function MainToolbar() {
               </button>
             )}
 
-            {!selectedBoard.is_private && selectedBoard.id !== 'global' && (
-              <div className="flex items-center gap-0.5 tour-team-menu bg-neutral-100 dark:bg-neutral-800/60 p-1 rounded-xl border border-neutral-200/60 dark:border-neutral-700/60">
+            <div className="flex items-center gap-0.5 tour-team-menu bg-neutral-100 dark:bg-neutral-800/60 p-1 rounded-xl border border-neutral-200/60 dark:border-neutral-700/60">
+              {/* Manage Team (only for specific project boards) */}
+              {selectedBoard && selectedBoard.id !== 'global' && !selectedBoard.is_private && (
                 <button
                   onClick={() => openTeamModal(selectedBoard.id)}
                   disabled={accountStatus === 'suspended'}
@@ -396,72 +397,77 @@ export default function MainToolbar() {
                     <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
                   )}
                 </button>
+              )}
 
-                <button
-                  onClick={() => {
-                    setIsProjectChatOpen(true);
-                    setDrawerTab('team');
-                  }}
-                  className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
-                  title={tMsg('Team Chat', 'Obrolan Tim')}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.812-.916 5.86 5.86 0 011.08-1.92A8.672 8.672 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                  </svg>
-                </button>
+              {/* Team Chat */}
+              <button
+                onClick={() => {
+                  setIsProjectChatOpen(true);
+                  setDrawerTab('team');
+                }}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
+                title={tMsg('Team Chat', 'Obrolan Tim')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.812-.916 5.86 5.86 0 011.08-1.92A8.672 8.672 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                </svg>
+              </button>
 
-                <button
-                  onClick={() => {
-                    const slug = selectedBoard.name
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, '-')
-                      .replace(/(^-|-$)+/g, '');
-                    const url = `${window.location.origin}/project/${selectedBoard.id}-${slug}`;
-                    navigator.clipboard.writeText(url).catch(() => {
-                      const temp = document.createElement('textarea');
-                      temp.value = url;
-                      document.body.appendChild(temp);
-                      temp.select();
-                      document.execCommand('copy');
-                      document.body.removeChild(temp);
-                    });
-                    showNotification(tMsg('Project link copied!', 'Tautan proyek disalin!'), 'success');
-                  }}
-                  className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
-                  title={tMsg('Share Project', 'Bagikan Proyek')}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-                  </svg>
-                </button>
+              {/* Share Link */}
+              <button
+                onClick={() => {
+                  const bName = selectedBoard?.name || 'board';
+                  const slug = bName
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/(^-|-$)+/g, '');
+                  const url = `${window.location.origin}/project/${selectedBoard?.id || 'global'}-${slug}`;
+                  navigator.clipboard.writeText(url).catch(() => {
+                    const temp = document.createElement('textarea');
+                    temp.value = url;
+                    document.body.appendChild(temp);
+                    temp.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(temp);
+                  });
+                  showNotification(tMsg('Project link copied!', 'Tautan proyek disalin!'), 'success');
+                }}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
+                title={tMsg('Share Project', 'Bagikan Proyek')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                </svg>
+              </button>
 
-                <button
-                  onClick={() => {
-                    setExportMode('board');
-                    setIsExportModalOpen(true);
-                  }}
-                  className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
-                  title={tMsg('Export CSV', 'Ekspor CSV')}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                  </svg>
-                </button>
+              {/* Export CSV (Board) */}
+              <button
+                onClick={() => {
+                  setExportMode('board');
+                  setIsExportModalOpen(true);
+                }}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
+                title={tMsg('Export CSV', 'Ekspor CSV')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+              </button>
 
-                <button
-                  onClick={() => {
-                    setExportMode('global');
-                    setIsExportModalOpen(true);
-                  }}
-                  className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
-                  title={tMsg('Get All My Data', 'Dapatkan Semua Data')}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m-18.432-4.5a8.958 8.958 0 00-.284 2.253c0 .778.099 1.533.284 2.253" />
-                  </svg>
-                </button>
-              </div>
-            )}
+              {/* Get All My Data (Global) */}
+              <button
+                onClick={() => {
+                  setExportMode('global');
+                  setIsExportModalOpen(true);
+                }}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
+                title={tMsg('Get All My Data', 'Dapatkan Semua Data')}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m-18.432-4.5a8.958 8.958 0 00-.284 2.253c0 .778.099 1.533.284 2.253" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
