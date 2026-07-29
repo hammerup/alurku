@@ -9,18 +9,26 @@ export function useWebSocket(workspaceId, token, currentUser) {
   const reconnectTimeoutRef = useRef(null);
   const reconnectDelayRef = useRef(1000); // Start with 1s
 
-  // Fetch initial activity logs via REST
+  // Fetch initial activity logs via REST & set up 15s polling fallback
   useEffect(() => {
     if (!workspaceId) return;
 
-    axios
-      .get(`/api/workspaces/${workspaceId}/activity?limit=100`)
-      .then((res) => {
-        setActivityFeed(res.data || []);
-      })
-      .catch((err) => {
-        console.error('Error fetching activity log:', err);
-      });
+    const fetchLatestActivities = () => {
+      axios
+        .get(`/api/workspaces/${workspaceId}/activity?limit=10`)
+        .then((res) => {
+          if (Array.isArray(res.data)) {
+            setActivityFeed(res.data.slice(0, 10));
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching activity log:', err);
+        });
+    };
+
+    fetchLatestActivities();
+    const interval = setInterval(fetchLatestActivities, 15000);
+    return () => clearInterval(interval);
   }, [workspaceId]);
 
   useEffect(() => {
@@ -77,17 +85,20 @@ export function useWebSocket(workspaceId, token, currentUser) {
               return next;
             });
           } else if (data.type === 'activity') {
-            setActivityFeed((prev) => [
-              {
-                id: data.id || Date.now(),
-                username: data.username,
-                action: data.action,
-                target_title: data.target_title,
-                extra_data: data.extra_data || {},
-                created_at: data.timestamp,
-              },
-              ...prev,
-            ]);
+            setActivityFeed((prev) => {
+              const newFeed = [
+                {
+                  id: data.id || Date.now(),
+                  username: data.username,
+                  action: data.action,
+                  target_title: data.target_title,
+                  extra_data: data.extra_data || {},
+                  created_at: data.timestamp,
+                },
+                ...prev.filter((item) => item.id !== data.id),
+              ];
+              return newFeed.slice(0, 10);
+            });
           }
         } catch (err) {
           console.error('Error parsing WS message:', err);

@@ -20,11 +20,16 @@ class ConnectionManager:
     def __init__(self):
         # {workspace_id: {username: WebSocket}}
         self._connections: dict[int, dict[str, WebSocket]] = defaultdict(dict)
+        self._main_loop = None
 
     async def connect(self, workspace_id: int, username: str, websocket: WebSocket):
         """Accept a WebSocket and register the user in the workspace room."""
         await websocket.accept()
         self._connections[workspace_id][username] = websocket
+        try:
+            self._main_loop = asyncio.get_running_loop()
+        except Exception:
+            pass
 
         # Broadcast that this user is now online
         await self.broadcast(workspace_id, {

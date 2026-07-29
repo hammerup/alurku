@@ -648,28 +648,24 @@ def log_and_broadcast_activity(db: Session, workspace_id: int, username: str, ac
     
     # Broadcast asynchronously
     try:
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        if loop.is_running():
-            asyncio.ensure_future(manager.broadcast_activity(
-                workspace_id=workspace_id,
-                username=username,
-                action=action,
-                target_title=target_title,
-                extra_data=extra_data
-            ))
+        coro = manager.broadcast_activity(
+            workspace_id=workspace_id,
+            username=username,
+            action=action,
+            target_title=target_title,
+            extra_data=extra_data
+        )
+        main_loop = getattr(manager, "_main_loop", None)
+        if main_loop and main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(coro, main_loop)
         else:
-            loop.run_until_complete(manager.broadcast_activity(
-                workspace_id=workspace_id,
-                username=username,
-                action=action,
-                target_title=target_title,
-                extra_data=extra_data
-            ))
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(coro)
+            except RuntimeError:
+                new_loop = asyncio.new_event_loop()
+                new_loop.run_until_complete(coro)
+                new_loop.close()
     except Exception as e:
         print(f"[Activity Broadcast Error]: {e}")
 
