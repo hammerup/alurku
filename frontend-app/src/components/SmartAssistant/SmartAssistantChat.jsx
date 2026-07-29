@@ -97,6 +97,10 @@ export default function SmartAssistantChat({
   language,
   aiProvider,
   startConversation,
+  startNewChat,
+  chatSessions = [],
+  activeSessionId,
+  loadSession,
   chatBg,
   scrollContainerRef,
   currentUser,
@@ -139,15 +143,50 @@ export default function SmartAssistantChat({
         }
       `}</style>
       {/* Redesigned Premium Chat Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800 bg-[#FAFAFA] dark:bg-[#121B2D] z-30 shrink-0 select-none">
-        <div className="flex items-center gap-1.5 text-[10px] text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider">
-          <span>{tMsg('AI Chat', 'Obrolan AI')}</span>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-[#FAFAFA] dark:bg-[#121B2D] z-30 shrink-0 select-none gap-2">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          {/* History Dropdown / Session Picker */}
+          {chatSessions.length > 0 ? (
+            <select
+              value={activeSessionId || ''}
+              onChange={(e) => {
+                const s = chatSessions.find((sess) => sess.id === e.target.value);
+                if (s && loadSession) loadSession(s);
+              }}
+              className="max-w-[160px] text-[11px] font-bold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 truncate focus:outline-none cursor-pointer"
+            >
+              {!activeSessionId && <option value="">{tMsg('Current Chat', 'Sesi Aktif')}</option>}
+              {chatSessions.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.is_pinned ? '📌 ' : ''}{s.title || 'Chat Session'}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider truncate">
+              {tMsg('AI Chat', 'Obrolan AI')}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => {
-              if (messages.length > 2) {
+              if (startNewChat) startNewChat();
+              else if (startConversation) startConversation();
+            }}
+            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition-all active:scale-95 shrink-0"
+            title={tMsg('Start New Chat', 'Mulai Chat Baru')}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>{tMsg('New Chat', 'Chat Baru')}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              if (messages.length > 2 && setDiscardConfirmAction) {
                 setDiscardConfirmAction(() => () => {
                   setMessages([]);
                   setAssistantMode('landing');
@@ -157,30 +196,12 @@ export default function SmartAssistantChat({
               setMessages([]);
               setAssistantMode('landing');
             }}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-lg transition-all active:scale-95"
+            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-lg transition-all active:scale-95 shrink-0"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
             <span>{tMsg('Menu', 'Menu')}</span>
-          </button>
-          
-          <button
-            onClick={() => {
-              if (messages.length > 2) {
-                setDiscardConfirmAction(() => () => {
-                  startConversation();
-                });
-                return;
-              }
-              startConversation();
-            }}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-lg transition-all active:scale-95"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-            <span>{tMsg('Reset', 'Ulang')}</span>
           </button>
         </div>
       </div>

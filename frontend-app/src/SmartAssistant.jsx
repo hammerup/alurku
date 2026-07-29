@@ -73,8 +73,92 @@ export default function SmartAssistant({
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const plannerEndRef = useRef(null);
-  const prevBoardRef = useRef(selectedBoard?.id);
   const [noteSuggestions, setNoteSuggestions] = useState([]);
+  const [chatSessions, setChatSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await axios.get('/api/ai/sessions');
+      const sessions = res.data.sessions || [];
+      setChatSessions(sessions);
+      if (sessions.length > 0 && !activeSessionId && messages.length === 0) {
+        loadSession(sessions[0]);
+      }
+    } catch (e) {
+      console.error('Failed to fetch AI sessions', e);
+    }
+  };
+
+  const loadSession = (session) => {
+    setActiveSessionId(session.id);
+    if (session.messages) {
+      try {
+        const parsed = JSON.parse(session.messages);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          setAssistantMode('chat');
+          setStep('idle');
+        }
+      } catch (e) {
+        console.error('Failed to parse session messages', e);
+      }
+    }
+  };
+
+  const createNewSession = async (firstMessageText) => {
+    try {
+      const newId = 'session_' + Date.now();
+      const cleanTitle = (firstMessageText || 'New Chat').replace(/<[^>]*>?/gm, '').trim();
+      const res = await axios.post('/api/ai/sessions', {
+        id: newId,
+        title: cleanTitle.substring(0, 30) + (cleanTitle.length > 30 ? '...' : '')
+      });
+      setActiveSessionId(res.data.id);
+      setChatSessions((prev) => [res.data, ...prev]);
+      return res.data.id;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  const updateSessionMessages = async (sessionId, msgs) => {
+    try {
+      const messagesStr = JSON.stringify(msgs);
+      await axios.put('/api/ai/sessions/' + sessionId, {
+        messages: messagesStr
+      });
+      setChatSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, messages: messagesStr } : s))
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const startNewChat = () => {
+    setActiveSessionId(null);
+    startConversation();
+  };
+
+  // Sync to database whenever messages change and contain user input
+  useEffect(() => {
+    const hasUserMsg = messages.some((m) => m.sender === 'user');
+    if (messages.length > 0 && hasUserMsg) {
+      const syncMessages = async () => {
+        let sid = activeSessionId;
+        if (!sid) {
+          const firstUserMsg = messages.find((m) => m.sender === 'user')?.text || 'New Chat';
+          sid = await createNewSession(firstUserMsg);
+        }
+        if (sid) {
+          updateSessionMessages(sid, messages);
+        }
+      };
+      syncMessages();
+    }
+  }, [messages]);
 
   const checkUserAssigned = (t) => {
     if (!t || !currentUser) return false;
@@ -196,6 +280,7 @@ export default function SmartAssistant({
 
   useEffect(() => {
     if (isOpen) {
+      fetchSessions();
       setTimeout(scrollToBottom, 100);
       if (messages.length === 0 || localStorage.getItem('alurku_ai_offer_docs') === 'true') {
         if (localStorage.getItem('alurku_ai_offer_docs') === 'true') {
@@ -3323,6 +3408,10 @@ USER REQUEST:
       language={language}
       aiProvider={aiProvider}
       startConversation={startConversation}
+      startNewChat={startNewChat}
+      chatSessions={chatSessions}
+      activeSessionId={activeSessionId}
+      loadSession={loadSession}
       chatBg={chatBg}
       scrollContainerRef={scrollContainerRef}
       currentUser={currentUser}
