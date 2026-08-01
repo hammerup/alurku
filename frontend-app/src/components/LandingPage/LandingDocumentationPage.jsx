@@ -121,10 +121,10 @@ const getDocData = (tMsg, isSuperAdmin) => {
         },
         {
           id: 'master-view',
-          title: tMsg('See the Big Picture (Master View)', 'Lihat Gambaran Besar (Tampilan Utama)'),
+          title: tMsg('All Projects (Master View)', 'Semua Proyek (Tampilan Utama)'),
           content: tMsg(
-            "Click the '🌍 See the Big Picture' card on your dashboard to see and manage tasks across all your projects simultaneously. You can even drag and drop task cards across columns to seamlessly transfer them between projects!",
-            "Klik kartu '🌍 Lihat Gambaran Besar' di dasbor Anda untuk melihat dan mengelola tugas di semua proyek secara bersamaan. Anda bahkan dapat menyeret dan melepas kartu tugas melintasi kolom untuk memindahkannya antar proyek dengan mulus!"
+            "Click the 'All Projects' card on your dashboard to see and manage tasks across all your projects simultaneously. You can even drag and drop task cards across columns to seamlessly transfer them between projects!",
+            "Klik kartu 'Semua Proyek' di dasbor Anda untuk melihat dan mengelola tugas di semua proyek secara bersamaan. Anda bahkan dapat menyeret dan melepas kartu tugas melintasi kolom untuk memindahkannya antar proyek dengan mulus!"
           ),
         },
       ],

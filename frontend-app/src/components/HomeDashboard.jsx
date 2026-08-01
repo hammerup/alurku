@@ -498,7 +498,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
         <section className="tour-quick-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(true);
               setShowOverdueOnly(false);
               setShowDueTodayOnly(false);
@@ -969,7 +969,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
           </div>
           <button 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(false);
               setShowOverdueOnly(false);
             }}
