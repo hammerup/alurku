@@ -253,27 +253,27 @@ export default function Sidebar() {
             window.dispatchEvent(new CustomEvent('alurku-navigate'));
           }
         }}
-        className={`w-full flex items-center justify-between px-3 py-1.5 rounded-xl transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111E38] ${
+        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111E38] ${
           isActive
-            ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
+            ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-semibold'
+            : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
         }`}
       >
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
         )}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <div
-            className={`w-6 h-6 rounded-md bg-linear-to-br ${gradient} text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm opacity-90`}
+            className={`w-5 h-5 rounded-md bg-linear-to-br ${gradient} text-white flex items-center justify-center text-[9px] font-bold shrink-0 shadow-2xs opacity-90`}
           >
             {getInitials(board.name)}
           </div>
           {!isCollapsed && (
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <span className={`text-sm truncate font-medium ${isActive ? 'font-bold' : ''}`}>{board.name}</span>
+              <span className={`text-xs truncate ${isActive ? 'font-bold text-[#111E38] dark:text-[#FACC15]' : 'font-medium'}`}>{board.name}</span>
               {!!board.is_private && (
                 <span className="opacity-60 shrink-0" title={tMsg('Private Project', 'Proyek Privat')}>
-                  <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-3 h-3 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
@@ -284,12 +284,12 @@ export default function Sidebar() {
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {unreadChats > 0 && (
-            <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none" title={`${unreadChats} unread`}>
+            <span className="min-w-3.5 h-3.5 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none" title={`${unreadChats} unread`}>
               {unreadChats > 9 ? '9+' : unreadChats}
             </span>
           )}
           {board.health_alert?.includes('Attention') && unreadChats === 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-500" title="Attention Needed"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="Attention Needed"></span>
           )}
           {!isCollapsed && (
             <div className="relative">
@@ -299,10 +299,10 @@ export default function Sidebar() {
                   const menuKey = `${isFavoriteSection ? 'fav' : 'all'}-${board.id}`;
                   setActiveBoardMenuId(activeBoardMenuId === menuKey ? null : menuKey);
                 }}
-                className="p-1 rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-0.5 rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                 title={tMsg('Project Options', 'Opsi Proyek')}
               >
-                <span className="material-symbols-outlined text-[16px]">more_vert</span>
+                <span className="material-symbols-outlined text-[15px]">more_vert</span>
               </button>
               {activeBoardMenuId === `${isFavoriteSection ? 'fav' : 'all'}-${board.id}` && (
                 <>
@@ -371,11 +371,11 @@ export default function Sidebar() {
       <aside
         className={`fixed inset-y-0 left-0 z-90 md:z-50 md:sticky md:top-20 md:h-[calc(100vh-5rem)] md:shrink-0 bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95 backdrop-blur-xl border-r border-neutral-200/50 dark:border-neutral-800/50 flex flex-col transition-all duration-300 ease-in-out transform ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } ${isCollapsed ? 'w-16' : 'w-64 md:w-72'}`}
+        } ${isCollapsed ? 'w-16' : 'w-60 md:w-64'}`}
       >
         <div
           className={`hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
-            isCollapsed ? 'h-auto py-3 flex-col gap-3 px-3 justify-center' : 'h-16 px-4 justify-between gap-2'
+            isCollapsed ? 'h-auto py-2.5 flex-col gap-2.5 px-2.5 justify-center' : 'h-14 px-3.5 justify-between gap-2'
           } relative`}
         >
           {isCollapsed ? (
@@ -383,11 +383,11 @@ export default function Sidebar() {
               {/* Expand Sidebar button at the very top when collapsed */}
               <button
                 onClick={toggleCollapse}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-450 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 title="Expand sidebar"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -402,14 +402,14 @@ export default function Sidebar() {
               </button>
 
               {/* Vertical divider line */}
-              <div className="w-8 h-px bg-neutral-200 dark:bg-neutral-800 my-1"></div>
+              <div className="w-7 h-px bg-neutral-200 dark:bg-neutral-800 my-0.5"></div>
 
               {/* Compact Workspace Switcher when collapsed */}
               {workspaces && workspaces.length > 0 && (
                 <div className="relative z-60">
                   <button
                     onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-                    className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
+                    className="w-7 h-7 rounded-lg bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
                     title={`${tMsg('Workspace', 'Ruang Kerja')}: ${activeWorkspace?.name || ''}`}
                   >
                     {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
@@ -424,10 +424,10 @@ export default function Sidebar() {
                               switchWorkspace(ws);
                               setIsWorkspaceMenuOpen(false);
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                            className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between ${
                               ws.id === activeWorkspace?.id
                                 ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
-                                : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
+                                : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400 font-medium'
                             }`}
                           >
                             <span className="truncate">{ws.name}</span>
@@ -451,24 +451,18 @@ export default function Sidebar() {
                             />
                             <button
                               type="submit"
-                              className="px-2.5 py-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:bg-[#1a2d52] dark:hover:bg-yellow-400 transition-colors"
+                              className="bg-[#111E38] text-white text-xs px-2.5 py-1.5 rounded-lg font-bold hover:bg-slate-800"
                             >
                               +
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setIsCreatingWs(false)}
-                              className="px-2 py-1.5 bg-slate-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded-lg hover:bg-slate-200 transition-colors"
-                            >
-                              ✕
                             </button>
                           </form>
                         ) : (
                           <button
                             onClick={() => setIsCreatingWs(true)}
-                            className="w-full text-center py-1.5 bg-[#111E38]/8 hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/20 dark:text-[#FACC15] text-xs font-bold rounded-lg transition-all border border-[#111E38]/15 dark:border-transparent"
+                            className="w-full text-left px-2 py-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg font-bold flex items-center gap-1.5"
                           >
-                            + {tMsg('Create Workspace', 'Buat Workspace')}
+                            <IconPlus className="w-3.5 h-3.5" />
+                            {tMsg('Create Workspace', 'Buat Workspace Baru')}
                           </button>
                         )}
                       </div>
@@ -476,149 +470,93 @@ export default function Sidebar() {
                   )}
                 </div>
               )}
-
-              {/* Vertical divider line */}
-              <div className="w-8 h-px bg-neutral-200 dark:bg-neutral-800 my-1"></div>
-
-              {/* Collapsed mode Quick Actions — individual icon buttons */}
-              {/* Chat */}
-              <button
-                onClick={() => setIsChatWorkspaceOpen(true)}
-                className={`w-8 h-8 flex justify-center items-center rounded-lg transition-colors relative ${
-                  totalUnreadChats > 0
-                    ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] hover:bg-[#FACC15]/30'
-                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
-                }`}
-                title={tMsg('Team Chat', 'Obrolan Tim')}
-              >
-                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </svg>
-                {totalUnreadChats > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#FACC15] text-[#111E38] text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center leading-none">
-                    {totalUnreadChats > 9 ? '9' : totalUnreadChats}
-                  </span>
-                )}
-              </button>
-
-
-              {/* Export */}
-              <button
-                onClick={() => { setExportMode('global'); setIsExportModalOpen(true); }}
-                className="w-8 h-8 flex justify-center items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 transition-colors"
-                title={tMsg('Export Data', 'Ekspor Data')}
-              >
-                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-              </button>
-
-
             </>
           ) : (
             <>
-              {/* Workspace Switcher in Header */}
-              {workspaces && workspaces.length > 0 && (
-                <div className="relative flex-1 min-w-0 z-60">
-                  <button
-                    onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-                    className="flex items-center gap-1.5 w-full hover:bg-neutral-100 dark:hover:bg-neutral-800/50 p-1.5 rounded-lg transition-colors text-left min-w-0"
-                  >
-                    <div className="w-5 h-5 rounded bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs">
+              {/* Active Workspace Selector Dropdown (ClickUp Style Top Bar) */}
+              <div className="relative flex-1 min-w-0">
+                <button
+                  onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
+                  className="w-full flex items-center justify-between gap-2 p-1.5 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 rounded-xl transition-all text-left"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-6 h-6 rounded-md bg-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-2xs">
                       {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
                     </div>
-                    <span className="text-sm font-bold text-slate-800 dark:text-neutral-200 truncate flex-1 leading-none">
+                    <span className="font-extrabold text-xs text-[#111E38] dark:text-white truncate">
                       {activeWorkspace?.name || 'Workspace'}
                     </span>
-                    <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
+                  </div>
+                  <span className="material-symbols-outlined text-[16px] text-neutral-400 shrink-0">
+                    expand_more
+                  </span>
+                </button>
 
-                  {isWorkspaceMenuOpen && (
-                    <div className="absolute left-0 w-60 mt-2 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5">
-                      <div className="max-h-48 overflow-y-auto space-y-0.5">
-                        {workspaces.map((ws) => {
-                          const wsProjectCount = (boards || []).filter(b => b.workspace_id === ws.id || (!b.workspace_id && ws.id === 1)).length;
-                          return (
-                            <button
-                              key={`ws-opt-${ws.id}`}
-                              onClick={() => {
-                                switchWorkspace(ws);
-                                setIsWorkspaceMenuOpen(false);
-                              }}
-                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
-                                ws.id === activeWorkspace?.id
-                                  ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
-                                  : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 truncate">
-                                <span className="truncate">{ws.name}</span>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-neutral-200/50 dark:bg-neutral-800 text-neutral-500 font-semibold shrink-0">
-                                  {wsProjectCount} proj
-                                </span>
-                              </div>
-                              {ws.id === activeWorkspace?.id && (
-                                <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="border-t border-slate-100 dark:border-neutral-800 mt-1.5 pt-1.5 px-1.5">
-                        {isCreatingWs ? (
-                          <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5">
-                            <input
-                              type="text"
-                              placeholder={tMsg('New Workspace Name', 'Nama Workspace Baru')}
-                              value={newWsName}
-                              onChange={(e) => setNewWsName(e.target.value)}
-                              className="flex-1 bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs rounded-lg px-2.5 py-1.5 outline-none text-black dark:text-white"
-                              autoFocus
-                            />
-                            <button
-                              type="submit"
-                              className="px-2.5 py-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:bg-[#1a2d52] dark:hover:bg-yellow-400 transition-colors"
-                            >
-                              +
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setIsCreatingWs(false)}
-                              className="px-2 py-1.5 bg-slate-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded-lg hover:bg-slate-200 transition-colors"
-                            >
-                              ✕
-                            </button>
-                          </form>
-                        ) : (
-                          <button
-                            onClick={() => setIsCreatingWs(true)}
-                            className="w-full text-center py-1.5 bg-[#111E38]/8 hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-[#FACC15]/10 dark:hover:bg-[#FACC15]/20 dark:text-[#FACC15] text-xs font-bold rounded-lg transition-all border border-[#111E38]/15 dark:border-transparent"
-                          >
-                            + {tMsg('Create Workspace', 'Buat Workspace')}
-                          </button>
-                        )}
-                      </div>
+                {isWorkspaceMenuOpen && (
+                  <div className="absolute left-0 top-full mt-1.5 w-64 bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5 animate-fadeIn">
+                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-2 py-1">
+                      {tMsg('Workspaces', 'Ruang Kerja')}
                     </div>
-                  )}
-                </div>
-              )}
+                    <div className="max-h-52 overflow-y-auto space-y-0.5 custom-scrollbar">
+                      {(workspaces || []).map((ws) => (
+                        <button
+                          key={`ws-menu-${ws.id}`}
+                          onClick={() => {
+                            switchWorkspace(ws);
+                            setIsWorkspaceMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between ${
+                            ws.id === activeWorkspace?.id
+                              ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold'
+                              : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium'
+                          }`}
+                        >
+                          <span className="truncate">{ws.name}</span>
+                          {ws.id === activeWorkspace?.id && <span>✓</span>}
+                        </button>
+                      ))}
+                    </div>
 
-              {/* Collapse button aligned to the right */}
+                    <div className="border-t border-neutral-100 dark:border-neutral-800 mt-1.5 pt-1.5">
+                      {isCreatingWs ? (
+                        <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5 p-1">
+                          <input
+                            type="text"
+                            placeholder={tMsg('Workspace Name', 'Nama Workspace')}
+                            value={newWsName}
+                            onChange={(e) => setNewWsName(e.target.value)}
+                            className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs rounded-lg px-2.5 py-1 outline-none text-black dark:text-white"
+                            autoFocus
+                          />
+                          <button
+                            type="submit"
+                            className="bg-[#FACC15] text-[#111E38] text-xs px-2.5 py-1 rounded-lg font-bold"
+                          >
+                            +
+                          </button>
+                        </form>
+                      ) : (
+                        <button
+                          onClick={() => setIsCreatingWs(true)}
+                          className="w-full text-left px-2.5 py-1.5 text-xs text-indigo-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
+                        >
+                          <IconPlus className="w-3.5 h-3.5" />
+                          {tMsg('Create Workspace', 'Buat Workspace Baru')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Collapse Sidebar toggle button */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleCollapse();
-                }}
-                className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white transition-colors rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center shrink-0"
+                onClick={toggleCollapse}
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors shrink-0"
                 title="Collapse sidebar"
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -628,63 +566,27 @@ export default function Sidebar() {
                 >
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                   <path d="M9 3v18" />
-                  <path d="M16 15l-3-3 3-3" />
+                  <path d="M15 9l-3 3 3 3" />
                 </svg>
               </button>
             </>
           )}
         </div>
 
-        {/* Quick actions row — expanded mode: Chat + Export */}
-        {/* Note: Notifications is in the top HeaderNavigation — not duplicated here */}
-        {!isCollapsed && (
-          <div className="px-3 py-2 border-b border-neutral-200/50 dark:border-neutral-800/50 shrink-0">
-            <div className="flex items-center gap-1 tour-quick-actions">
-
-              {/* Chat */}
-              <button
-                onClick={() => setIsChatWorkspaceOpen(true)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1.5 rounded-xl transition-all text-xs font-semibold relative ${
-                  totalUnreadChats > 0
-                    ? 'bg-[#FACC15]/15 text-[#111E38] dark:text-[#FACC15] hover:bg-[#FACC15]/25'
-                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400'
-                }`}
-                title={tMsg('Team Chat', 'Obrolan Tim')}
-              >
-                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </svg>
-                <span className="truncate">{tMsg('Chat', 'Obrolan')}</span>
-                {totalUnreadChats > 0 && (
-                  <span className="bg-[#FACC15] text-[#111E38] text-[9px] font-black px-1.5 rounded-full min-w-4 text-center leading-4 shrink-0">
-                    {totalUnreadChats > 9 ? '9+' : totalUnreadChats}
-                  </span>
-                )}
-              </button>
-
-              {/* Export */}
-              <button
-                onClick={() => { setExportMode('global'); setIsExportModalOpen(true); }}
-                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 transition-all"
-                title={tMsg('Export Data', 'Ekspor Data')}
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-              </button>
-
-            </div>
-          </div>
-        )}
-
+        {/* ── Main Sidebar Scrollable Content (ClickUp Compact Style) ── */}
         <div
-          className={`flex-1 overflow-y-auto px-3 pb-2 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800 scrollbar-track-transparent ${
-            isCollapsed ? 'pt-0' : 'pt-2'
+          className={`flex-1 overflow-y-auto px-2 pb-2 custom-scrollbar ${
+            isCollapsed ? 'pt-2' : 'pt-3'
           }`}
         >
-          <div className="mb-2">
+          {/* SECTION 1: HOME / UTAMA */}
+          <div className="mb-3">
+            {!isCollapsed && (
+              <div className="px-2.5 mb-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                {tMsg('Home', 'Utama')}
+              </div>
+            )}
+
             <button
               onClick={() => {
                 setSelectedBoard(null);
@@ -694,26 +596,24 @@ export default function Sidebar() {
                 window.history.pushState({}, '', '/dashboard');
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all relative ${
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all relative ${
                 window.location.pathname === '/dashboard' && !selectedBoard
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                  : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('Personal Dashboard', 'Dasbor Pribadi')}
             >
               {(window.location.pathname === '/dashboard' && !selectedBoard) && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
               )}
-              <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[20px]">home</span>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">home</span>
               </div>
               {!isCollapsed && (
-                <span className="text-sm truncate">{tMsg('Personal Dashboard', 'Dasbor Pribadi')}</span>
+                <span className="text-xs truncate">{tMsg('Personal Dashboard', 'Dasbor Pribadi')}</span>
               )}
             </button>
-          </div>
 
-          <div className="mb-2">
             <button
               onClick={() => {
                 setSelectedBoard(null);
@@ -726,27 +626,47 @@ export default function Sidebar() {
                 window.history.pushState({}, '', `/workspace/${slug}`);
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all relative ${
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all relative ${
                 window.location.pathname.startsWith('/workspace') && !selectedBoard
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                  : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}
             >
               {(window.location.pathname.startsWith('/workspace') && !selectedBoard) && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
               )}
-              <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[20px]">dashboard</span>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">dashboard</span>
               </div>
               {!isCollapsed && (
-                <span className="text-sm truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
+                <span className="text-xs truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
               )}
             </button>
           </div>
 
+          {/* SECTION 2: SPACES / PROYEK */}
+          <div className="mb-3">
+            {!isCollapsed && (
+              <div className="flex items-center justify-between px-2.5 mb-1.5">
+                <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                  {tMsg('Spaces', 'Proyek')}
+                </span>
+                <button
+                  onClick={() => {
+                    setIsCreateBoardOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  disabled={accountStatus === 'suspended'}
+                  className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
+                  title={tMsg('New Space', 'Proyek Baru')}
+                >
+                  <IconPlus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
-          <div className={`mb-2 ${isCollapsed ? 'mt-0' : 'mt-2'}`}>
+            {/* All Projects (Master View) */}
             <button
               onClick={() => {
                 setSelectedBoard({
@@ -765,27 +685,26 @@ export default function Sidebar() {
                 window.history.pushState({}, '', targetUrl);
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all tour-global-board relative ${
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all tour-global-board relative ${
                 selectedBoard?.id === 'global'
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                  : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
               title={tMsg('All Projects (Master View)', 'Semua Proyek (Tampilan Gabungan)')}
             >
               {selectedBoard?.id === 'global' && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
               )}
-              <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[20px]">layers</span>
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">layers</span>
               </div>
               {!isCollapsed && (
-                <span className="text-sm truncate">{tMsg('All Projects', 'Semua Proyek')}</span>
+                <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>
               )}
             </button>
-          </div>
 
-          {todoListBoard && (
-            <div className="mb-6 pb-2 border-b border-neutral-100 dark:border-neutral-800/50 tour-my-todolist">
+            {/* Personal Tasks (Private List) */}
+            {todoListBoard && (
               <button
                 onClick={() => {
                   setSelectedBoard(todoListBoard);
@@ -798,46 +717,44 @@ export default function Sidebar() {
                   window.history.pushState({}, '', targetUrl);
                   window.dispatchEvent(new CustomEvent('alurku-navigate'));
                 }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all relative ${
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all relative ${
                   selectedBoard?.id === todoListBoard.id
                     ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                    : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
+                    : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
                 } ${isCollapsed ? 'justify-center' : ''}`}
-                title={tMsg('Personal Tasks (Private workspace visible only to you)', 'Tugas Pribadi (Ruang kerja pribadi khusus kamu)')}
+                title={tMsg('Personal Tasks (Private workspace)', 'Tugas Pribadi (Ruang kerja pribadi)')}
               >
                 {selectedBoard?.id === todoListBoard.id && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
                 )}
-                <div className="w-6 h-6 flex items-center justify-center text-amber-500 dark:text-[#FACC15]">
-                  <span className="material-symbols-outlined text-[20px]">lock</span>
+                <div className="w-5 h-5 flex items-center justify-center text-amber-500 dark:text-[#FACC15] shrink-0">
+                  <span className="material-symbols-outlined text-[18px]">lock</span>
                 </div>
                 {!isCollapsed && (
-                  <div className="flex flex-col text-left truncate min-w-0">
-                    <span className="text-sm font-extrabold truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
-                  </div>
+                  <span className="text-xs truncate font-semibold">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
                 )}
               </button>
-            </div>
-          )}
+            )}
 
-          {favorites.length > 0 && (
-            <div className="mb-6">
+            {/* Pinned Projects */}
+            {favorites.length > 0 && (
+              <div className="mt-2">
+                {!isCollapsed && (
+                  <div className="px-2.5 mb-1 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                    {tMsg('Pinned', 'Disematkan')}
+                  </div>
+                )}
+                <div className="flex flex-col gap-0.5">{favorites.map((b) => renderBoardItem(b, true))}</div>
+              </div>
+            )}
+
+            {/* All User Boards List */}
+            <div className="mt-2">
               {!isCollapsed && (
-                <h3 className="px-3 text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em] mb-2">
-                  {tMsg('Pinned Projects', 'Proyek Disematkan')}
-                </h3>
-              )}
-              <div className="flex flex-col gap-0.5">{favorites.map((b) => renderBoardItem(b, true))}</div>
-            </div>
-          )}
-
-          <div className="mb-4">
-            {!isCollapsed && (
-              <div className="flex items-center justify-between px-3 mb-2">
-                <h3 className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em]">
-                  {tMsg('All Projects', 'Semua Proyek')}
-                </h3>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-between px-2.5 mb-1">
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                    {tMsg('Projects List', 'Daftar Proyek')}
+                  </span>
                   <select
                     value={sortMode}
                     onChange={(e) => handleSortChange(e.target.value)}
@@ -854,47 +771,38 @@ export default function Sidebar() {
                       {tMsg('A-Z', 'A-Z')}
                     </option>
                   </select>
-                  <button
-                    onClick={() => {
-                      setIsCreateBoardOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    disabled={accountStatus === 'suspended'}
-                    className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors flex items-center justify-center p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
-                    title={tMsg('New Project', 'Proyek Baru')}
-                  >
-                    <IconPlus className="w-3.5 h-3.5" />
-                  </button>
                 </div>
+              )}
+
+              <div className="flex flex-col gap-0.5 tour-project-card">
+                {displayBoards.length === 0
+                  ? !isCollapsed && (
+                      <div className="px-2.5 py-1.5 text-xs text-neutral-400 italic">
+                        {tMsg('No projects yet', 'Belum ada proyek')}
+                      </div>
+                    )
+                  : displayBoards.map((b) => renderBoardItem(b))}
               </div>
-            )}
-            <div className="flex flex-col gap-0.5 tour-project-card">
-              {displayBoards.length === 0
-                ? !isCollapsed && (
-                    <div className="px-3 py-2 text-xs text-neutral-400 italic">
-                      {tMsg('No projects yet', 'Belum ada proyek')}
-                    </div>
-                  )
-                : displayBoards.map((b) => renderBoardItem(b))}
             </div>
           </div>
+
         </div>
 
         {/* ── Pinned Bottom Footer ── */}
-        <div className={`shrink-0 border-t border-neutral-200/60 dark:border-neutral-800/60 pt-1 pb-2 px-2 flex flex-col gap-0.5`}>
+        <div className="shrink-0 border-t border-neutral-200/60 dark:border-neutral-800/60 p-2 flex flex-col gap-1">
 
           {/* Archived Projects */}
           <button
             onClick={() => {
               setIsArchivedOpen(true);
             }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
+            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
             title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
           >
-            <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px]">inventory_2</span>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
             </div>
-            {!isCollapsed && <span className="text-sm truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>}
+            {!isCollapsed && <span className="text-xs truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>}
           </button>
 
           {/* Chat Luruka — Brand Yellow AI CTA */}
@@ -906,20 +814,20 @@ export default function Sidebar() {
               window.history.pushState({}, '', '/proactive-ai');
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }}
-            className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all border ${
+            className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all border ${
               window.location.pathname === '/proactive-ai' && !selectedBoard
-                ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-sm'
+                ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-2xs'
                 : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
             } ${isCollapsed ? 'justify-center' : ''}`}
             title="Chat Luruka"
           >
             <div className="w-5 h-5 flex items-center justify-center shrink-0">
-              <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
               </svg>
             </div>
             {!isCollapsed && (
-              <span className="text-sm truncate">
+              <span className="text-xs truncate">
                 {tMsg('Ask Luruka', 'Tanya Luruka')}
               </span>
             )}
@@ -928,29 +836,28 @@ export default function Sidebar() {
           {/* Help & Support */}
           <button
             onClick={() => setIsSupportOpen(true)}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
+            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
             title={tMsg('Help & Support', 'Bantuan & Dukungan')}
           >
-            <div className="w-6 h-6 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[20px]">help</span>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[18px]">help</span>
             </div>
-            {!isCollapsed && <span className="text-sm truncate">{tMsg('Help & Support', 'Bantuan & Dukungan')}</span>}
+            {!isCollapsed && <span className="text-xs truncate">{tMsg('Help & Support', 'Bantuan & Dukungan')}</span>}
           </button>
 
-          {/* ── User Profile Card — identity anchor, bukan shortcut settings ── */}
-          {/* Settings sudah ada di HeaderNavigation (gear + avatar dropdown) */}
-          <div className={`mt-1 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/60`}>
+          {/* User Profile Card */}
+          <div className="pt-1.5 border-t border-neutral-200/60 dark:border-neutral-800/60">
             <div
-              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl ${isCollapsed ? 'justify-center' : ''}`}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg ${isCollapsed ? 'justify-center' : ''}`}
               title={isCollapsed ? `${currentUser} — ${accountStatus === 'free' ? tMsg('Free Plan', 'Paket Gratis') : tMsg('Pro Plan', 'Paket Pro')}` : undefined}
             >
               <div className="shrink-0">
-                <Avatar username={currentUser} size={28} avatarUrl={avatarsMap?.[currentUser]} />
+                <Avatar username={currentUser} size={24} avatarUrl={avatarsMap?.[currentUser]} />
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-800 dark:text-neutral-200 truncate">{currentUser}</p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
+                  <p className="text-xs font-bold text-slate-800 dark:text-neutral-200 truncate leading-tight">{currentUser}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
                     {accountStatus === 'free' ? (
                       <>
                         <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{tMsg('Free Plan', 'Paket Gratis')}</span>
@@ -973,7 +880,6 @@ export default function Sidebar() {
               )}
             </div>
           </div>
-
 
         </div>
 
