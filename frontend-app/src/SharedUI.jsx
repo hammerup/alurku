@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const IconPerson = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+export const IconPerson = ({ className = 'w-5 h-5', style }) => (
+  <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -18,21 +18,30 @@ export const IconPlus = ({ className = 'w-5 h-5' }) => (
 );
 
 // Komponen Auto-Avatar (Warna & Inisial Acak Berdasarkan Nama)
-export const Avatar = ({ name, url, size = 'w-5 h-5', textClass = 'text-[10px]' }) => {
+export const Avatar = ({ name, username, url, avatarUrl, size = 'w-5 h-5', textClass = 'text-[10px]' }) => {
   const [imgError, setImgError] = React.useState(false);
-  if (url && !imgError)
+  const displayName = name || username || '';
+  const displayUrl = url || avatarUrl;
+
+  const sizeStyle = typeof size === 'number' ? { width: `${size}px`, height: `${size}px` } : undefined;
+  const sizeClass = typeof size === 'string' ? size : '';
+
+  if (displayUrl && !imgError)
     return (
       <img
-        src={url}
-        alt={name}
+        src={displayUrl}
+        alt={displayName}
         onError={() => setImgError(true)}
-        className={`${size} rounded-full object-cover shrink-0 shadow-sm`}
-        title={name?.replace('@', '').trim()}
+        className={`${sizeClass} rounded-full object-cover shrink-0 shadow-xs`}
+        style={sizeStyle}
+        title={displayName?.replace('@', '').trim()}
         referrerPolicy="no-referrer"
       />
     );
-  if (!name) return <IconPerson className={size} />;
-  const cleanName = name.replace('@', '').trim();
+
+  if (!displayName) return <IconPerson className={sizeClass || 'w-5 h-5'} style={sizeStyle} />;
+
+  const cleanName = displayName.replace('@', '').trim();
   const initial = cleanName ? cleanName.charAt(0).toUpperCase() : '?';
   const colors = [
     'bg-red-500',
@@ -51,7 +60,8 @@ export const Avatar = ({ name, url, size = 'w-5 h-5', textClass = 'text-[10px]' 
   const colorIndex = Math.abs(hash) % colors.length;
   return (
     <div
-      className={`${size} ${colors[colorIndex]} rounded-full flex items-center justify-center text-white font-bold ${textClass} shrink-0 shadow-sm`}
+      className={`${sizeClass} ${colors[colorIndex]} rounded-full flex items-center justify-center text-white font-bold ${textClass} shrink-0 shadow-xs`}
+      style={sizeStyle}
       title={cleanName}
     >
       {initial}
