@@ -36,6 +36,7 @@ export default function WorkspaceChatPage() {
     handleToggleReaction,
     handleDeleteComment,
     deleteProjectChatMessage,
+    handleNotificationTaskClick,
     activeWorkspace,
   } = useAppContext();
 
@@ -334,7 +335,7 @@ export default function WorkspaceChatPage() {
           tMsg={tMsg}
           formatDateMMM={formatDateMMM}
           handleMeetNow={() => {}}
-          handleNotificationTaskClick={() => {}}
+          handleNotificationTaskClick={handleNotificationTaskClick}
         />
 
         {/* Message List */}

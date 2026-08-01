@@ -76,22 +76,25 @@ export default function ChatSidebar({
     >
       {/* Search & Filters */}
       <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
-        <h3 className="font-black text-lg text-black dark:text-white mb-3">💬 Workspace</h3>
+        <h3 className="font-black text-base text-[#111E38] dark:text-white mb-3 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[#FACC15] text-lg">chat</span>
+          <span>{tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}</span>
+        </h3>
         <div className="relative mb-3">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs">🔍</span>
+          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none">search</span>
           <input
             type="text"
             placeholder={tMsg('Search workspace...', 'Cari ruang kerja...')}
             value={boardSearchQuery}
             onChange={(e) => setBoardSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-8 py-1.5 bg-neutral-100 dark:bg-neutral-800 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-neutral-900 rounded-lg text-sm transition-all outline-none"
+            className="w-full pl-8 pr-8 py-1.5 bg-neutral-100 dark:bg-neutral-800 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-neutral-900 rounded-lg text-xs font-medium transition-all outline-none"
           />
           {boardSearchQuery && (
             <button
               onClick={() => setBoardSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white p-1 font-bold text-xs"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white p-1 font-bold text-xs flex items-center justify-center"
             >
-              ✖
+              <span className="material-symbols-outlined text-xs">close</span>
             </button>
           )}
 
@@ -280,15 +283,16 @@ export default function ChatSidebar({
         <div className="space-y-2">
           <button
             onClick={() => setActiveChat({ type: 'inbox', id: 'inbox', name: 'Inbox' })}
-            className={`w-full py-1.5 px-2 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1.5 relative ${
+            className={`w-full py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
               activeChat?.type === 'inbox'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-350 dark:hover:bg-neutral-750'
+                ? 'bg-[#FACC15] text-[#111E38] shadow-xs'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-750'
             }`}
           >
-            📭 Inbox
+            <span className="material-symbols-outlined text-sm">inbox</span>
+            <span>Inbox</span>
             {unreadInboxChatsCount > 0 && (
-              <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black leading-none shrink-0 scale-90">
+              <span className="bg-[#111E38] text-[#FACC15] text-[9px] px-1.5 py-0.5 rounded-full font-black leading-none shrink-0">
                 {unreadInboxChatsCount}
               </span>
             )}
@@ -296,25 +300,27 @@ export default function ChatSidebar({
           <div className="flex gap-2">
             <button
               onClick={() => setShowMyTasksFilter(!showMyTasksFilter)}
-              className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                 showMyTasksFilter
-                  ? 'bg-indigo-600 text-white shadow-sm'
+                  ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
                   : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
               }`}
               title={tMsg('My Tasks', 'Tugas Saya')}
             >
-              👤 {tMsg('My Tasks', 'Tugas Saya')}
+              <span className="material-symbols-outlined text-sm">person</span>
+              <span>{tMsg('My Tasks', 'Tugas Saya')}</span>
             </button>
             <button
               onClick={() => setShowUnreadFilter(!showUnreadFilter)}
-              className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition-colors flex items-center justify-center gap-1 ${
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                 showUnreadFilter
-                  ? 'bg-indigo-600 text-white shadow-sm'
+                  ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
                   : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
               }`}
               title={tMsg('Unread', 'Belum Dibaca')}
             >
-              🔔 {tMsg('Unread', 'Belum Dibaca')}
+              <span className="material-symbols-outlined text-sm">notifications</span>
+              <span>{tMsg('Unread', 'Belum Dibaca')}</span>
             </button>
           </div>
         </div>
@@ -327,17 +333,17 @@ export default function ChatSidebar({
           <div className="flex gap-2">
             <button
               onClick={handleExpandAll}
-              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black"
+              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black p-0.5"
               title={tMsg('Expand All', 'Buka Semua')}
             >
-              ⊞
+              <span className="material-symbols-outlined text-sm">unfold_more</span>
             </button>
             <button
               onClick={handleCollapseAll}
-              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black"
+              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black p-0.5"
               title={tMsg('Collapse All', 'Tutup Semua')}
             >
-              ⊟
+              <span className="material-symbols-outlined text-sm">unfold_less</span>
             </button>
           </div>
         </div>
@@ -384,15 +390,18 @@ export default function ChatSidebar({
                       return (
                         <button
                           onClick={() => setActiveChat({ type: 'project', id: board.id, name: `${board.name} (General)`, board_id: board.id })}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-between ${
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between ${
                             activeChat?.type === 'project' && activeChat?.id === board.id
-                              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                              ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                           }`}
                         >
-                          <span className="truncate flex-1">🏢 General Chat</span>
+                          <span className="truncate flex-1 flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-xs text-indigo-500">forum</span>
+                            <span>General Chat</span>
+                          </span>
                           {unreadProj > 0 && (
-                            <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-md shadow-sm shrink-0 animate-pulse ml-2">
+                            <span className="bg-[#111E38] text-[#FACC15] text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 ml-2">
                               {unreadProj}
                             </span>
                           )}
@@ -418,18 +427,18 @@ export default function ChatSidebar({
                         <button
                           key={`tree-task-${t.id}`}
                           onClick={() => setActiveChat({ type: 'task', id: t.id, name: t.project_name, board_id: board.id, is_involved: t.is_involved })}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
                             activeChat?.type === 'task' && activeChat?.id === t.id
-                              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 font-bold'
+                              ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                           }`}
                         >
                           <span className="truncate flex-1 flex items-center gap-1.5">
-                            <span className="text-[10px] opacity-70">📋</span>
-                            {t.project_name}
+                            <span className="material-symbols-outlined text-xs text-amber-500">task</span>
+                            <span>{t.project_name}</span>
                           </span>
                           {unreadTask > 0 && (
-                            <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-md shadow-sm shrink-0 animate-pulse ml-2">
+                            <span className="bg-[#111E38] text-[#FACC15] text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 ml-2">
                               {unreadTask}
                             </span>
                           )}

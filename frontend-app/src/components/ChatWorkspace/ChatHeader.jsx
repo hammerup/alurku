@@ -37,11 +37,13 @@ export default function ChatHeader({
         </button>
         {activeChat.type === 'dm' ? (
           <Avatar name={activeChat.partner} url={avatarsMap[activeChat.partner]} size="w-8 h-8" />
+        ) : activeChat.type === 'project' ? (
+          <span className="material-symbols-outlined text-indigo-500 dark:text-[#FACC15] text-2xl">folder</span>
         ) : (
-          <span className="text-2xl">{activeChat.type === 'project' ? '🏢' : '📋'}</span>
+          <span className="material-symbols-outlined text-amber-500 dark:text-[#FACC15] text-2xl">task</span>
         )}
         <div className="min-w-0">
-          <h3 className="font-bold text-sm text-black dark:text-white truncate">
+          <h3 className="font-bold text-sm text-[#111E38] dark:text-white truncate">
             {activeChat.type === 'dm' ? `@${activeChat.name}` : activeChat.name}
           </h3>
           <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest truncate">
@@ -55,20 +57,20 @@ export default function ChatHeader({
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <div className="relative hidden sm:block w-40 md:w-56">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-xs">🔍</span>
+          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none">search</span>
           <input
             type="text"
             placeholder={tMsg('Search messages...', 'Cari pesan...')}
             value={chatSearchQuery}
             onChange={(e) => setChatSearchQuery(e.target.value)}
-            className="w-full bg-neutral-100 dark:bg-neutral-800 border border-transparent focus:bg-white dark:focus:bg-neutral-900 focus:border-indigo-500 rounded-lg pl-8 pr-8 py-1.5 text-xs font-medium text-black dark:text-white outline-none transition-colors"
+            className="w-full bg-neutral-100 dark:bg-neutral-800 border border-transparent focus:bg-white dark:focus:bg-neutral-900 focus:border-indigo-500 rounded-lg pl-8 pr-8 py-1.5 text-xs font-medium text-[#111E38] dark:text-white outline-none transition-colors"
           />
           {chatSearchQuery && (
             <button
               onClick={() => setChatSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white p-1 font-bold"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white p-1 font-bold flex items-center justify-center"
             >
-              ✖
+              <span className="material-symbols-outlined text-xs">close</span>
             </button>
           )}
           {chatSearchQuery && (
@@ -137,16 +139,9 @@ export default function ChatHeader({
         <button
           type="button"
           onClick={handleMeetNow}
-          className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors uppercase tracking-widest"
+          className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition-colors uppercase tracking-widest"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-            ></path>
-          </svg>
+          <span className="material-symbols-outlined text-sm">videocam</span>
           <span className="hidden sm:inline">Meet Now</span>
         </button>
         {activeChat.type === 'task' && (
@@ -154,9 +149,11 @@ export default function ChatHeader({
             onClick={() => {
               if (handleNotificationTaskClick) handleNotificationTaskClick(activeChat.id);
             }}
-            className="text-[10px] font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-3 py-1.5 rounded-lg shadow-sm transition-colors uppercase tracking-widest border border-indigo-200 dark:border-indigo-800/50"
+            className="text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-amber-400 px-3 py-1.5 rounded-lg shadow-xs transition-all flex items-center gap-1.5 font-bold border border-amber-300 dark:border-amber-500/40"
+            title={tMsg('View Task details', 'Lihat rincian Tugas')}
           >
-            View Task ↗
+            <span className="material-symbols-outlined text-sm">visibility</span>
+            <span>{tMsg('View Task', 'Lihat Tugas')}</span>
           </button>
         )}
       </div>
