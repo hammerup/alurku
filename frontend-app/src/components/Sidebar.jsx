@@ -64,15 +64,26 @@ export default function Sidebar() {
     activeWorkspace,
     createWorkspace,
     switchWorkspace,
+    tasks,
+    showMyTasks,
+    setShowMyTasks,
+    showOverdueOnly,
+    setShowOverdueOnly,
+    showDueTodayOnly,
+    setShowDueTodayOnly,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
-  // Sidebar collapse state
+  // Sidebar collapse & tree expansion states
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_sidebar_collapsed') === 'true';
     return false;
   });
+  const [isMyTasksTreeOpen, setIsMyTasksTreeOpen] = useState(true);
+  const [isSpacesTreeOpen, setIsSpacesTreeOpen] = useState(true);
+  const [isAIAgentsTreeOpen, setIsAIAgentsTreeOpen] = useState(true);
+
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [activeBoardMenuId, setActiveBoardMenuId] = useState(null);
   const [newWsName, setNewWsName] = useState('');
@@ -95,44 +106,58 @@ export default function Sidebar() {
     });
   };
 
+  // Task Counts for Badges
+  const assignedToMeCount = useMemo(() => {
+    return (tasks || []).filter((t) => {
+      const isMyTask = (t.assignee && t.assignee.toLowerCase() === currentUser?.toLowerCase()) || t.owner_username === currentUser;
+      const isDone = t.status === 'Done' || t.status === 'Completed' || t.status === 'Rejected';
+      return isMyTask && !isDone;
+    }).length;
+  }, [tasks, currentUser]);
+
+  const overdueCount = useMemo(() => {
+    const nowStr = new Date().toISOString().split('T')[0];
+    return (tasks || []).filter((t) => {
+      const isMyTask = (t.assignee && t.assignee.toLowerCase() === currentUser?.toLowerCase()) || t.owner_username === currentUser;
+      const isDone = t.status === 'Done' || t.status === 'Completed' || t.status === 'Rejected';
+      const deadlineStr = t.deadline ? String(t.deadline).split('T')[0] : '';
+      return isMyTask && !isDone && deadlineStr && deadlineStr < nowStr;
+    }).length;
+  }, [tasks, currentUser]);
+
+  const getBoardTaskCount = (boardId) => {
+    return (tasks || []).filter(
+      (t) => parseInt(t.board_id) === parseInt(boardId) && t.status !== 'Done' && t.status !== 'Completed' && t.status !== 'Rejected'
+    ).length;
+  };
+
   const unreadInboxChatsCount = useMemo(() => {
-    return (inboxChats || []).filter(chat => {
+    return (inboxChats || []).filter((chat) => {
       if (chat.latest_sender === currentUser) return false;
       if (chat.is_dm) return (chat.unread_count || 0) > 0;
       if (chat.is_project_chat) {
         const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
         const hasUnreadNotification = (notifications || []).some(
-          n => !n.is_read && String(n.related_task_id) === String(chat.board_id) && 
-          (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
+          (n) =>
+            !n.is_read &&
+            String(n.related_task_id) === String(chat.board_id) &&
+            (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
         );
         if (!lastRead) return true;
         return chat.timestamp > lastRead || hasUnreadNotification;
       } else {
         const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
         const hasUnreadNotification = (notifications || []).some(
-          n => !n.is_read && String(n.related_task_id) === String(chat.task_id) && 
-          (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
+          (n) =>
+            !n.is_read &&
+            String(n.related_task_id) === String(chat.task_id) &&
+            (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
         );
         if (!lastRead) return true;
         return chat.timestamp > lastRead || hasUnreadNotification;
       }
     }).length;
   }, [inboxChats, notifications, currentUser]);
-
-  // Total unread team chats
-  const totalUnreadChats = useMemo(() => {
-    const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
-    const unreadMentionsAndComments = (notifications || []).filter(
-      (n) =>
-        !n.is_read &&
-        (n.type === 'comment' ||
-          n.type === 'mention' ||
-          n.type === 'mention_no_email' ||
-          n.type === 'team_chat' ||
-          n.type === 'team_chat_no_email')
-    ).length;
-    return Math.max(unreadInboxChatsCount, unreadDms + unreadMentionsAndComments);
-  }, [unreadInboxChatsCount, notifications, dmConversations]);
 
   const [sortMode, setSortMode] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'recent';
@@ -182,17 +207,9 @@ export default function Sidebar() {
     return displayBoards.filter((b) => favoriteBoards.includes(b.id));
   }, [displayBoards, favoriteBoards]);
 
-  const matchedGlobalBoards = useMemo(() => {
-    if (globalSearchQuery.trim().length < 2) return [];
-    const keywords = globalSearchQuery.toLowerCase().split(/\s+/).filter(Boolean);
-    return boards.filter((b) => {
-      const searchStr = `${b.name} ${b.owner_username}`.toLowerCase();
-      return keywords.every((kw) => searchStr.includes(kw));
-    });
-  }, [globalSearchQuery, boards]);
-
   const renderBoardItem = (board, isFavoriteSection = false) => {
     const isActive = selectedBoard?.id === board.id;
+    const taskCount = getBoardTaskCount(board.id);
     const unreadChats = notifications.filter(
       (n) =>
         !n.is_read &&
@@ -229,7 +246,7 @@ export default function Sidebar() {
           if (viewMode === 'overview') {
             setViewMode('kanban');
           }
-          const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+          const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
           const wsSlug = slugify(activeWorkspace?.name);
           const boardSlug = slugify(board.name);
           const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${board.id}`;
@@ -245,7 +262,7 @@ export default function Sidebar() {
             if (viewMode === 'overview') {
               setViewMode('kanban');
             }
-            const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+            const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
             const wsSlug = slugify(activeWorkspace?.name);
             const boardSlug = slugify(board.name);
             const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${board.id}`;
@@ -264,13 +281,15 @@ export default function Sidebar() {
         )}
         <div className="flex items-center gap-2 min-w-0">
           <div
-            className={`w-5 h-5 rounded-md bg-linear-to-br ${gradient} text-white flex items-center justify-center text-[9px] font-bold shrink-0 shadow-2xs opacity-90`}
+            className={`w-4.5 h-4.5 rounded bg-linear-to-br ${gradient} text-white flex items-center justify-center text-[8px] font-black shrink-0 shadow-2xs opacity-90`}
           >
             {getInitials(board.name)}
           </div>
           {!isCollapsed && (
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <span className={`text-xs truncate ${isActive ? 'font-bold text-[#111E38] dark:text-[#FACC15]' : 'font-medium'}`}>{board.name}</span>
+              <span className={`text-xs truncate ${isActive ? 'font-bold text-[#111E38] dark:text-[#FACC15]' : 'font-medium'}`}>
+                {board.name}
+              </span>
               {!!board.is_private && (
                 <span className="opacity-60 shrink-0" title={tMsg('Private Project', 'Proyek Privat')}>
                   <svg className="w-3 h-3 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -283,6 +302,9 @@ export default function Sidebar() {
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          {!isCollapsed && taskCount > 0 && (
+            <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{taskCount}</span>
+          )}
           {unreadChats > 0 && (
             <span className="min-w-3.5 h-3.5 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none" title={`${unreadChats} unread`}>
               {unreadChats > 9 ? '9+' : unreadChats}
@@ -373,6 +395,7 @@ export default function Sidebar() {
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } ${isCollapsed ? 'w-16' : 'w-60 md:w-64'}`}
       >
+        {/* ── ClickUp-Style Workspace Selector & Header Action ── */}
         <div
           className={`hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
             isCollapsed ? 'h-auto py-2.5 flex-col gap-2.5 px-2.5 justify-center' : 'h-14 px-3.5 justify-between gap-2'
@@ -380,31 +403,21 @@ export default function Sidebar() {
         >
           {isCollapsed ? (
             <>
-              {/* Expand Sidebar button at the very top when collapsed */}
+              {/* Expand Sidebar button at top when collapsed */}
               <button
                 onClick={toggleCollapse}
                 className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 title="Expand sidebar"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                   <path d="M9 3v18" />
                   <path d="M14 9l3 3-3 3" />
                 </svg>
               </button>
 
-              {/* Vertical divider line */}
               <div className="w-7 h-px bg-neutral-200 dark:bg-neutral-800 my-0.5"></div>
 
-              {/* Compact Workspace Switcher when collapsed */}
               {workspaces && workspaces.length > 0 && (
                 <div className="relative z-60">
                   <button
@@ -414,60 +427,6 @@ export default function Sidebar() {
                   >
                     {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
                   </button>
-                  {isWorkspaceMenuOpen && (
-                    <div className="absolute left-full top-0 ml-2 w-60 bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5 animate-fadeIn">
-                      <div className="max-h-48 overflow-y-auto space-y-0.5">
-                        {workspaces.map((ws) => (
-                          <button
-                            key={`ws-opt-${ws.id}`}
-                            onClick={() => {
-                              switchWorkspace(ws);
-                              setIsWorkspaceMenuOpen(false);
-                            }}
-                            className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between ${
-                              ws.id === activeWorkspace?.id
-                                ? 'bg-[#111E38] dark:bg-[#FACC15]/15 text-white dark:text-[#FACC15] font-bold'
-                                : 'hover:bg-slate-100 dark:hover:bg-neutral-900 text-slate-700 dark:text-neutral-400 font-medium'
-                            }`}
-                          >
-                            <span className="truncate">{ws.name}</span>
-                            {ws.id === activeWorkspace?.id && (
-                              <span className="text-xs text-white dark:text-[#FACC15]">✓</span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="border-t border-slate-100 dark:border-neutral-800 mt-1.5 pt-1.5 px-1.5">
-                        {isCreatingWs ? (
-                          <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5">
-                            <input
-                              type="text"
-                              placeholder={tMsg('New Workspace Name', 'Nama Workspace Baru')}
-                              value={newWsName}
-                              onChange={(e) => setNewWsName(e.target.value)}
-                              className="flex-1 bg-slate-50 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 text-xs rounded-lg px-2.5 py-1.5 outline-none text-black dark:text-white"
-                              autoFocus
-                            />
-                            <button
-                              type="submit"
-                              className="bg-[#111E38] text-white text-xs px-2.5 py-1.5 rounded-lg font-bold hover:bg-slate-800"
-                            >
-                              +
-                            </button>
-                          </form>
-                        ) : (
-                          <button
-                            onClick={() => setIsCreatingWs(true)}
-                            className="w-full text-left px-2 py-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg font-bold flex items-center gap-1.5"
-                          >
-                            <IconPlus className="w-3.5 h-3.5" />
-                            {tMsg('Create Workspace', 'Buat Workspace Baru')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </>
@@ -549,21 +508,26 @@ export default function Sidebar() {
                 )}
               </div>
 
+              {/* ClickUp Style + Create Quick Button */}
+              <button
+                onClick={() => {
+                  setIsCreateBoardOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="px-2 py-1 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1 shrink-0"
+                title={tMsg('Quick Create Task/Project', 'Buat Cepat')}
+              >
+                <IconPlus className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">{tMsg('Create', 'Buat')}</span>
+              </button>
+
               {/* Collapse Sidebar toggle button */}
               <button
                 onClick={toggleCollapse}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors shrink-0"
+                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors shrink-0 ml-1"
                 title="Collapse sidebar"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                   <path d="M9 3v18" />
                   <path d="M15 9l-3 3 3 3" />
@@ -573,82 +537,196 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* ── Main Sidebar Scrollable Content (ClickUp Compact Style) ── */}
-        <div
-          className={`flex-1 overflow-y-auto px-2 pb-2 custom-scrollbar ${
-            isCollapsed ? 'pt-2' : 'pt-3'
-          }`}
-        >
-          {/* SECTION 1: HOME / UTAMA */}
+        {/* ── Complete ClickUp-Grade Scrollable Navigation Menu ── */}
+        <div className={`flex-1 overflow-y-auto px-2 pb-2 custom-scrollbar ${isCollapsed ? 'pt-2' : 'pt-3'}`}>
+
+          {/* ══════════════════════════════════════════════════════════════ */}
+          {/* SECTION 1: HOME & PERSONAL TASKS                              */}
+          {/* ══════════════════════════════════════════════════════════════ */}
           <div className="mb-3">
             {!isCollapsed && (
-              <div className="px-2.5 mb-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+              <div className="px-2.5 mb-1 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                 {tMsg('Home', 'Utama')}
               </div>
             )}
 
+            {/* Inbox & Notifications */}
             <button
               onClick={() => {
-                setSelectedBoard(null);
-                setViewMode('overview');
+                setIsNotifOpen(true);
                 setIsMobileMenuOpen(false);
-                setIsProactiveAIOpen(false);
-                window.history.pushState({}, '', '/dashboard');
-                window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all relative ${
-                window.location.pathname === '/dashboard' && !selectedBoard
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all relative ${
+                isNotifOpen
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                   : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
-              title={tMsg('Personal Dashboard', 'Dasbor Pribadi')}
+              title={tMsg('Inbox & Replies', 'Inbox & Notifikasi')}
             >
-              {(window.location.pathname === '/dashboard' && !selectedBoard) && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
-              )}
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[18px]">home</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[18px]">inbox</span>
+                </div>
+                {!isCollapsed && <span className="text-xs truncate">{tMsg('Inbox & Replies', 'Inbox & Notifikasi')}</span>}
               </div>
-              {!isCollapsed && (
-                <span className="text-xs truncate">{tMsg('Personal Dashboard', 'Dasbor Pribadi')}</span>
+              {!isCollapsed && unreadCount > 0 && (
+                <span className="min-w-4 h-4 px-1.5 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
               )}
             </button>
 
+            {/* My Tasks Tree (Expandable ClickUp Style Folder) */}
+            <div>
+              <div
+                onClick={() => setIsMyTasksTreeOpen(!isMyTasksTreeOpen)}
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium ${
+                  isCollapsed ? 'justify-center' : ''
+                }`}
+                title={tMsg('My Tasks', 'Tugas Saya')}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">task_alt</span>
+                  </div>
+                  {!isCollapsed && <span className="text-xs truncate font-semibold">{tMsg('My Tasks', 'Tugas Saya')}</span>}
+                </div>
+                {!isCollapsed && (
+                  <span className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200" style={{ transform: isMyTasksTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                    expand_more
+                  </span>
+                )}
+              </div>
+
+              {/* Sub-Items Tree */}
+              {isMyTasksTreeOpen && !isCollapsed && (
+                <div className="ml-4 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-0.5">
+                  {/* Assigned to Me */}
+                  <button
+                    onClick={() => {
+                      setSelectedBoard(null);
+                      setShowMyTasks(true);
+                      setShowOverdueOnly(false);
+                      setShowDueTodayOnly(false);
+                      setViewMode('kanban');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
+                      showMyTasks && !showOverdueOnly
+                        ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="material-symbols-outlined text-[15px]">person_check</span>
+                      <span className="truncate">{tMsg('Assigned to me', 'Ditugaskan ke saya')}</span>
+                    </div>
+                    {assignedToMeCount > 0 && (
+                      <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{assignedToMeCount}</span>
+                    )}
+                  </button>
+
+                  {/* Today & Overdue */}
+                  <button
+                    onClick={() => {
+                      setSelectedBoard(null);
+                      setShowMyTasks(true);
+                      setShowOverdueOnly(true);
+                      setViewMode('kanban');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
+                      showOverdueOnly
+                        ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold'
+                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="material-symbols-outlined text-[15px] text-rose-500">schedule</span>
+                      <span className="truncate">{tMsg('Today & Overdue', 'Hari Ini & Terlambat')}</span>
+                    </div>
+                    {overdueCount > 0 && (
+                      <span className="min-w-3.5 h-3.5 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
+                        {overdueCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Personal List */}
+                  {todoListBoard && (
+                    <button
+                      onClick={() => {
+                        setSelectedBoard(todoListBoard);
+                        setShowMyTasks(false);
+                        setShowOverdueOnly(false);
+                        setViewMode('kanban');
+                        setIsMobileMenuOpen(false);
+                        const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+                        const wsSlug = slugify(activeWorkspace?.name);
+                        const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
+                        window.history.pushState({}, '', targetUrl);
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }}
+                      className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
+                        selectedBoard?.id === todoListBoard.id
+                          ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="material-symbols-outlined text-[15px] text-amber-500">lock</span>
+                        <span className="truncate">{tMsg('Personal List', 'Catatan Pribadi')}</span>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Assigned Comments */}
             <button
               onClick={() => {
-                setSelectedBoard(null);
-                setViewMode('overview');
+                setIsProjectChatOpen(true);
                 setIsMobileMenuOpen(false);
-                setIsProactiveAIOpen(false);
-                const slug = activeWorkspace?.name 
-                  ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
-                  : 'main';
-                window.history.pushState({}, '', `/workspace/${slug}`);
-                window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all relative ${
-                window.location.pathname.startsWith('/workspace') && !selectedBoard
-                  ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                  : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
-              } ${isCollapsed ? 'justify-center' : ''}`}
-              title={tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              title={tMsg('Assigned Comments & Chat', 'Komentar & Obrolan')}
             >
-              {(window.location.pathname.startsWith('/workspace') && !selectedBoard) && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
-              )}
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[18px]">dashboard</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[18px]">forum</span>
+                </div>
+                {!isCollapsed && <span className="text-xs truncate">{tMsg('Assigned Comments', 'Komentar & Sebutan')}</span>}
               </div>
-              {!isCollapsed && (
-                <span className="text-xs truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
+              {!isCollapsed && totalUnreadChats > 0 && (
+                <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
+                  {totalUnreadChats}
+                </span>
               )}
+            </button>
+
+            {/* Meetings & Leaves */}
+            <button
+              onClick={() => {
+                setIsLeaveModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              title={tMsg('Meetings & Leaves', 'Pertemuan & Pengajuan Cuti')}
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
+              </div>
+              {!isCollapsed && <span className="text-xs truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>}
             </button>
           </div>
 
-          {/* SECTION 2: SPACES / PROYEK */}
+          {/* ══════════════════════════════════════════════════════════════ */}
+          {/* SECTION 2: SPACES & PROJECTS (PROYEK TIM)                     */}
+          {/* ══════════════════════════════════════════════════════════════ */}
           <div className="mb-3">
             {!isCollapsed && (
-              <div className="flex items-center justify-between px-2.5 mb-1.5">
+              <div className="flex items-center justify-between px-2.5 mb-1">
                 <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                   {tMsg('Spaces', 'Proyek')}
                 </span>
@@ -666,7 +744,7 @@ export default function Sidebar() {
               </div>
             )}
 
-            {/* All Projects (Master View) */}
+            {/* All Tasks & Projects (Master View) */}
             <button
               onClick={() => {
                 setSelectedBoard({
@@ -679,7 +757,7 @@ export default function Sidebar() {
                 setViewMode('kanban');
                 setIsMobileMenuOpen(false);
                 setIsProactiveAIOpen(false);
-                const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
+                const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
                 const wsSlug = slugify(activeWorkspace?.name);
                 const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/overall-project`;
                 window.history.pushState({}, '', targetUrl);
@@ -690,7 +768,7 @@ export default function Sidebar() {
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                   : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
-              title={tMsg('All Projects (Master View)', 'Semua Proyek (Tampilan Gabungan)')}
+              title={tMsg('All Tasks & Projects (Master View)', 'Semua Tugas & Proyek')}
             >
               {selectedBoard?.id === 'global' && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
@@ -698,92 +776,183 @@ export default function Sidebar() {
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[18px]">layers</span>
               </div>
-              {!isCollapsed && (
-                <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>
-              )}
+              {!isCollapsed && <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>}
             </button>
 
-            {/* Personal Tasks (Private List) */}
-            {todoListBoard && (
-              <button
-                onClick={() => {
-                  setSelectedBoard(todoListBoard);
-                  setViewMode('kanban');
-                  setIsMobileMenuOpen(false);
-                  setIsProactiveAIOpen(false);
-                  const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
-                  const wsSlug = slugify(activeWorkspace?.name);
-                  const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
-                  window.history.pushState({}, '', targetUrl);
-                  window.dispatchEvent(new CustomEvent('alurku-navigate'));
-                }}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all relative ${
-                  selectedBoard?.id === todoListBoard.id
-                    ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                    : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
-                } ${isCollapsed ? 'justify-center' : ''}`}
-                title={tMsg('Personal Tasks (Private workspace)', 'Tugas Pribadi (Ruang kerja pribadi)')}
+            {/* Expandable Team Spaces Tree */}
+            <div>
+              <div
+                onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+                title={tMsg('Team Spaces', 'Ruang Kerja Tim')}
               >
-                {selectedBoard?.id === todoListBoard.id && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
-                )}
-                <div className="w-5 h-5 flex items-center justify-center text-amber-500 dark:text-[#FACC15] shrink-0">
-                  <span className="material-symbols-outlined text-[18px]">lock</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">folder_copy</span>
+                  </div>
+                  {!isCollapsed && <span className="text-xs truncate font-semibold">{tMsg('Team Spaces', 'Ruang Kerja Tim')}</span>}
                 </div>
                 {!isCollapsed && (
-                  <span className="text-xs truncate font-semibold">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
-                )}
-              </button>
-            )}
-
-            {/* Pinned Projects */}
-            {favorites.length > 0 && (
-              <div className="mt-2">
-                {!isCollapsed && (
-                  <div className="px-2.5 mb-1 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-                    {tMsg('Pinned', 'Disematkan')}
-                  </div>
-                )}
-                <div className="flex flex-col gap-0.5">{favorites.map((b) => renderBoardItem(b, true))}</div>
-              </div>
-            )}
-
-            {/* All User Boards List */}
-            <div className="mt-2">
-              {!isCollapsed && (
-                <div className="flex items-center justify-between px-2.5 mb-1">
-                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-                    {tMsg('Projects List', 'Daftar Proyek')}
+                  <span className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200" style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                    expand_more
                   </span>
-                  <select
-                    value={sortMode}
-                    onChange={(e) => handleSortChange(e.target.value)}
-                    className="bg-transparent text-[10px] text-neutral-500 hover:text-black dark:hover:text-white cursor-pointer outline-none font-bold uppercase tracking-wider text-right"
-                    title={tMsg('Sort Projects', 'Urutkan Proyek')}
+                )}
+              </div>
+
+              {isSpacesTreeOpen && !isCollapsed && (
+                <div className="ml-4 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-0.5">
+                  {/* Pinned Projects */}
+                  {favorites.length > 0 && (
+                    <div className="mb-1">
+                      <div className="px-2 py-0.5 text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
+                        {tMsg('Pinned', 'Disematkan')}
+                      </div>
+                      {favorites.map((b) => renderBoardItem(b, true))}
+                    </div>
+                  )}
+
+                  {/* Project List */}
+                  {displayBoards.length === 0 ? (
+                    <div className="px-2 py-1 text-xs text-neutral-400 italic">{tMsg('No projects yet', 'Belum ada proyek')}</div>
+                  ) : (
+                    displayBoards.map((b) => renderBoardItem(b))
+                  )}
+
+                  {/* Team Docs */}
+                  <button
+                    onClick={() => {
+                      setIsDocsOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
                   >
-                    <option value="recent" className="bg-white dark:bg-neutral-900 text-black dark:text-white">
-                      {tMsg('Recent', 'Terbaru')}
-                    </option>
-                    <option value="active" className="bg-white dark:bg-neutral-900 text-black dark:text-white">
-                      {tMsg('Active', 'Teraktif')}
-                    </option>
-                    <option value="alphabet" className="bg-white dark:bg-neutral-900 text-black dark:text-white">
-                      {tMsg('A-Z', 'A-Z')}
-                    </option>
-                  </select>
+                    <span className="material-symbols-outlined text-[15px] text-sky-500">description</span>
+                    <span className="truncate">{tMsg('Team Docs', 'Dokumentasi Tim')}</span>
+                  </button>
                 </div>
               )}
-
-              <div className="flex flex-col gap-0.5 tour-project-card">
-                {displayBoards.length === 0
-                  ? !isCollapsed && (
-                      <div className="px-2.5 py-1.5 text-xs text-neutral-400 italic">
-                        {tMsg('No projects yet', 'Belum ada proyek')}
-                      </div>
-                    )
-                  : displayBoards.map((b) => renderBoardItem(b))}
-              </div>
             </div>
+
+            {/* Archived Projects */}
+            <button
+              onClick={() => {
+                setIsArchivedOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium"
+              title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+              </div>
+              {!isCollapsed && <span className="text-xs truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>}
+            </button>
+          </div>
+
+          {/* ══════════════════════════════════════════════════════════════ */}
+          {/* SECTION 3: AI CHATS & SUPER AGENTS (ASISTEN AI)               */}
+          {/* ══════════════════════════════════════════════════════════════ */}
+          <div className="mb-3">
+            {!isCollapsed && (
+              <div className="px-2.5 mb-1 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                {tMsg('AI & Agents', 'Asisten AI')}
+              </div>
+            )}
+
+            {/* Tanya Luruka AI - Brand Yellow AI CTA */}
+            <button
+              onClick={() => {
+                setSelectedBoard(null);
+                setIsProactiveAIOpen(true);
+                setIsMobileMenuOpen(false);
+                window.history.pushState({}, '', '/proactive-ai');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all border ${
+                window.location.pathname === '/proactive-ai' && !selectedBoard
+                  ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-2xs'
+                  : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
+              } ${isCollapsed ? 'justify-center' : ''}`}
+              title="Tanya Luruka AI"
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                </svg>
+              </div>
+              {!isCollapsed && <span className="text-xs truncate">{tMsg('Ask Luruka AI', 'Tanya Luruka AI')}</span>}
+            </button>
+
+            {/* Super Agents Tree */}
+            {!isCollapsed && (
+              <div className="ml-3 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-1">
+                {/* Onboarding Agent */}
+                <button
+                  onClick={() => {
+                    startTour();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-emerald-500">flag</span>
+                  <span className="truncate">{tMsg('Onboarding Tour', 'Tur Workspace')}</span>
+                </button>
+
+                {/* Workload Analytics Agent */}
+                <button
+                  onClick={() => {
+                    setViewMode('overview');
+                    setSelectedBoard(null);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-indigo-500">insights</span>
+                  <span className="truncate">{tMsg('Workload Analytics', 'Analisis Beban Kerja')}</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ══════════════════════════════════════════════════════════════ */}
+          {/* SECTION 4: DUKUNGAN & TIKET                                    */}
+          {/* ══════════════════════════════════════════════════════════════ */}
+          <div className="mb-2">
+            {!isCollapsed && (
+              <div className="px-2.5 mb-1 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                {tMsg('Support', 'Dukungan')}
+              </div>
+            )}
+
+            {/* My Tickets */}
+            <button
+              onClick={() => {
+                setIsMyTicketsOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              title={tMsg('My Support Tickets', 'Tiket Bantuan Saya')}
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">confirmation_number</span>
+              </div>
+              {!isCollapsed && <span className="text-xs truncate">{tMsg('My Tickets', 'Tiket Saya')}</span>}
+            </button>
+
+            {/* Help & Support */}
+            <button
+              onClick={() => {
+                setIsSupportOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              title={tMsg('Help & Support', 'Bantuan & Dukungan')}
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">help</span>
+              </div>
+              {!isCollapsed && <span className="text-xs truncate">{tMsg('Help & Support', 'Bantuan & Dukungan')}</span>}
+            </button>
           </div>
 
         </div>
@@ -791,62 +960,8 @@ export default function Sidebar() {
         {/* ── Pinned Bottom Footer ── */}
         <div className="shrink-0 border-t border-neutral-200/60 dark:border-neutral-800/60 p-2 flex flex-col gap-1">
 
-          {/* Archived Projects */}
-          <button
-            onClick={() => {
-              setIsArchivedOpen(true);
-            }}
-            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
-            title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
-          >
-            <div className="w-5 h-5 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
-            </div>
-            {!isCollapsed && <span className="text-xs truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>}
-          </button>
-
-          {/* Chat Luruka — Brand Yellow AI CTA */}
-          <button
-            onClick={() => {
-              setSelectedBoard(null);
-              setIsProactiveAIOpen(true);
-              setIsMobileMenuOpen(false);
-              window.history.pushState({}, '', '/proactive-ai');
-              window.dispatchEvent(new CustomEvent('alurku-navigate'));
-            }}
-            className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all border ${
-              window.location.pathname === '/proactive-ai' && !selectedBoard
-                ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-2xs'
-                : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
-            } ${isCollapsed ? 'justify-center' : ''}`}
-            title="Chat Luruka"
-          >
-            <div className="w-5 h-5 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-            </div>
-            {!isCollapsed && (
-              <span className="text-xs truncate">
-                {tMsg('Ask Luruka', 'Tanya Luruka')}
-              </span>
-            )}
-          </button>
-
-          {/* Help & Support */}
-          <button
-            onClick={() => setIsSupportOpen(true)}
-            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium ${isCollapsed ? 'justify-center' : ''}`}
-            title={tMsg('Help & Support', 'Bantuan & Dukungan')}
-          >
-            <div className="w-5 h-5 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[18px]">help</span>
-            </div>
-            {!isCollapsed && <span className="text-xs truncate">{tMsg('Help & Support', 'Bantuan & Dukungan')}</span>}
-          </button>
-
           {/* User Profile Card */}
-          <div className="pt-1.5 border-t border-neutral-200/60 dark:border-neutral-800/60">
+          <div className="pt-0.5">
             <div
               className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg ${isCollapsed ? 'justify-center' : ''}`}
               title={isCollapsed ? `${currentUser} — ${accountStatus === 'free' ? tMsg('Free Plan', 'Paket Gratis') : tMsg('Pro Plan', 'Paket Pro')}` : undefined}
