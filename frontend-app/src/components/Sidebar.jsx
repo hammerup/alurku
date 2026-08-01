@@ -135,6 +135,19 @@ export default function Sidebar() {
     });
   };
 
+  const todoListBoard = useMemo(() => {
+    return (
+      boards.find((b) => {
+        const name = (b.name || '').toLowerCase();
+        return (name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi') && b.is_private === 1;
+      }) ||
+      boards.find((b) => {
+        const name = (b.name || '').toLowerCase();
+        return name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi';
+      })
+    );
+  }, [boards]);
+
   // ════════════════════════════════════════════════════════════════════════
   // FEATURE 5: KEYBOARD SHORTCUT NAVIGATION (Cmd/Ctrl+B, G+H, G+P, G+A, G+I)
   // ════════════════════════════════════════════════════════════════════════
@@ -277,19 +290,6 @@ export default function Sidebar() {
     setSortMode(mode);
     localStorage.setItem('alurku_board_sort', mode);
   };
-
-  const todoListBoard = useMemo(() => {
-    return (
-      boards.find((b) => {
-        const name = (b.name || '').toLowerCase();
-        return (name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi') && b.is_private === 1;
-      }) ||
-      boards.find((b) => {
-        const name = (b.name || '').toLowerCase();
-        return name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi';
-      })
-    );
-  }, [boards]);
 
   // ════════════════════════════════════════════════════════════════════════
   // FEATURE 4: DRAG & DROP PROJECT REORDERING
