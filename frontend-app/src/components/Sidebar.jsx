@@ -14,6 +14,7 @@ export default function Sidebar() {
     notifications,
     dmConversations,
     inboxChats,
+    setIsFormOpen,
     setIsCreateBoardOpen,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
@@ -106,6 +107,7 @@ export default function Sidebar() {
   const [isSavedViewsOpen, setIsSavedViewsOpen] = useState(true);
 
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const [activeBoardMenuId, setActiveBoardMenuId] = useState(null);
   const [newWsName, setNewWsName] = useState('');
   const [isCreatingWs, setIsCreatingWs] = useState(false);
@@ -760,9 +762,9 @@ export default function Sidebar() {
             isMobileMenuOpen ? 'fixed inset-y-0 left-14 z-90 translate-x-0' : ''
           }`}
         >
-          {/* ── HEADER ROW 1: WORKSPACE SELECTOR DROPDOWN (100% WIDTH) ── */}
-          <div className="h-11 px-3 flex items-center justify-between shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 relative">
-            <div className="relative w-full">
+          {/* ── HEADER ROW 1: WORKSPACE SELECTOR DROPDOWN + WORKSPACE CHAT BUTTON ── */}
+          <div className="h-11 px-3 flex items-center justify-between shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 relative gap-1">
+            <div className="relative flex-1 min-w-0">
               <button
                 onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
                 className="w-full flex items-center justify-between gap-1.5 p-1 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 rounded-xl transition-all text-left"
@@ -831,26 +833,71 @@ export default function Sidebar() {
                 </div>
               )}
             </div>
+
+            {/* Dedicated Workspace Chat Icon Button in Header Row 1 */}
+            <button
+              onClick={() => {
+                setIsChatWorkspaceOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-neutral-300 transition-colors relative shrink-0"
+              title={tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}
+            >
+              <span className="material-symbols-outlined text-[18px]">chat</span>
+              {totalUnreadChats > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FACC15] ring-2 ring-[#FAFAFA] dark:ring-[#121B2D]"></span>
+              )}
+            </button>
           </div>
 
-          {/* ── HEADER ROW 2: CATEGORY TITLE + +CREATE BUTTON (PERSIS CLICKUP) ── */}
-          <div className="px-3 py-1.5 flex items-center justify-between shrink-0 border-b border-neutral-200/40 dark:border-neutral-800/40 bg-neutral-100/40 dark:bg-neutral-900/30">
+          {/* ── HEADER ROW 2: CATEGORY TITLE + DYNAMIC MULTI-FUNCTION +CREATE BUTTON ── */}
+          <div className="px-3 py-1.5 flex items-center justify-between shrink-0 border-b border-neutral-200/40 dark:border-neutral-800/40 bg-neutral-100/40 dark:bg-neutral-900/30 relative">
             <h2 className="text-xs font-extrabold text-slate-800 dark:text-white tracking-tight uppercase">
               {getCategoryTitle()}
             </h2>
 
-            {/* ClickUp Style + Create Button */}
-            <button
-              onClick={() => {
-                setIsCreateBoardOpen(true);
-                setIsMobileMenuOpen(false);
-              }}
-              className="px-2 py-0.5 bg-white dark:bg-neutral-800 hover:bg-[#111E38] hover:text-white dark:hover:bg-[#FACC15] dark:hover:text-[#111E38] border border-neutral-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 shadow-2xs"
-              title={tMsg('Create Task or Project', 'Buat Tugas atau Proyek')}
-            >
-              <IconPlus className="w-3 h-3" />
-              <span>{tMsg('Create', 'Buat')}</span>
-            </button>
+            {/* ClickUp Style Multi-Function + Create Dropdown Button */}
+            <div className="relative">
+              <button
+                onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
+                className="px-2 py-0.5 bg-white dark:bg-neutral-800 hover:bg-[#111E38] hover:text-white dark:hover:bg-[#FACC15] dark:hover:text-[#111E38] border border-neutral-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 shadow-2xs"
+                title={tMsg('Create Task or Project', 'Buat Tugas atau Proyek')}
+              >
+                <IconPlus className="w-3 h-3" />
+                <span>{tMsg('Create', 'Buat')}</span>
+                <span className="material-symbols-outlined text-[12px] opacity-70">expand_more</span>
+              </button>
+
+              {isCreateMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-55" onClick={() => setIsCreateMenuOpen(false)}></div>
+                  <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 py-1 text-xs animate-fadeIn">
+                    <button
+                      onClick={() => {
+                        setIsCreateMenuOpen(false);
+                        setIsFormOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium"
+                    >
+                      <span className="material-symbols-outlined text-sm text-indigo-500">add_task</span>
+                      <span>{tMsg('New Task', 'Tugas Baru')}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsCreateMenuOpen(false);
+                        setIsCreateBoardOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium border-t border-neutral-100 dark:border-neutral-800"
+                    >
+                      <span className="material-symbols-outlined text-sm text-amber-500">create_new_folder</span>
+                      <span>{tMsg('New Project', 'Proyek Baru')}</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* ── DYNAMIC SCROLLABLE CONTENT BASED ON ACTIVE RAIL TAB ── */}
@@ -860,6 +907,25 @@ export default function Sidebar() {
             {activeRailTab === 'home' && (
               <div className="space-y-3">
                 <div className="space-y-0.5">
+                  {/* Workspace Chat */}
+                  <button
+                    onClick={() => {
+                      setIsChatWorkspaceOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px] text-indigo-500 dark:text-[#FACC15]">chat</span>
+                      <span className="truncate">{tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}</span>
+                    </div>
+                    {totalUnreadChats > 0 && (
+                      <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
+                        {totalUnreadChats}
+                      </span>
+                    )}
+                  </button>
+
                   {/* Inbox & Notifications */}
                   <button
                     onClick={() => {
@@ -917,6 +983,18 @@ export default function Sidebar() {
             {activeRailTab === 'tasks' && (
               <div className="space-y-3">
                 <div className="space-y-0.5">
+                  {/* Quick Add Task Button */}
+                  <button
+                    onClick={() => {
+                      setIsFormOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-[#FACC15] font-bold text-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all mb-1 border border-indigo-200/50 dark:border-indigo-800/40"
+                  >
+                    <IconPlus className="w-3.5 h-3.5" />
+                    <span>{tMsg('Add New Task', 'Tambah Tugas Baru')}</span>
+                  </button>
+
                   {/* Assigned to Me */}
                   <button
                     onClick={() => {
