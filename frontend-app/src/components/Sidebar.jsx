@@ -145,7 +145,16 @@ export default function Sidebar() {
   };
 
   const todoListBoard = useMemo(() => {
-    return boards.find((b) => b.is_private === 1 || b.name.toLowerCase() === 'personal tasks' || b.name.toLowerCase() === 'to-do list');
+    return (
+      boards.find((b) => {
+        const name = (b.name || '').toLowerCase();
+        return (name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi') && b.is_private === 1;
+      }) ||
+      boards.find((b) => {
+        const name = (b.name || '').toLowerCase();
+        return name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi';
+      })
+    );
   }, [boards]);
 
   const sortedBoards = useMemo(() => {

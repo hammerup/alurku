@@ -3730,7 +3730,15 @@ export default function useAppLogic() {
     if (groupBy === 'Category') return categories;
     if (groupBy === 'Assignee') return [...new Set(tasks.map((t) => getTaskAssignee(t)))];
     if (groupBy === 'Project') {
-      const todoListBoard = boards.find((b) => b.is_private === 1 || b.name.toLowerCase() === 'personal tasks' || b.name.toLowerCase() === 'to-do list');
+      const todoListBoard =
+        boards.find((b) => {
+          const name = (b.name || '').toLowerCase();
+          return (name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi') && b.is_private === 1;
+        }) ||
+        boards.find((b) => {
+          const name = (b.name || '').toLowerCase();
+          return name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi';
+        });
       const todoListName =
         todoListBoard && (!selectedBoard || selectedBoard.id === 'global' || selectedBoard.id === todoListBoard.id)
           ? todoListBoard.name
