@@ -9,7 +9,7 @@ import time
 
 from database import get_db, User, get_security_log, set_security_log, Workspace, WorkspaceMember
 from schemas import RegisterModel, LoginModel, GoogleLoginModel, VerifyModel, QuickRegisterModel
-from dependencies import get_password_hash, verify_password, create_access_token, SECRET_KEY, ALGORITHM
+from dependencies import get_password_hash, verify_password, create_access_token, get_current_user, SECRET_KEY, ALGORITHM
 import jwt
 import random
 import string
@@ -407,3 +407,19 @@ def verify_email(payload: VerifyModel, db: Session = Depends(get_db)):
     return {"message": "Email verified successfully! You can now login."}
 
 
+@router.post("/api/refresh-token")
+def refresh_token(db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    """
+    Silent token refresh endpoint.
+    Accepts a valid (non-expired) JWT via Authorization header,
+    verifies the user still exists and is active, then issues a fresh 30-day token.
+    Frontend should call this proactively when the token is nearing expiry.
+    """
+    user = db.query(User).filter(User.username == current_user).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User account no longer exists")
+    if user.account_status == "pending_deletion":
+        raise HTTPException(status_code=403, detail="Account is disabled and scheduled for deletion")
+
+    new_token = create_access_token(data={"sub": user.username})
+    return {"token": new_token}

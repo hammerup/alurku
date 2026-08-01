@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { ensureFreshToken } from '../api/axiosSetup';
 
 export function useWebSocket(workspaceId, token, currentUser) {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
@@ -8,6 +9,7 @@ export function useWebSocket(workspaceId, token, currentUser) {
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const reconnectDelayRef = useRef(1000); // Start with 1s
+  const hasAttemptedRefreshRef = useRef(false);
 
   // Fetch initial activity logs via REST & set up 15s polling fallback
   useEffect(() => {
@@ -34,11 +36,20 @@ export function useWebSocket(workspaceId, token, currentUser) {
   useEffect(() => {
     if (!workspaceId || !token) return;
 
-    function connect() {
+    async function connect() {
       // Clean up existing socket
       if (wsRef.current) {
         wsRef.current.close();
       }
+
+      // Proactively refresh token if nearing expiry before connecting
+      let activeToken;
+      try {
+        activeToken = await ensureFreshToken();
+      } catch {
+        activeToken = localStorage.getItem('alurku_token') || token;
+      }
+      if (!activeToken) activeToken = token;
 
       // Build WebSocket URL
       let wsBase;
@@ -56,7 +67,7 @@ export function useWebSocket(workspaceId, token, currentUser) {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         wsBase = `${protocol}//${window.location.host}`;
       }
-      const wsUrl = `${wsBase}/ws/workspace/${workspaceId}?token=${encodeURIComponent(token)}`;
+      const wsUrl = `${wsBase}/ws/workspace/${workspaceId}?token=${encodeURIComponent(activeToken)}`;
 
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -64,6 +75,7 @@ export function useWebSocket(workspaceId, token, currentUser) {
       ws.onopen = () => {
         setIsConnected(true);
         reconnectDelayRef.current = 1000; // Reset reconnect delay on success
+        hasAttemptedRefreshRef.current = false; // Reset refresh flag on success
       };
 
       ws.onmessage = (event) => {
@@ -105,9 +117,28 @@ export function useWebSocket(workspaceId, token, currentUser) {
         }
       };
 
-      ws.onclose = (e) => {
+      ws.onclose = async (e) => {
         setIsConnected(false);
         wsRef.current = null;
+
+        // Code 4001 = invalid/expired token from our backend
+        // Attempt a token refresh and reconnect once before giving up
+        if (e.code === 4001 && !hasAttemptedRefreshRef.current) {
+          hasAttemptedRefreshRef.current = true;
+          try {
+            const freshToken = await ensureFreshToken();
+            if (freshToken) {
+              // Immediately reconnect with the refreshed token
+              reconnectDelayRef.current = 500;
+              reconnectTimeoutRef.current = setTimeout(() => {
+                connect();
+              }, reconnectDelayRef.current);
+              return;
+            }
+          } catch {
+            // Refresh failed — fall through to normal close handling
+          }
+        }
         
         // Auto-reconnect with exponential backoff if not closed cleanly/manually
         if (e.code !== 1000 && e.code !== 1001) {
