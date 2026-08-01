@@ -82,12 +82,40 @@ export default function Sidebar() {
   });
   const [isMyTasksTreeOpen, setIsMyTasksTreeOpen] = useState(true);
   const [isSpacesTreeOpen, setIsSpacesTreeOpen] = useState(true);
-  const [isAIAgentsTreeOpen, setIsAIAgentsTreeOpen] = useState(true);
+  const [isSavedViewsOpen, setIsSavedViewsOpen] = useState(true);
 
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [activeBoardMenuId, setActiveBoardMenuId] = useState(null);
   const [newWsName, setNewWsName] = useState('');
   const [isCreatingWs, setIsCreatingWs] = useState(false);
+
+  // Drag & Drop reorder state
+  const [draggedBoardId, setDraggedBoardId] = useState(null);
+  const [customBoardOrder, setCustomBoardOrder] = useState(() => {
+    if (typeof window !== 'undefined' && currentUser) {
+      try {
+        const saved = localStorage.getItem(`alurku_custom_board_order_${currentUser}`);
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  // Saved Views State
+  const [savedViews, setSavedViews] = useState(() => {
+    if (typeof window !== 'undefined' && currentUser) {
+      try {
+        const saved = localStorage.getItem(`alurku_saved_views_${currentUser}`);
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [
+      { id: 'sv-assigned', nameEn: 'Assigned to Me', nameId: 'Ditugaskan ke Saya', icon: 'person_check', type: 'assigned' },
+      { id: 'sv-overdue', nameEn: 'Overdue Tasks', nameId: 'Tugas Terlambat', icon: 'schedule', type: 'overdue' },
+    ];
+  });
 
   const handleCreateWsSubmit = (e) => {
     e.preventDefault();
@@ -98,6 +126,7 @@ export default function Sidebar() {
       setIsWorkspaceMenuOpen(false);
     }
   };
+
   const toggleCollapse = () => {
     setIsCollapsed((prev) => {
       const next = !prev;
@@ -105,6 +134,72 @@ export default function Sidebar() {
       return next;
     });
   };
+
+  // ════════════════════════════════════════════════════════════════════════
+  // FEATURE 5: KEYBOARD SHORTCUT NAVIGATION (Cmd/Ctrl+B, G+H, G+P, G+A, G+I)
+  // ════════════════════════════════════════════════════════════════════════
+  useEffect(() => {
+    let pendingG = false;
+    let timer = null;
+
+    const handleKeyDown = (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      if (activeTag === 'input' || activeTag === 'textarea' || document.activeElement?.isContentEditable) {
+        return;
+      }
+
+      // Cmd/Ctrl + B -> Toggle sidebar collapse
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleCollapse();
+        return;
+      }
+
+      // Sequence key shortcuts: G then H / P / A / I
+      if (e.key.toLowerCase() === 'g' && !e.metaKey && !e.ctrlKey) {
+        pendingG = true;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          pendingG = false;
+        }, 1200);
+        return;
+      }
+
+      if (pendingG) {
+        const key = e.key.toLowerCase();
+        if (key === 'h') {
+          e.preventDefault();
+          pendingG = false;
+          setSelectedBoard(null);
+          setViewMode('overview');
+          window.history.pushState({}, '', '/dashboard');
+          window.dispatchEvent(new CustomEvent('alurku-navigate'));
+        } else if (key === 'p') {
+          e.preventDefault();
+          pendingG = false;
+          if (todoListBoard) {
+            setSelectedBoard(todoListBoard);
+            setViewMode('kanban');
+          }
+        } else if (key === 'a') {
+          e.preventDefault();
+          pendingG = false;
+          setSelectedBoard({ id: 'global', name: tMsg('All Projects', 'Semua Proyek'), role: 'owner', isVirtual: true });
+          setViewMode('kanban');
+        } else if (key === 'i') {
+          e.preventDefault();
+          pendingG = false;
+          setIsNotifOpen(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
+    };
+  }, [todoListBoard, language]);
 
   // Task Counts for Badges
   const assignedToMeCount = useMemo(() => {
@@ -159,7 +254,6 @@ export default function Sidebar() {
     }).length;
   }, [inboxChats, notifications, currentUser]);
 
-  // Total unread team chats
   const totalUnreadChats = useMemo(() => {
     const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
     const unreadMentionsAndComments = (notifications || []).filter(
@@ -197,9 +291,21 @@ export default function Sidebar() {
     );
   }, [boards]);
 
+  // ════════════════════════════════════════════════════════════════════════
+  // FEATURE 4: DRAG & DROP PROJECT REORDERING
+  // ════════════════════════════════════════════════════════════════════════
   const sortedBoards = useMemo(() => {
     let sorted = [...boards];
-    if (sortMode === 'alphabet') {
+    if (customBoardOrder.length > 0 && sortMode === 'custom') {
+      sorted.sort((a, b) => {
+        const idxA = customBoardOrder.indexOf(a.id);
+        const idxB = customBoardOrder.indexOf(b.id);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return b.id - a.id;
+      });
+    } else if (sortMode === 'alphabet') {
       sorted.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortMode === 'active') {
       sorted.sort((a, b) => {
@@ -212,7 +318,7 @@ export default function Sidebar() {
       sorted.sort((a, b) => b.id - a.id);
     }
     return sorted;
-  }, [boards, sortMode]);
+  }, [boards, sortMode, customBoardOrder]);
 
   const displayBoards = useMemo(() => {
     return sortedBoards.filter((b) => b.id !== todoListBoard?.id);
@@ -222,9 +328,33 @@ export default function Sidebar() {
     return displayBoards.filter((b) => favoriteBoards.includes(b.id));
   }, [displayBoards, favoriteBoards]);
 
+  const handleDropBoard = (targetBoardId) => {
+    if (!draggedBoardId || draggedBoardId === targetBoardId) return;
+    const currentList = displayBoards.map((b) => b.id);
+    const fromIndex = currentList.indexOf(draggedBoardId);
+    const toIndex = currentList.indexOf(targetBoardId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const newList = [...currentList];
+    const [moved] = newList.splice(fromIndex, 1);
+    newList.splice(toIndex, 0, moved);
+
+    setCustomBoardOrder(newList);
+    setSortMode('custom');
+    localStorage.setItem('alurku_board_sort', 'custom');
+    if (currentUser) {
+      localStorage.setItem(`alurku_custom_board_order_${currentUser}`, JSON.stringify(newList));
+    }
+    setDraggedBoardId(null);
+  };
+
+  // ════════════════════════════════════════════════════════════════════════
+  // FEATURE 2: DIRECT HOVER STAR TOGGLE (1-CLICK PIN/UNPIN)
+  // ════════════════════════════════════════════════════════════════════════
   const renderBoardItem = (board, isFavoriteSection = false) => {
     const isActive = selectedBoard?.id === board.id;
     const taskCount = getBoardTaskCount(board.id);
+    const isPinned = favoriteBoards.includes(board.id);
     const unreadChats = notifications.filter(
       (n) =>
         !n.is_read &&
@@ -254,6 +384,10 @@ export default function Sidebar() {
         tabIndex={0}
         key={`sb-${isFavoriteSection ? 'fav' : 'all'}-${board.id}`}
         title={isCollapsed ? board.name : undefined}
+        draggable
+        onDragStart={() => setDraggedBoardId(board.id)}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={() => handleDropBoard(board.id)}
         onClick={() => {
           setSelectedBoard(board);
           setIsMobileMenuOpen(false);
@@ -267,23 +401,6 @@ export default function Sidebar() {
           const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${board.id}`;
           window.history.pushState({}, '', targetUrl);
           window.dispatchEvent(new CustomEvent('alurku-navigate'));
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setSelectedBoard(board);
-            setIsMobileMenuOpen(false);
-            setIsProactiveAIOpen(false);
-            if (viewMode === 'overview') {
-              setViewMode('kanban');
-            }
-            const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
-            const wsSlug = slugify(activeWorkspace?.name);
-            const boardSlug = slugify(board.name);
-            const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/${boardSlug}/${board.id}`;
-            window.history.pushState({}, '', targetUrl);
-            window.dispatchEvent(new CustomEvent('alurku-navigate'));
-          }
         }}
         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111E38] ${
           isActive
@@ -316,9 +433,31 @@ export default function Sidebar() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
+
+        <div className="flex items-center gap-1 shrink-0">
+          {!isCollapsed && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isPinned) {
+                  setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
+                } else {
+                  setFavoriteBoards([...favoriteBoards, board.id]);
+                }
+              }}
+              className={`p-0.5 rounded transition-all ${
+                isPinned
+                  ? 'text-amber-400 opacity-100'
+                  : 'text-neutral-400 hover:text-amber-400 opacity-0 group-hover:opacity-100'
+              }`}
+              title={isPinned ? tMsg('Unpin Project', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
+            >
+              <span className="material-symbols-outlined text-[15px]">{isPinned ? 'star' : 'star_border'}</span>
+            </button>
+          )}
+
           {!isCollapsed && taskCount > 0 && (
-            <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{taskCount}</span>
+            <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 ml-0.5">{taskCount}</span>
           )}
           {unreadChats > 0 && (
             <span className="min-w-3.5 h-3.5 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none" title={`${unreadChats} unread`}>
@@ -349,7 +488,7 @@ export default function Sidebar() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setActiveBoardMenuId(null);
-                        if (favoriteBoards.includes(board.id)) {
+                        if (isPinned) {
                           setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
                         } else {
                           setFavoriteBoards([...favoriteBoards, board.id]);
@@ -357,8 +496,8 @@ export default function Sidebar() {
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
                     >
-                      <span className="material-symbols-outlined text-sm">{favoriteBoards.includes(board.id) ? 'star_half' : 'star'}</span>
-                      {favoriteBoards.includes(board.id) ? tMsg('Unpin', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
+                      <span className="material-symbols-outlined text-sm">{isPinned ? 'star_half' : 'star'}</span>
+                      {isPinned ? tMsg('Unpin', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
                     </button>
                     {(isSuperAdmin || board.owner_username === currentUser) && (
                       <>
@@ -405,15 +544,18 @@ export default function Sidebar() {
         ></div>
       )}
 
+      {/* ════════════════════════════════════════════════════════════════════════ */}
+      {/* FEATURE 1: DUAL-DOCK RAIL (NARROW 48PX ICON BAR WHEN COLLAPSED)          */}
+      {/* ════════════════════════════════════════════════════════════════════════ */}
       <aside
         className={`fixed inset-y-0 left-0 z-90 md:z-50 md:sticky md:top-20 md:h-[calc(100vh-5rem)] md:shrink-0 bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95 backdrop-blur-xl border-r border-neutral-200/50 dark:border-neutral-800/50 flex flex-col transition-all duration-300 ease-in-out transform ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } ${isCollapsed ? 'w-16' : 'w-60 md:w-64'}`}
+        } ${isCollapsed ? 'w-14 md:w-14' : 'w-60 md:w-64'}`}
       >
         {/* ── ClickUp-Style Workspace Selector & Header Action ── */}
         <div
           className={`hidden md:flex items-center shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 ${
-            isCollapsed ? 'h-auto py-2.5 flex-col gap-2.5 px-2.5 justify-center' : 'h-14 px-3.5 justify-between gap-2'
+            isCollapsed ? 'h-auto py-2 flex-col gap-2 px-1.5 justify-center' : 'h-14 px-3.5 justify-between gap-2'
           } relative`}
         >
           {isCollapsed ? (
@@ -421,8 +563,8 @@ export default function Sidebar() {
               {/* Expand Sidebar button at top when collapsed */}
               <button
                 onClick={toggleCollapse}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
-                title="Expand sidebar"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                title="Expand sidebar (Ctrl+B)"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
@@ -431,13 +573,13 @@ export default function Sidebar() {
                 </svg>
               </button>
 
-              <div className="w-7 h-px bg-neutral-200 dark:bg-neutral-800 my-0.5"></div>
+              <div className="w-6 h-px bg-neutral-200 dark:bg-neutral-800 my-0.5"></div>
 
               {workspaces && workspaces.length > 0 && (
                 <div className="relative z-60">
                   <button
                     onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-                    className="w-7 h-7 rounded-lg bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
+                    className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-xs hover:opacity-90 transition-opacity"
                     title={`${tMsg('Workspace', 'Ruang Kerja')}: ${activeWorkspace?.name || ''}`}
                   >
                     {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
@@ -540,7 +682,7 @@ export default function Sidebar() {
               <button
                 onClick={toggleCollapse}
                 className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors shrink-0 ml-1"
-                title="Collapse sidebar"
+                title="Collapse sidebar (Ctrl+B)"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
@@ -553,7 +695,7 @@ export default function Sidebar() {
         </div>
 
         {/* ── Complete ClickUp-Grade Scrollable Navigation Menu ── */}
-        <div className={`flex-1 overflow-y-auto px-2 pb-2 custom-scrollbar ${isCollapsed ? 'pt-2' : 'pt-3'}`}>
+        <div className={`flex-1 overflow-y-auto px-1.5 pb-2 custom-scrollbar ${isCollapsed ? 'pt-2' : 'pt-3'}`}>
 
           {/* ══════════════════════════════════════════════════════════════ */}
           {/* SECTION 1: HOME & PERSONAL TASKS                              */}
@@ -565,18 +707,77 @@ export default function Sidebar() {
               </div>
             )}
 
+            {/* Personal Dashboard */}
+            <button
+              onClick={() => {
+                setSelectedBoard(null);
+                setViewMode('overview');
+                setIsMobileMenuOpen(false);
+                setIsProactiveAIOpen(false);
+                window.history.pushState({}, '', '/dashboard');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all relative ${
+                window.location.pathname === '/dashboard' && !selectedBoard
+                  ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                  : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
+              } ${isCollapsed ? 'justify-center' : ''}`}
+              title={tMsg('Personal Dashboard (G+H)', 'Dasbor Pribadi (G+H)')}
+            >
+              {(window.location.pathname === '/dashboard' && !selectedBoard) && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+              )}
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">home</span>
+              </div>
+              {!isCollapsed && (
+                <span className="text-xs truncate">{tMsg('Personal Dashboard', 'Dasbor Pribadi')}</span>
+              )}
+            </button>
+
+            {/* Workspace Overview */}
+            <button
+              onClick={() => {
+                setSelectedBoard(null);
+                setViewMode('overview');
+                setIsMobileMenuOpen(false);
+                setIsProactiveAIOpen(false);
+                const slug = activeWorkspace?.name 
+                  ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
+                  : 'main';
+                window.history.pushState({}, '', `/workspace/${slug}`);
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all relative ${
+                window.location.pathname.startsWith('/workspace') && !selectedBoard
+                  ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                  : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
+              } ${isCollapsed ? 'justify-center' : ''}`}
+              title={tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}
+            >
+              {(window.location.pathname.startsWith('/workspace') && !selectedBoard) && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+              )}
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[18px]">dashboard</span>
+              </div>
+              {!isCollapsed && (
+                <span className="text-xs truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
+              )}
+            </button>
+
             {/* Inbox & Notifications */}
             <button
               onClick={() => {
                 setIsNotifOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all relative ${
+              className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all relative ${
                 isNotifOpen
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                   : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
-              title={tMsg('Inbox & Replies', 'Inbox & Notifikasi')}
+              title={tMsg('Inbox & Replies (G+I)', 'Inbox & Notifikasi (G+I)')}
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -595,7 +796,7 @@ export default function Sidebar() {
             <div>
               <div
                 onClick={() => setIsMyTasksTreeOpen(!isMyTasksTreeOpen)}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium ${
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium ${
                   isCollapsed ? 'justify-center' : ''
                 }`}
                 title={tMsg('My Tasks', 'Tugas Saya')}
@@ -607,7 +808,10 @@ export default function Sidebar() {
                   {!isCollapsed && <span className="text-xs truncate font-semibold">{tMsg('My Tasks', 'Tugas Saya')}</span>}
                 </div>
                 {!isCollapsed && (
-                  <span className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200" style={{ transform: isMyTasksTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <span
+                    className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200"
+                    style={{ transform: isMyTasksTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  >
                     expand_more
                   </span>
                 )}
@@ -615,7 +819,7 @@ export default function Sidebar() {
 
               {/* Sub-Items Tree */}
               {isMyTasksTreeOpen && !isCollapsed && (
-                <div className="ml-4 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-0.5">
+                <div className="ml-3 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-0.5">
                   {/* Assigned to Me */}
                   <button
                     onClick={() => {
@@ -687,6 +891,7 @@ export default function Sidebar() {
                           ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                           : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
                       }`}
+                      title="G+P Shortcut"
                     >
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="material-symbols-outlined text-[15px] text-amber-500">lock</span>
@@ -704,7 +909,7 @@ export default function Sidebar() {
                 setIsProjectChatOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
               title={tMsg('Assigned Comments & Chat', 'Komentar & Obrolan')}
             >
               <div className="flex items-center gap-2 min-w-0">
@@ -726,7 +931,7 @@ export default function Sidebar() {
                 setIsLeaveModalOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
               title={tMsg('Meetings & Leaves', 'Pertemuan & Pengajuan Cuti')}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -735,6 +940,56 @@ export default function Sidebar() {
               {!isCollapsed && <span className="text-xs truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>}
             </button>
           </div>
+
+          {/* ══════════════════════════════════════════════════════════════ */}
+          {/* FEATURE 3: SAVED VIEWS (FILTER TERSIMPAN DI SIDEBAR)           */}
+          {/* ══════════════════════════════════════════════════════════════ */}
+          {savedViews.length > 0 && (
+            <div className="mb-3">
+              {!isCollapsed && (
+                <div
+                  onClick={() => setIsSavedViewsOpen(!isSavedViewsOpen)}
+                  className="flex items-center justify-between px-2.5 mb-1 cursor-pointer select-none"
+                >
+                  <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                    {tMsg('Saved Views', 'Filter Tersimpan')}
+                  </span>
+                  <span
+                    className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200"
+                    style={{ transform: isSavedViewsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  >
+                    expand_more
+                  </span>
+                </div>
+              )}
+
+              {isSavedViewsOpen && !isCollapsed && (
+                <div className="flex flex-col gap-0.5">
+                  {savedViews.map((sv) => (
+                    <button
+                      key={sv.id}
+                      onClick={() => {
+                        setSelectedBoard(null);
+                        if (sv.type === 'assigned') {
+                          setShowMyTasks(true);
+                          setShowOverdueOnly(false);
+                        } else if (sv.type === 'overdue') {
+                          setShowMyTasks(true);
+                          setShowOverdueOnly(true);
+                        }
+                        setViewMode('kanban');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-indigo-500 dark:text-[#FACC15]">{sv.icon}</span>
+                      <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ══════════════════════════════════════════════════════════════ */}
           {/* SECTION 2: SPACES & PROJECTS (PROYEK TIM)                     */}
@@ -778,12 +1033,12 @@ export default function Sidebar() {
                 window.history.pushState({}, '', targetUrl);
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all tour-global-board relative ${
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all tour-global-board relative ${
                 selectedBoard?.id === 'global'
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                   : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
-              title={tMsg('All Tasks & Projects (Master View)', 'Semua Tugas & Proyek')}
+              title={tMsg('All Tasks & Projects (G+A)', 'Semua Tugas & Proyek (G+A)')}
             >
               {selectedBoard?.id === 'global' && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
@@ -798,7 +1053,7 @@ export default function Sidebar() {
             <div>
               <div
                 onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
-                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+                className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
                 title={tMsg('Team Spaces', 'Ruang Kerja Tim')}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -808,14 +1063,17 @@ export default function Sidebar() {
                   {!isCollapsed && <span className="text-xs truncate font-semibold">{tMsg('Team Spaces', 'Ruang Kerja Tim')}</span>}
                 </div>
                 {!isCollapsed && (
-                  <span className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200" style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <span
+                    className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200"
+                    style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                  >
                     expand_more
                   </span>
                 )}
               </div>
 
               {isSpacesTreeOpen && !isCollapsed && (
-                <div className="ml-4 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-0.5">
+                <div className="ml-3 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-0.5">
                   {/* Pinned Projects */}
                   {favorites.length > 0 && (
                     <div className="mb-1">
@@ -854,7 +1112,7 @@ export default function Sidebar() {
                 setIsArchivedOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium"
               title={tMsg('Archived Projects', 'Proyek Diarsipkan')}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -883,7 +1141,7 @@ export default function Sidebar() {
                 window.history.pushState({}, '', '/proactive-ai');
                 window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all border ${
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all border ${
                 window.location.pathname === '/proactive-ai' && !selectedBoard
                   ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-2xs'
                   : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
@@ -945,7 +1203,7 @@ export default function Sidebar() {
                 setIsMyTicketsOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
               title={tMsg('My Support Tickets', 'Tiket Bantuan Saya')}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -960,7 +1218,7 @@ export default function Sidebar() {
                 setIsSupportOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium"
               title={tMsg('Help & Support', 'Bantuan & Dukungan')}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
