@@ -609,16 +609,16 @@ export default function Sidebar() {
         {/* ── COLUMN 1: MASTER BIG CATEGORY ICON DOCK RAIL (~56PX) ── */}
         <aside className="w-14 bg-[#EBECEF] dark:bg-[#090b0d] border-r border-neutral-300/60 dark:border-neutral-800/80 flex flex-col items-center py-3 gap-2 shrink-0">
           
-          {/* Top Workspace Avatar Logo */}
+          {/* Top Workspace Avatar Logo (Compact w-7 h-7) */}
           <button
             onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-            className="w-8 h-8 rounded-xl bg-linear-to-br from-indigo-600 to-indigo-700 text-white flex items-center justify-center text-xs font-black shadow-sm hover:opacity-90 transition-all mb-1"
+            className="w-7 h-7 rounded-lg bg-linear-to-br from-indigo-600 to-indigo-700 text-white flex items-center justify-center text-[10px] font-black shadow-xs hover:opacity-90 transition-all mb-1 shrink-0"
             title={`${tMsg('Workspace', 'Ruang Kerja')}: ${activeWorkspace?.name || ''}`}
           >
             {activeWorkspace?.name ? activeWorkspace.name.substring(0, 1).toUpperCase() : 'W'}
           </button>
 
-          <div className="w-7 h-px bg-neutral-300 dark:bg-neutral-800 my-0.5"></div>
+          <div className="w-6 h-px bg-neutral-300 dark:bg-neutral-800 my-0.5"></div>
 
           {/* 1. Home */}
           <button
@@ -734,553 +734,558 @@ export default function Sidebar() {
               <span className="material-symbols-outlined text-[18px]">upgrade</span>
             </button>
 
-            {/* EXPLICIT EXPAND / COLLAPSE BUTTON ON LEFT RAIL */}
+            {/* EXPLICIT EXPAND / COLLAPSE BUTTON WITH SMOOTH ROTATION */}
             <button
               onClick={toggleCollapse}
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-neutral-300/60 dark:bg-neutral-800/80 text-slate-700 dark:text-neutral-200 hover:bg-neutral-400/60 dark:hover:bg-neutral-700 transition-all shadow-2xs mt-1"
               title={isCollapsed ? tMsg('Expand Panel (Ctrl+B)', 'Buka Panel Sidebar (Ctrl+B)') : tMsg('Collapse Panel (Ctrl+B)', 'Tutup Panel Sidebar (Ctrl+B)')}
             >
-              <span className="material-symbols-outlined text-[18px]">
-                {isCollapsed ? 'chevron_right' : 'chevron_left'}
+              <span
+                className="material-symbols-outlined text-[18px] transition-transform duration-300"
+                style={{ transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
+                chevron_left
               </span>
             </button>
           </div>
         </aside>
 
-        {/* ── COLUMN 2: DYNAMIC CONTENT DRAWER PANEL (~210PX) ── */}
-        {!isCollapsed && (
-          <aside
-            className={`w-56 md:w-60 bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95 backdrop-blur-xl border-r border-neutral-200/50 dark:border-neutral-800/50 flex flex-col transition-all duration-300 ease-in-out transform ${
-              isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-            }`}
-          >
-            {/* ── HEADER ROW 1: WORKSPACE SELECTOR DROPDOWN (100% WIDTH) ── */}
-            <div className="h-12 px-3 flex items-center justify-between shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 relative">
-              <div className="relative w-full">
-                <button
-                  onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-                  className="w-full flex items-center justify-between gap-1.5 p-1 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 rounded-xl transition-all text-left"
-                >
-                  <span className="font-extrabold text-xs text-[#111E38] dark:text-white truncate flex-1">
-                    {activeWorkspace?.name || 'Workspace'}
-                  </span>
-                  <span className="material-symbols-outlined text-[16px] text-neutral-400 shrink-0">
-                    expand_more
-                  </span>
-                </button>
-
-                {isWorkspaceMenuOpen && (
-                  <div className="absolute left-0 top-full mt-1.5 w-64 bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5 animate-fadeIn">
-                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-2 py-1">
-                      {tMsg('Workspaces', 'Ruang Kerja')}
-                    </div>
-                    <div className="max-h-52 overflow-y-auto space-y-0.5 custom-scrollbar">
-                      {(workspaces || []).map((ws) => (
-                        <button
-                          key={`ws-menu-${ws.id}`}
-                          onClick={() => {
-                            switchWorkspace(ws);
-                            setIsWorkspaceMenuOpen(false);
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between ${
-                            ws.id === activeWorkspace?.id
-                              ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold'
-                              : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium'
-                          }`}
-                        >
-                          <span className="truncate">{ws.name}</span>
-                          {ws.id === activeWorkspace?.id && <span>✓</span>}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="border-t border-neutral-100 dark:border-neutral-800 mt-1.5 pt-1.5">
-                      {isCreatingWs ? (
-                        <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5 p-1">
-                          <input
-                            type="text"
-                            placeholder={tMsg('Workspace Name', 'Nama Workspace')}
-                            value={newWsName}
-                            onChange={(e) => setNewWsName(e.target.value)}
-                            className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs rounded-lg px-2.5 py-1 outline-none text-black dark:text-white"
-                            autoFocus
-                          />
-                          <button
-                            type="submit"
-                            className="bg-[#FACC15] text-[#111E38] text-xs px-2.5 py-1 rounded-lg font-bold"
-                          >
-                            +
-                          </button>
-                        </form>
-                      ) : (
-                        <button
-                          onClick={() => setIsCreatingWs(true)}
-                          className="w-full text-left px-2.5 py-1.5 text-xs text-indigo-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
-                        >
-                          <IconPlus className="w-3.5 h-3.5" />
-                          {tMsg('Create Workspace', 'Buat Workspace Baru')}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ── HEADER ROW 2: CATEGORY TITLE + +CREATE BUTTON (PERSIS CLICKUP) ── */}
-            <div className="px-3 py-2 flex items-center justify-between shrink-0 border-b border-neutral-200/40 dark:border-neutral-800/40 bg-neutral-100/40 dark:bg-neutral-900/30">
-              <h2 className="text-sm font-extrabold text-slate-800 dark:text-white tracking-tight">
-                {getCategoryTitle()}
-              </h2>
-
-              {/* ClickUp Style + Create Button */}
+        {/* ── COLUMN 2: DYNAMIC CONTENT DRAWER PANEL (~210PX) WITH SMOOTH ANIMATION ── */}
+        <aside
+          className={`bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95 backdrop-blur-xl flex flex-col border-r border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${
+            isCollapsed
+              ? 'w-0 opacity-0 pointer-events-none border-r-0 border-transparent'
+              : 'w-56 md:w-60 opacity-100'
+          } ${
+            isMobileMenuOpen ? 'fixed inset-y-0 left-14 z-90 translate-x-0' : ''
+          }`}
+        >
+          {/* ── HEADER ROW 1: WORKSPACE SELECTOR DROPDOWN (100% WIDTH) ── */}
+          <div className="h-11 px-3 flex items-center justify-between shrink-0 border-b border-neutral-200/50 dark:border-neutral-800/50 relative">
+            <div className="relative w-full">
               <button
-                onClick={() => {
-                  setIsCreateBoardOpen(true);
-                  setIsMobileMenuOpen(false);
-                }}
-                className="px-2 py-1 bg-white dark:bg-neutral-800 hover:bg-[#111E38] hover:text-white dark:hover:bg-[#FACC15] dark:hover:text-[#111E38] border border-neutral-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200 text-xs font-bold rounded-lg transition-all flex items-center gap-1 shadow-2xs"
-                title={tMsg('Create Task or Project', 'Buat Tugas atau Proyek')}
+                onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
+                className="w-full flex items-center justify-between gap-1.5 p-1 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 rounded-xl transition-all text-left"
               >
-                <IconPlus className="w-3.5 h-3.5" />
-                <span>{tMsg('Create', 'Buat')}</span>
+                <span className="font-extrabold text-xs text-[#111E38] dark:text-white truncate flex-1">
+                  {activeWorkspace?.name || 'Workspace'}
+                </span>
+                <span className="material-symbols-outlined text-[16px] text-neutral-400 shrink-0">
+                  expand_more
+                </span>
               </button>
-            </div>
 
-            {/* ── DYNAMIC SCROLLABLE CONTENT BASED ON ACTIVE RAIL TAB ── */}
-            <div className="flex-1 overflow-y-auto px-1.5 pt-2 pb-2 custom-scrollbar">
-
-              {/* TAB 1: HOME */}
-              {activeRailTab === 'home' && (
-                <div className="space-y-3">
-                  <div className="space-y-0.5">
-                    {/* Inbox & Notifications */}
-                    <button
-                      onClick={() => {
-                        setIsNotifOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px]">inbox</span>
-                        <span className="truncate">{tMsg('Inbox & Replies', 'Inbox & Notifikasi')}</span>
-                      </div>
-                      {unreadCount > 0 && (
-                        <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </button>
-
-                    {/* Assigned Comments */}
-                    <button
-                      onClick={() => {
-                        setIsProjectChatOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px]">forum</span>
-                        <span className="truncate">{tMsg('Assigned Comments', 'Komentar & Sebutan')}</span>
-                      </div>
-                      {totalUnreadChats > 0 && (
-                        <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
-                          {totalUnreadChats}
-                        </span>
-                      )}
-                    </button>
-
-                    {/* Meetings & Leaves */}
-                    <button
-                      onClick={() => {
-                        setIsLeaveModalOpen(true);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
-                      <span className="truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>
-                    </button>
+              {isWorkspaceMenuOpen && (
+                <div className="absolute left-0 top-full mt-1.5 w-64 bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-60 p-1.5 animate-fadeIn">
+                  <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider px-2 py-1">
+                    {tMsg('Workspaces', 'Ruang Kerja')}
                   </div>
-                </div>
-              )}
-
-              {/* TAB 2: MY TASKS */}
-              {activeRailTab === 'tasks' && (
-                <div className="space-y-3">
-                  <div className="space-y-0.5">
-                    {/* Assigned to Me */}
-                    <button
-                      onClick={() => {
-                        setSelectedBoard(null);
-                        setShowMyTasks(true);
-                        setShowOverdueOnly(false);
-                        setShowDueTodayOnly(false);
-                        setViewMode('kanban');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                        showMyTasks && !showOverdueOnly
-                          ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px]">person_check</span>
-                        <span className="truncate">{tMsg('Assigned to me', 'Ditugaskan ke saya')}</span>
-                      </div>
-                      {assignedToMeCount > 0 && (
-                        <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{assignedToMeCount}</span>
-                      )}
-                    </button>
-
-                    {/* Today & Overdue */}
-                    <button
-                      onClick={() => {
-                        setSelectedBoard(null);
-                        setShowMyTasks(true);
-                        setShowOverdueOnly(true);
-                        setViewMode('kanban');
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                        showOverdueOnly
-                          ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold'
-                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px] text-rose-500">schedule</span>
-                        <span className="truncate">{tMsg('Today & Overdue', 'Hari Ini & Terlambat')}</span>
-                      </div>
-                      {overdueCount > 0 && (
-                        <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
-                          {overdueCount}
-                        </span>
-                      )}
-                    </button>
-
-                    {/* Personal Tasks */}
-                    {todoListBoard && (
+                  <div className="max-h-52 overflow-y-auto space-y-0.5 custom-scrollbar">
+                    {(workspaces || []).map((ws) => (
                       <button
+                        key={`ws-menu-${ws.id}`}
                         onClick={() => {
-                          setSelectedBoard(todoListBoard);
-                          setShowMyTasks(false);
-                          setShowOverdueOnly(false);
-                          setViewMode('kanban');
-                          setIsMobileMenuOpen(false);
-                          const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
-                          const wsSlug = slugify(activeWorkspace?.name);
-                          const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
-                          window.history.pushState({}, '', targetUrl);
-                          window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                          switchWorkspace(ws);
+                          setIsWorkspaceMenuOpen(false);
                         }}
-                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                          selectedBoard?.id === todoListBoard.id
-                            ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                            : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-between ${
+                          ws.id === activeWorkspace?.id
+                            ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold'
+                            : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium'
                         }`}
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="material-symbols-outlined text-[18px] text-amber-500">lock</span>
-                          <span className="truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
-                        </div>
+                        <span className="truncate">{ws.name}</span>
+                        {ws.id === activeWorkspace?.id && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-neutral-100 dark:border-neutral-800 mt-1.5 pt-1.5">
+                    {isCreatingWs ? (
+                      <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5 p-1">
+                        <input
+                          type="text"
+                          placeholder={tMsg('Workspace Name', 'Nama Workspace')}
+                          value={newWsName}
+                          onChange={(e) => setNewWsName(e.target.value)}
+                          className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs rounded-lg px-2.5 py-1 outline-none text-black dark:text-white"
+                          autoFocus
+                        />
+                        <button
+                          type="submit"
+                          className="bg-[#FACC15] text-[#111E38] text-xs px-2.5 py-1 rounded-lg font-bold"
+                        >
+                          +
+                        </button>
+                      </form>
+                    ) : (
+                      <button
+                        onClick={() => setIsCreatingWs(true)}
+                        className="w-full text-left px-2.5 py-1.5 text-xs text-indigo-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
+                      >
+                        <IconPlus className="w-3.5 h-3.5" />
+                        {tMsg('Create Workspace', 'Buat Workspace Baru')}
                       </button>
                     )}
                   </div>
                 </div>
               )}
+            </div>
+          </div>
 
-              {/* TAB 3: SPACES / PROJECTS */}
-              {activeRailTab === 'spaces' && (
-                <div className="space-y-3">
-                  {/* All Tasks & Projects (Master View) */}
+          {/* ── HEADER ROW 2: CATEGORY TITLE + +CREATE BUTTON (PERSIS CLICKUP) ── */}
+          <div className="px-3 py-1.5 flex items-center justify-between shrink-0 border-b border-neutral-200/40 dark:border-neutral-800/40 bg-neutral-100/40 dark:bg-neutral-900/30">
+            <h2 className="text-xs font-extrabold text-slate-800 dark:text-white tracking-tight uppercase">
+              {getCategoryTitle()}
+            </h2>
+
+            {/* ClickUp Style + Create Button */}
+            <button
+              onClick={() => {
+                setIsCreateBoardOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="px-2 py-0.5 bg-white dark:bg-neutral-800 hover:bg-[#111E38] hover:text-white dark:hover:bg-[#FACC15] dark:hover:text-[#111E38] border border-neutral-300 dark:border-neutral-700 text-slate-700 dark:text-neutral-200 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 shadow-2xs"
+              title={tMsg('Create Task or Project', 'Buat Tugas atau Proyek')}
+            >
+              <IconPlus className="w-3 h-3" />
+              <span>{tMsg('Create', 'Buat')}</span>
+            </button>
+          </div>
+
+          {/* ── DYNAMIC SCROLLABLE CONTENT BASED ON ACTIVE RAIL TAB ── */}
+          <div className="flex-1 overflow-y-auto px-1.5 pt-2 pb-2 custom-scrollbar">
+
+            {/* TAB 1: HOME */}
+            {activeRailTab === 'home' && (
+              <div className="space-y-3">
+                <div className="space-y-0.5">
+                  {/* Inbox & Notifications */}
                   <button
                     onClick={() => {
-                      setSelectedBoard({
-                        id: 'global',
-                        name: `${tMsg('All Projects', 'Semua Proyek')}`,
-                        owner_username: currentUser,
-                        role: 'owner',
-                        isVirtual: true,
-                      });
+                      setIsNotifOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px]">inbox</span>
+                      <span className="truncate">{tMsg('Inbox & Replies', 'Inbox & Notifikasi')}</span>
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Assigned Comments */}
+                  <button
+                    onClick={() => {
+                      setIsProjectChatOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px]">forum</span>
+                      <span className="truncate">{tMsg('Assigned Comments', 'Komentar & Sebutan')}</span>
+                    </div>
+                    {totalUnreadChats > 0 && (
+                      <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
+                        {totalUnreadChats}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Meetings & Leaves */}
+                  <button
+                    onClick={() => {
+                      setIsLeaveModalOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
+                    <span className="truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: MY TASKS */}
+            {activeRailTab === 'tasks' && (
+              <div className="space-y-3">
+                <div className="space-y-0.5">
+                  {/* Assigned to Me */}
+                  <button
+                    onClick={() => {
+                      setSelectedBoard(null);
+                      setShowMyTasks(true);
+                      setShowOverdueOnly(false);
+                      setShowDueTodayOnly(false);
                       setViewMode('kanban');
                       setIsMobileMenuOpen(false);
-                      setIsProactiveAIOpen(false);
-                      const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
-                      const wsSlug = slugify(activeWorkspace?.name);
-                      const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/overall-project`;
-                      window.history.pushState({}, '', targetUrl);
-                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
                     }}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all tour-global-board relative ${
-                      selectedBoard?.id === 'global'
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                      showMyTasks && !showOverdueOnly
                         ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                         : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                     }`}
                   >
-                    {selectedBoard?.id === 'global' && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
-                    )}
-                    <span className="material-symbols-outlined text-[18px]">layers</span>
-                    <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>
-                  </button>
-
-                  {/* Team Spaces Tree */}
-                  <div>
-                    <div
-                      onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
-                      className="w-full flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px]">folder_copy</span>
-                        <span className="text-xs truncate font-semibold">{tMsg('Team Spaces', 'Ruang Kerja Tim')}</span>
-                      </div>
-                      <span
-                        className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200"
-                        style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                      >
-                        expand_more
-                      </span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px]">person_check</span>
+                      <span className="truncate">{tMsg('Assigned to me', 'Ditugaskan ke saya')}</span>
                     </div>
-
-                    {isSpacesTreeOpen && (
-                      <div className="ml-2.5 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-1">
-                        {/* Pinned Projects Section */}
-                        {favorites.length > 0 && (
-                          <div className="mb-1">
-                            <div className="px-2 py-0.5 text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
-                              {tMsg('Pinned', 'Disematkan')}
-                            </div>
-                            {favorites.map((b) => renderBoardItem(b, true))}
-                          </div>
-                        )}
-
-                        {/* Unpinned Projects List */}
-                        {unpinnedDisplayBoards.length === 0 ? (
-                          <div className="px-2 py-1 text-xs text-neutral-400 italic">{tMsg('No other projects', 'Tidak ada proyek lain')}</div>
-                        ) : (
-                          unpinnedDisplayBoards.map((b) => renderBoardItem(b))
-                        )}
-
-                        {/* Team Docs */}
-                        <button
-                          onClick={() => {
-                            setIsDocsOpen(true);
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                        >
-                          <span className="material-symbols-outlined text-[15px] text-sky-500">description</span>
-                          <span className="truncate">{tMsg('Team Docs', 'Dokumentasi Tim')}</span>
-                        </button>
-                      </div>
+                    {assignedToMeCount > 0 && (
+                      <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{assignedToMeCount}</span>
                     )}
-                  </div>
-
-                  {/* Archived Projects */}
-                  <button
-                    onClick={() => {
-                      setIsArchivedOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium text-xs"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">inventory_2</span>
-                    <span className="truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>
                   </button>
-                </div>
-              )}
 
-              {/* TAB 4: AI AGENTS */}
-              {activeRailTab === 'ai' && (
-                <div className="space-y-2">
+                  {/* Today & Overdue */}
                   <button
                     onClick={() => {
                       setSelectedBoard(null);
-                      setIsProactiveAIOpen(true);
+                      setShowMyTasks(true);
+                      setShowOverdueOnly(true);
+                      setViewMode('kanban');
                       setIsMobileMenuOpen(false);
-                      window.history.pushState({}, '', '/proactive-ai');
-                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
                     }}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all border ${
-                      window.location.pathname === '/proactive-ai' && !selectedBoard
-                        ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-2xs'
-                        : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                      showOverdueOnly
+                        ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold'
+                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                     }`}
                   >
-                    <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                    </svg>
-                    <span className="text-xs truncate">{tMsg('Ask Luruka AI', 'Tanya Luruka AI')}</span>
-                  </button>
-
-                  <div className="space-y-0.5 pt-1">
-                    <button
-                      onClick={() => {
-                        startTour();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                    >
-                      <span className="material-symbols-outlined text-[18px] text-emerald-500">flag</span>
-                      <span className="truncate">{tMsg('Onboarding Assistant', 'Asisten Onboarding')}</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setViewMode('overview');
-                        setSelectedBoard(null);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                    >
-                      <span className="material-symbols-outlined text-[18px] text-indigo-500">insights</span>
-                      <span className="truncate">{tMsg('Workload Analytics Agent', 'Asisten Beban Kerja')}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 5: DASHBOARD */}
-              {activeRailTab === 'dashboard' && (
-                <div className="space-y-1">
-                  <button
-                    onClick={() => {
-                      setSelectedBoard(null);
-                      setViewMode('overview');
-                      setIsMobileMenuOpen(false);
-                      window.history.pushState({}, '', '/dashboard');
-                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">home</span>
-                    <span className="truncate">{tMsg('Personal Dashboard', 'Dasbor Utama')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setSelectedBoard(null);
-                      setViewMode('overview');
-                      setIsMobileMenuOpen(false);
-                      const slug = activeWorkspace?.name 
-                        ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
-                        : 'main';
-                      window.history.pushState({}, '', `/workspace/${slug}`);
-                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">dashboard</span>
-                    <span className="truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
-                  </button>
-                </div>
-              )}
-
-              {/* TAB 6: SUPPORT */}
-              {activeRailTab === 'support' && (
-                <div className="space-y-1">
-                  <button
-                    onClick={() => {
-                      setIsMyTicketsOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">confirmation_number</span>
-                    <span className="truncate">{tMsg('My Tickets', 'Tiket Bantuan Saya')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsSupportOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">help</span>
-                    <span className="truncate">{tMsg('Help & Support', 'Bantuan & Support')}</span>
-                  </button>
-                </div>
-              )}
-
-              {/* SAVED VIEWS SECTION (AVAILABLE ACROSS TABS) */}
-              {savedViews.length > 0 && (
-                <div className="mt-4 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/60">
-                  <div className="flex items-center justify-between px-2 mb-1 select-none">
-                    <span
-                      onClick={() => setIsSavedViewsOpen(!isSavedViewsOpen)}
-                      className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider cursor-pointer flex items-center gap-1"
-                    >
-                      {tMsg('Saved Views', 'Filter Tersimpan')}
-                      <span
-                        className="material-symbols-outlined text-[12px] text-neutral-400 transition-transform duration-200"
-                        style={{ transform: isSavedViewsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                      >
-                        expand_more
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px] text-rose-500">schedule</span>
+                      <span className="truncate">{tMsg('Today & Overdue', 'Hari Ini & Terlambat')}</span>
+                    </div>
+                    {overdueCount > 0 && (
+                      <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
+                        {overdueCount}
                       </span>
-                    </span>
+                    )}
+                  </button>
+
+                  {/* Personal Tasks */}
+                  {todoListBoard && (
                     <button
-                      onClick={handleSaveCurrentView}
-                      className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
-                      title={tMsg('Save Current Active Filter', 'Simpan Filter Saat Ini')}
+                      onClick={() => {
+                        setSelectedBoard(todoListBoard);
+                        setShowMyTasks(false);
+                        setShowOverdueOnly(false);
+                        setViewMode('kanban');
+                        setIsMobileMenuOpen(false);
+                        const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+                        const wsSlug = slugify(activeWorkspace?.name);
+                        const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
+                        window.history.pushState({}, '', targetUrl);
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                        selectedBoard?.id === todoListBoard.id
+                          ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                      }`}
                     >
-                      <IconPlus className="w-3 h-3" />
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-[18px] text-amber-500">lock</span>
+                        <span className="truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
+                      </div>
                     </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: SPACES / PROJECTS */}
+            {activeRailTab === 'spaces' && (
+              <div className="space-y-3">
+                {/* All Tasks & Projects (Master View) */}
+                <button
+                  onClick={() => {
+                    setSelectedBoard({
+                      id: 'global',
+                      name: `${tMsg('All Projects', 'Semua Proyek')}`,
+                      owner_username: currentUser,
+                      role: 'owner',
+                      isVirtual: true,
+                    });
+                    setViewMode('kanban');
+                    setIsMobileMenuOpen(false);
+                    setIsProactiveAIOpen(false);
+                    const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+                    const wsSlug = slugify(activeWorkspace?.name);
+                    const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/overall-project`;
+                    window.history.pushState({}, '', targetUrl);
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                  }}
+                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all tour-global-board relative ${
+                    selectedBoard?.id === 'global'
+                      ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                      : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                  }`}
+                >
+                  {selectedBoard?.id === 'global' && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                  )}
+                  <span className="material-symbols-outlined text-[18px]">layers</span>
+                  <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>
+                </button>
+
+                {/* Team Spaces Tree */}
+                <div>
+                  <div
+                    onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
+                    className="w-full flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px]">folder_copy</span>
+                      <span className="text-xs truncate font-semibold">{tMsg('Team Spaces', 'Ruang Kerja Tim')}</span>
+                    </div>
+                    <span
+                      className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200"
+                      style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    >
+                      expand_more
+                    </span>
                   </div>
 
-                  {isSavedViewsOpen && (
-                    <div className="flex flex-col gap-0.5">
-                      {savedViews.map((sv) => (
-                        <button
-                          key={sv.id}
-                          onClick={() => {
-                            setSelectedBoard(null);
-                            if (sv.type === 'assigned') {
-                              setShowMyTasks(true);
-                              setShowOverdueOnly(false);
-                            } else if (sv.type === 'overdue') {
-                              setShowMyTasks(true);
-                              setShowOverdueOnly(true);
-                            } else if (sv.type === 'custom') {
-                              if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
-                              if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
-                              if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
-                              if (setShowMyTasks) setShowMyTasks(sv.showMyTasks || false);
-                              if (setShowOverdueOnly) setShowOverdueOnly(sv.showOverdueOnly || false);
-                            }
-                            setViewMode('kanban');
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[15px] text-indigo-500 dark:text-[#FACC15]">{sv.icon}</span>
-                          <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
-                        </button>
-                      ))}
+                  {isSpacesTreeOpen && (
+                    <div className="ml-2.5 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-1">
+                      {/* Pinned Projects Section */}
+                      {favorites.length > 0 && (
+                        <div className="mb-1">
+                          <div className="px-2 py-0.5 text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
+                            {tMsg('Pinned', 'Disematkan')}
+                          </div>
+                          {favorites.map((b) => renderBoardItem(b, true))}
+                        </div>
+                      )}
+
+                      {/* Unpinned Projects List */}
+                      {unpinnedDisplayBoards.length === 0 ? (
+                        <div className="px-2 py-1 text-xs text-neutral-400 italic">{tMsg('No other projects', 'Tidak ada proyek lain')}</div>
+                      ) : (
+                        unpinnedDisplayBoards.map((b) => renderBoardItem(b))
+                      )}
+
+                      {/* Team Docs */}
+                      <button
+                        onClick={() => {
+                          setIsDocsOpen(true);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                      >
+                        <span className="material-symbols-outlined text-[15px] text-sky-500">description</span>
+                        <span className="truncate">{tMsg('Team Docs', 'Dokumentasi Tim')}</span>
+                      </button>
                     </div>
                   )}
                 </div>
-              )}
 
-            </div>
+                {/* Archived Projects */}
+                <button
+                  onClick={() => {
+                    setIsArchivedOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium text-xs"
+                >
+                  <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+                  <span className="truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>
+                </button>
+              </div>
+            )}
 
-            {/* ── FOOTER USER PROFILE CARD ── */}
-            <div className="shrink-0 border-t border-neutral-200/60 dark:border-neutral-800/60 p-2 bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95">
-              <div className="flex items-center gap-2">
-                <Avatar username={currentUser} size={24} avatarUrl={avatarsMap?.[currentUser]} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-800 dark:text-neutral-200 truncate leading-tight">{currentUser}</p>
-                  <p className="text-[10px] text-neutral-400 truncate">{accountStatus === 'free' ? tMsg('Free Plan', 'Paket Gratis') : tMsg('Pro Plan', 'Paket Pro')}</p>
+            {/* TAB 4: AI AGENTS */}
+            {activeRailTab === 'ai' && (
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setSelectedBoard(null);
+                    setIsProactiveAIOpen(true);
+                    setIsMobileMenuOpen(false);
+                    window.history.pushState({}, '', '/proactive-ai');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                  }}
+                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all border ${
+                    window.location.pathname === '/proactive-ai' && !selectedBoard
+                      ? 'bg-[#FACC15] border-[#FACC15] text-[#111E38] font-black shadow-2xs'
+                      : 'bg-[#FACC15]/10 border-[#FACC15]/30 hover:bg-[#FACC15]/20 hover:border-[#FACC15]/60 text-[#111E38] dark:text-[#FACC15] font-bold'
+                  }`}
+                >
+                  <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  <span className="text-xs truncate">{tMsg('Ask Luruka AI', 'Tanya Luruka AI')}</span>
+                </button>
+
+                <div className="space-y-0.5 pt-1">
+                  <button
+                    onClick={() => {
+                      startTour();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-emerald-500">flag</span>
+                    <span className="truncate">{tMsg('Onboarding Assistant', 'Asisten Onboarding')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setViewMode('overview');
+                      setSelectedBoard(null);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-indigo-500">insights</span>
+                    <span className="truncate">{tMsg('Workload Analytics Agent', 'Asisten Beban Kerja')}</span>
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
 
-          </aside>
-        )}
+            {/* TAB 5: DASHBOARD */}
+            {activeRailTab === 'dashboard' && (
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    setSelectedBoard(null);
+                    setViewMode('overview');
+                    setIsMobileMenuOpen(false);
+                    window.history.pushState({}, '', '/dashboard');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                  }}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  <span className="material-symbols-outlined text-[18px]">home</span>
+                  <span className="truncate">{tMsg('Personal Dashboard', 'Dasbor Utama')}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSelectedBoard(null);
+                    setViewMode('overview');
+                    setIsMobileMenuOpen(false);
+                    const slug = activeWorkspace?.name 
+                      ? activeWorkspace.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
+                      : 'main';
+                    window.history.pushState({}, '', `/workspace/${slug}`);
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                  }}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  <span className="material-symbols-outlined text-[18px]">dashboard</span>
+                  <span className="truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
+                </button>
+              </div>
+            )}
+
+            {/* TAB 6: SUPPORT */}
+            {activeRailTab === 'support' && (
+              <div className="space-y-1">
+                <button
+                  onClick={() => {
+                    setIsMyTicketsOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  <span className="material-symbols-outlined text-[18px]">confirmation_number</span>
+                  <span className="truncate">{tMsg('My Tickets', 'Tiket Bantuan Saya')}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSupportOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                >
+                  <span className="material-symbols-outlined text-[18px]">help</span>
+                  <span className="truncate">{tMsg('Help & Support', 'Bantuan & Support')}</span>
+                </button>
+              </div>
+            )}
+
+            {/* SAVED VIEWS SECTION (AVAILABLE ACROSS TABS) */}
+            {savedViews.length > 0 && (
+              <div className="mt-4 pt-2 border-t border-neutral-200/60 dark:border-neutral-800/60">
+                <div className="flex items-center justify-between px-2 mb-1 select-none">
+                  <span
+                    onClick={() => setIsSavedViewsOpen(!isSavedViewsOpen)}
+                    className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider cursor-pointer flex items-center gap-1"
+                  >
+                    {tMsg('Saved Views', 'Filter Tersimpan')}
+                    <span
+                      className="material-symbols-outlined text-[12px] text-neutral-400 transition-transform duration-200"
+                      style={{ transform: isSavedViewsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    >
+                      expand_more
+                    </span>
+                  </span>
+                  <button
+                    onClick={handleSaveCurrentView}
+                    className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
+                    title={tMsg('Save Current Active Filter', 'Simpan Filter Saat Ini')}
+                  >
+                    <IconPlus className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {isSavedViewsOpen && (
+                  <div className="flex flex-col gap-0.5">
+                    {savedViews.map((sv) => (
+                      <button
+                        key={sv.id}
+                        onClick={() => {
+                          setSelectedBoard(null);
+                          if (sv.type === 'assigned') {
+                            setShowMyTasks(true);
+                            setShowOverdueOnly(false);
+                          } else if (sv.type === 'overdue') {
+                            setShowMyTasks(true);
+                            setShowOverdueOnly(true);
+                          } else if (sv.type === 'custom') {
+                            if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
+                            if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
+                            if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
+                            if (setShowMyTasks) setShowMyTasks(sv.showMyTasks || false);
+                            if (setShowOverdueOnly) setShowOverdueOnly(sv.showOverdueOnly || false);
+                          }
+                          setViewMode('kanban');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[15px] text-indigo-500 dark:text-[#FACC15]">{sv.icon}</span>
+                        <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+
+          {/* ── FOOTER USER PROFILE CARD (REFINED COMPACT AVATAR SIZE 20PX) ── */}
+          <div className="shrink-0 border-t border-neutral-200/60 dark:border-neutral-800/60 p-2 bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95">
+            <div className="flex items-center gap-2 px-1 py-0.5">
+              <Avatar username={currentUser} size={20} avatarUrl={avatarsMap?.[currentUser]} />
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-bold text-slate-800 dark:text-neutral-200 truncate leading-tight">{currentUser}</p>
+                <p className="text-[9px] text-neutral-400 truncate">{accountStatus === 'free' ? tMsg('Free Plan', 'Paket Gratis') : tMsg('Pro Plan', 'Paket Pro')}</p>
+              </div>
+            </div>
+          </div>
+
+        </aside>
 
       </div>
     </>
