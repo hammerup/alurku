@@ -52,7 +52,7 @@ export default function ChatInputArea({
         </div>
       )}
       <form onSubmit={sendMessage} className="flex gap-2 relative items-end">
-        {activeChat.type === 'task' && (
+        {activeChat?.type === 'task' && (
           <>
             <button
               type="button"

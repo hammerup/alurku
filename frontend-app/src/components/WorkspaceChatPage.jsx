@@ -359,9 +359,9 @@ export default function WorkspaceChatPage() {
                   {tMsg('All caught up! No unread activity.', 'Semua pesan sudah dibaca!')}
                 </div>
               ) : (
-                (inboxChats || []).map((chat) => (
+                (inboxChats || []).map((chat, idx) => (
                   <div
-                    key={`inbox-item-${chat.id}`}
+                    key={`inbox-item-${chat.id || chat.board_id || chat.task_id || chat.partner || idx}`}
                     onClick={() => {
                       if (chat.is_dm) {
                         setActiveChat({ type: 'dm', id: chat.partner, name: chat.partner, partner: chat.partner });
@@ -408,16 +408,20 @@ export default function WorkspaceChatPage() {
         </div>
 
         {/* Input Area (Visible for Channels & DMs) */}
-        {activeChat.type !== 'inbox' && (
+        {activeChat?.type !== 'inbox' && (
           <ChatInputArea
+            activeChat={activeChat}
+            boards={boards}
             newMessage={newMessage}
             setNewMessage={setNewMessage}
             sendMessage={sendMessage}
             replyingTo={replyingTo}
             setReplyingTo={setReplyingTo}
             isMentioning={isMentioning}
+            setIsMentioning={setIsMentioning}
             mentionQuery={mentionQuery}
             mentionIndex={mentionIndex}
+            setMentionIndex={setMentionIndex}
             activeBoardMembers={activeBoardMembers}
             userDirectory={userDirectory}
             tMsg={tMsg}
