@@ -751,7 +751,7 @@ export default function Sidebar() {
               onClick={() => {
                 setSelectedBoard({
                   id: 'global',
-                  name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`,
+                  name: `${tMsg('All Projects', 'Semua Proyek')}`,
                   owner_username: currentUser,
                   role: 'owner',
                   isVirtual: true,
@@ -770,16 +770,16 @@ export default function Sidebar() {
                   ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                   : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
               } ${isCollapsed ? 'justify-center' : ''}`}
-              title={tMsg('See the Big Picture', 'Lihat Gambaran Besar')}
+              title={tMsg('All Projects (Master View)', 'Semua Proyek (Tampilan Gabungan)')}
             >
               {selectedBoard?.id === 'global' && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
               )}
               <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[20px]">public</span>
+                <span className="material-symbols-outlined text-[20px]">grid_view</span>
               </div>
               {!isCollapsed && (
-                <span className="text-sm truncate">{tMsg('See the Big Picture', 'Lihat Gambaran Besar')}</span>
+                <span className="text-sm truncate">{tMsg('All Projects', 'Semua Proyek')}</span>
               )}
             </button>
           </div>

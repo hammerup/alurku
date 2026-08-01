@@ -1624,7 +1624,7 @@ USER REQUEST:
               const navigateToGlobalKanban = (filterType) => {
                 setSelectedBoard({
                   id: 'global',
-                  name: language === 'id' ? 'Lihat Gambaran Besar' : 'See the Big Picture',
+                  name: language === 'id' ? 'Semua Proyek' : 'All Projects',
                   role: 'owner',
                   isVirtual: true
                 });

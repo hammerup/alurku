@@ -703,7 +703,7 @@ function App() {
             if (selectedBoard?.id !== 'global') {
               setSelectedBoard({
                 id: 'global',
-                name: tMsg ? tMsg('See the Big Picture', 'Lihat Gambaran Besar') : 'See the Big Picture',
+                name: tMsg ? tMsg('All Projects', 'Semua Proyek') : 'All Projects',
                 owner_username: currentUser,
                 role: 'owner',
                 isVirtual: true,

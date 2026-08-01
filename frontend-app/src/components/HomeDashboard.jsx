@@ -66,7 +66,7 @@ export default function HomeDashboard() {
   }, []);
 
   const openTaskInGlobal = (task) => {
-    setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+    setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
     setShowMyTasks(false);
     setShowOverdueOnly(false);
     setTimeout(() => {
@@ -467,7 +467,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
             <div className="flex flex-wrap gap-3">
               <button 
                 onClick={() => {
-                  setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+                  setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
                   setShowMyTasks(true);
                   setShowOverdueOnly(false);
                   setShowDueTodayOnly(true);
@@ -498,7 +498,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
         <section className="tour-quick-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <div 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(true);
               setShowOverdueOnly(false);
               setShowDueTodayOnly(false);
@@ -536,7 +536,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
 
           <div 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
               setShowOverdueOnly(true);
               setShowMyTasks(false);
               setShowDueTodayOnly(false);
@@ -566,7 +566,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
                 setShowMyTasks(false);
                 setShowOverdueOnly(false);
               } else {
-                setSelectedBoard({ id: 'global', name: `${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+                setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
                 setShowMyTasks(false);
                 setShowOverdueOnly(false);
               }
@@ -969,7 +969,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
           </div>
           <button 
             onClick={() => {
-              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('See the Big Picture', 'Lihat Gambaran Besar')}`, role: 'owner', isVirtual: true });
+              setSelectedBoard({ id: 'global', name: `🌍 ${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
               setShowMyTasks(false);
               setShowOverdueOnly(false);
             }}
