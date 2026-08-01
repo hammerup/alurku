@@ -943,10 +943,10 @@ export default function useAppLogic() {
               {
                 element: '.tour-my-todolist',
                 popover: {
-                  title: tMsg('My To-Do List', 'Daftar Tugas Saya'),
+                  title: tMsg('Personal Tasks', 'Tugas Pribadi'),
                   description: tMsg(
-                    'Access your personal to-do list quickly from here. Keep track of your own tasks across all projects.',
-                    'Akses daftar tugas pribadi Anda dengan cepat dari sini. Pantau tugas Anda sendiri di semua proyek.'
+                    'Access your private scratchpad workspace here. These tasks are isolated and only visible to you.',
+                    'Akses ruang kerja catatan pribadi Anda di sini. Tugas di sini terisolasi dan hanya dapat dilihat oleh Anda.'
                   ),
                   side: 'right',
                   align: 'start',
@@ -3730,7 +3730,7 @@ export default function useAppLogic() {
     if (groupBy === 'Category') return categories;
     if (groupBy === 'Assignee') return [...new Set(tasks.map((t) => getTaskAssignee(t)))];
     if (groupBy === 'Project') {
-      const todoListBoard = boards.find((b) => b.name.toLowerCase() === 'to-do list' && b.is_private);
+      const todoListBoard = boards.find((b) => b.is_private === 1 || b.name.toLowerCase() === 'personal tasks' || b.name.toLowerCase() === 'to-do list');
       const todoListName =
         todoListBoard && (!selectedBoard || selectedBoard.id === 'global' || selectedBoard.id === todoListBoard.id)
           ? todoListBoard.name
@@ -3740,8 +3740,8 @@ export default function useAppLogic() {
       const allCols = todoListName && !projCols.includes(todoListName) ? [todoListName, ...projCols] : projCols;
 
       return allCols.sort((a, b) => {
-        const isTodoA = a.toLowerCase() === 'to-do list';
-        const isTodoB = b.toLowerCase() === 'to-do list';
+        const isTodoA = a.toLowerCase() === 'personal tasks' || a.toLowerCase() === 'to-do list';
+        const isTodoB = b.toLowerCase() === 'personal tasks' || b.toLowerCase() === 'to-do list';
         if (isTodoA && !isTodoB) return -1;
         if (!isTodoA && isTodoB) return 1;
         return 0;

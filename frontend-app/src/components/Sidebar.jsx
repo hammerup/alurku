@@ -145,7 +145,7 @@ export default function Sidebar() {
   };
 
   const todoListBoard = useMemo(() => {
-    return boards.find((b) => b.name.toLowerCase() === 'to-do list' && b.is_private);
+    return boards.find((b) => b.is_private === 1 || b.name.toLowerCase() === 'personal tasks' || b.name.toLowerCase() === 'to-do list');
   }, [boards]);
 
   const sortedBoards = useMemo(() => {
@@ -785,7 +785,7 @@ export default function Sidebar() {
                   setIsProactiveAIOpen(false);
                   const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
                   const wsSlug = slugify(activeWorkspace?.name);
-                  const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/todo-list`;
+                  const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
                   window.history.pushState({}, '', targetUrl);
                   window.dispatchEvent(new CustomEvent('alurku-navigate'));
                 }}
@@ -794,15 +794,19 @@ export default function Sidebar() {
                     ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                     : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-slate-600 dark:text-slate-400 font-medium'
                 } ${isCollapsed ? 'justify-center' : ''}`}
-                title={tMsg('My To-Do List', 'Daftar Tugas Saya')}
+                title={tMsg('Personal Tasks (Private workspace visible only to you)', 'Tugas Pribadi (Ruang kerja pribadi khusus kamu)')}
               >
                 {selectedBoard?.id === todoListBoard.id && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
                 )}
-                <div className="w-6 h-6 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[20px]">checklist</span>
+                <div className="w-6 h-6 flex items-center justify-center text-amber-500 dark:text-[#FACC15]">
+                  <span className="material-symbols-outlined text-[20px]">lock</span>
                 </div>
-                {!isCollapsed && <span className="text-sm truncate">{tMsg('My To-Do List', 'Daftar Tugas Saya')}</span>}
+                {!isCollapsed && (
+                  <div className="flex flex-col text-left truncate min-w-0">
+                    <span className="text-sm font-extrabold truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
+                  </div>
+                )}
               </button>
             </div>
           )}

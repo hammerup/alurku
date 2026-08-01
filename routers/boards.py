@@ -20,10 +20,9 @@ def get_boards(
     db: Session = Depends(get_db),
     workspace_id: int = Depends(get_active_workspace_id)
 ):
-    # Auto-create a private "To-do List" board if it doesn't exist in the active workspace
+    # Auto-create a private "Personal Tasks" board if it doesn't exist in the active workspace
     todo_exists = db.query(Board).filter(
         Board.owner_username == current_user,
-        Board.name.ilike("To-do List"),
         Board.is_private == 1,
         Board.workspace_id == workspace_id
     ).first()
@@ -43,7 +42,7 @@ def get_boards(
             ]
         )
         new_todo = Board(
-            name="To-do List",
+            name="Personal Tasks",
             owner_username=current_user,
             created_at=now_str,
             statuses=default_statuses,
@@ -360,7 +359,7 @@ def create_board(
         ]
     )
     
-    is_private = 1 if payload.name.lower() == "to-do list" else payload.is_private
+    is_private = 1 if payload.name.lower() in ["to-do list", "personal tasks", "tugas pribadi"] else payload.is_private
     new_board = Board(
         name=payload.name,
         owner_username=current_user,
@@ -485,8 +484,8 @@ def delete_board(
             status_code=403, detail="Not authorized to delete this project."
         )
 
-    # Safeguard: Prevent non-admins from deleting their own private "To-do List". Admins can override.
-    if getattr(board, "is_private", 0) == 1 and board.name.lower() == "to-do list" and not is_admin:
+    # Safeguard: Prevent non-admins from deleting their own private default workspaces. Admins can override.
+    if getattr(board, "is_private", 0) == 1 and board.name.lower() in ["to-do list", "personal tasks", "tugas pribadi"] and not is_admin:
         raise HTTPException(status_code=403, detail="Cannot delete your private default workspace.")
 
     db.query(BoardMember).filter(BoardMember.board_id == board_id).delete()
@@ -539,8 +538,8 @@ def archive_board(
         raise HTTPException(status_code=404, detail="Project not found.")
     if board.owner_username != current_user and not is_user_superadmin(db, current_user):
         raise HTTPException(status_code=403, detail="Only the project owner can archive this project.")
-    if getattr(board, "is_private", 0) == 1 and board.name.lower() == "to-do list":
-        raise HTTPException(status_code=403, detail="Cannot archive your default To-do List.")
+    if getattr(board, "is_private", 0) == 1 and board.name.lower() in ["to-do list", "personal tasks", "tugas pribadi"]:
+        raise HTTPException(status_code=403, detail="Cannot archive your default Personal Tasks board.")
     board.is_archived = 1
     db.commit()
     return {"message": "Project archived successfully.", "board_id": board_id}
