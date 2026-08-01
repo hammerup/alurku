@@ -159,6 +159,21 @@ export default function Sidebar() {
     }).length;
   }, [inboxChats, notifications, currentUser]);
 
+  // Total unread team chats
+  const totalUnreadChats = useMemo(() => {
+    const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
+    const unreadMentionsAndComments = (notifications || []).filter(
+      (n) =>
+        !n.is_read &&
+        (n.type === 'comment' ||
+          n.type === 'mention' ||
+          n.type === 'mention_no_email' ||
+          n.type === 'team_chat' ||
+          n.type === 'team_chat_no_email')
+    ).length;
+    return Math.max(unreadInboxChatsCount, unreadDms + unreadMentionsAndComments);
+  }, [unreadInboxChatsCount, notifications, dmConversations]);
+
   const [sortMode, setSortMode] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'recent';
     return 'recent';
