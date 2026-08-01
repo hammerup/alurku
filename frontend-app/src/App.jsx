@@ -698,6 +698,11 @@ function App() {
           }
         }
 
+        if (path === '/chat' || path.endsWith('/chat')) {
+          if (selectedBoard) setSelectedBoard(null);
+          return;
+        }
+
         if (path.includes('/project/')) {
           const boardParam = parts[5] === 'overall-project' || parts[5] === 'todo-list' ? parts[5] : parts[6];
           if (boardParam === 'overall-project') {
@@ -741,6 +746,7 @@ function App() {
   // Sync state changes back to URL
   useEffect(() => {
     if (!isAuthenticated || !activeWorkspace) return;
+    if (window.location.pathname === '/chat' || window.location.pathname.endsWith('/chat')) return;
     
     const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
     
