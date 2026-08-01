@@ -776,7 +776,7 @@ export default function Sidebar() {
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
               )}
               <div className="w-6 h-6 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[20px]">grid_view</span>
+                <span className="material-symbols-outlined text-[20px]">layers</span>
               </div>
               {!isCollapsed && (
                 <span className="text-sm truncate">{tMsg('All Projects', 'Semua Proyek')}</span>
