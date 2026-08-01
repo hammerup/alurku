@@ -61,6 +61,28 @@ export default function WorkspaceChatPage() {
   const messagesEndRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
+  // Task Preview Sidebar Drawer State
+  const [activeTaskPreview, setActiveTaskPreview] = useState(null);
+
+  const handleOpenTaskPreview = useCallback((taskId) => {
+    if (!taskId) {
+      setActiveTaskPreview(null);
+      return;
+    }
+    const found = (tasks || []).find((t) => String(t.id) === String(taskId));
+    if (found) {
+      setActiveTaskPreview(found);
+    } else {
+      axios.get(`/api/tasks/${taskId}`)
+        .then((res) => {
+          if (res.data) setActiveTaskPreview(res.data);
+        })
+        .catch(() => {
+          if (handleNotificationTaskClick) handleNotificationTaskClick(taskId);
+        });
+    }
+  }, [tasks, handleNotificationTaskClick]);
+
   // Advanced Chat Features
   const [replyingTo, setReplyingTo] = useState(null);
   const [isMentioning, setIsMentioning] = useState(false);
@@ -335,7 +357,7 @@ export default function WorkspaceChatPage() {
           tMsg={tMsg}
           formatDateMMM={formatDateMMM}
           handleMeetNow={() => {}}
-          handleNotificationTaskClick={handleNotificationTaskClick}
+          handleNotificationTaskClick={handleOpenTaskPreview}
         />
 
         {/* Message List */}
@@ -429,6 +451,102 @@ export default function WorkspaceChatPage() {
           />
         )}
       </div>
+
+      {/* Right Side Task Details Sidebar Drawer (Non-Modal Inline Task View) */}
+      {activeTaskPreview && (
+        <div className="w-full md:w-96 lg:w-[400px] bg-white dark:bg-[#121B2D] border-l border-neutral-200/80 dark:border-neutral-800/80 flex flex-col h-full shrink-0 z-30 shadow-lg animate-fadeIn">
+          {/* Drawer Header */}
+          <div className="h-16 px-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="material-symbols-outlined text-amber-500 text-lg">task</span>
+              <div className="min-w-0">
+                <h4 className="font-bold text-xs text-[#111E38] dark:text-white truncate">
+                  {activeTaskPreview.project_name || activeTaskPreview.name || 'Task Details'}
+                </h4>
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                  {tMsg('Task Sidebar View', 'Pratinjau Sidebar Tugas')}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setActiveTaskPreview(null)}
+              className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center"
+              title={tMsg('Close', 'Tutup')}
+            >
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
+
+          {/* Drawer Content */}
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 text-xs">
+            {/* Status & Priority Badge Block */}
+            <div className="p-3 bg-neutral-100/60 dark:bg-neutral-900/50 rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Status', 'Status')}</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FACC15] text-[#111E38]">
+                  {activeTaskPreview.status || 'To Do'}
+                </span>
+              </div>
+              {activeTaskPreview.priority && (
+                <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200/40 dark:border-neutral-800/40">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Priority', 'Prioritas')}</span>
+                  <span className="text-[11px] font-bold text-[#111E38] dark:text-neutral-200">
+                    {activeTaskPreview.priority}
+                  </span>
+                </div>
+              )}
+              {activeTaskPreview.due_date && (
+                <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200/40 dark:border-neutral-800/40">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Due Date', 'Tenggat Waktu')}</span>
+                  <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                    {activeTaskPreview.due_date}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Task Description */}
+            {activeTaskPreview.description && (
+              <div className="space-y-1">
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Description', 'Deskripsi')}</h5>
+                <div className="p-3 bg-neutral-50 dark:bg-[#0d0f11] rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 text-slate-700 dark:text-neutral-300 whitespace-pre-wrap font-sans leading-relaxed text-xs">
+                  {stripHtml(activeTaskPreview.description)}
+                </div>
+              </div>
+            )}
+
+            {/* Subtasks Progress */}
+            {activeTaskPreview.subtasks && activeTaskPreview.subtasks.length > 0 && (
+              <div className="space-y-2">
+                <h5 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {tMsg('Subtasks', 'Subtugas')} ({activeTaskPreview.subtasks.filter(s => s.completed).length}/{activeTaskPreview.subtasks.length})
+                </h5>
+                <div className="space-y-1">
+                  {activeTaskPreview.subtasks.map((st, idx) => (
+                    <div key={`st-${st.id || idx}`} className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg text-xs">
+                      <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] font-bold ${st.completed ? 'bg-emerald-500 text-white' : 'border border-neutral-300 dark:border-neutral-700'}`}>
+                        {st.completed ? '✓' : ''}
+                      </span>
+                      <span className={st.completed ? 'line-through opacity-60' : ''}>{st.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Handoff to full modal if requested */}
+            <button
+              onClick={() => {
+                if (handleNotificationTaskClick) handleNotificationTaskClick(activeTaskPreview.id);
+              }}
+              className="w-full mt-4 py-2.5 px-3 bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] rounded-xl text-xs font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider"
+            >
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+              <span>{tMsg('Open Full Modal', 'Buka Modal Lengkap')}</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

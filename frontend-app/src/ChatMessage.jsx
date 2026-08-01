@@ -178,10 +178,10 @@ export default function ChatMessage({
 
           <div className={`flex items-center gap-2 max-w-full ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
             <div
-              className={`p-3 text-sm font-normal leading-relaxed shadow-sm shrink min-w-0 ${
+              className={`p-2.5 text-xs font-normal leading-relaxed shadow-xs shrink min-w-0 ${
                 isMe
-                  ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-sm'
-                  : 'bg-white dark:bg-neutral-800 text-black dark:text-white border border-neutral-100 dark:border-neutral-700 rounded-2xl rounded-tl-sm'
+                  ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] rounded-2xl rounded-tr-sm font-medium'
+                  : 'bg-white dark:bg-[#121B2D] text-[#111E38] dark:text-white border border-neutral-200/80 dark:border-neutral-800/80 rounded-2xl rounded-tl-sm'
               }`}
             >
               <div
