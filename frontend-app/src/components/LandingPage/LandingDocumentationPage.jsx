@@ -127,6 +127,14 @@ const getDocData = (tMsg, isSuperAdmin) => {
             "Klik kartu 'Semua Proyek' di dasbor Anda untuk melihat dan mengelola tugas di semua proyek secara bersamaan. Anda bahkan dapat menyeret dan melepas kartu tugas melintasi kolom untuk memindahkannya antar proyek dengan mulus!"
           ),
         },
+        {
+          id: 'keyboard-shortcuts',
+          title: tMsg('Keyboard Shortcuts Navigation', 'Pintasan Keyboard & Navigasi Cepat'),
+          content: tMsg(
+            "Alurku supports high-speed keyboard shortcuts for power users to navigate the app without touching the mouse:<br /><br />• **Cmd/Ctrl + B**: Toggle Sidebar expansion / collapse (Dual-Dock Rail).<br />• **G then H**: Jump instantly to Personal Dashboard (Home).<br />• **G then P**: Jump instantly to Personal Tasks (Tugas Pribadi).<br />• **G then A**: Jump instantly to All Projects (Master View).<br />• **G then I**: Open Inbox & Notifications modal.",
+            "Alurku mendukung pintasan keyboard kecepatan tinggi untuk navigasi cepat tanpa perlu menyentuh tetikus:<br /><br />• **Cmd/Ctrl + B**: Melipat atau membuka Bilah Sisi (Dual-Dock Rail).<br />• **G lalu H**: Berpindah secara instan ke Dasbor Utama (Beranda).<br />• **G lalu P**: Berpindah secara instan ke Tugas Pribadi.<br />• **G lalu A**: Berpindah secara instan ke Semua Proyek (Tampilan Utama).<br />• **G lalu I**: Membuka modal Inbox & Notifikasi."
+          ),
+        },
       ],
       seeAlso: ['tasks', 'views'],
     },
