@@ -37,6 +37,7 @@ import TaskDetailModal from './TaskDetailModal';
 import AdminModal from './AdminModal';
 import DocumentationModal from './DocumentationModal';
 import ProactiveAIPage from './ProactiveAIPage';
+import WorkspaceChatPage from './components/WorkspaceChatPage';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
 import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
@@ -1451,6 +1452,8 @@ function App() {
                 setViewMode('kanban');
               }}
             />
+          ) : currentPath.endsWith('/chat') ? (
+            <WorkspaceChatPage />
           ) : !selectedBoard ? (
             currentPath.startsWith('/workspace') ? (
               <WorkspaceOverview />

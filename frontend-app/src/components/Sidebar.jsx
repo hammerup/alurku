@@ -837,8 +837,12 @@ export default function Sidebar() {
             {/* Dedicated Workspace Chat Icon Button in Header Row 1 */}
             <button
               onClick={() => {
-                setIsChatWorkspaceOpen(true);
+                setSelectedBoard(null);
                 setIsMobileMenuOpen(false);
+                const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+                const slug = slugify(activeWorkspace?.name || 'workspace');
+                window.history.pushState({}, '', `/workspace/${slug}/chat`);
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
               }}
               className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-neutral-300 transition-colors relative shrink-0"
               title={tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}
@@ -910,10 +914,18 @@ export default function Sidebar() {
                   {/* Workspace Chat */}
                   <button
                     onClick={() => {
-                      setIsChatWorkspaceOpen(true);
+                      setSelectedBoard(null);
                       setIsMobileMenuOpen(false);
+                      const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+                      const slug = slugify(activeWorkspace?.name || 'workspace');
+                      window.history.pushState({}, '', `/workspace/${slug}/chat`);
+                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
                     }}
-                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all text-xs ${
+                      typeof window !== 'undefined' && window.location.pathname.endsWith('/chat')
+                        ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                    }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="material-symbols-outlined text-[18px] text-indigo-500 dark:text-[#FACC15]">chat</span>
