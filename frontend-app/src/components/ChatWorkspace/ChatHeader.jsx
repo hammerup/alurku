@@ -15,6 +15,9 @@ export default function ChatHeader({
   formatDateMMM,
   handleMeetNow,
   handleNotificationTaskClick,
+  activeTaskPreview,
+  setActiveTaskPreview,
+  handleOpenTaskPreview,
 }) {
   return (
     <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-6 bg-white dark:bg-neutral-950 shrink-0 z-30 shadow-sm relative">
@@ -144,16 +147,25 @@ export default function ChatHeader({
           <span className="material-symbols-outlined text-sm">videocam</span>
           <span className="hidden sm:inline">Meet Now</span>
         </button>
-        {activeChat.type === 'task' && (
+        {activeChat?.type === 'task' && (
           <button
+            type="button"
             onClick={() => {
-              if (handleNotificationTaskClick) handleNotificationTaskClick(activeChat.id);
+              if (activeTaskPreview) {
+                setActiveTaskPreview(null);
+              } else if (handleOpenTaskPreview) {
+                handleOpenTaskPreview(activeChat.id);
+              }
             }}
-            className="text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-amber-400 px-3 py-1.5 rounded-lg shadow-xs transition-all flex items-center gap-1.5 font-bold border border-amber-300 dark:border-amber-500/40"
-            title={tMsg('View Task details', 'Lihat rincian Tugas')}
+            className={`text-xs font-bold px-3 py-1.5 rounded-lg shadow-xs transition-all flex items-center gap-1.5 border ${
+              activeTaskPreview
+                ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] border-neutral-700'
+                : 'bg-[#FACC15] text-[#111E38] hover:bg-amber-400 border-amber-300 dark:border-amber-500/40'
+            }`}
+            title={activeTaskPreview ? tMsg('Close Task Sidebar', 'Tutup Sidebar Tugas') : tMsg('Open Task Sidebar', 'Buka Sidebar Tugas')}
           >
-            <span className="material-symbols-outlined text-sm">visibility</span>
-            <span>{tMsg('View Task', 'Lihat Tugas')}</span>
+            <span className="material-symbols-outlined text-base">dock_to_left</span>
+            <span>{activeTaskPreview ? tMsg('Close Detail', 'Tutup Detail') : tMsg('Task Detail', 'Detail Tugas')}</span>
           </button>
         )}
       </div>

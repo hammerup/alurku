@@ -212,31 +212,74 @@ export default function WorkspaceChatPage() {
   const sessionLastReadRef = useRef(null);
   const initialScrollDoneRef = useRef(false);
 
-  const [sidebarWidth, setSidebarWidth] = useState(288);
-  const [isResizing, setIsResizing] = useState(false);
+  const wrapperRef = useRef(null);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [taskDetailWidth, setTaskDetailWidth] = useState(480);
+  const [isResizingLeft, setIsResizingLeft] = useState(false);
+  const [isResizingRight, setIsResizingRight] = useState(false);
 
-  const startResizing = useCallback(() => setIsResizing(true), []);
-  const stopResizing = useCallback(() => setIsResizing(false), []);
-  const resize = useCallback(
+  const startResizingLeft = useCallback((e) => {
+    e.preventDefault();
+    setIsResizingLeft(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }, []);
+
+  const startResizingRight = useCallback((e) => {
+    e.preventDefault();
+    setIsResizingRight(true);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizingLeft(false);
+    setIsResizingRight(false);
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+  }, []);
+
+  const resizeLeft = useCallback(
     (e) => {
-      if (isResizing) {
-        const newWidth = e.clientX;
-        if (newWidth > 200 && newWidth < 450) {
+      if (isResizingLeft && wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const newWidth = e.clientX - rect.left;
+        if (newWidth >= 200 && newWidth <= 460) {
           setSidebarWidth(newWidth);
         }
       }
     },
-    [isResizing]
+    [isResizingLeft]
+  );
+
+  const resizeRight = useCallback(
+    (e) => {
+      if (isResizingRight && wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const newWidth = rect.right - e.clientX;
+        if (newWidth >= 320 && newWidth <= 800) {
+          setTaskDetailWidth(newWidth);
+        }
+      }
+    },
+    [isResizingRight]
   );
 
   useEffect(() => {
-    window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResizing);
+    const handleMouseMove = (e) => {
+      if (isResizingLeft) resizeLeft(e);
+      if (isResizingRight) resizeRight(e);
+    };
+
+    if (isResizingLeft || isResizingRight) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', stopResizing);
+    }
     return () => {
-      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', stopResizing);
     };
-  }, [resize, stopResizing]);
+  }, [isResizingLeft, isResizingRight, resizeLeft, resizeRight, stopResizing]);
 
   const toggleBoard = (boardId) => {
     setExpandedBoards((prev) => {
@@ -370,7 +413,10 @@ export default function WorkspaceChatPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row h-[calc(100vh-5rem)] bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-4">
+    <div
+      ref={wrapperRef}
+      className="flex-1 flex flex-col md:flex-row h-[calc(100vh-5rem)] bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-4 relative"
+    >
       {/* Sidebar Channels & DMs */}
       <ChatSidebar
         activeChat={activeChat}
@@ -407,12 +453,21 @@ export default function WorkspaceChatPage() {
         tasks={tasks}
       />
 
-      {/* Resize Handle */}
+      {/* Left Sidebar Resize Handle */}
       {isDesktopSidebarOpen && (
         <div
-          onMouseDown={startResizing}
-          className="w-1 cursor-col-resize hover:bg-[#FACC15] transition-colors hidden md:block bg-neutral-200 dark:bg-neutral-800"
-        />
+          onMouseDown={startResizingLeft}
+          className={`w-3 -mx-1.5 cursor-col-resize hidden md:flex items-center justify-center z-30 select-none group transition-colors ${
+            isResizingLeft ? 'bg-[#FACC15]' : 'hover:bg-[#FACC15]/80 bg-transparent'
+          }`}
+          title={tMsg('Drag to resize sidebar', 'Geser untuk mengubah ukuran sidebar')}
+        >
+          <div
+            className={`w-[2px] h-8 rounded-full transition-colors ${
+              isResizingLeft ? 'bg-[#111E38]' : 'bg-neutral-300 dark:bg-neutral-700 group-hover:bg-[#111E38]'
+            }`}
+          />
+        </div>
       )}
 
       {/* Main Chat Content Area */}
@@ -430,6 +485,9 @@ export default function WorkspaceChatPage() {
           formatDateMMM={formatDateMMM}
           handleMeetNow={() => {}}
           handleNotificationTaskClick={handleOpenTaskPreview}
+          activeTaskPreview={activeTaskPreview}
+          setActiveTaskPreview={setActiveTaskPreview}
+          handleOpenTaskPreview={handleOpenTaskPreview}
         />
 
         {/* Message List */}
@@ -524,81 +582,101 @@ export default function WorkspaceChatPage() {
         )}
       </div>
 
-      {/* Right Side Task Details Sidebar Drawer (1:1 TaskDetailModal Inline View) */}
+      {/* Right Side Task Details Sidebar Drawer (1:1 TaskDetailModal Inline View with Resizer) */}
       {activeTaskPreview && (
-        <div className="w-full md:w-[480px] lg:w-[540px] xl:w-[580px] bg-white dark:bg-[#121B2D] border-l border-neutral-200/80 dark:border-neutral-800/80 flex flex-col h-full shrink-0 z-30 shadow-xl animate-fadeIn overflow-hidden">
-          <TaskDetailModal
-            isInline={true}
-            onCloseInline={() => setActiveTaskPreview(null)}
-            selectedTask={activeTaskPreview?.task || activeTaskPreview}
-            tasks={tasks}
-            setSelectedTask={setSelectedTask}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            handleDirectStatusChange={handleDirectStatusChange}
-            columns={columns}
-            editFormData={editFormData}
-            setEditFormData={setEditFormData}
-            formatDateMMM={formatDateMMM}
-            handleRequesterChange={handleRequesterChange}
-            isMentioning={isMentioning}
-            teamMembers={teamMembers}
-            mentionQuery={mentionQuery}
-            insertMention={insertMention}
-            categories={categories}
-            handleOpenAddBoard={handleOpenAddBoard}
-            handleOpenRenameBoard={handleOpenRenameBoard}
-            handleOpenDeleteBoard={handleOpenDeleteBoard}
-            handleEditSubmit={handleEditSubmit}
-            isSuperAdmin={isSuperAdmin}
-            currentUser={currentUser}
-            selectedBoard={selectedBoard}
-            accountStatus={accountStatus}
-            subtasks={subtasks}
-            handleToggleSubtask={handleToggleSubtask}
-            handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}
-            handleDeleteSubtask={handleDeleteSubtask}
-            handleSubtaskDragEnd={handleSubtaskDragEnd}
-            newSubtaskName={newSubtaskName}
-            setNewSubtaskName={setNewSubtaskName}
-            newSubtaskAssignee={newSubtaskAssignee}
-            setNewSubtaskAssignee={setNewSubtaskAssignee}
-            handleAddSubtask={handleAddSubtask}
-            comments={comments}
-            avatarsMap={avatarsMap}
-            handleDeleteComment={handleDeleteComment}
-            newComment={newComment}
-            isAiReplying={isAiReplying}
-            handleAskAITaskChat={handleAskAITaskChat}
-            handleCommentChange={handleCommentChange}
-            insertCommentMention={insertCommentMention}
-            handleAddComment={handleAddComment}
-            setIsDeleteConfirmOpen={setIsDeleteConfirmOpen}
-            startEditing={startEditing}
-            mentionIndex={mentionIndex}
-            setMentionIndex={setMentionIndex}
-            setIsMentioning={setIsMentioning}
-            isCommentMentioning={isCommentMentioning}
-            commentMentionQuery={commentMentionQuery}
-            userDirectory={userDirectory}
-            commentMentionIndex={commentMentionIndex}
-            setCommentMentionIndex={setCommentMentionIndex}
-            setIsCommentMentioning={setIsCommentMentioning}
-            boards={boards}
-            setSelectedBoard={setSelectedBoard}
-            handleQuickLinkAdd={handleQuickLinkAdd}
-            handleQuickLinkRemove={handleQuickLinkRemove}
-            isSubtasksLoading={isSubtasksLoading}
-            hasMoreComments={hasMoreComments}
-            loadMoreComments={loadMoreComments}
-            chatBg={chatBg}
-            handleToggleReaction={handleToggleReaction}
-            language={language}
-            showNotification={showNotification}
-            isSubmitting={isSubmitting}
-            handleToggleAutoNudge={handleToggleAutoNudge}
-          />
-        </div>
+        <>
+          {/* Right Sidebar Resize Handle */}
+          <div
+            onMouseDown={startResizingRight}
+            className={`w-3 -mx-1.5 cursor-col-resize hidden md:flex items-center justify-center z-30 select-none group transition-colors ${
+              isResizingRight ? 'bg-[#FACC15]' : 'hover:bg-[#FACC15]/80 bg-transparent'
+            }`}
+            title={tMsg('Drag to resize Task Details', 'Geser untuk mengubah ukuran Detail Tugas')}
+          >
+            <div
+              className={`w-[2px] h-8 rounded-full transition-colors ${
+                isResizingRight ? 'bg-[#111E38]' : 'bg-neutral-300 dark:bg-neutral-700 group-hover:bg-[#111E38]'
+              }`}
+            />
+          </div>
+
+          <div
+            style={{ width: `${taskDetailWidth}px` }}
+            className="w-full md:w-auto bg-white dark:bg-[#121B2D] border-l border-neutral-200/80 dark:border-neutral-800/80 flex flex-col h-full shrink-0 z-30 shadow-xl animate-fadeIn overflow-hidden text-xs"
+          >
+            <TaskDetailModal
+              isInline={true}
+              onCloseInline={() => setActiveTaskPreview(null)}
+              selectedTask={activeTaskPreview?.task || activeTaskPreview}
+              tasks={tasks}
+              setSelectedTask={setSelectedTask}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
+              handleDirectStatusChange={handleDirectStatusChange}
+              columns={columns}
+              editFormData={editFormData}
+              setEditFormData={setEditFormData}
+              formatDateMMM={formatDateMMM}
+              handleRequesterChange={handleRequesterChange}
+              isMentioning={isMentioning}
+              teamMembers={teamMembers}
+              mentionQuery={mentionQuery}
+              insertMention={insertMention}
+              categories={categories}
+              handleOpenAddBoard={handleOpenAddBoard}
+              handleOpenRenameBoard={handleOpenRenameBoard}
+              handleOpenDeleteBoard={handleOpenDeleteBoard}
+              handleEditSubmit={handleEditSubmit}
+              isSuperAdmin={isSuperAdmin}
+              currentUser={currentUser}
+              selectedBoard={selectedBoard}
+              accountStatus={accountStatus}
+              subtasks={subtasks}
+              handleToggleSubtask={handleToggleSubtask}
+              handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}
+              handleDeleteSubtask={handleDeleteSubtask}
+              handleSubtaskDragEnd={handleSubtaskDragEnd}
+              newSubtaskName={newSubtaskName}
+              setNewSubtaskName={setNewSubtaskName}
+              newSubtaskAssignee={newSubtaskAssignee}
+              setNewSubtaskAssignee={setNewSubtaskAssignee}
+              handleAddSubtask={handleAddSubtask}
+              comments={comments}
+              avatarsMap={avatarsMap}
+              handleDeleteComment={handleDeleteComment}
+              newComment={newComment}
+              isAiReplying={isAiReplying}
+              handleAskAITaskChat={handleAskAITaskChat}
+              handleCommentChange={handleCommentChange}
+              insertCommentMention={insertCommentMention}
+              handleAddComment={handleAddComment}
+              setIsDeleteConfirmOpen={setIsDeleteConfirmOpen}
+              startEditing={startEditing}
+              mentionIndex={mentionIndex}
+              setMentionIndex={setMentionIndex}
+              setIsMentioning={setIsMentioning}
+              isCommentMentioning={isCommentMentioning}
+              commentMentionQuery={commentMentionQuery}
+              userDirectory={userDirectory}
+              commentMentionIndex={commentMentionIndex}
+              setCommentMentionIndex={setCommentMentionIndex}
+              setIsCommentMentioning={setIsCommentMentioning}
+              boards={boards}
+              setSelectedBoard={setSelectedBoard}
+              handleQuickLinkAdd={handleQuickLinkAdd}
+              handleQuickLinkRemove={handleQuickLinkRemove}
+              isSubtasksLoading={isSubtasksLoading}
+              hasMoreComments={hasMoreComments}
+              loadMoreComments={loadMoreComments}
+              chatBg={chatBg}
+              handleToggleReaction={handleToggleReaction}
+              language={language}
+              showNotification={showNotification}
+              isSubmitting={isSubmitting}
+              handleToggleAutoNudge={handleToggleAutoNudge}
+            />
+          </div>
+        </>
       )}
     </div>
   );
