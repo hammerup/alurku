@@ -3427,7 +3427,8 @@ export default function useAppLogic() {
   const startEditing = (taskToEdit = null) => {
     const targetTask = taskToEdit || selectedTask;
     if (!targetTask) return;
-    if (!isChatWorkspaceOpen && (!selectedTask || selectedTask.id !== targetTask.id)) {
+    const isWorkspaceChatPath = typeof window !== 'undefined' && (window.location.pathname.includes('workspace-chat') || window.location.pathname.includes('chat'));
+    if (!isWorkspaceChatPath && !isChatWorkspaceOpen && (!selectedTask || selectedTask.id !== targetTask.id)) {
       setSelectedTask(targetTask);
     }
     setEditFormData({
