@@ -58,7 +58,6 @@ export default function AssignedCommentsPage() {
       if (isAssignee || hasNotification) {
         const taskNotifs = taskNotificationMap[task.id] || [];
         
-        // Filter out system notifications
         const realNotifs = taskNotifs.filter(n => {
           let sender = 'System';
           if (n.message?.includes(':')) {
@@ -66,12 +65,6 @@ export default function AssignedCommentsPage() {
           }
           return sender.toLowerCase() !== 'system';
         });
-
-        const hasMention = realNotifs.some(n =>
-          (n.message || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`)
-        );
-
-        const unreadCount = realNotifs.filter(n => !n.is_read).length;
 
         const lastNotif = realNotifs[0];
         let lastComment = null;
@@ -89,6 +82,17 @@ export default function AssignedCommentsPage() {
             timestamp: lastNotif.timestamp,
           };
         }
+
+        const hasMention = realNotifs.some(n =>
+          (n.message || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`)
+        ) || (lastComment && (
+          lastComment.text.toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`) ||
+          lastComment.text.toLowerCase().includes('@admin') ||
+          lastComment.text.toLowerCase().includes('@all') ||
+          lastComment.text.toLowerCase().includes('@team')
+        ));
+
+        const unreadCount = realNotifs.filter(n => !n.is_read).length;
 
         result.push({
           taskId: task.id,
@@ -351,14 +355,16 @@ export default function AssignedCommentsPage() {
 
               {/* Conversation Messages Feed */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-neutral-50/30 dark:bg-neutral-900/20">
-                {Array.isArray(comments) && comments.length > 0 ? (
-                  comments.map((c, idx) => {
-                    const isMe = c.username === currentUser;
-                    const formattedText = (c.text || '')
-                      .replace(/<!--TASK_ID:\d+-->/g, '')
-                      .replace(/Smart Assistant 🤖/g, 'Luruka')
-                      .replace(/Smart Assistant/g, 'Luruka')
-                      .replace(/🤖/g, '');
+                {Array.isArray(comments) && comments.filter(c => c && c.username?.toLowerCase() !== 'system' && !(c.text || '').includes('[ACTIVITY]')).length > 0 ? (
+                  comments
+                    .filter(c => c && c.username?.toLowerCase() !== 'system' && !(c.text || '').includes('[ACTIVITY]'))
+                    .map((c, idx) => {
+                      const isMe = c.username === currentUser;
+                      const formattedText = (c.text || '')
+                        .replace(/<!--TASK_ID:\d+-->/g, '')
+                        .replace(/Smart Assistant 🤖/g, 'Luruka')
+                        .replace(/Smart Assistant/g, 'Luruka')
+                        .replace(/🤖/g, '');
 
                     return (
                       <div

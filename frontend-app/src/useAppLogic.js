@@ -2747,15 +2747,20 @@ export default function useAppLogic() {
     setIsCommentMentioning(false);
   };
 
-  const handleAddComment = (e, textOverride = null) => {
-    if (e) e.preventDefault();
+  const handleAddComment = (e, textOverride = null, targetTaskId = null) => {
+    if (e && e.preventDefault) e.preventDefault();
     const textToSubmit = typeof textOverride === 'string' ? textOverride : newComment;
     if (!textToSubmit.trim()) return;
-    axios
-      .post(`/api/tasks/${selectedTask.id}/comments`, { text: textToSubmit.trim() })
+
+    // Support direct call with taskId as first or third argument
+    const finalTaskId = targetTaskId || (typeof e === 'number' || typeof e === 'string' ? e : selectedTask?.id);
+    if (!finalTaskId) return;
+
+    return axios
+      .post(`/api/tasks/${finalTaskId}/comments`, { text: textToSubmit.trim() })
       .then(() => {
         setNewComment('');
-        fetchComments(selectedTask.id);
+        fetchComments(finalTaskId);
         setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
       })
       .catch((err) => showNotification(err.response?.data?.detail || 'Failed to add comment!', 'error'));
