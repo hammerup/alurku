@@ -8,8 +8,10 @@ import ChatSidebar from './ChatWorkspace/ChatSidebar';
 import ChatHeader from './ChatWorkspace/ChatHeader';
 import ChatMessageList from './ChatWorkspace/ChatMessageList';
 import ChatInputArea from './ChatWorkspace/ChatInputArea';
+import TaskDetailModal from '../TaskDetailModal';
 
 export default function WorkspaceChatPage() {
+  const context = useAppContext();
   const {
     currentUser,
     boards,
@@ -38,7 +40,59 @@ export default function WorkspaceChatPage() {
     deleteProjectChatMessage,
     handleNotificationTaskClick,
     activeWorkspace,
-  } = useAppContext();
+    selectedBoard,
+    setSelectedBoard,
+    isEditing,
+    setIsEditing,
+    handleDirectStatusChange,
+    columns,
+    editFormData,
+    setEditFormData,
+    handleRequesterChange,
+    isMentioning: ctxIsMentioning,
+    teamMembers,
+    mentionQuery: ctxMentionQuery,
+    insertMention,
+    categories,
+    handleOpenAddBoard,
+    handleOpenRenameBoard,
+    handleOpenDeleteBoard,
+    handleEditSubmit,
+    subtasks,
+    handleToggleSubtask,
+    handleUpdateSubtaskAssignee,
+    handleDeleteSubtask,
+    handleSubtaskDragEnd,
+    newSubtaskName,
+    setNewSubtaskName,
+    newSubtaskAssignee,
+    setNewSubtaskAssignee,
+    handleAddSubtask,
+    comments,
+    newComment,
+    isAiReplying,
+    handleCommentChange,
+    insertCommentMention,
+    handleAddComment,
+    setIsDeleteConfirmOpen,
+    startEditing,
+    mentionIndex: ctxMentionIndex,
+    setMentionIndex: ctxSetMentionIndex,
+    setIsMentioning: ctxSetIsMentioning,
+    isCommentMentioning,
+    commentMentionQuery,
+    commentMentionIndex,
+    setCommentMentionIndex,
+    setIsCommentMentioning,
+    handleQuickLinkAdd,
+    handleQuickLinkRemove,
+    isSubtasksLoading,
+    hasMoreComments,
+    loadMoreComments,
+    chatBg,
+    isSubmitting,
+    handleToggleAutoNudge,
+  } = context;
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
@@ -470,140 +524,82 @@ export default function WorkspaceChatPage() {
         )}
       </div>
 
-      {/* Right Side Task Details Sidebar Drawer (Non-Modal Inline Task View) */}
-      {activeTaskPreview && (() => {
-        const tObj = activeTaskPreview?.task || activeTaskPreview;
-        const taskId = tObj.id || activeChat?.id;
-        const taskTitle = tObj.project_name || tObj.name || tObj.title || activeChat?.name || 'Task Details';
-        const taskDesc = tObj.description || tObj.details || '';
-        const taskAssignee = tObj.assignee || tObj.assignees || tObj.assigned_to || '';
-        const taskRequester = tObj.requester || tObj.owner_username || tObj.creator || '';
-        const taskStatus = tObj.status || 'To Do';
-        const taskPriority = tObj.priority || '';
-        const taskDueDate = tObj.due_date || tObj.due_date_formatted || '';
-        const taskSubtasks = tObj.subtasks || [];
-
-        return (
-          <div className="w-full md:w-96 lg:w-[400px] bg-white dark:bg-[#121B2D] border-l border-neutral-200/80 dark:border-neutral-800/80 flex flex-col h-full shrink-0 z-30 shadow-lg animate-fadeIn">
-            {/* Drawer Header */}
-            <div className="h-16 px-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="material-symbols-outlined text-amber-500 text-lg">task</span>
-                <div className="min-w-0">
-                  <h4 className="font-bold text-xs text-[#111E38] dark:text-white truncate" title={taskTitle}>
-                    {taskTitle}
-                  </h4>
-                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                    {tMsg('Task Sidebar View', 'Pratinjau Sidebar Tugas')}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveTaskPreview(null)}
-                className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors flex items-center justify-center"
-                title={tMsg('Close', 'Tutup')}
-              >
-                <span className="material-symbols-outlined text-sm">close</span>
-              </button>
-            </div>
-
-            {/* Drawer Content */}
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4 text-xs">
-              {/* Status & Priority Badge Block */}
-              <div className="p-3 bg-neutral-100/60 dark:bg-neutral-900/50 rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Status', 'Status')}</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FACC15] text-[#111E38] shadow-2xs">
-                    {taskStatus}
-                  </span>
-                </div>
-
-                {taskPriority && (
-                  <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200/40 dark:border-neutral-800/40">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Priority', 'Prioritas')}</span>
-                    <span className="text-[11px] font-bold text-[#111E38] dark:text-neutral-200">
-                      {taskPriority}
-                    </span>
-                  </div>
-                )}
-
-                {taskDueDate && (
-                  <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200/40 dark:border-neutral-800/40">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Due Date', 'Tenggat Waktu')}</span>
-                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                      {taskDueDate}
-                    </span>
-                  </div>
-                )}
-
-                {taskAssignee && (
-                  <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200/40 dark:border-neutral-800/40">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Assignee', 'Pelaksana')}</span>
-                    <div className="flex items-center gap-1.5 font-bold text-[#111E38] dark:text-neutral-200">
-                      <Avatar name={typeof taskAssignee === 'string' ? taskAssignee : taskAssignee[0]} url={avatarsMap[typeof taskAssignee === 'string' ? taskAssignee : taskAssignee[0]]} size="w-4 h-4" />
-                      <span>{typeof taskAssignee === 'string' ? `@${taskAssignee}` : taskAssignee.map(a => `@${a}`).join(', ')}</span>
-                    </div>
-                  </div>
-                )}
-
-                {taskRequester && (
-                  <div className="flex items-center justify-between pt-1.5 border-t border-neutral-200/40 dark:border-neutral-800/40">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Requester', 'Pembuat')}</span>
-                    <div className="flex items-center gap-1.5 font-bold text-neutral-600 dark:text-neutral-300">
-                      <Avatar name={taskRequester} url={avatarsMap[taskRequester]} size="w-4 h-4" />
-                      <span>@{taskRequester}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Task Description */}
-              {taskDesc ? (
-                <div className="space-y-1">
-                  <h5 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{tMsg('Description', 'Deskripsi')}</h5>
-                  <div className="p-3 bg-neutral-50 dark:bg-[#0d0f11] rounded-xl border border-neutral-200/60 dark:border-neutral-800/60 text-slate-700 dark:text-neutral-300 whitespace-pre-wrap font-sans leading-relaxed text-xs">
-                    {stripHtml(taskDesc)}
-                  </div>
-                </div>
-              ) : (
-                <div className="p-3 bg-neutral-50/50 dark:bg-[#0d0f11]/50 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-800 text-neutral-400 text-[11px] italic text-center">
-                  {tMsg('No task description provided.', 'Tidak ada deskripsi tugas.')}
-                </div>
-              )}
-
-              {/* Subtasks Progress */}
-              {taskSubtasks && taskSubtasks.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                    {tMsg('Subtasks', 'Subtugas')} ({taskSubtasks.filter(s => s.completed).length}/{taskSubtasks.length})
-                  </h5>
-                  <div className="space-y-1">
-                    {taskSubtasks.map((st, idx) => (
-                      <div key={`st-${st.id || idx}`} className="flex items-center gap-2 p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg text-xs">
-                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] font-bold ${st.completed ? 'bg-emerald-500 text-white' : 'border border-neutral-300 dark:border-neutral-700'}`}>
-                          {st.completed ? '✓' : ''}
-                        </span>
-                        <span className={st.completed ? 'line-through opacity-60' : ''}>{st.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Handoff to full modal if requested */}
-              <button
-                onClick={() => {
-                  if (taskId && handleNotificationTaskClick) handleNotificationTaskClick(taskId);
-                }}
-                className="w-full mt-4 py-2.5 px-3 bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] rounded-xl text-xs font-bold hover:opacity-90 transition-all flex items-center justify-center gap-1.5 shadow-xs uppercase tracking-wider"
-              >
-                <span className="material-symbols-outlined text-sm">open_in_new</span>
-                <span>{tMsg('Open Full Modal', 'Buka Modal Lengkap')}</span>
-              </button>
-            </div>
-          </div>
-        );
-      })()}
+      {/* Right Side Task Details Sidebar Drawer (1:1 TaskDetailModal Inline View) */}
+      {activeTaskPreview && (
+        <div className="w-full md:w-[480px] lg:w-[540px] xl:w-[580px] bg-white dark:bg-[#121B2D] border-l border-neutral-200/80 dark:border-neutral-800/80 flex flex-col h-full shrink-0 z-30 shadow-xl animate-fadeIn overflow-hidden">
+          <TaskDetailModal
+            isInline={true}
+            onCloseInline={() => setActiveTaskPreview(null)}
+            selectedTask={activeTaskPreview?.task || activeTaskPreview}
+            tasks={tasks}
+            setSelectedTask={setSelectedTask}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            handleDirectStatusChange={handleDirectStatusChange}
+            columns={columns}
+            editFormData={editFormData}
+            setEditFormData={setEditFormData}
+            formatDateMMM={formatDateMMM}
+            handleRequesterChange={handleRequesterChange}
+            isMentioning={isMentioning}
+            teamMembers={teamMembers}
+            mentionQuery={mentionQuery}
+            insertMention={insertMention}
+            categories={categories}
+            handleOpenAddBoard={handleOpenAddBoard}
+            handleOpenRenameBoard={handleOpenRenameBoard}
+            handleOpenDeleteBoard={handleOpenDeleteBoard}
+            handleEditSubmit={handleEditSubmit}
+            isSuperAdmin={isSuperAdmin}
+            currentUser={currentUser}
+            selectedBoard={selectedBoard}
+            accountStatus={accountStatus}
+            subtasks={subtasks}
+            handleToggleSubtask={handleToggleSubtask}
+            handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}
+            handleDeleteSubtask={handleDeleteSubtask}
+            handleSubtaskDragEnd={handleSubtaskDragEnd}
+            newSubtaskName={newSubtaskName}
+            setNewSubtaskName={setNewSubtaskName}
+            newSubtaskAssignee={newSubtaskAssignee}
+            setNewSubtaskAssignee={setNewSubtaskAssignee}
+            handleAddSubtask={handleAddSubtask}
+            comments={comments}
+            avatarsMap={avatarsMap}
+            handleDeleteComment={handleDeleteComment}
+            newComment={newComment}
+            isAiReplying={isAiReplying}
+            handleAskAITaskChat={handleAskAITaskChat}
+            handleCommentChange={handleCommentChange}
+            insertCommentMention={insertCommentMention}
+            handleAddComment={handleAddComment}
+            setIsDeleteConfirmOpen={setIsDeleteConfirmOpen}
+            startEditing={startEditing}
+            mentionIndex={mentionIndex}
+            setMentionIndex={setMentionIndex}
+            setIsMentioning={setIsMentioning}
+            isCommentMentioning={isCommentMentioning}
+            commentMentionQuery={commentMentionQuery}
+            userDirectory={userDirectory}
+            commentMentionIndex={commentMentionIndex}
+            setCommentMentionIndex={setCommentMentionIndex}
+            setIsCommentMentioning={setIsCommentMentioning}
+            boards={boards}
+            setSelectedBoard={setSelectedBoard}
+            handleQuickLinkAdd={handleQuickLinkAdd}
+            handleQuickLinkRemove={handleQuickLinkRemove}
+            isSubtasksLoading={isSubtasksLoading}
+            hasMoreComments={hasMoreComments}
+            loadMoreComments={loadMoreComments}
+            chatBg={chatBg}
+            handleToggleReaction={handleToggleReaction}
+            language={language}
+            showNotification={showNotification}
+            isSubmitting={isSubmitting}
+            handleToggleAutoNudge={handleToggleAutoNudge}
+          />
+        </div>
+      )}
     </div>
   );
 }
