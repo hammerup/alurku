@@ -3424,21 +3424,26 @@ export default function useAppLogic() {
       .finally(() => setIsSubmitting(false));
   };
 
-  const startEditing = () => {
+  const startEditing = (taskToEdit = null) => {
+    const targetTask = taskToEdit || selectedTask;
+    if (!targetTask) return;
+    if (!selectedTask || selectedTask.id !== targetTask.id) {
+      setSelectedTask(targetTask);
+    }
     setEditFormData({
-      project_name: selectedTask.project_name,
-      requester: selectedTask.requester,
-      category: selectedTask.category,
-      description: selectedTask.description || '',
-      supporting_access: selectedTask.supporting_access || '',
-      start_date: (selectedTask.start_date || selectedTask.timestamp).split(' ')[0],
-      deadline: selectedTask.deadline ? selectedTask.deadline.split(' ')[0] : '',
-      impact: selectedTask.impact || 'Medium',
-      etc: selectedTask.etc || 2,
-      auto_nudge: selectedTask.auto_nudge || false,
-      recurring: selectedTask.recurring || 'none',
-      status: selectedTask.status,
-      board_id: selectedTask.board_id,
+      project_name: targetTask.project_name || '',
+      requester: targetTask.requester || '',
+      category: targetTask.category || '',
+      description: targetTask.description || '',
+      supporting_access: targetTask.supporting_access || '',
+      start_date: (targetTask.start_date || targetTask.timestamp || '').split(' ')[0],
+      deadline: targetTask.deadline ? targetTask.deadline.split(' ')[0] : '',
+      impact: targetTask.impact || 'Medium',
+      etc: targetTask.etc || 2,
+      auto_nudge: targetTask.auto_nudge || false,
+      recurring: targetTask.recurring || 'none',
+      status: targetTask.status || 'Pending',
+      board_id: targetTask.board_id,
     });
     setIsEditing(true);
   };

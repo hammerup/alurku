@@ -9,6 +9,8 @@ export default function TaskDetailHeader({
   isPreviewMode,
   accountStatus,
   isTaskAdmin,
+  isInvolved,
+  startEditing,
   isSubtasksLoading,
   close,
   tMsg,
@@ -30,6 +32,16 @@ export default function TaskDetailHeader({
         )}
       </h2>
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        {!isEditing && accountStatus !== 'suspended' && (isTaskAdmin || isInvolved) && !isPreviewMode && (
+          <button
+            onClick={() => (startEditing ? startEditing(selectedTask) : null)}
+            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-[#FACC15] hover:text-[#111E38] dark:hover:bg-[#FACC15] dark:hover:text-[#111E38] border border-neutral-200 dark:border-neutral-700 transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm"
+            title={tMsg('Edit Task', 'Edit Tugas')}
+          >
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            <span className="hidden sm:inline">{tMsg('Edit', 'Edit')}</span>
+          </button>
+        )}
         {isEditing ? (
           <span className="text-[9px] sm:text-[10px] font-bold text-white bg-black dark:bg-white dark:text-black px-4 sm:px-5 py-2 sm:py-2.5 rounded-full tracking-widest shadow-sm">
             {selectedTask.status === 'Pending' ? 'To do' : selectedTask.status}
@@ -47,12 +59,12 @@ export default function TaskDetailHeader({
                     ? 'bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white border-neutral-300 dark:border-neutral-700'
                     : 'bg-white text-black dark:bg-neutral-900 dark:text-white border-neutral-200 dark:border-neutral-700'
                 } [&>option]:bg-white dark:[&>option]:bg-neutral-950 [&>option]:text-black dark:[&>option]:text-white` +
-                (isPreviewMode || accountStatus === 'suspended' || !isTaskAdmin || isSubtasksLoading
+                (isPreviewMode || accountStatus === 'suspended' || (!isTaskAdmin && !isInvolved) || isSubtasksLoading
                   ? ' opacity-70 cursor-not-allowed'
                   : '')
               }
               title="Change Status"
-              disabled={isPreviewMode || accountStatus === 'suspended' || !isTaskAdmin || isSubtasksLoading}
+              disabled={isPreviewMode || accountStatus === 'suspended' || (!isTaskAdmin && !isInvolved) || isSubtasksLoading}
             >
               {columns.map((c) => (
                 <option key={c} value={c}>
