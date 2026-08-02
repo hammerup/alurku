@@ -16,6 +16,7 @@ export default function ChatHeader({
   handleMeetNow,
   handleNotificationTaskClick,
   activeTaskPreview,
+  setActiveTaskPreview,
   handleOpenTaskPreview,
   onlineUsers,
 }) {
