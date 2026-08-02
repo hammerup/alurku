@@ -249,6 +249,26 @@ def send_dm_message(
     create_notification(
         db, target_username, f"@{current_user} sent you a direct message", "info"
     )
+    
+    from utils import broadcast_chat_message_event
+    broadcast_chat_message_event(
+        workspace_id=1,
+        chat_type="dm",
+        target_id=current_user,
+        sender=current_user,
+        text=payload.text,
+        timestamp=now_str,
+        extra_data={"receiver": target_username}
+    )
+    broadcast_chat_message_event(
+        workspace_id=1,
+        chat_type="dm",
+        target_id=target_username,
+        sender=current_user,
+        text=payload.text,
+        timestamp=now_str,
+        extra_data={"receiver": target_username}
+    )
     return {"message": "Message sent"}
 
 

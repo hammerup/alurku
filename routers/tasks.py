@@ -1156,7 +1156,20 @@ def add_comment(
     db.add(new_comment)
     db.commit()
 
+    from utils import broadcast_chat_message_event
     task = db.query(Request).filter(Request.id == task_id).first()
+    if task:
+        ws_id = getattr(task, "workspace_id", 1) or 1
+        chat_type = "project" if task.project_name == "[SYSTEM] PROJECT CHAT" else "task"
+        target_id = task.board_id if chat_type == "project" else task_id
+        broadcast_chat_message_event(
+            workspace_id=ws_id,
+            chat_type=chat_type,
+            target_id=target_id,
+            sender=current_user,
+            text=payload.text,
+            timestamp=now_str
+        )
     if task:
         # 1. Notifikasi ke orang yang di-mention spesifik di dalam Komentar
         mentions = set(re.findall(r"@([\w.-]+)", payload.text or ""))

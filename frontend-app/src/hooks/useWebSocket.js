@@ -6,6 +6,7 @@ export function useWebSocket(workspaceId, token, currentUser) {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [activityFeed, setActivityFeed] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [lastWsMessage, setLastWsMessage] = useState(null);
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const reconnectDelayRef = useRef(1000); // Start with 1s
@@ -81,6 +82,7 @@ export function useWebSocket(workspaceId, token, currentUser) {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          setLastWsMessage(data);
           
           if (data.type === 'online_users_list') {
             setOnlineUsers(new Set(data.users || []));
@@ -171,5 +173,6 @@ export function useWebSocket(workspaceId, token, currentUser) {
     onlineUsers,
     activityFeed,
     isConnected,
+    lastWsMessage,
   };
 }

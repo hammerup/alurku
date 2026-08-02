@@ -92,6 +92,8 @@ export default function WorkspaceChatPage() {
     chatBg,
     isSubmitting,
     handleToggleAutoNudge,
+    onlineUsers,
+    lastWsMessage,
   } = context;
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -154,6 +156,31 @@ export default function WorkspaceChatPage() {
       setActiveTaskPreview(null);
     }
   }, [activeChat?.id, activeChat?.type]);
+
+  // Real-Time WebSocket Event Listener
+  useEffect(() => {
+    if (!lastWsMessage) return;
+
+    if (lastWsMessage.type === 'chat_message') {
+      if (fetchInboxChats) fetchInboxChats();
+      if (fetchDmConversations && lastWsMessage.chat_type === 'dm') fetchDmConversations();
+
+      const isMatchingChat =
+        (activeChat?.type === 'dm' && lastWsMessage.chat_type === 'dm' && (String(lastWsMessage.target_id) === String(activeChat.partner) || String(lastWsMessage.sender) === String(activeChat.partner))) ||
+        (activeChat?.type === 'project' && lastWsMessage.chat_type === 'project' && String(lastWsMessage.target_id) === String(activeChat.id)) ||
+        (activeChat?.type === 'task' && lastWsMessage.chat_type === 'task' && String(lastWsMessage.target_id) === String(activeChat.id));
+
+      if (isMatchingChat) {
+        fetchMessages();
+      }
+    } else if (lastWsMessage.type === 'task_update') {
+      if (activeTaskPreview && String(lastWsMessage.task_id) === String(activeTaskPreview.id || activeTaskPreview.task?.id)) {
+        handleOpenTaskPreview(lastWsMessage.task_id);
+      }
+    } else if (lastWsMessage.type === 'activity') {
+      if (fetchInboxChats) fetchInboxChats();
+    }
+  }, [lastWsMessage]);
 
   // Advanced Chat Features
   const [replyingTo, setReplyingTo] = useState(null);
@@ -451,6 +478,7 @@ export default function WorkspaceChatPage() {
         inboxChats={inboxChats}
         currentUser={currentUser}
         tasks={tasks}
+        onlineUsers={onlineUsers}
       />
 
       {/* Left Sidebar Resize Handle */}

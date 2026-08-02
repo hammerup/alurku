@@ -87,6 +87,33 @@ class ConnectionManager:
             "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         })
 
+    async def broadcast_chat_message(self, workspace_id: int, chat_type: str, target_id: str | int, sender: str, text: str, timestamp: str = None, extra_data: dict = None):
+        """
+        Convenience method to broadcast a new chat message to a workspace room.
+        """
+        await self.broadcast(workspace_id, {
+            "type": "chat_message",
+            "chat_type": chat_type,
+            "target_id": str(target_id),
+            "sender": sender,
+            "text": text,
+            "timestamp": timestamp or datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "extra_data": extra_data or {},
+        })
+
+    async def broadcast_task_update(self, workspace_id: int, task_id: int, updated_by: str, action: str, task_data: dict = None):
+        """
+        Convenience method to broadcast task updates (status, priority, subtask, etc.) to a workspace room.
+        """
+        await self.broadcast(workspace_id, {
+            "type": "task_update",
+            "task_id": task_id,
+            "updated_by": updated_by,
+            "action": action,
+            "task_data": task_data or {},
+            "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        })
+
 
 # Singleton instance — import this from any router
 manager = ConnectionManager()

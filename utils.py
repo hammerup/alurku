@@ -670,3 +670,57 @@ def log_and_broadcast_activity(db: Session, workspace_id: int, username: str, ac
         print(f"[Activity Broadcast Error]: {e}")
 
 
+def broadcast_chat_message_event(workspace_id: int, chat_type: str, target_id: str | int, sender: str, text: str, timestamp: str = None, extra_data: dict = None):
+    from services.ws_manager import manager
+    import asyncio
+    try:
+        coro = manager.broadcast_chat_message(
+            workspace_id=workspace_id,
+            chat_type=chat_type,
+            target_id=target_id,
+            sender=sender,
+            text=text,
+            timestamp=timestamp,
+            extra_data=extra_data
+        )
+        main_loop = getattr(manager, "_main_loop", None)
+        if main_loop and main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(coro, main_loop)
+        else:
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(coro)
+            except RuntimeError:
+                new_loop = asyncio.new_event_loop()
+                new_loop.run_until_complete(coro)
+                new_loop.close()
+    except Exception as e:
+        print(f"[Chat Broadcast Error]: {e}")
+
+
+def broadcast_task_update_event(workspace_id: int, task_id: int, updated_by: str, action: str, task_data: dict = None):
+    from services.ws_manager import manager
+    import asyncio
+    try:
+        coro = manager.broadcast_task_update(
+            workspace_id=workspace_id,
+            task_id=task_id,
+            updated_by=updated_by,
+            action=action,
+            task_data=task_data
+        )
+        main_loop = getattr(manager, "_main_loop", None)
+        if main_loop and main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(coro, main_loop)
+        else:
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(coro)
+            except RuntimeError:
+                new_loop = asyncio.new_event_loop()
+                new_loop.run_until_complete(coro)
+                new_loop.close()
+    except Exception as e:
+        print(f"[Task Update Broadcast Error]: {e}")
+
+

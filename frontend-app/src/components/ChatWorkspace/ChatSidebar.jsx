@@ -36,6 +36,7 @@ export default function ChatSidebar({
   inboxChats,
   currentUser,
   tasks,
+  onlineUsers,
 }) {
   const unreadInboxChatsCount = React.useMemo(() => {
     return (inboxChats || []).filter(chat => {
@@ -520,7 +521,12 @@ export default function ChatSidebar({
                     : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                 }`}
               >
-                <Avatar name={dm.partner} url={avatarsMap[dm.partner]} size="w-5 h-5" />
+                <div className="relative shrink-0">
+                  <Avatar name={dm.partner} url={avatarsMap[dm.partner]} size="w-5 h-5" />
+                  {onlineUsers?.has && onlineUsers.has(dm.partner) && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" title="Online" />
+                  )}
+                </div>
                 <span className="truncate flex-1">@{dm.partner}</span>
                 {dm.unread_count > 0 && (
                   <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-md shadow-sm shrink-0">

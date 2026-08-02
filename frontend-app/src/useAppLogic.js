@@ -5,6 +5,7 @@ import { useAuth } from './hooks/useAuth';
 import { useTask } from './hooks/useTask';
 import { useBoard } from './hooks/useBoard';
 import { useUISettings } from './hooks/useUISettings';
+import { useWebSocket } from './hooks/useWebSocket';
 import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import axios from 'axios'; 
 import { useGoogleLogin } from '@react-oauth/google';
@@ -374,6 +375,13 @@ export default function useAppLogic() {
   const [workspaceBoards, setWorkspaceBoards] = useState([]);
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
+
+  const wsToken = typeof window !== 'undefined' ? localStorage.getItem('alurku_token') || '' : '';
+  const { onlineUsers, isConnected: isWsConnected, lastWsMessage } = useWebSocket(
+    activeWorkspace?.id,
+    wsToken,
+    currentUser
+  );
   const [selectedBoard, setSelectedBoard] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('alurku_selected_board');
@@ -5155,5 +5163,8 @@ export default function useAppLogic() {
     clonedTaskIds,
     setClonedTaskIds,
     teamWorkloadStats,
+    onlineUsers,
+    isWsConnected,
+    lastWsMessage,
   };
 }
