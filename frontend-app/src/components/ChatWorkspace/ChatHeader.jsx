@@ -52,9 +52,9 @@ export default function ChatHeader({
           <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest truncate">
             {!activeChat
               ? tMsg('No Channel Selected', 'Belum Ada Saluran')
-              : activeChat.type === 'dm'
+              : activeChat?.type === 'dm'
               ? 'Direct Message'
-              : activeChat.type === 'project'
+              : activeChat?.type === 'project'
               ? 'Project Channel'
               : 'Task Thread'}
           </p>
@@ -155,7 +155,7 @@ export default function ChatHeader({
             onClick={() => {
               if (activeTaskPreview) {
                 setActiveTaskPreview(null);
-              } else if (handleOpenTaskPreview) {
+              } else if (handleOpenTaskPreview && activeChat?.id) {
                 handleOpenTaskPreview(activeChat.id);
               }
             }}

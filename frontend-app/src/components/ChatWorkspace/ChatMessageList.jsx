@@ -140,7 +140,7 @@ export default function ChatMessageList({
 
             {messages.length === 0 && (
               <p className="text-center text-sm text-neutral-500 font-medium italic mt-10">
-                {activeChat.type === 'dm'
+                {activeChat?.type === 'dm'
                   ? 'Start a conversation!'
                   : 'No messages yet. Start the conversation!'}
               </p>

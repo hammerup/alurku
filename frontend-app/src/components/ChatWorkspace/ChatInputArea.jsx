@@ -57,7 +57,7 @@ export default function ChatInputArea({
             <button
               type="button"
               onClick={() => {
-                if (!newMessage.trim()) return;
+                if (!newMessage.trim() || !activeChat?.id) return;
                 let finalComment = newMessage.trim();
                 if (replyingTo) {
                   const cleanPreview = replyingTo.text
@@ -69,41 +69,45 @@ export default function ChatInputArea({
                 }
 
                 const tempId = Date.now();
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: tempId,
-                    username: currentUser,
-                    text: finalComment,
-                    timestamp: getLocalTimestamp(),
-                    reactions: {},
-                    isPrivate: false,
-                    privateUser: currentUser,
-                  },
-                ]);
-                setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+                if (setMessages) {
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: tempId,
+                      username: currentUser,
+                      text: finalComment,
+                      timestamp: getLocalTimestamp ? getLocalTimestamp() : new Date().toISOString(),
+                      reactions: {},
+                      isPrivate: false,
+                      privateUser: currentUser,
+                    },
+                  ]);
+                }
+                setTimeout(() => messagesEndRef?.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
-                handleAskAITaskChat(
-                  activeChat.id,
-                  finalComment,
-                  newMessage.trim(),
-                  () => {
-                    setNewMessage('');
-                    setReplyingTo(null);
-                  },
-                  false
-                );
+                if (handleAskAITaskChat) {
+                  handleAskAITaskChat(
+                    activeChat.id,
+                    finalComment,
+                    newMessage.trim(),
+                    () => {
+                      setNewMessage('');
+                      setReplyingTo(null);
+                    },
+                    false
+                  );
+                }
               }}
               disabled={accountStatus === 'suspended' || !newMessage.trim() || isAiReplying}
               className="bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 w-10 sm:w-12 h-[48px] rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 shrink-0"
-              title={tMsg('Ask AI (Team)', 'Tanya AI (Tim)')}
+              title={tMsg ? tMsg('Ask AI (Team)', 'Tanya AI (Tim)') : 'Ask AI (Team)'}
             >
               ✨
             </button>
             <button
               type="button"
               onClick={() => {
-                if (!newMessage.trim()) return;
+                if (!newMessage.trim() || !activeChat?.id) return;
                 let finalComment = newMessage.trim();
                 if (replyingTo) {
                   const cleanPreview = replyingTo.text
@@ -115,34 +119,38 @@ export default function ChatInputArea({
                 }
 
                 const tempId = Date.now();
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: tempId,
-                    username: currentUser,
-                    text: finalComment,
-                    timestamp: getLocalTimestamp(),
-                    reactions: {},
-                    isPrivate: true,
-                    privateUser: currentUser,
-                  },
-                ]);
-                setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+                if (setMessages) {
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: tempId,
+                      username: currentUser,
+                      text: finalComment,
+                      timestamp: getLocalTimestamp ? getLocalTimestamp() : new Date().toISOString(),
+                      reactions: {},
+                      isPrivate: true,
+                      privateUser: currentUser,
+                    },
+                  ]);
+                }
+                setTimeout(() => messagesEndRef?.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
-                handleAskAITaskChat(
-                  activeChat.id,
-                  finalComment,
-                  newMessage.trim(),
-                  () => {
-                    setNewMessage('');
-                    setReplyingTo(null);
-                  },
-                  true
-                );
+                if (handleAskAITaskChat) {
+                  handleAskAITaskChat(
+                    activeChat.id,
+                    finalComment,
+                    newMessage.trim(),
+                    () => {
+                      setNewMessage('');
+                      setReplyingTo(null);
+                    },
+                    true
+                  );
+                }
               }}
               disabled={accountStatus === 'suspended' || !newMessage.trim() || isAiReplying}
               className="bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-slate-400 w-10 sm:w-12 h-[48px] rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 shrink-0"
-              title={tMsg('Ask AI (Private)', 'Tanya AI (Privat)')}
+              title={tMsg ? tMsg('Ask AI (Private)', 'Tanya AI (Privat)') : 'Ask AI (Private)'}
             >
               🕵️
             </button>
@@ -174,19 +182,19 @@ export default function ChatInputArea({
               const filtered = allOps.filter((m) => m.toLowerCase().includes(mentionQuery));
               if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                setMentionIndex((prev) => (prev + 1) % (filtered.length || 1));
+                if (setMentionIndex) setMentionIndex((prev) => (prev + 1) % (filtered.length || 1));
               } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                setMentionIndex((prev) => (prev - 1 + filtered.length) % (filtered.length || 1));
+                if (setMentionIndex) setMentionIndex((prev) => (prev - 1 + filtered.length) % (filtered.length || 1));
               } else if (e.key === 'Enter') {
                 e.preventDefault();
-                if (filtered.length > 0) {
+                if (filtered.length > 0 && insertMention) {
                   insertMention(filtered[mentionIndex] || filtered[0]);
                 }
               }
             } else if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
-              sendMessage(e);
+              if (sendMessage) sendMessage(e);
               e.target.style.height = '44px';
             }
           }}
@@ -200,44 +208,26 @@ export default function ChatInputArea({
                   ? activeBoardIsPrivate
                     ? ['AI (Private)', 'AI (Team)']
                     : ['all', 'AI (Team)', 'AI (Private)', ...(activeBoardMembers || [])]
-                  : ['team', ...(activeBoardMembers || [])];
+                  : activeChat?.type === 'project'
+                  ? ['team', ...(activeBoardMembers || [])]
+                  : [];
               const filteredOptions = allOptions.filter((m) => m.toLowerCase().includes(mentionQuery));
-              if (filteredOptions.length > 0) {
-                return filteredOptions.map((m, idx) => (
-                  <div
-                    key={m}
-                    className={`px-4 py-2 cursor-pointer text-xs text-black dark:text-white font-medium border-b border-neutral-100 dark:border-neutral-800/50 last:border-0 flex items-center gap-2 ${
-                      mentionIndex === idx
-                        ? 'bg-neutral-100 dark:bg-neutral-800 font-bold'
-                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                    }`}
-                    onClick={() => insertMention(m)}
-                  >
-                    <span>@{m}</span>
-                    {m === 'all' && (
-                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-normal">
-                        (Notify everyone involved)
-                      </span>
-                    )}
-                    {m === 'team' && (
-                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-normal">
-                        (Notify everyone in project)
-                      </span>
-                    )}
-                    {m === 'AI (Team)' && (
-                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-normal">
-                        {tMsg('(Ask AI openly)', '(Tanya AI di tim)')}
-                      </span>
-                    )}
-                    {m === 'AI (Private)' && (
-                      <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-normal">
-                        {tMsg('(Ask AI privately)', '(Tanya AI privat)')}
-                      </span>
-                    )}
-                  </div>
-                ));
-              }
-              return <div className="px-4 py-3 text-xs text-neutral-500 italic">No members found</div>;
+              if (filteredOptions.length === 0) return null;
+              return filteredOptions.map((opt, idx) => (
+                <button
+                  key={`mention-opt-${opt}`}
+                  type="button"
+                  onClick={() => insertMention && insertMention(opt)}
+                  className={`w-full text-left px-3 py-1.5 text-xs font-bold transition-colors flex items-center gap-2 ${
+                    idx === mentionIndex
+                      ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                >
+                  <span className="text-indigo-500 font-extrabold">@</span>
+                  <span>{opt}</span>
+                </button>
+              ));
             })()}
           </div>
         )}
