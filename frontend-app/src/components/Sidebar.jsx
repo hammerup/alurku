@@ -5,6 +5,8 @@ import { HighlightText } from '../Utils';
 
 export default function Sidebar() {
   const {
+    currentPath,
+    setCurrentPath,
     currentUser,
     boards,
     selectedBoard,
@@ -87,6 +89,8 @@ export default function Sidebar() {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_active_rail_tab') || 'spaces';
     return 'spaces';
   });
+
+  const activePath = currentPath || (typeof window !== 'undefined' ? window.location.pathname : '');
 
   const handleRailTabChange = (tab) => {
     setActiveRailTab(tab);
@@ -948,7 +952,7 @@ export default function Sidebar() {
                       if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }}
                     className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all text-xs ${
-                      currentPath === '/inbox' || currentPath?.endsWith('/inbox')
+                      activePath === '/inbox' || activePath?.endsWith('/inbox')
                         ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
                         : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                     }`}
