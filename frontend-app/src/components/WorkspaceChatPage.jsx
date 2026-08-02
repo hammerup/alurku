@@ -280,6 +280,34 @@ export default function WorkspaceChatPage() {
   const sessionLastReadRef = useRef(null);
   const initialScrollDoneRef = useRef(false);
 
+  // Auto-scroll chat list to bottom on messages load/change & activeChat switch
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages, activeChat?.id]);
+
+  // Mention detection logic
+  useEffect(() => {
+    if (!messages || messages.length === 0 || !currentUser) return;
+    const mentionMsg = [...messages].reverse().find(
+      (m) =>
+        m.text &&
+        m.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`) &&
+        m.username !== currentUser
+    );
+    if (mentionMsg) {
+      setLatestMentionId(mentionMsg.id);
+    }
+  }, [messages, currentUser]);
+
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const isBottom = scrollHeight - scrollTop - clientHeight < 120;
+    setShowScrollBottom(!isBottom);
+  };
+
   const wrapperRef = useRef(null);
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [taskDetailWidth, setTaskDetailWidth] = useState(480);
@@ -473,7 +501,7 @@ export default function WorkspaceChatPage() {
   return (
     <div
       ref={wrapperRef}
-      className="flex-1 flex flex-col md:flex-row h-[calc(100vh-1.5rem)] max-h-[calc(100vh-1.5rem)] bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-3 relative"
+      className="flex-1 flex flex-col md:flex-row h-full max-h-full min-h-0 bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-3 relative"
     >
       {/* Sidebar Channels & DMs */}
       <ChatSidebar
@@ -530,7 +558,7 @@ export default function WorkspaceChatPage() {
       )}
 
       {/* Main Chat Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#FAFAFA] dark:bg-[#121B2D] border-l border-neutral-200/60 dark:border-neutral-800/60">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 h-full bg-[#FAFAFA] dark:bg-[#121B2D] border-l border-neutral-200/60 dark:border-neutral-800/60 relative overflow-hidden">
         <ChatHeader
           activeChat={activeChat}
           isDesktopSidebarOpen={isDesktopSidebarOpen}
@@ -550,7 +578,7 @@ export default function WorkspaceChatPage() {
         />
 
         {/* Message List */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
+        <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3 relative">
           <ChatMessageList
             messages={messages}
             isLoadingMessages={isLoadingMessages}
@@ -567,6 +595,47 @@ export default function WorkspaceChatPage() {
             firstUnreadId={firstUnreadId}
             messagesEndRef={messagesEndRef}
           />
+        </div>
+
+        {/* Floating Jump to Bottom & Mention Action Buttons */}
+        <div className="absolute right-6 bottom-24 z-30 flex flex-col gap-2 pointer-events-auto">
+          {latestMentionId && !dismissedMentions.has(latestMentionId) && (
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById(`msg-${latestMentionId}`);
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (scrollContainerRef.current) {
+                  scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                setDismissedMentions((prev) => new Set(prev).add(latestMentionId));
+              }}
+              className="bg-[#FACC15] text-[#111E38] font-black text-xs px-3.5 py-2 rounded-full shadow-xl flex items-center gap-1.5 hover:scale-105 transition-all cursor-pointer border border-[#EAB308]"
+            >
+              <span className="font-black text-sm">@</span>
+              <span>{tMsg('Mentioned you', 'Kamu di-mention')}</span>
+            </button>
+          )}
+          {showScrollBottom && (
+            <button
+              type="button"
+              onClick={() => {
+                if (scrollContainerRef.current) {
+                  scrollContainerRef.current.scrollTo({
+                    top: scrollContainerRef.current.scrollHeight,
+                    behavior: 'smooth',
+                  });
+                }
+              }}
+              className="bg-[#111E38] dark:bg-white text-white dark:text-[#111E38] p-3 rounded-full shadow-2xl hover:scale-110 transition-all cursor-pointer border border-neutral-700/50 flex items-center justify-center self-end"
+              title={tMsg('Jump to bottom', 'Ke pesan terbaru')}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7-7-7" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Input Area (Always Visible for Active Chat) */}
