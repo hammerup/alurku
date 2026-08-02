@@ -57,31 +57,38 @@ export default function AssignedCommentsPage() {
 
       if (isAssignee || hasNotification) {
         const taskNotifs = taskNotificationMap[task.id] || [];
-        const hasMention = taskNotifs.some(n =>
+        
+        // Filter out system notifications
+        const realNotifs = taskNotifs.filter(n => {
+          let sender = 'System';
+          if (n.message?.includes(':')) {
+            sender = n.message.split(':')[0].trim();
+          }
+          return sender.toLowerCase() !== 'system';
+        });
+
+        const hasMention = realNotifs.some(n =>
           (n.message || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`)
         );
 
-        const unreadCount = taskNotifs.filter(n => !n.is_read).length;
+        const unreadCount = realNotifs.filter(n => !n.is_read).length;
 
-        const lastNotif = taskNotifs[0];
-        if (!lastNotif) return;
-
-        let sender = 'System';
-        let cleanText = lastNotif.message || '';
-        if (lastNotif.message?.includes(':')) {
-          const parts = lastNotif.message.split(':');
-          sender = parts[0].trim();
-          cleanText = parts.slice(1).join(':').trim();
+        const lastNotif = realNotifs[0];
+        let lastComment = null;
+        if (lastNotif) {
+          let sender = 'System';
+          let cleanText = lastNotif.message || '';
+          if (lastNotif.message?.includes(':')) {
+            const parts = lastNotif.message.split(':');
+            sender = parts[0].trim();
+            cleanText = parts.slice(1).join(':').trim();
+          }
+          lastComment = {
+            username: sender,
+            text: cleanText,
+            timestamp: lastNotif.timestamp,
+          };
         }
-
-        // Exclude system messages
-        if (sender.toLowerCase() === 'system') return;
-
-        const lastComment = {
-          username: sender,
-          text: cleanText,
-          timestamp: lastNotif.timestamp,
-        };
 
         result.push({
           taskId: task.id,
