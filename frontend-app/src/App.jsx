@@ -1440,7 +1440,7 @@ function App() {
         <div className={`flex-1 flex flex-col min-w-0 relative transition-all duration-300 ${
           isProjectChatOpen ? 'lg:pr-100 xl:pr-112.5' : ''
         } ${
-          selectedBoard && viewMode === 'kanban' ? 'overflow-hidden' : ''
+          (selectedBoard && viewMode === 'kanban') || (typeof currentPath === 'string' && currentPath.endsWith('/chat')) ? 'h-screen overflow-hidden' : ''
         }`}>
           {viewMode === 'search-results' ? (
             <SearchResults

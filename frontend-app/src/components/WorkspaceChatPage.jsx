@@ -442,7 +442,7 @@ export default function WorkspaceChatPage() {
   return (
     <div
       ref={wrapperRef}
-      className="flex-1 flex flex-col md:flex-row h-[calc(100vh-5rem)] bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-4 relative"
+      className="flex-1 flex flex-col md:flex-row h-[calc(100vh-1.5rem)] max-h-[calc(100vh-1.5rem)] bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-3 relative"
     >
       {/* Sidebar Channels & DMs */}
       <ChatSidebar
