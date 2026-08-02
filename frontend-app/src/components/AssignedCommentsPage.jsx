@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
 
 export default function AssignedCommentsPage() {
   const context = useAppContext();
   const {
     tasks = [],
-    comments = {},
+    comments = [],
     currentUser = '',
     avatarsMap = {},
     setSelectedTask,
@@ -14,6 +14,8 @@ export default function AssignedCommentsPage() {
     navigateTo,
     formatDateMMM = (d) => (d ? new Date(d).toLocaleDateString() : ''),
     language = 'id',
+    notifications = [],
+    fetchComments,
   } = context || {};
 
   const tMsg = context?.tMsg || ((en, id) => (language === 'id' ? id : en));
@@ -27,34 +29,48 @@ export default function AssignedCommentsPage() {
   const commentThreads = useMemo(() => {
     if (!Array.isArray(tasks) || tasks.length === 0) return [];
 
+    const notifiedTaskIds = new Set();
+    const taskNotificationMap = {};
+
+    (notifications || []).forEach((n) => {
+      if (n.related_task_id) {
+        const tid = Number(n.related_task_id);
+        notifiedTaskIds.add(tid);
+        if (!taskNotificationMap[tid]) {
+          taskNotificationMap[tid] = [];
+        }
+        taskNotificationMap[tid].push(n);
+      }
+    });
+
     const result = [];
     tasks.forEach((task) => {
-      const rawComments = (comments && comments[task.id]) || task.comments;
-      const taskComments = Array.isArray(rawComments) ? rawComments : [];
-      if (taskComments.length === 0) return;
-
-      // Check if user is mentioned (@currentUser) or involved
-      const hasMention = taskComments.some((c) =>
-        c && typeof c === 'object' &&
-        ((c.text || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`) ||
-         (c.text || '').toLowerCase().includes('@all') ||
-         (c.text || '').toLowerCase().includes('@team'))
-      );
-
-      const rawAssignees = Array.isArray(task.assignees) ? task.assignees : [];
-      const isAssignee = rawAssignees.some(
+      const isAssignee = (task.assignees || []).some(
         (a) => (typeof a === 'string' ? a : a?.username || a?.name) === currentUser
       );
 
-      if (hasMention || isAssignee || taskComments.length > 0) {
-        const lastComment = taskComments[taskComments.length - 1];
-        const unreadCount = taskComments.filter((c) => c && !c.is_read && c.username !== currentUser).length;
+      const hasNotification = notifiedTaskIds.has(task.id);
+
+      if (isAssignee || hasNotification) {
+        const taskNotifs = taskNotificationMap[task.id] || [];
+        const hasMention = taskNotifs.some(n =>
+          ['comment', 'mention', 'mention_no_email'].includes(n.type) &&
+          (n.message || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`)
+        );
+
+        const unreadCount = taskNotifs.filter(n => !n.is_read).length;
+
+        const lastNotif = taskNotifs[0];
+        const lastComment = lastNotif ? {
+          username: lastNotif.message?.includes(':') ? lastNotif.message.split(':')[0].trim() : 'System',
+          text: lastNotif.message || '',
+          timestamp: lastNotif.timestamp,
+        } : null;
 
         result.push({
           taskId: task.id,
           taskTitle: task.title,
           projectName: task.project_name || 'General',
-          taskComments,
           lastComment,
           hasMention,
           unreadCount,
@@ -63,9 +79,8 @@ export default function AssignedCommentsPage() {
       }
     });
 
-    // Sort by latest comment timestamp descending
     return result.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-  }, [tasks, comments, currentUser]);
+  }, [tasks, notifications, currentUser]);
 
   // Filtered threads based on tab & search
   const filteredThreads = useMemo(() => {
@@ -77,9 +92,7 @@ export default function AssignedCommentsPage() {
         const q = searchQuery.toLowerCase();
         const matchesTitle = thread.taskTitle.toLowerCase().includes(q);
         const matchesProject = thread.projectName.toLowerCase().includes(q);
-        const matchesComment = thread.taskComments.some((c) =>
-          (c.text || '').toLowerCase().includes(q)
-        );
+        const matchesComment = thread.lastComment?.text?.toLowerCase().includes(q);
         return matchesTitle || matchesProject || matchesComment;
       }
       return true;
@@ -95,6 +108,20 @@ export default function AssignedCommentsPage() {
     return filteredThreads[0] || null;
   }, [selectedTaskCommentId, commentThreads, filteredThreads]);
 
+  // Sync selected task ID
+  useEffect(() => {
+    if (activeThread && activeThread.taskId !== selectedTaskCommentId) {
+      setSelectedTaskCommentId(activeThread.taskId);
+    }
+  }, [activeThread, selectedTaskCommentId]);
+
+  // Fetch comments for active task
+  useEffect(() => {
+    if (selectedTaskCommentId && fetchComments) {
+      fetchComments(selectedTaskCommentId);
+    }
+  }, [selectedTaskCommentId, fetchComments]);
+
   const handleSendReply = async (e) => {
     e?.preventDefault();
     if (!newReplyText.trim() || !activeThread) return;
@@ -104,6 +131,9 @@ export default function AssignedCommentsPage() {
 
     if (handleAddComment) {
       await handleAddComment(activeThread.taskId, textToSend);
+      if (fetchComments) {
+        setTimeout(() => fetchComments(activeThread.taskId), 300);
+      }
     }
   };
 
@@ -251,10 +281,9 @@ export default function AssignedCommentsPage() {
 
                     <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-800/40">
                       <span className="text-[10px] font-bold text-neutral-400 flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
-                        {thread.taskComments.length} {tMsg('comments', 'komentar')}
                       </span>
                       {thread.hasMention && (
                         <span className="bg-[#FACC15] text-[#111E38] text-[9px] px-1.5 py-0.5 rounded-full font-black shadow-2xs">
@@ -280,9 +309,6 @@ export default function AssignedCommentsPage() {
                     <span className="text-xs font-black uppercase tracking-wider text-[#FACC15] bg-[#111E38] px-2.5 py-0.5 rounded-md">
                       {activeThread.projectName}
                     </span>
-                    <span className="text-xs text-neutral-400 font-medium">
-                      {activeThread.taskComments.length} {tMsg('messages', 'pesan')}
-                    </span>
                   </div>
                   <h2 className="text-base font-black text-[#111E38] dark:text-white">
                     {activeThread.taskTitle}
@@ -302,41 +328,47 @@ export default function AssignedCommentsPage() {
 
               {/* Conversation Messages Feed */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scrollbar bg-neutral-50/30 dark:bg-neutral-900/20">
-                {activeThread.taskComments.map((c, idx) => {
-                  const isMe = c.username === currentUser;
-                  const formattedText = (c.text || '')
-                    .replace(/<!--TASK_ID:\d+-->/g, '')
-                    .replace(/Smart Assistant 🤖/g, 'Luruka')
-                    .replace(/Smart Assistant/g, 'Luruka')
-                    .replace(/🤖/g, '');
+                {Array.isArray(comments) && comments.length > 0 ? (
+                  comments.map((c, idx) => {
+                    const isMe = c.username === currentUser;
+                    const formattedText = (c.text || '')
+                      .replace(/<!--TASK_ID:\d+-->/g, '')
+                      .replace(/Smart Assistant 🤖/g, 'Luruka')
+                      .replace(/Smart Assistant/g, 'Luruka')
+                      .replace(/🤖/g, '');
 
-                  return (
-                    <div
-                      key={c.id || idx}
-                      className={`flex gap-3 items-start ${isMe ? 'flex-row-reverse' : ''}`}
-                    >
-                      <div className="w-8 h-8 rounded-xl bg-[#111E38] text-[#FACC15] font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
-                        {c.username?.[0]?.toUpperCase() || 'U'}
-                      </div>
-
+                    return (
                       <div
-                        className={`max-w-[80%] p-3.5 rounded-2xl text-xs space-y-1 ${
-                          isMe
-                            ? 'bg-[#111E38] text-white dark:bg-[#121B2D] dark:border dark:border-neutral-700/80 rounded-tr-xs'
-                            : 'bg-white dark:bg-neutral-800 text-[#111E38] dark:text-white border border-neutral-200/80 dark:border-neutral-700/80 rounded-tl-xs shadow-xs'
-                        }`}
+                        key={c.id || idx}
+                        className={`flex gap-3 items-start ${isMe ? 'flex-row-reverse' : ''}`}
                       >
-                        <div className="flex items-center justify-between gap-3 text-[10px] opacity-75 border-b border-white/10 dark:border-neutral-700/60 pb-1 mb-1">
-                          <span className="font-bold">@{c.username || 'User'}</span>
-                          <span>{formatDateMMM(c.timestamp)}</span>
+                        <div className="w-8 h-8 rounded-xl bg-[#111E38] text-[#FACC15] font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          {c.username?.[0]?.toUpperCase() || 'U'}
                         </div>
-                        <p className="leading-relaxed font-medium whitespace-pre-wrap">
-                          {formattedText}
-                        </p>
+
+                        <div
+                          className={`max-w-[80%] p-3.5 rounded-2xl text-xs space-y-1 ${
+                            isMe
+                              ? 'bg-[#111E38] text-white dark:bg-[#121B2D] dark:border dark:border-neutral-700/80 rounded-tr-xs'
+                              : 'bg-white dark:bg-neutral-800 text-[#111E38] dark:text-white border border-neutral-200/80 dark:border-neutral-700/80 rounded-tl-xs shadow-xs'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3 text-[10px] opacity-75 border-b border-white/10 dark:border-neutral-700/60 pb-1 mb-1">
+                            <span className="font-bold">@{c.username || 'User'}</span>
+                            <span>{formatDateMMM(c.timestamp)}</span>
+                          </div>
+                          <p className="leading-relaxed font-medium whitespace-pre-wrap">
+                            {formattedText}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-neutral-400">
+                    {tMsg('No comments on this task yet.', 'Belum ada komentar pada tugas ini.')}
+                  </div>
+                )}
               </div>
 
               {/* Bottom Interactive Reply Input Box */}

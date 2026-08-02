@@ -457,6 +457,41 @@ export default function WorkspaceChatPage() {
       finalComment = `> **@${replyingTo.username}**: ${truncated}\n${finalComment}`;
     }
 
+    const lowerComment = newMessage.toLowerCase();
+    const isPrivateAI = lowerComment.includes('@ai (private)') || lowerComment.includes('🕵️') || lowerComment.includes('@ai (privat)');
+
+    if (activeChat.type === 'task' && (lowerComment.includes('@smart assistant') || lowerComment.includes('@ai') || lowerComment.includes('@luruka'))) {
+      if (handleAskAITaskChat && !isAiReplying) {
+        // Optimistic UI for immediate feedback
+        const tempId = Date.now();
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: tempId,
+            username: currentUser,
+            text: finalComment,
+            timestamp: new Date().toISOString(),
+            reactions: {},
+            isPrivate: isPrivateAI,
+            privateUser: currentUser,
+          },
+        ]);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+        handleAskAITaskChat(
+          activeChat.id,
+          finalComment,
+          newMessage.trim(),
+          () => {
+            setNewMessage('');
+            setReplyingTo(null);
+          },
+          isPrivateAI
+        );
+        return;
+      }
+    }
+
     let endpoint = '';
     let body = { text: finalComment, comment: finalComment };
     if (activeChat.type === 'project') {
@@ -595,6 +630,7 @@ export default function WorkspaceChatPage() {
             tMsg={tMsg}
             firstUnreadId={firstUnreadId}
             messagesEndRef={messagesEndRef}
+            isAiReplying={isAiReplying}
           />
         </div>
 
