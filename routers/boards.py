@@ -1191,6 +1191,7 @@ def transfer_board_to_member(
 
 
 @router.get("/api/boards/{board_id}/chat")
+@router.get("/api/boards/{board_id}/comments")
 def get_board_chat(
     board_id: int,
     offset: int = 0,
@@ -1223,10 +1224,11 @@ def get_board_chat(
                     "reactions": rx,
                 }
             )
-    return {"messages": res}
+    return {"messages": res, "comments": res}
 
 
 @router.post("/api/boards/{board_id}/chat")
+@router.post("/api/boards/{board_id}/comments")
 def add_board_chat(
     board_id: int,
     payload: CommentModel,

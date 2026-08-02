@@ -362,31 +362,22 @@ export default function WorkspaceChatPage() {
     let endpoint = '';
     let params = {};
     if (activeChat.type === 'project') {
-      endpoint = `/api/boards/${activeChat.id}/comments`;
+      endpoint = `/api/boards/${activeChat.id}/chat`;
     } else if (activeChat.type === 'task') {
       endpoint = `/api/tasks/${activeChat.id}/comments`;
     } else if (activeChat.type === 'dm') {
-      endpoint = `/api/dm/messages/${activeChat.partner}`;
-    }
-
-    if (isLoadMore && messages.length > 0) {
-      params.before_id = messages[0].id;
+      endpoint = `/api/dm/${activeChat.partner}`;
     }
 
     axios
       .get(endpoint, { params })
       .then((res) => {
-        const fetched = res.data.comments || res.data.messages || res.data || [];
-        if (isLoadMore) {
-          setMessages((prev) => [...fetched, ...prev]);
-          setHasMoreMessages(fetched.length >= 30);
-        } else {
-          setMessages(fetched);
-          setHasMoreMessages(fetched.length >= 30);
-        }
+        const msgs = res.data.messages || res.data.comments || [];
+        setMessages(msgs);
+        if (isInitial) setIsLoadingMessages(false);
       })
-      .catch((err) => console.error(err))
-      .finally(() => {
+      .catch((err) => {
+        console.error('Failed to load messages:', err);
         if (isInitial) setIsLoadingMessages(false);
       });
   };
@@ -398,7 +389,7 @@ export default function WorkspaceChatPage() {
   }, [activeChat?.id, activeChat?.type]);
 
   const sendMessage = (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (!newMessage.trim() || !activeChat || activeChat.type === 'inbox') return;
 
     let finalComment = newMessage.trim();
@@ -412,14 +403,13 @@ export default function WorkspaceChatPage() {
     }
 
     let endpoint = '';
-    let body = { comment: finalComment };
+    let body = { text: finalComment, comment: finalComment };
     if (activeChat.type === 'project') {
-      endpoint = `/api/boards/${activeChat.id}/comments`;
+      endpoint = `/api/boards/${activeChat.id}/chat`;
     } else if (activeChat.type === 'task') {
       endpoint = `/api/tasks/${activeChat.id}/comments`;
     } else if (activeChat.type === 'dm') {
-      endpoint = `/api/dm/send`;
-      body = { receiver: activeChat.partner, message: finalComment };
+      endpoint = `/api/dm/${activeChat.partner}`;
     }
 
     axios
