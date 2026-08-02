@@ -492,24 +492,16 @@ export default function HeaderNavigation({
           </svg>
         </button>
 
-        {/* Direct Notification Bell Button with Page Navigation */}
+        {/* Direct Notification Bell Button with Modal Dropdown & Page Navigation */}
         <div className="relative">
           <button
-            onClick={() => {
-              if (setIsNotifOpen) setIsNotifOpen(false);
-              if (navigateTo) {
-                navigateTo('/inbox');
-              } else if (typeof window !== 'undefined') {
-                window.history.pushState({}, '', '/inbox');
-                window.dispatchEvent(new Event('popstate'));
-              }
-            }}
+            onClick={() => setIsNotifOpen(!isNotifOpen)}
             className={`relative p-2 rounded-xl transition-all border flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
               isDarkMode
                 ? 'border-neutral-800 text-neutral-300 bg-neutral-900/60'
                 : 'border-neutral-200 text-slate-700 bg-white'
             }`}
-            title={tMsg('Inbox & Notifications', 'Kotak Masuk & Notifikasi')}
+            title={tMsg('Notifications', 'Notifikasi')}
           >
             <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -525,21 +517,39 @@ export default function HeaderNavigation({
               {/* Invisible overlay to close on click outside */}
               <div className="fixed inset-0 z-40" onClick={() => setIsNotifOpen(false)}></div>
               <div 
-                className="absolute right-0 mt-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl z-50 flex flex-col max-h-112.5 overflow-hidden animate-fadeIn"
-                style={{ width: '320px' }}
+                className="absolute right-0 mt-3 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl z-50 flex flex-col max-h-128 overflow-hidden animate-fadeIn w-80 sm:w-96"
               >
-                <div className="p-3.5 border-b border-neutral-100 dark:border-neutral-800 flex justify-between items-center bg-white dark:bg-neutral-900">
-                  <h3 className="font-bold text-sm text-black dark:text-white">
-                    {tMsg('Notifications', 'Notifikasi')}
+                <div className="p-3.5 border-b border-neutral-100 dark:border-neutral-800/80 flex justify-between items-center bg-white/50 dark:bg-neutral-900/50">
+                  <h3 className="font-black text-sm text-[#111E38] dark:text-white flex items-center gap-1.5">
+                    <span>{tMsg('Notifications', 'Notifikasi')}</span>
+                    {unreadCount > 0 && (
+                      <span className="bg-[#FACC15] text-[#111E38] text-[9px] px-1.5 py-0.5 rounded-full font-black">
+                        {unreadCount}
+                      </span>
+                    )}
                   </h3>
-                  {unreadCount > 0 && (
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleReadAllNotifications}
+                        className="text-xs text-indigo-500 font-bold hover:underline"
+                      >
+                        {tMsg('Mark read', 'Tandai dibaca')}
+                      </button>
+                    )}
                     <button
-                      onClick={handleReadAllNotifications}
-                      className="text-xs text-indigo-500 font-bold hover:underline"
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        if (navigateTo) navigateTo('/inbox');
+                      }}
+                      className="text-xs text-[#111E38] dark:text-[#FACC15] font-black hover:underline flex items-center gap-1"
                     >
-                      {tMsg('Mark all read', 'Tandai semua dibaca')}
+                      <span>{tMsg('Open Inbox', 'Buka Inbox')}</span>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
                     </button>
-                  )}
+                  </div>
                 </div>
                 <div className="overflow-y-auto flex-1 max-h-80">
                   {notifications.length === 0 ? (
@@ -599,6 +609,20 @@ export default function HeaderNavigation({
                       </div>
                     ))
                   )}
+                </div>
+                <div className="p-3 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/80 dark:bg-neutral-900/90 text-center">
+                  <button
+                    onClick={() => {
+                      setIsNotifOpen(false);
+                      if (navigateTo) navigateTo('/inbox');
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] font-bold text-xs shadow-xs hover:opacity-90 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>{tMsg('Go to Full Inbox Page', 'Buka Halaman Inbox Penuh')}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </>
