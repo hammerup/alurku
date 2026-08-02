@@ -550,7 +550,7 @@ export default function WorkspaceChatPage() {
           title={tMsg('Drag to resize sidebar', 'Geser untuk mengubah ukuran sidebar')}
         >
           <div
-            className={`w-[2px] h-8 rounded-full transition-colors ${
+            className={`w-0.5 h-8 rounded-full transition-colors ${
               isResizingLeft ? 'bg-[#111E38]' : 'bg-neutral-300 dark:bg-neutral-700 group-hover:bg-[#111E38]'
             }`}
           />
@@ -675,7 +675,7 @@ export default function WorkspaceChatPage() {
             title={tMsg('Drag to resize Task Details', 'Geser untuk mengubah ukuran Detail Tugas')}
           >
             <div
-              className={`w-[2px] h-8 rounded-full transition-colors ${
+              className={`w-0.5 h-8 rounded-full transition-colors ${
                 isResizingRight ? 'bg-[#111E38]' : 'bg-neutral-300 dark:bg-neutral-700 group-hover:bg-[#111E38]'
               }`}
             />

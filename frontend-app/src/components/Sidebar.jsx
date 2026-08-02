@@ -461,7 +461,7 @@ export default function Sidebar() {
         }`}
       >
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
         )}
         <div className="flex items-center gap-1.5 min-w-0">
           <span
@@ -1132,7 +1132,7 @@ export default function Sidebar() {
                   }`}
                 >
                   {selectedBoard?.id === 'global' && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
                   )}
                   <span className="material-symbols-outlined text-[18px]">layers</span>
                   <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>

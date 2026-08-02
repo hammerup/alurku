@@ -153,7 +153,7 @@ export default function SmartAssistantChat({
                 const s = chatSessions.find((sess) => sess.id === e.target.value);
                 if (s && loadSession) loadSession(s);
               }}
-              className="max-w-[160px] text-[11px] font-bold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 truncate focus:outline-none cursor-pointer"
+              className="max-w-40 text-[11px] font-bold text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 truncate focus:outline-none cursor-pointer"
             >
               {!activeSessionId && <option value="">{tMsg('Current Chat', 'Sesi Aktif')}</option>}
               {chatSessions.map((s) => (

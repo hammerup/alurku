@@ -105,7 +105,7 @@ export default function ChatInputArea({
                 }
               }}
               disabled={accountStatus === 'suspended' || isAiReplying}
-              className="bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 w-10 sm:w-12 h-[44px] rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 shrink-0 font-bold"
+              className="bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 w-10 sm:w-12 h-11 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 shrink-0 font-bold"
               title={tMsg ? tMsg('Ask AI (Team)', 'Tanya AI (Tim)') : 'Ask AI (Team)'}
             >
               ✨
@@ -161,7 +161,7 @@ export default function ChatInputArea({
                 }
               }}
               disabled={accountStatus === 'suspended' || isAiReplying}
-              className="bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-slate-400 w-10 sm:w-12 h-[44px] rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 shrink-0 font-bold"
+              className="bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-slate-400 w-10 sm:w-12 h-11 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 shrink-0 font-bold"
               title={tMsg ? tMsg('Ask AI (Private)', 'Tanya AI (Privat)') : 'Ask AI (Private)'}
             >
               🕵️
@@ -173,7 +173,7 @@ export default function ChatInputArea({
           onChange={handleInputChange || ((e) => setNewMessage && setNewMessage(e.target.value))}
           disabled={accountStatus === 'suspended'}
           placeholder={activeChat?.type === 'dm' ? 'Type a message...' : 'Write a comment... (@AI to ask)'}
-          className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-[#111E38] dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-[120px]"
+          className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-[#111E38] dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-30"
           style={{ minHeight: '44px' }}
           rows="1"
           onInput={(e) => {
@@ -207,7 +207,7 @@ export default function ChatInputArea({
           }}
         />
         {isMentioning && accountStatus !== 'suspended' && activeChat?.type !== 'dm' && (
-          <div className="absolute left-0 bottom-full mb-2 w-full min-w-[200px] bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2">
+          <div className="absolute left-0 bottom-full mb-2 w-full min-w-50 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl z-50 max-h-40 overflow-y-auto py-2">
             {(() => {
               const memberNames = (activeBoardMembers && activeBoardMembers.length > 0)
                 ? activeBoardMembers.map(m => typeof m === 'string' ? m : m.username)
@@ -236,7 +236,7 @@ export default function ChatInputArea({
         <button
           type="submit"
           disabled={accountStatus === 'suspended' || !newMessage.trim()}
-          className="bg-[#FACC15] text-[#111E38] hover:bg-amber-400 w-12 h-[44px] rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 shrink-0 font-bold shadow-xs"
+          className="bg-[#FACC15] text-[#111E38] hover:bg-amber-400 w-12 h-11 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 shrink-0 font-bold shadow-xs"
         >
           <span className="material-symbols-outlined text-lg">send</span>
         </button>

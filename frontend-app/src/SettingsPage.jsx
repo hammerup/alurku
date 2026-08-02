@@ -1091,7 +1091,7 @@ export default function SettingsPage({
                 )}
               >
                 {/* Subscription Tier Banner */}
-                <div className="bg-gradient-to-r from-[#111E38] to-slate-900 text-white p-6 rounded-2xl mb-8 border border-neutral-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md">
+                <div className="bg-linear-to-r from-[#111E38] to-slate-900 text-white p-6 rounded-2xl mb-8 border border-neutral-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md">
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FACC15] block mb-1">
                       {tMsg('Current Active Plan', 'Paket Aktif Saat Ini')}
