@@ -67,6 +67,7 @@ export default function HeaderNavigation({
     setIsSupportOpen,
     startTour,
     isInstallable,
+    navigateTo,
     handleInstallClick,
     setIsLogoutConfirmOpen,
     unreadCount,
@@ -496,10 +497,12 @@ export default function HeaderNavigation({
           <button
             onClick={() => {
               if (setIsNotifOpen) setIsNotifOpen(false);
-              if (typeof window !== 'undefined') {
+              if (navigateTo) {
+                navigateTo('/inbox');
+              } else if (typeof window !== 'undefined') {
                 window.history.pushState({}, '', '/inbox');
+                window.dispatchEvent(new Event('popstate'));
               }
-              if (setCurrentPath) setCurrentPath('/inbox');
             }}
             className={`relative p-2 rounded-xl transition-all border flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
               isDarkMode

@@ -5,6 +5,7 @@ import { HighlightText } from '../Utils';
 
 export default function Sidebar() {
   const {
+    navigateTo,
     currentPath,
     setCurrentPath,
     currentUser,
@@ -945,10 +946,12 @@ export default function Sidebar() {
                   {/* Inbox & Notifications */}
                   <button
                     onClick={() => {
-                      if (typeof window !== 'undefined') {
+                      if (navigateTo) {
+                        navigateTo('/inbox');
+                      } else if (typeof window !== 'undefined') {
                         window.history.pushState({}, '', '/inbox');
+                        window.dispatchEvent(new Event('popstate'));
                       }
-                      if (setCurrentPath) setCurrentPath('/inbox');
                       if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }}
                     className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all text-xs ${

@@ -4742,7 +4742,15 @@ export default function useAppLogic() {
     return memberDetailedStats;
   }, [tasks, userDirectory]);
 
+  const navigateTo = useCallback((path) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', path);
+      window.dispatchEvent(new Event('popstate'));
+    }
+  }, []);
+
   return {
+    navigateTo,
     workspaces,
     activeWorkspace,
     fetchWorkspaces,
