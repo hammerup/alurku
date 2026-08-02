@@ -140,9 +140,9 @@ export default function ChatMessage({
   return (
     <React.Fragment>
       {showDivider && (
-        <div className="flex justify-center my-2 relative">
-          <div className="absolute top-1/2 left-0 w-full h-px bg-neutral-200 dark:bg-neutral-800 z-0"></div>
-          <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-500 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest z-10 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+        <div className="flex justify-center my-3 relative">
+          <div className="absolute top-1/2 left-0 w-full h-px bg-neutral-200/70 dark:bg-neutral-800/70 z-0"></div>
+          <span className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md text-neutral-600 dark:text-neutral-300 px-3.5 py-1 rounded-full text-[9px] font-extrabold tracking-widest z-10 border border-neutral-200/60 dark:border-neutral-800/60 shadow-2xs">
             {dividerDisplay}
           </span>
         </div>
@@ -150,16 +150,16 @@ export default function ChatMessage({
       {isFirstUnread && (
         <div className="flex justify-center my-4 relative chat-animate">
           <div className="absolute top-1/2 left-0 w-full h-px bg-red-200 dark:bg-red-800/50 z-0"></div>
-          <span className="bg-red-50 dark:bg-red-900/30 text-red-500 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest z-10 border border-red-200 dark:border-red-800/50 shadow-sm">
+          <span className="bg-red-50/90 dark:bg-red-900/40 backdrop-blur-md text-red-500 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest z-10 border border-red-200 dark:border-red-800/50 shadow-sm">
             {tMsg ? tMsg('Unread Messages', 'Pesan Belum Dibaca') : 'Unread Messages'}
           </span>
         </div>
       )}
       <div
         id={`${idPrefix}${c.id}`}
-        className={`flex gap-3 w-full p-1.5 -mx-1.5 transition-all duration-500 ${
+        className={`flex gap-3 w-full p-2 -mx-1.5 rounded-2xl transition-all duration-700 ${
           isMe ? 'flex-row-reverse' : 'flex-row'
-        } chat-animate scroll-mt-20 group/bubble`}
+        } chat-animate scroll-mt-20 group/bubble target:bg-[#FACC15]/25 dark:target:bg-[#FACC15]/20 target:border-l-4 target:border-[#FACC15] target:pl-3 target:shadow-md`}
       >
         <Avatar name={displayUsername} url={avatarsMap[c.username]} size="w-8 h-8 shrink-0" textClass="text-[10px]" />
         <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} min-w-0 max-w-[92%]`}>

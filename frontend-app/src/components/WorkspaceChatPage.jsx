@@ -575,6 +575,7 @@ export default function WorkspaceChatPage() {
           activeTaskPreview={activeTaskPreview}
           setActiveTaskPreview={setActiveTaskPreview}
           handleOpenTaskPreview={handleOpenTaskPreview}
+          onlineUsers={onlineUsers}
         />
 
         {/* Message List */}

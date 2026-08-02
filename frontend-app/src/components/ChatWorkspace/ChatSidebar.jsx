@@ -386,7 +386,7 @@ export default function ChatSidebar({
                             <span>General Chat</span>
                           </span>
                           {unreadProj > 0 && (
-                            <span className="bg-[#111E38] text-[#FACC15] text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 ml-2">
+                            <span className="bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] text-[9px] px-1.5 py-0.5 rounded-md font-black shrink-0 ml-2 shadow-[0_0_8px_rgba(250,204,21,0.6)] animate-pulse">
                               {unreadProj}
                             </span>
                           )}
@@ -423,7 +423,7 @@ export default function ChatSidebar({
                             <span>{t.project_name}</span>
                           </span>
                           {unreadTask > 0 && (
-                            <span className="bg-[#111E38] text-[#FACC15] text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 ml-2">
+                            <span className="bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] text-[9px] px-1.5 py-0.5 rounded-md font-black shrink-0 ml-2 shadow-[0_0_8px_rgba(250,204,21,0.6)] animate-pulse">
                               {unreadTask}
                             </span>
                           )}
@@ -507,13 +507,13 @@ export default function ChatSidebar({
               >
                 <div className="relative shrink-0">
                   <Avatar name={dm.partner} url={avatarsMap[dm.partner]} size="w-5 h-5" />
-                  {onlineUsers?.has && onlineUsers.has(dm.partner) && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900" title="Online" />
+                  {(Array.isArray(onlineUsers) ? onlineUsers.includes(dm.partner) : (onlineUsers?.has ? onlineUsers.has(dm.partner) : false)) && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-neutral-900 shadow-[0_0_6px_rgba(16,185,129,0.8)]" title="Online" />
                   )}
                 </div>
                 <span className="truncate flex-1">@{dm.partner}</span>
                 {dm.unread_count > 0 && (
-                  <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-md shadow-sm shrink-0">
+                  <span className="bg-[#FACC15] text-[#111E38] text-[9px] px-1.5 py-0.5 rounded-md font-black shrink-0 shadow-[0_0_8px_rgba(250,204,21,0.6)] animate-pulse">
                     {dm.unread_count}
                   </span>
                 )}

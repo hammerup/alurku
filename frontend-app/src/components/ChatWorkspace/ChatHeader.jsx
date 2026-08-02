@@ -18,6 +18,7 @@ export default function ChatHeader({
   activeTaskPreview,
   setActiveTaskPreview,
   handleOpenTaskPreview,
+  onlineUsers,
 }) {
   return (
     <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-6 bg-white dark:bg-neutral-950 shrink-0 z-30 shadow-sm relative">
@@ -39,7 +40,17 @@ export default function ChatHeader({
           </svg>
         </button>
         {activeChat?.type === 'dm' ? (
-          <Avatar name={activeChat?.partner} url={avatarsMap[activeChat?.partner]} size="w-8 h-8" />
+          <div className="relative shrink-0">
+            <Avatar name={activeChat?.partner} url={avatarsMap[activeChat?.partner]} size="w-8 h-8" />
+            <span
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-neutral-950 transition-colors ${
+                (onlineUsers || []).includes(activeChat?.partner)
+                  ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]'
+                  : 'bg-neutral-400 dark:bg-neutral-600'
+              }`}
+              title={(onlineUsers || []).includes(activeChat?.partner) ? 'Online' : 'Offline'}
+            />
+          </div>
         ) : activeChat?.type === 'project' ? (
           <span className="material-symbols-outlined text-indigo-500 dark:text-[#FACC15] text-2xl">folder</span>
         ) : (
