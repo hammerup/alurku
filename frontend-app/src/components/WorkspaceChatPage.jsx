@@ -133,6 +133,7 @@ export default function WorkspaceChatPage() {
 
   // Task Preview Sidebar Drawer State
   const [activeTaskPreview, setActiveTaskPreview] = useState(null);
+  const [taskPreviewComments, setTaskPreviewComments] = useState([]);
 
   const handleOpenTaskPreview = useCallback((taskId) => {
     const targetId = (taskId && String(taskId) !== 'undefined' && String(taskId) !== 'null')
@@ -141,6 +142,7 @@ export default function WorkspaceChatPage() {
 
     if (!targetId) {
       setActiveTaskPreview(null);
+      setTaskPreviewComments([]);
       return;
     }
 
@@ -161,6 +163,12 @@ export default function WorkspaceChatPage() {
           handleNotificationTaskClick(targetId);
         }
       });
+
+    axios.get(`/api/tasks/${targetId}/comments`)
+      .then((res) => {
+        setTaskPreviewComments(res.data?.comments || res.data || []);
+      })
+      .catch(console.error);
   }, [tasks, activeChat, handleNotificationTaskClick]);
 
   useEffect(() => {
@@ -644,7 +652,7 @@ export default function WorkspaceChatPage() {
               newSubtaskAssignee={newSubtaskAssignee}
               setNewSubtaskAssignee={setNewSubtaskAssignee}
               handleAddSubtask={handleAddSubtask}
-              comments={comments}
+              comments={activeChat?.type === 'task' ? messages : taskPreviewComments}
               avatarsMap={avatarsMap}
               handleDeleteComment={handleDeleteComment}
               newComment={newComment}
