@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
+import { renderChatMessageContent } from '../ChatMessage';
 
 export default function AssignedCommentsPage() {
   const context = useAppContext();
@@ -33,13 +34,16 @@ export default function AssignedCommentsPage() {
     const taskNotificationMap = {};
 
     (notifications || []).forEach((n) => {
-      if (n.related_task_id) {
-        const tid = Number(n.related_task_id);
-        notifiedTaskIds.add(tid);
-        if (!taskNotificationMap[tid]) {
-          taskNotificationMap[tid] = [];
+      // Exclude system notifications
+      if (['comment', 'mention', 'mention_no_email'].includes(n.type)) {
+        if (n.related_task_id) {
+          const tid = Number(n.related_task_id);
+          notifiedTaskIds.add(tid);
+          if (!taskNotificationMap[tid]) {
+            taskNotificationMap[tid] = [];
+          }
+          taskNotificationMap[tid].push(n);
         }
-        taskNotificationMap[tid].push(n);
       }
     });
 
@@ -54,18 +58,30 @@ export default function AssignedCommentsPage() {
       if (isAssignee || hasNotification) {
         const taskNotifs = taskNotificationMap[task.id] || [];
         const hasMention = taskNotifs.some(n =>
-          ['comment', 'mention', 'mention_no_email'].includes(n.type) &&
           (n.message || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`)
         );
 
         const unreadCount = taskNotifs.filter(n => !n.is_read).length;
 
         const lastNotif = taskNotifs[0];
-        const lastComment = lastNotif ? {
-          username: lastNotif.message?.includes(':') ? lastNotif.message.split(':')[0].trim() : 'System',
-          text: lastNotif.message || '',
+        if (!lastNotif) return;
+
+        let sender = 'System';
+        let cleanText = lastNotif.message || '';
+        if (lastNotif.message?.includes(':')) {
+          const parts = lastNotif.message.split(':');
+          sender = parts[0].trim();
+          cleanText = parts.slice(1).join(':').trim();
+        }
+
+        // Exclude system messages
+        if (sender.toLowerCase() === 'system') return;
+
+        const lastComment = {
+          username: sender,
+          text: cleanText,
           timestamp: lastNotif.timestamp,
-        } : null;
+        };
 
         result.push({
           taskId: task.id,
@@ -357,9 +373,12 @@ export default function AssignedCommentsPage() {
                             <span className="font-bold">@{c.username || 'User'}</span>
                             <span>{formatDateMMM(c.timestamp)}</span>
                           </div>
-                          <p className="leading-relaxed font-medium whitespace-pre-wrap">
-                            {formattedText}
-                          </p>
+                          
+                          {/* Rich Text & Markdown Rendering including Tables */}
+                          <div 
+                            className="leading-relaxed font-medium markdown-body"
+                            dangerouslySetInnerHTML={{ __html: renderChatMessageContent(formattedText, isMe) }}
+                          />
                         </div>
                       </div>
                     );
