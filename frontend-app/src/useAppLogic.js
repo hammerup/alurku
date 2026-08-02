@@ -6,7 +6,7 @@ import { useTask } from './hooks/useTask';
 import { useBoard } from './hooks/useBoard';
 import { useUISettings } from './hooks/useUISettings';
 import { useWebSocket } from './hooks/useWebSocket';
-import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import axios from 'axios'; 
 import { useGoogleLogin } from '@react-oauth/google';
 import { driver } from 'driver.js';
