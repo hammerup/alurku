@@ -2,18 +2,21 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
 
 export default function AssignedCommentsPage() {
+  const context = useAppContext();
   const {
-    tMsg,
-    tasks,
-    comments,
-    currentUser,
-    avatarsMap,
+    tasks = [],
+    comments = {},
+    currentUser = '',
+    avatarsMap = {},
     setSelectedTask,
     setIsTaskDetailOpen,
     handleAddComment,
     navigateTo,
-    formatDateMMM,
-  } = useAppContext();
+    formatDateMMM = (d) => (d ? new Date(d).toLocaleDateString() : ''),
+    language = 'id',
+  } = context || {};
+
+  const tMsg = context?.tMsg || ((en, id) => (language === 'id' ? id : en));
 
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'unread' | 'mentions'
   const [searchQuery, setSearchQuery] = useState('');
