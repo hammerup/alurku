@@ -95,17 +95,17 @@ export default function ChatMessageList({
                   }}
                   onReact={(emoji) => toggleWorkspaceReaction(c.id, emoji)}
                   canReply={
-                    activeChat.type !== 'dm' &&
-                    (activeChat.type === 'project' || activeChat.is_involved !== false || isSuperAdmin)
+                    activeChat?.type !== 'dm' &&
+                    (activeChat?.type === 'project' || activeChat?.is_involved !== false || isSuperAdmin)
                   }
                   canDelete={
                     (c.username === currentUser || isSuperAdmin) && accountStatus !== 'suspended'
                   }
                   canReact={
                     accountStatus !== 'suspended' &&
-                    (activeChat.type === 'dm' ||
-                      activeChat.type === 'project' ||
-                      activeChat.is_involved !== false ||
+                    (activeChat?.type === 'dm' ||
+                      activeChat?.type === 'project' ||
+                      activeChat?.is_involved !== false ||
                       isSuperAdmin)
                   }
                   idPrefix="cw-msg-"
@@ -114,7 +114,7 @@ export default function ChatMessageList({
               );
             })}
 
-            {isAiReplying && activeChat.type === 'task' && (
+            {isAiReplying && activeChat?.type === 'task' && (
               <div className="flex gap-3 w-full p-1.5 -mx-1.5 flex-row chat-animate group/bubble">
                 <Avatar name="Luruka" url="" size="w-8 h-8 shrink-0" textClass="text-[10px]" />
                 <div className="flex flex-col items-start min-w-0 max-w-[92%]">

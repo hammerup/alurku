@@ -38,19 +38,21 @@ export default function ChatHeader({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        {activeChat.type === 'dm' ? (
-          <Avatar name={activeChat.partner} url={avatarsMap[activeChat.partner]} size="w-8 h-8" />
-        ) : activeChat.type === 'project' ? (
+        {activeChat?.type === 'dm' ? (
+          <Avatar name={activeChat?.partner} url={avatarsMap[activeChat?.partner]} size="w-8 h-8" />
+        ) : activeChat?.type === 'project' ? (
           <span className="material-symbols-outlined text-indigo-500 dark:text-[#FACC15] text-2xl">folder</span>
         ) : (
           <span className="material-symbols-outlined text-amber-500 dark:text-[#FACC15] text-2xl">task</span>
         )}
         <div className="min-w-0">
           <h3 className="font-bold text-sm text-[#111E38] dark:text-white truncate">
-            {activeChat.type === 'dm' ? `@${activeChat.name}` : activeChat.name}
+            {activeChat?.type === 'dm' ? `@${activeChat?.name || ''}` : (activeChat?.name || tMsg('Select a Channel', 'Pilih Saluran'))}
           </h3>
           <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest truncate">
-            {activeChat.type === 'dm'
+            {!activeChat
+              ? tMsg('No Channel Selected', 'Belum Ada Saluran')
+              : activeChat.type === 'dm'
               ? 'Direct Message'
               : activeChat.type === 'project'
               ? 'Project Channel'
