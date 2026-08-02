@@ -152,7 +152,7 @@ export default function MobileTopBar() {
                                   : 'text-neutral-600 dark:text-neutral-400'
                               }`}
                             >
-                              {n.message?.replace(/<!--TASK_ID:\d+-->/g, '').replace(/Smart Assistant 🤖/g, 'Luruka 🤖').replace(/Smart Assistant/g, 'Luruka')}
+                              {n.message?.replace(/<!--TASK_ID:\d+-->/g, '').replace(/Smart Assistant 🤖/g, 'Luruka').replace(/Smart Assistant/g, 'Luruka').replace(/Luruka 🤖/g, 'Luruka').replace(/🤖/g, '')}
                             </p>
                             <p className="text-[10px] text-neutral-400 mt-0.5">
                               {formatDateMMM(n.timestamp)}

@@ -133,9 +133,10 @@ export default function ChatMessage({
   const isMe = c.username === currentUser;
 
   const displayUsername = (c.username || '')
-    .replace('Smart Assistant 🤖', 'Luruka')
-    .replace('Luruka 🤖', 'Luruka')
-    .replace(' 🤖', '');
+    .replace(/Smart Assistant 🤖/g, 'Luruka')
+    .replace(/Smart Assistant/g, 'Luruka')
+    .replace(/Luruka 🤖/g, 'Luruka')
+    .replace(/🤖/g, '');
 
   return (
     <React.Fragment>

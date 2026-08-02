@@ -300,8 +300,10 @@ export default function InboxPage() {
             const isUnread = !n.is_read;
             const cleanText = (n.message || '')
               .replace(/<!--TASK_ID:\d+-->/g, '')
-              .replace(/Smart Assistant 🤖/g, 'Luruka 🤖')
-              .replace(/Smart Assistant/g, 'Luruka');
+              .replace(/Smart Assistant 🤖/g, 'Luruka')
+              .replace(/Smart Assistant/g, 'Luruka')
+              .replace(/Luruka 🤖/g, 'Luruka')
+              .replace(/🤖/g, '');
 
             return (
               <div
