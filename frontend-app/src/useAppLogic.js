@@ -2712,6 +2712,23 @@ export default function useAppLogic() {
     if (selectedTask) fetchComments(selectedTask.id, true);
   };
 
+  // Real-time WebSocket listener for selected task comments & updates in TaskDetailModal
+  useEffect(() => {
+    if (!lastWsMessage || !selectedTask) return;
+
+    if (lastWsMessage.type === 'chat_message') {
+      if (lastWsMessage.chat_type === 'task' && String(lastWsMessage.target_id) === String(selectedTask.id)) {
+        fetchComments(selectedTask.id);
+      }
+    } else if (lastWsMessage.type === 'task_update') {
+      if (String(lastWsMessage.task_id) === String(selectedTask.id)) {
+        fetchSubtasks(selectedTask.id);
+        fetchComments(selectedTask.id);
+        fetchTasks();
+      }
+    }
+  }, [lastWsMessage, selectedTask?.id]);
+
   const handleCommentChange = (value) => {
     setNewComment(value);
     const match = value.match(/(?:^|\s)@([\w.-]*)$/);
@@ -5031,6 +5048,7 @@ export default function useAppLogic() {
     closeGlobalSearch,
     handleQuickLinkAdd,
     handleQuickLinkRemove,
+    fetchComments,
     handleStartMeet,
     handleChatScroll,
     filteredTasks,
