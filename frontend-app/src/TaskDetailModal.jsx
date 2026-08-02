@@ -367,10 +367,12 @@ export default function TaskDetailModal({
   const isSubtaskAssignee = subtasks && subtasks.some((st) => st.assignee && currentUser && st.assignee.toLowerCase() === currentUser.toLowerCase());
   const isInvolved =
     !isPreviewMode &&
-    (isTaskAdmin ||
+    (isSuperAdmin ||
+      isTaskAdmin ||
       isSubtaskAssignee ||
+      (selectedTask && selectedTask.is_involved !== false) ||
       (isSystemTicket &&
-        selectedTask.requester &&
+        selectedTask?.requester &&
         currentUser &&
         selectedTask.requester.toLowerCase() === currentUser.toLowerCase()));
 

@@ -548,6 +548,7 @@ export default function WorkspaceChatPage() {
           boards={boards}
           newMessage={newMessage}
           setNewMessage={setNewMessage}
+          handleInputChange={(e) => setNewMessage(e.target.value)}
           sendMessage={sendMessage}
           replyingTo={replyingTo}
           setReplyingTo={setReplyingTo}

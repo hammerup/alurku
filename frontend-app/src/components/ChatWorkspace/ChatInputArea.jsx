@@ -158,7 +158,7 @@ export default function ChatInputArea({
         )}
         <textarea
           value={newMessage}
-          onChange={handleInputChange}
+          onChange={handleInputChange || ((e) => setNewMessage && setNewMessage(e.target.value))}
           disabled={accountStatus === 'suspended'}
           placeholder={activeChat?.type === 'dm' ? 'Type a message...' : 'Write a comment... (@AI to ask)'}
           className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-[#111E38] dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-xs font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-[120px]"
