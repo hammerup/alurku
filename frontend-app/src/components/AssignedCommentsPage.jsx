@@ -25,27 +25,30 @@ export default function AssignedCommentsPage() {
 
   // Extract all task comment threads where user is assigned, mentioned, or involved
   const commentThreads = useMemo(() => {
-    if (!tasks || tasks.length === 0) return [];
+    if (!Array.isArray(tasks) || tasks.length === 0) return [];
 
     const result = [];
     tasks.forEach((task) => {
-      const taskComments = (comments && comments[task.id]) || task.comments || [];
-      if (!taskComments || taskComments.length === 0) return;
+      const rawComments = (comments && comments[task.id]) || task.comments;
+      const taskComments = Array.isArray(rawComments) ? rawComments : [];
+      if (taskComments.length === 0) return;
 
       // Check if user is mentioned (@currentUser) or involved
       const hasMention = taskComments.some((c) =>
-        (c.text || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`) ||
-        (c.text || '').toLowerCase().includes('@all') ||
-        (c.text || '').toLowerCase().includes('@team')
+        c && typeof c === 'object' &&
+        ((c.text || '').toLowerCase().includes(`@${(currentUser || '').toLowerCase()}`) ||
+         (c.text || '').toLowerCase().includes('@all') ||
+         (c.text || '').toLowerCase().includes('@team'))
       );
 
-      const isAssignee = (task.assignees || []).some(
-        (a) => (typeof a === 'string' ? a : a.username || a.name) === currentUser
+      const rawAssignees = Array.isArray(task.assignees) ? task.assignees : [];
+      const isAssignee = rawAssignees.some(
+        (a) => (typeof a === 'string' ? a : a?.username || a?.name) === currentUser
       );
 
       if (hasMention || isAssignee || taskComments.length > 0) {
         const lastComment = taskComments[taskComments.length - 1];
-        const unreadCount = taskComments.filter((c) => !c.is_read && c.username !== currentUser).length;
+        const unreadCount = taskComments.filter((c) => c && !c.is_read && c.username !== currentUser).length;
 
         result.push({
           taskId: task.id,
