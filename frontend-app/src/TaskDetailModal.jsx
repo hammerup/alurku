@@ -173,7 +173,14 @@ export default function TaskDetailModal({
     [comments]
   );
   const activityLogs = React.useMemo(
-    () => comments.filter((c) => c.username === 'System' && c?.text?.startsWith('[ACTIVITY]')).reverse(),
+    () =>
+      comments
+        .filter(
+          (c) =>
+            c.username === 'System' ||
+            (c?.text && (c.text.startsWith('[ACTIVITY]') || c.text.toLowerCase().includes('status') || c.text.toLowerCase().includes('created')))
+        )
+        .reverse(),
     [comments]
   );
 

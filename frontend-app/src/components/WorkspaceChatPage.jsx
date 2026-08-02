@@ -52,7 +52,7 @@ export default function WorkspaceChatPage() {
     isMentioning: ctxIsMentioning,
     teamMembers,
     mentionQuery: ctxMentionQuery,
-    insertMention,
+    insertMention: ctxInsertMention,
     categories,
     handleOpenAddBoard,
     handleOpenRenameBoard,
@@ -204,6 +204,25 @@ export default function WorkspaceChatPage() {
   const [chatSearchQuery, setChatSearchQuery] = useState('');
   const [msgToDelete, setMsgToDelete] = useState(null);
   const [activeBoardMembers, setActiveBoardMembers] = useState([]);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setNewMessage(val);
+    const match = val.match(/(?:^|\s)@([\w.-]*)$/);
+    if (match) {
+      setMentionQuery(match[1].toLowerCase());
+      setIsMentioning(true);
+      setMentionIndex(0);
+    } else {
+      setIsMentioning(false);
+    }
+  };
+
+  const insertMention = (username) => {
+    const newVal = newMessage.replace(/(?:^|\s)@([\w.-]*)$/, ` @${username} `);
+    setNewMessage(newVal);
+    setIsMentioning(false);
+  };
 
   // Filters State
   const [showMyTasksFilter, setShowMyTasksFilter] = useState(false);
@@ -548,7 +567,8 @@ export default function WorkspaceChatPage() {
           boards={boards}
           newMessage={newMessage}
           setNewMessage={setNewMessage}
-          handleInputChange={(e) => setNewMessage(e.target.value)}
+          handleInputChange={handleInputChange}
+          insertMention={insertMention}
           sendMessage={sendMessage}
           replyingTo={replyingTo}
           setReplyingTo={setReplyingTo}
@@ -559,6 +579,8 @@ export default function WorkspaceChatPage() {
           setMentionIndex={setMentionIndex}
           activeBoardMembers={activeBoardMembers}
           userDirectory={userDirectory}
+          currentUser={currentUser}
+          handleAskAITaskChat={handleAskAITaskChat}
           tMsg={tMsg}
         />
       </div>
