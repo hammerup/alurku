@@ -36,11 +36,13 @@ export default function TaskDetailHeader({
           <button
             type="button"
             onClick={() => (startEditing ? startEditing(selectedTask) : null)}
-            className="group px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full font-bold text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-[#FACC15] dark:hover:bg-[#FACC15] border border-neutral-200 dark:border-neutral-700 transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm"
+            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full font-black text-[#111E38] bg-[#FACC15] hover:bg-[#eab308] transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md shrink-0"
             title={tMsg('Edit Task', 'Edit Tugas')}
           >
-            <svg className="w-3.5 h-3.5 shrink-0 text-neutral-700 dark:text-neutral-300 group-hover:text-[#111E38] dark:group-hover:text-[#111E38] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-            <span className="hidden sm:inline text-neutral-900 dark:text-white group-hover:text-[#111E38] dark:group-hover:text-[#111E38] font-extrabold transition-colors">{tMsg('Edit', 'Edit')}</span>
+            <svg className="w-3.5 h-3.5 shrink-0 text-[#111E38]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            <span className="hidden sm:inline font-extrabold text-[#111E38]">{tMsg('Edit', 'Edit')}</span>
           </button>
         )}
         {isEditing ? (
