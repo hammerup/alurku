@@ -282,22 +282,6 @@ export default function ChatSidebar({
           })()}
         </div>
         <div className="space-y-2">
-          <button
-            onClick={() => setActiveChat({ type: 'inbox', id: 'inbox', name: 'Inbox' })}
-            className={`w-full py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
-              activeChat?.type === 'inbox'
-                ? 'bg-[#FACC15] text-[#111E38] shadow-xs'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-750'
-            }`}
-          >
-            <span className="material-symbols-outlined text-sm">inbox</span>
-            <span>Inbox</span>
-            {unreadInboxChatsCount > 0 && (
-              <span className="bg-[#111E38] text-[#FACC15] text-[9px] px-1.5 py-0.5 rounded-full font-black leading-none shrink-0">
-                {unreadInboxChatsCount}
-              </span>
-            )}
-          </button>
           <div className="flex gap-2">
             <button
               onClick={() => setShowMyTasksFilter(!showMyTasksFilter)}

@@ -101,14 +101,28 @@ export default function WorkspaceChatPage() {
   const [boardSearchQuery, setBoardSearchQuery] = useState('');
   const [expandedBoards, setExpandedBoards] = useState({});
   const [boardTasks, setBoardTasks] = useState({});
-  const [activeChat, setActiveChat] = useState({ type: 'inbox', id: 'inbox', name: 'Inbox & Activity' });
+  const [activeChat, setActiveChat] = useState(() => {
+    if (workspaceChatTarget) return workspaceChatTarget;
+    if (boards && boards.length > 0) {
+      const b = boards.find(item => item.id !== 'global') || boards[0];
+      return { type: 'project', id: b.id, name: `${b.name} (General)`, board_id: b.id };
+    }
+    return null;
+  });
 
   useEffect(() => {
     if (workspaceChatTarget) {
       setActiveChat(workspaceChatTarget);
       setWorkspaceChatTarget(null);
+    } else if (!activeChat || activeChat.type === 'inbox') {
+      if (boards && boards.length > 0) {
+        const b = boards.find(item => item.id !== 'global') || boards[0];
+        if (b) {
+          setActiveChat({ type: 'project', id: b.id, name: `${b.name} (General)`, board_id: b.id });
+        }
+      }
     }
-  }, [workspaceChatTarget, setWorkspaceChatTarget]);
+  }, [workspaceChatTarget, setWorkspaceChatTarget, boards]);
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -520,94 +534,42 @@ export default function WorkspaceChatPage() {
 
         {/* Message List */}
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3">
-          {activeChat.type === 'inbox' ? (
-            <div className="p-6 space-y-3">
-              <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
-                <h3 className="font-extrabold text-base text-[#111E38] dark:text-white">
-                  📥 {tMsg('Workspace Activity Inbox', 'Inbox Aktivitas Ruang Kerja')}
-                </h3>
-                <button
-                  onClick={handleMarkAllInboxAsRead}
-                  className="px-3 py-1.5 bg-[#FACC15] text-[#111E38] font-bold text-xs rounded-lg hover:opacity-90 transition-all shadow-xs"
-                >
-                  {tMsg('Mark All Read', 'Tandai Semua Dibaca')}
-                </button>
-              </div>
-
-              {(inboxChats || []).length === 0 ? (
-                <div className="py-12 text-center text-neutral-400 text-sm">
-                  <span className="material-symbols-outlined text-4xl block mb-2 opacity-40">mark_email_read</span>
-                  {tMsg('All caught up! No unread activity.', 'Semua pesan sudah dibaca!')}
-                </div>
-              ) : (
-                (inboxChats || []).map((chat, idx) => (
-                  <div
-                    key={`inbox-item-${chat.id || chat.board_id || chat.task_id || chat.partner || idx}`}
-                    onClick={() => {
-                      if (chat.is_dm) {
-                        setActiveChat({ type: 'dm', id: chat.partner, name: chat.partner, partner: chat.partner });
-                      } else if (chat.is_project_chat) {
-                        setActiveChat({ type: 'project', id: chat.board_id, name: chat.board_name, board_id: chat.board_id });
-                      } else {
-                        setActiveChat({ type: 'task', id: chat.task_id, name: chat.task_name, board_id: chat.board_id });
-                      }
-                    }}
-                    className="p-3 bg-white dark:bg-[#0d0f11] border border-neutral-200/80 dark:border-neutral-800/80 rounded-xl hover:border-[#FACC15] cursor-pointer transition-all flex items-center justify-between shadow-2xs"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Avatar name={chat.latest_sender || chat.partner} size="w-8 h-8" url={avatarsMap[chat.latest_sender]} />
-                      <div className="min-w-0">
-                        <p className="font-bold text-xs text-[#111E38] dark:text-white truncate">
-                          {chat.is_dm ? `@${chat.partner}` : chat.title || chat.task_name || chat.board_name}
-                        </p>
-                        <p className="text-xs text-neutral-500 truncate">{stripHtml(chat.latest_message || '')}</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-neutral-400 shrink-0 font-medium">{chat.formatted_time || ''}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          ) : (
-            <ChatMessageList
-              messages={messages}
-              isLoadingMessages={isLoadingMessages}
-              hasMoreMessages={hasMoreMessages}
-              loadMoreMessages={() => fetchMessages(false, true)}
-              activeChat={activeChat}
-              currentUser={currentUser}
-              avatarsMap={avatarsMap}
-              formatDateMMM={formatDateMMM}
-              setReplyingTo={setReplyingTo}
-              handleToggleReaction={handleToggleReaction}
-              setMsgToDelete={setMsgToDelete}
-              tMsg={tMsg}
-              firstUnreadId={firstUnreadId}
-              messagesEndRef={messagesEndRef}
-            />
-          )}
+          <ChatMessageList
+            messages={messages}
+            isLoadingMessages={isLoadingMessages}
+            hasMoreMessages={hasMoreMessages}
+            loadMoreMessages={() => fetchMessages(false, true)}
+            activeChat={activeChat}
+            currentUser={currentUser}
+            avatarsMap={avatarsMap}
+            formatDateMMM={formatDateMMM}
+            setReplyingTo={setReplyingTo}
+            handleToggleReaction={handleToggleReaction}
+            setMsgToDelete={setMsgToDelete}
+            tMsg={tMsg}
+            firstUnreadId={firstUnreadId}
+            messagesEndRef={messagesEndRef}
+          />
         </div>
 
-        {/* Input Area (Visible for Channels & DMs) */}
-        {activeChat?.type !== 'inbox' && (
-          <ChatInputArea
-            activeChat={activeChat}
-            boards={boards}
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            sendMessage={sendMessage}
-            replyingTo={replyingTo}
-            setReplyingTo={setReplyingTo}
-            isMentioning={isMentioning}
-            setIsMentioning={setIsMentioning}
-            mentionQuery={mentionQuery}
-            mentionIndex={mentionIndex}
-            setMentionIndex={setMentionIndex}
-            activeBoardMembers={activeBoardMembers}
-            userDirectory={userDirectory}
-            tMsg={tMsg}
-          />
-        )}
+        {/* Input Area (Always Visible for Active Chat) */}
+        <ChatInputArea
+          activeChat={activeChat}
+          boards={boards}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          sendMessage={sendMessage}
+          replyingTo={replyingTo}
+          setReplyingTo={setReplyingTo}
+          isMentioning={isMentioning}
+          setIsMentioning={setIsMentioning}
+          mentionQuery={mentionQuery}
+          mentionIndex={mentionIndex}
+          setMentionIndex={setMentionIndex}
+          activeBoardMembers={activeBoardMembers}
+          userDirectory={userDirectory}
+          tMsg={tMsg}
+        />
       </div>
 
       {/* Right Side Task Details Sidebar Drawer (1:1 TaskDetailModal Inline View with Resizer) */}
