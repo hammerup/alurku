@@ -173,14 +173,7 @@ export default function TaskDetailModal({
     [comments]
   );
   const activityLogs = React.useMemo(
-    () =>
-      comments
-        .filter(
-          (c) =>
-            c.username === 'System' ||
-            (c?.text && (c.text.startsWith('[ACTIVITY]') || c.text.toLowerCase().includes('status') || c.text.toLowerCase().includes('created')))
-        )
-        .reverse(),
+    () => comments.filter((c) => c?.text && c.text.startsWith('[ACTIVITY]')).reverse(),
     [comments]
   );
 
@@ -1454,14 +1447,14 @@ export default function TaskDetailModal({
               </div>
             ) : (
               <>
-                <div
-                  className={`flex flex-col border-b border-neutral-200 dark:border-neutral-800 shrink-0 relative z-20 ${
-                    chatBg ? 'bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md' : 'bg-white dark:bg-neutral-950'
-                  }`}
-                >
-                  <div className="flex justify-between items-center w-full">
-                    <div className="flex flex-1">
-                      {!isInline && (
+                {!isInline && (
+                  <div
+                    className={`flex flex-col border-b border-neutral-200 dark:border-neutral-800 shrink-0 relative z-20 ${
+                      chatBg ? 'bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md' : 'bg-white dark:bg-neutral-950'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center w-full">
+                      <div className="flex flex-1">
                         <button
                           onClick={() => setActiveTab('comments')}
                           className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
@@ -1475,61 +1468,61 @@ export default function TaskDetailModal({
                             <span>{tMsg('Comments', 'Komentar')} ({regularComments.length})</span>
                           </span>
                         </button>
-                      )}
-                      <button
-                        onClick={() => setActiveTab('activity')}
-                        className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
-                          activeTab === 'activity'
-                            ? 'font-black text-black dark:text-white border-b-2 border-black dark:border-white bg-neutral-100/50 dark:bg-neutral-800/50'
-                            : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
-                        }`}
-                      >
-                        <span className="flex items-center justify-center gap-1.5">
-                          <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                          <span>{tMsg('Activity', 'Aktivitas')}</span>
-                        </span>
-                      </button>
-                    </div>
-                    {activeTab === 'comments' && (
-                      <div className="flex items-center gap-2 px-4 shrink-0">
                         <button
-                          type="button"
-                          onClick={() => setIsTaskChatSearchOpen(!isTaskChatSearchOpen)}
-                          className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${
-                            isTaskChatSearchOpen
-                              ? 'bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white'
-                              : 'text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800'
+                          onClick={() => setActiveTab('activity')}
+                          className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
+                            activeTab === 'activity'
+                              ? 'font-black text-black dark:text-white border-b-2 border-black dark:border-white bg-neutral-100/50 dark:bg-neutral-800/50'
+                              : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
                           }`}
-                          title={tMsg('Search Comments', 'Cari Komentar')}
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2.5"
-                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            ></path>
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleStartTaskMeet}
-                          className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2.5"
-                              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            ></path>
-                          </svg>
-                          <span className="hidden sm:inline">Meet Now</span>
+                          <span className="flex items-center justify-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                            <span>{tMsg('Activity', 'Aktivitas')}</span>
+                          </span>
                         </button>
                       </div>
-                    )}
+                      {activeTab === 'comments' && (
+                        <div className="flex items-center gap-2 px-4 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setIsTaskChatSearchOpen(!isTaskChatSearchOpen)}
+                            className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${
+                              isTaskChatSearchOpen
+                                ? 'bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white'
+                                : 'text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800'
+                            }`}
+                            title={tMsg('Search Comments', 'Cari Komentar')}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2.5"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                              ></path>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleStartTaskMeet}
+                            className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-sm transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2.5"
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              ></path>
+                            </svg>
+                            <span className="hidden sm:inline">Meet Now</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {activeTab === 'comments' && isTaskChatSearchOpen && (
                   <div className="relative w-full border-b border-neutral-100 dark:border-neutral-800/50 bg-neutral-50/50 dark:bg-neutral-900/50 p-2 mac-animate shrink-0 z-20">
