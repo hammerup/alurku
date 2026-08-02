@@ -172,10 +172,30 @@ export default function TaskDetailModal({
     () => comments.filter((c) => c.username !== 'System' && !c?.text?.startsWith('[ACTIVITY]')),
     [comments]
   );
-  const activityLogs = React.useMemo(
-    () => comments.filter((c) => c?.text && c.text.startsWith('[ACTIVITY]')).reverse(),
-    [comments]
-  );
+  const activityLogs = React.useMemo(() => {
+    return comments
+      .filter((c) => {
+        if (!c || !c.text) return false;
+        const txt = c.text;
+        const lower = txt.toLowerCase();
+        if (c.username === 'Luruka' || c.username === 'Smart Assistant' || lower.includes('aku siap membantu')) {
+          return false;
+        }
+        if (txt.startsWith('[ACTIVITY]')) return true;
+        if (c.username === 'System') return true;
+        if (
+          lower.includes('transferred this task') ||
+          lower.includes('created this task') ||
+          lower.includes('updated task') ||
+          lower.includes('status to') ||
+          lower.includes('changed status')
+        ) {
+          return true;
+        }
+        return false;
+      })
+      .reverse();
+  }, [comments]);
 
   const handleTaskChatScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -1351,15 +1371,6 @@ export default function TaskDetailModal({
                     <div></div>
                   )}
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                    {accountStatus !== 'suspended' && (isTaskAdmin || isInvolved) && !isPreviewMode && (
-                      <button
-                        onClick={() => (startEditing ? startEditing(selectedTask) : setIsEditing(true))}
-                        className="w-full sm:w-auto px-6 py-4 sm:py-3.5 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors text-xs flex items-center justify-center gap-1.5"
-                      >
-                        <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        {tMsg('Edit', 'Edit')}
-                      </button>
-                    )}
                     <button
                       onClick={close}
                       className="w-full sm:w-auto px-8 py-4 sm:py-3.5 rounded-full font-bold text-white bg-black hover:opacity-80 dark:bg-white dark:text-black border border-black dark:border-white shadow-lg transition-all text-xs hover:-translate-y-0.5"
