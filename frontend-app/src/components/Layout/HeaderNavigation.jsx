@@ -562,35 +562,43 @@ export default function HeaderNavigation({
                           }
                           setIsNotifOpen(false);
                         }}
-                        className={`p-3 border-b border-neutral-100 dark:border-neutral-800 cursor-pointer text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors ${
-                          !n.is_read ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''
+                        className={`p-3 border-b border-neutral-100 dark:border-neutral-800/80 cursor-pointer text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-colors ${
+                          !n.is_read ? 'bg-amber-500/5 dark:bg-[#FACC15]/5' : ''
                         }`}
                       >
-                        <div className="flex gap-2.5 items-start">
-                          <span className="text-lg shrink-0">
-                            {n.type === 'task_assigned'
-                              ? '👉'
-                              : n.type === 'task_completed'
-                              ? '✅'
-                              : n.type === 'comment' || n.type === 'mention' || n.type === 'team_chat'
-                              ? '💬'
-                              : n.type === 'team_invite' || n.type === 'access_request'
-                              ? '🤝'
-                              : '🔔'}
-                          </span>
+                        <div className="flex gap-3 items-start">
+                          <div className="shrink-0 mt-0.5">
+                            {n.type === 'task_assigned' ? (
+                              <div className="w-7 h-7 rounded-lg bg-[#111E38] text-[#FACC15] flex items-center justify-center">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              </div>
+                            ) : n.type === 'task_completed' ? (
+                              <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              </div>
+                            ) : n.type === 'comment' || n.type === 'mention' || n.type === 'team_chat' ? (
+                              <div className="w-7 h-7 rounded-lg bg-[#FACC15] text-[#111E38] flex items-center justify-center">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                              </div>
+                            ) : (
+                              <div className="w-7 h-7 rounded-lg bg-[#111E38] text-white flex items-center justify-center">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                              </div>
+                            )}
+                          </div>
                           <div className="flex-1 min-w-0">
                             <p
                               className={`text-xs leading-snug ${
                                 !n.is_read
-                                  ? 'font-bold text-black dark:text-white'
+                                  ? 'font-bold text-[#111E38] dark:text-white'
                                   : 'text-neutral-600 dark:text-neutral-400'
                               }`}
                             >
                               {n.message?.replace(/<!--TASK_ID:\d+-->/g, '').replace(/Smart Assistant 🤖/g, 'Luruka 🤖').replace(/Smart Assistant/g, 'Luruka')}
                             </p>
-                            <p className="text-[10px] text-neutral-400 mt-0.5">{formatDateMMM(n.timestamp)}</p>
+                            <p className="text-[10px] font-bold text-neutral-400 mt-0.5">{formatDateMMM(n.timestamp)}</p>
                           </div>
-                          {!n.is_read && <div className="w-2 h-2 bg-indigo-500 rounded-full shrink-0 mt-1"></div>}
+                          {!n.is_read && <div className="w-2.5 h-2.5 bg-[#FACC15] rounded-full shrink-0 mt-1 shadow-[0_0_6px_rgba(250,204,21,0.8)] animate-pulse"></div>}
                         </div>
                       </div>
                     ))
