@@ -289,7 +289,10 @@ export default function InboxPage() {
         ) : (
           filteredNotifications.map((n) => {
             const isUnread = !n.is_read;
-            const cleanText = (n.message || '').replace(/<!--TASK_ID:\d+-->/g, '');
+            const cleanText = (n.message || '')
+              .replace(/<!--TASK_ID:\d+-->/g, '')
+              .replace(/Smart Assistant 🤖/g, 'Luruka 🤖')
+              .replace(/Smart Assistant/g, 'Luruka');
 
             return (
               <div

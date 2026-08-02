@@ -586,7 +586,7 @@ export default function HeaderNavigation({
                                   : 'text-neutral-600 dark:text-neutral-400'
                               }`}
                             >
-                              {n.message?.replace(/<!--TASK_ID:\d+-->/g, '')}
+                              {n.message?.replace(/<!--TASK_ID:\d+-->/g, '').replace(/Smart Assistant 🤖/g, 'Luruka 🤖').replace(/Smart Assistant/g, 'Luruka')}
                             </p>
                             <p className="text-[10px] text-neutral-400 mt-0.5">{formatDateMMM(n.timestamp)}</p>
                           </div>
