@@ -552,7 +552,7 @@ export default function TaskDetailModal({
             }`}
           >
             <span className="flex items-center justify-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+              <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l-3 3-1.5-1.5" /></svg>
               <span>{tMsg('Activity', 'Aktivitas')}</span>
             </span>
           </button>
@@ -1361,11 +1361,12 @@ export default function TaskDetailModal({
                     (selectedBoard && selectedBoard.owner_username === currentUser)) &&
                   accountStatus !== 'suspended' ? (
                     <button
+                      type="button"
                       onClick={() => setIsDeleteConfirmOpen(true)}
-                      className="px-5 py-3.5 w-full sm:w-auto rounded-full font-bold text-red-500 hover:text-white bg-transparent hover:bg-red-500 border border-transparent hover:border-red-500 transition-all text-xs flex items-center justify-center gap-1.5"
+                      className="group px-5 py-3.5 w-full sm:w-auto rounded-full font-bold bg-transparent hover:bg-red-500 border border-transparent hover:border-red-500 transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                      <svg className="w-3.5 h-3.5 text-red-500 shrink-0 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      {tMsg('Delete Task', 'Hapus Tugas')}
+                      <svg className="w-3.5 h-3.5 text-red-500 group-hover:text-white shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      <span className="text-red-500 group-hover:text-white transition-colors">{tMsg('Delete Task', 'Hapus Tugas')}</span>
                     </button>
                   ) : (
                     <div></div>
@@ -1488,7 +1489,7 @@ export default function TaskDetailModal({
                           }`}
                         >
                           <span className="flex items-center justify-center gap-1.5">
-                            <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                            <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l-3 3-1.5-1.5" /></svg>
                             <span>{tMsg('Activity', 'Aktivitas')}</span>
                           </span>
                         </button>
