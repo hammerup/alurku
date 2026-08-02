@@ -16,10 +16,18 @@ export default function ChatHeader({
   handleMeetNow,
   handleNotificationTaskClick,
   activeTaskPreview,
-  setActiveTaskPreview,
   handleOpenTaskPreview,
   onlineUsers,
 }) {
+  const isPartnerOnline = React.useMemo(() => {
+    const user = activeChat?.partner;
+    if (!user || !onlineUsers) return false;
+    if (Array.isArray(onlineUsers)) return onlineUsers.includes(user);
+    if (onlineUsers instanceof Set || typeof onlineUsers.has === 'function') return onlineUsers.has(user);
+    if (typeof onlineUsers === 'object') return !!onlineUsers[user];
+    return false;
+  }, [onlineUsers, activeChat?.partner]);
+
   return (
     <div className="h-16 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-6 bg-white dark:bg-neutral-950 shrink-0 z-30 shadow-sm relative">
       <div className="flex items-center gap-3 min-w-0">
@@ -44,11 +52,11 @@ export default function ChatHeader({
             <Avatar name={activeChat?.partner} url={avatarsMap[activeChat?.partner]} size="w-8 h-8" />
             <span
               className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-neutral-950 transition-colors ${
-                (onlineUsers || []).includes(activeChat?.partner)
+                isPartnerOnline
                   ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]'
                   : 'bg-neutral-400 dark:bg-neutral-600'
               }`}
-              title={(onlineUsers || []).includes(activeChat?.partner) ? 'Online' : 'Offline'}
+              title={isPartnerOnline ? 'Online' : 'Offline'}
             />
           </div>
         ) : activeChat?.type === 'project' ? (
