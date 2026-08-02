@@ -974,7 +974,7 @@ export default function Sidebar() {
                   {/* Assigned Comments */}
                   <button
                     onClick={() => {
-                      if (navigateTo) navigateTo('/chat');
+                      if (navigateTo) navigateTo('/assigned-comments');
                       setIsMobileMenuOpen(false);
                     }}
                     className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"

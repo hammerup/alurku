@@ -39,6 +39,7 @@ import DocumentationModal from './DocumentationModal';
 import ProactiveAIPage from './ProactiveAIPage';
 import WorkspaceChatPage from './components/WorkspaceChatPage';
 import InboxPage from './components/InboxPage';
+import AssignedCommentsPage from './components/AssignedCommentsPage';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
 import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
@@ -1461,6 +1462,8 @@ function App() {
             />
           ) : currentPath.endsWith('/chat') ? (
             <WorkspaceChatPage />
+          ) : currentPath === '/assigned-comments' || currentPath.endsWith('/assigned-comments') || currentPath === '/komentar' || currentPath === '/comments' ? (
+            <AssignedCommentsPage />
           ) : currentPath === '/inbox' || currentPath.endsWith('/inbox') || currentPath === '/kotak-masuk' || currentPath === '/inbox-replies' ? (
             <InboxPage />
           ) : !selectedBoard ? (
