@@ -81,7 +81,7 @@ export default function TaskDetailModal({
   onCloseInline = null,
   isPreviewMode = false,
 }) {
-  const [activeTab, setActiveTab] = useState('comments');
+  const [activeTab, setActiveTab] = useState(isInline ? 'activity' : 'comments');
   const [mobileTab, setMobileTab] = useState('details');
   const [hasRequestedAccess, setHasRequestedAccess] = useState(false);
   const [isClosing, close] = useCloseAnimation(() => {
@@ -1461,19 +1461,21 @@ export default function TaskDetailModal({
                 >
                   <div className="flex justify-between items-center w-full">
                     <div className="flex flex-1">
-                      <button
-                        onClick={() => setActiveTab('comments')}
-                        className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
-                          activeTab === 'comments'
-                            ? 'font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10'
-                            : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
-                        }`}
-                      >
-                        <span className="flex items-center justify-center gap-1.5">
-                          <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                          <span>{tMsg('Comments', 'Komentar')} ({regularComments.length})</span>
-                        </span>
-                      </button>
+                      {!isInline && (
+                        <button
+                          onClick={() => setActiveTab('comments')}
+                          className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
+                            activeTab === 'comments'
+                              ? 'font-black text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/30 dark:bg-indigo-900/10'
+                              : 'font-bold text-neutral-400 hover:text-black dark:hover:text-white'
+                          }`}
+                        >
+                          <span className="flex items-center justify-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                            <span>{tMsg('Comments', 'Komentar')} ({regularComments.length})</span>
+                          </span>
+                        </button>
+                      )}
                       <button
                         onClick={() => setActiveTab('activity')}
                         className={`flex-1 py-4 text-[10px] sm:text-xs tracking-wider transition-colors ${
@@ -1648,7 +1650,7 @@ export default function TaskDetailModal({
                   )}
                 </div>
 
-                {activeTab === 'comments' && accountStatus !== 'suspended' && (
+                {!isInline && activeTab === 'comments' && accountStatus !== 'suspended' && (
                   <div
                     className={`p-4 border-t border-neutral-200 dark:border-neutral-800 shrink-0 relative z-10 ${
                       chatBg ? 'bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md' : 'bg-white dark:bg-neutral-950'
