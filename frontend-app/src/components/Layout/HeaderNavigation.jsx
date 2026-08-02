@@ -528,28 +528,14 @@ export default function HeaderNavigation({
                       </span>
                     )}
                   </h3>
-                  <div className="flex items-center gap-2">
-                    {unreadCount > 0 && (
-                      <button
-                        onClick={handleReadAllNotifications}
-                        className="text-xs text-indigo-500 font-bold hover:underline"
-                      >
-                        {tMsg('Mark read', 'Tandai dibaca')}
-                      </button>
-                    )}
+                  {unreadCount > 0 && (
                     <button
-                      onClick={() => {
-                        setIsNotifOpen(false);
-                        if (navigateTo) navigateTo('/inbox');
-                      }}
-                      className="text-xs text-[#111E38] dark:text-[#FACC15] font-black hover:underline flex items-center gap-1"
+                      onClick={handleReadAllNotifications}
+                      className="text-xs text-indigo-500 font-bold hover:underline"
                     >
-                      <span>{tMsg('Open Inbox', 'Buka Inbox')}</span>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
+                      {tMsg('Mark all read', 'Tandai semua dibaca')}
                     </button>
-                  </div>
+                  )}
                 </div>
                 <div className="overflow-y-auto flex-1 max-h-80">
                   {notifications.length === 0 ? (
