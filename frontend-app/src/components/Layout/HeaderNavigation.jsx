@@ -185,6 +185,7 @@ export default function HeaderNavigation({
               if (isProactiveAIOpen || path === '/proactive-ai') return 'Chat Luruka';
               if (path === '/chat' || path.endsWith('/chat')) return tMsg('Workspace Chat', 'Obrolan Ruang Kerja');
               if (path === '/inbox' || path.endsWith('/inbox')) return tMsg('Inbox & Notifications', 'Kotak Masuk & Notifikasi');
+              if (path === '/meetings-leaves' || path.endsWith('/meetings-leaves') || path === '/calendar') return tMsg('Meetings & Leaves', 'Pertemuan & Cuti');
               if (path === '/assigned-comments') return tMsg('Assigned Comments', 'Komentar & Sebutan');
               if (path === '/dashboard') return tMsg('Personal Dashboard', 'Dasbor Pribadi');
               if (selectedBoard) return selectedBoard.name;

@@ -974,13 +974,24 @@ export default function Sidebar() {
                   {/* Meetings & Leaves */}
                   <button
                     onClick={() => {
-                      setIsLeaveModalOpen(true);
-                      setIsMobileMenuOpen(false);
+                      if (navigateTo) {
+                        navigateTo('/meetings-leaves');
+                      } else if (typeof window !== 'undefined') {
+                        window.history.pushState({}, '', '/meetings-leaves');
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }
+                      if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all text-xs ${
+                      activePath === '/meetings-leaves' || activePath?.endsWith('/meetings-leaves') || activePath === '/calendar'
+                        ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
+                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                    }`}
                   >
-                    <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
-                    <span className="truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
+                      <span className="truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>
+                    </div>
                   </button>
                 </div>
               </div>

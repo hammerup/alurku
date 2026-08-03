@@ -1020,7 +1020,8 @@ export function LeaveModal({
         }`}
       >
         <h2 className="text-3xl font-black text-black dark:text-white uppercase tracking-tighter mb-2 flex items-center gap-3">
-          🌴 {tMsg('Time Off & Holidays', 'Cuti & Libur Nasional')}
+          <span className="material-symbols-outlined text-indigo-500 text-3xl">flight_takeoff</span>
+          <span>{tMsg('Time Off & Holidays', 'Cuti & Libur Nasional')}</span>
         </h2>
         <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-8">
           {tMsg(
@@ -1035,10 +1036,10 @@ export function LeaveModal({
         >
           <div className="flex items-center gap-4 group">
             <span
-              className="text-neutral-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors w-8 text-center text-xl shrink-0"
+              className="text-neutral-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors w-8 text-center text-xl shrink-0 material-symbols-outlined"
               title="Leave Date Range"
             >
-              📅
+              calendar_month
             </span>
             <div className="flex-1 bg-white dark:bg-black rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 transition-all flex items-center p-1.5 px-3 shadow-sm">
               <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
@@ -1107,8 +1108,12 @@ export function LeaveModal({
                 className="flex justify-between items-center bg-neutral-50 dark:bg-neutral-900 p-4 rounded-xl border border-neutral-100 dark:border-neutral-800"
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-2xl">
-                    {l.leave_type === 'personal' ? '🌴' : l.leave_type === 'mass_leave' ? '🏖️' : '🎌'}
+                  <span className="p-2 bg-neutral-200/60 dark:bg-neutral-800 rounded-xl text-slate-800 dark:text-[#FACC15] material-symbols-outlined text-xl">
+                    {l.leave_type === 'personal'
+                      ? 'flight_takeoff'
+                      : l.leave_type === 'mass_leave'
+                      ? 'event_busy'
+                      : 'verified'}
                   </span>
                   <div>
                     <p className="font-bold text-sm text-black dark:text-white uppercase tracking-wider">

@@ -40,6 +40,7 @@ import ProactiveAIPage from './ProactiveAIPage';
 import WorkspaceChatPage from './components/WorkspaceChatPage';
 import InboxPage from './components/InboxPage';
 import AssignedCommentsPage from './components/AssignedCommentsPage';
+import MeetingsLeavesPage from './components/MeetingsLeavesPage';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
 import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
@@ -1466,6 +1467,8 @@ function App() {
             <AssignedCommentsPage />
           ) : currentPath === '/inbox' || currentPath.endsWith('/inbox') || currentPath === '/kotak-masuk' || currentPath === '/inbox-replies' ? (
             <InboxPage />
+          ) : currentPath === '/meetings-leaves' || currentPath.endsWith('/meetings-leaves') || currentPath === '/pertemuan-cuti' || currentPath === '/calendar' ? (
+            <MeetingsLeavesPage />
           ) : !selectedBoard ? (
             currentPath.startsWith('/workspace') ? (
               <WorkspaceOverview />
