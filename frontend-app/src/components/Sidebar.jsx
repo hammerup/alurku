@@ -609,7 +609,7 @@ export default function Sidebar() {
       )}
 
       {/* ════════════════════════════════════════════════════════════════════════ */}
-      {/* TRUE 1:1 CLICKUP DUAL SIDEBAR: ICON RAIL (COLUMN 1) + CONTENT PANEL (COLUMN 2) */}
+      {/* ALURKU DUAL SIDEBAR: DOCK RAIL (COLUMN 1) + CONTENT PANEL (COLUMN 2) */}
       {/* ════════════════════════════════════════════════════════════════════════ */}
       <div className="flex md:sticky md:top-20 md:h-[calc(100vh-5rem)] md:shrink-0 z-90 md:z-50 select-none">
         
@@ -867,7 +867,7 @@ export default function Sidebar() {
               {getCategoryTitle()}
             </h2>
 
-            {/* ClickUp Style Multi-Function + Create Dropdown Button */}
+            {/* Multi-Function + Create Dropdown Button */}
             <div className="relative">
               <button
                 onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
@@ -950,7 +950,7 @@ export default function Sidebar() {
                         navigateTo('/inbox');
                       } else if (typeof window !== 'undefined') {
                         window.history.pushState({}, '', '/inbox');
-                        window.dispatchEvent(new Event('popstate'));
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
                       }
                       if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }}
@@ -962,30 +962,11 @@ export default function Sidebar() {
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="material-symbols-outlined text-[18px]">inbox</span>
-                      <span className="truncate">{tMsg('Inbox & Replies', 'Inbox & Notifikasi')}</span>
+                      <span className="truncate">{tMsg('Inbox & Notifications', 'Kotak Masuk & Notifikasi')}</span>
                     </div>
                     {unreadCount > 0 && (
                       <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
                         {unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Assigned Comments */}
-                  <button
-                    onClick={() => {
-                      if (navigateTo) navigateTo('/assigned-comments');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium text-xs"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px]">forum</span>
-                      <span className="truncate">{tMsg('Assigned Comments', 'Komentar & Sebutan')}</span>
-                    </div>
-                    {totalUnreadChats > 0 && (
-                      <span className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none">
-                        {totalUnreadChats}
                       </span>
                     )}
                   </button>

@@ -2250,9 +2250,7 @@ export default function useAppLogic() {
       .then((res) => {
         const task = res.data?.task;
         if (!task) return;
-        const board = (boards || []).find((b) => b.id === task.board_id);
-        if (board) setSelectedBoard(board);
-        setTimeout(() => setSelectedTask(task), 50); // Jeda kecil agar board pindah dulu
+        setSelectedTask(task);
       })
       .catch((err) => {
         if (err.response?.status === 403) {

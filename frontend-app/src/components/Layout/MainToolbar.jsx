@@ -73,10 +73,10 @@ export default function MainToolbar() {
   return (
     <header className="px-4 py-3 md:px-6 md:py-4 flex flex-col gap-3 shrink-0 border-b border-neutral-200/70 dark:border-neutral-800/80 bg-white/60 dark:bg-[#0d0f11]/60 backdrop-blur-md select-none">
       {/* =========================================================================
-          ROW 1: Title, View Switcher Tabs (ClickUp Style), Live Clock & Primary CTA
+          ROW 1: Title, View Switcher Tabs, Live Clock & Primary CTA
          ========================================================================= */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-        {/* Title + ClickUp-Style Segmented View Switcher */}
+        {/* Title + Segmented View Switcher */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export default function MainToolbar() {
             </div>
           </div>
 
-          {/* ClickUp / Linear Segmented View Mode Tabs */}
+          {/* Segmented View Mode Tabs */}
           <div className="flex flex-nowrap items-center bg-neutral-200/60 dark:bg-neutral-800/80 p-1 rounded-xl shrink-0 tour-views gap-0.5 border border-neutral-200/50 dark:border-neutral-700/50 shadow-inner overflow-x-auto custom-scrollbar">
             {['kanban', 'list', 'analytics', 'timeline', 'calendar'].map((v) => {
               const icons = {

@@ -180,13 +180,16 @@ export default function HeaderNavigation({
           </span>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <span className="text-slate-900 dark:text-white font-extrabold">
-            {isProactiveAIOpen
-              ? 'Chat Luruka'
-              : (window.location.pathname === '/dashboard'
-                  ? tMsg('Personal Dashboard', 'Dasbor Pribadi')
-                  : (selectedBoard ? selectedBoard.name : tMsg('Overview', 'Ringkasan'))
-                )
-            }
+            {(() => {
+              const path = window.location.pathname;
+              if (isProactiveAIOpen || path === '/proactive-ai') return 'Chat Luruka';
+              if (path === '/chat' || path.endsWith('/chat')) return tMsg('Workspace Chat', 'Obrolan Ruang Kerja');
+              if (path === '/inbox' || path.endsWith('/inbox')) return tMsg('Inbox & Notifications', 'Kotak Masuk & Notifikasi');
+              if (path === '/assigned-comments') return tMsg('Assigned Comments', 'Komentar & Sebutan');
+              if (path === '/dashboard') return tMsg('Personal Dashboard', 'Dasbor Pribadi');
+              if (selectedBoard) return selectedBoard.name;
+              return tMsg('Overview', 'Ringkasan');
+            })()}
           </span>
         </div>
       </div>

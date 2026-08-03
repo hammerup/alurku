@@ -700,7 +700,7 @@ function App() {
           }
         }
 
-        if (path === '/chat' || path.endsWith('/chat')) {
+        if (path === '/chat' || path.endsWith('/chat') || path === '/inbox' || path.endsWith('/inbox')) {
           if (selectedBoard) setSelectedBoard(null);
           return;
         }

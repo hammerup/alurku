@@ -181,13 +181,14 @@ def get_all_avatars(
 
 @router.get("/api/notifications")
 def get_notifications(
+    limit: int = 100,
     current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     latest_notifs = (
         db.query(Notification)
         .filter(Notification.user_username == current_user)
         .order_by(Notification.id.desc())
-        .limit(20)
+        .limit(limit)
         .all()
     )
     unread_notifs = (
