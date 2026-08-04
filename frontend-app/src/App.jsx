@@ -42,6 +42,7 @@ import InboxPage from './components/InboxPage';
 import AssignedCommentsPage from './components/AssignedCommentsPage';
 import MeetingsLeavesPage from './components/MeetingsLeavesPage';
 import MyTasksPage from './components/MyTasksPage';
+import PersonalDashboardPage from './components/PersonalDashboardPage';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
 import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
@@ -1472,6 +1473,8 @@ function App() {
             <MeetingsLeavesPage />
           ) : currentPath === '/my-tasks' || currentPath.endsWith('/my-tasks') || currentPath === '/tugas-saya' ? (
             <MyTasksPage />
+          ) : currentPath === '/dashboard' || currentPath.endsWith('/dashboard') || currentPath === '/dasbor' ? (
+            <PersonalDashboardPage />
           ) : !selectedBoard ? (
             currentPath.startsWith('/workspace') ? (
               <WorkspaceOverview />

@@ -1249,12 +1249,15 @@ export default function Sidebar() {
                 <button
                   onClick={() => {
                     setSelectedBoard(null);
-                    setViewMode('overview');
                     setIsMobileMenuOpen(false);
                     window.history.pushState({}, '', '/dashboard');
                     window.dispatchEvent(new CustomEvent('alurku-navigate'));
                   }}
-                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                    activePath === '/dashboard' || activePath?.endsWith('/dashboard')
+                      ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
+                      : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                  }`}
                 >
                   <span className="material-symbols-outlined text-[18px]">home</span>
                   <span className="truncate">{tMsg('Personal Dashboard', 'Dasbor Utama')}</span>
@@ -1338,23 +1341,20 @@ export default function Sidebar() {
                         key={sv.id}
                         onClick={() => {
                           setSelectedBoard(null);
-                          if (sv.type === 'assigned') {
-                            setShowMyTasks(true);
-                            setShowOverdueOnly(false);
-                          } else if (sv.type === 'overdue') {
-                            setShowMyTasks(true);
-                            setShowOverdueOnly(true);
+                          let targetUrl = '/my-tasks';
+                          if (sv.type === 'overdue') {
+                            targetUrl = '/my-tasks?filter=overdue';
                           } else if (sv.type === 'custom') {
                             if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
                             if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
                             if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
-                            if (setShowMyTasks) setShowMyTasks(sv.showMyTasks || false);
-                            if (setShowOverdueOnly) setShowOverdueOnly(sv.showOverdueOnly || false);
                           }
-                          setViewMode('kanban');
                           setIsMobileMenuOpen(false);
+                          window.history.pushState({}, '', targetUrl);
+                          window.dispatchEvent(new CustomEvent('alurku-navigate'));
                         }}
                         className="w-full flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 transition-colors"
+                        title={tMsg(`Filter: ${sv.nameEn}`, `Filter: ${sv.nameId}`)}
                       >
                         <span className="material-symbols-outlined text-[15px] text-indigo-500 dark:text-[#FACC15]">{sv.icon}</span>
                         <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
