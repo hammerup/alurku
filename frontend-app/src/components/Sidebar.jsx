@@ -1017,14 +1017,12 @@ export default function Sidebar() {
                   <button
                     onClick={() => {
                       setSelectedBoard(null);
-                      setShowMyTasks(true);
-                      setShowOverdueOnly(false);
-                      setShowDueTodayOnly(false);
-                      setViewMode('kanban');
                       setIsMobileMenuOpen(false);
+                      window.history.pushState({}, '', '/my-tasks');
+                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
                     }}
                     className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                      showMyTasks && !showOverdueOnly
+                      activePath === '/my-tasks' && !activePath?.includes('overdue')
                         ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                         : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                     }`}
@@ -1042,10 +1040,9 @@ export default function Sidebar() {
                   <button
                     onClick={() => {
                       setSelectedBoard(null);
-                      setShowMyTasks(true);
-                      setShowOverdueOnly(true);
-                      setViewMode('kanban');
                       setIsMobileMenuOpen(false);
+                      window.history.pushState({}, '', '/my-tasks?filter=overdue');
+                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
                     }}
                     className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
                       showOverdueOnly
