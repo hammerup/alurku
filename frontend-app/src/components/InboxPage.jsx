@@ -29,6 +29,8 @@ export default function InboxPage() {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'mentions' | 'tasks' | 'invites'
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [groupByTask, setGroupByTask] = useState(true);
+  const [showAllComments, setShowAllComments] = useState(false);
 
   const formatDateMMM = (dateStr) => {
     if (!dateStr) return '';
@@ -75,6 +77,54 @@ export default function InboxPage() {
     });
   }, [notifications, activeFilter, unreadOnly, searchQuery]);
 
+  // Group notifications by task/conversation when groupByTask is active (email style)
+  const displayItems = useMemo(() => {
+    if (!groupByTask) {
+      return filteredNotifications.map((n) => ({
+        id: n.id,
+        key: `single_${n.id}`,
+        mainNotif: n,
+        items: [n],
+        count: 1,
+        hasUnread: !n.is_read,
+        timestamp: n.timestamp,
+      }));
+    }
+
+    const map = new Map();
+    const result = [];
+
+    filteredNotifications.forEach((n) => {
+      const key = n.related_task_id ? `task_${n.related_task_id}` : `notif_${n.id}`;
+      if (!map.has(key)) {
+        const item = {
+          id: n.id,
+          key,
+          mainNotif: n,
+          related_task_id: n.related_task_id,
+          items: [n],
+          count: 1,
+          hasUnread: !n.is_read,
+          timestamp: n.timestamp,
+        };
+        map.set(key, item);
+        result.push(item);
+      } else {
+        const existing = map.get(key);
+        existing.items.push(n);
+        existing.count += 1;
+        if (!n.is_read) existing.hasUnread = true;
+        if (n.timestamp > existing.timestamp) {
+          existing.timestamp = n.timestamp;
+          existing.mainNotif = n;
+          existing.id = n.id;
+        }
+      }
+    });
+
+    return result;
+  }, [filteredNotifications, groupByTask]);
+
   // Unread filter counters per category
   const filterCounts = useMemo(() => {
     const notifs = notifications || [];
@@ -106,11 +156,17 @@ export default function InboxPage() {
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
 
+  const visibleComments = useMemo(() => {
+    if (showAllComments || taskComments.length <= 5) return taskComments;
+    return taskComments.slice(-5);
+  }, [taskComments, showAllComments]);
+
   const { lastWsMessage } = context;
 
   // Initial fetch of task comments when targetTask changes
   React.useEffect(() => {
     let isMounted = true;
+    setShowAllComments(false);
     if (selectedNotification && !selectedNotification.is_read && handleReadNotification) {
       handleReadNotification(selectedNotification.id);
     }
@@ -434,8 +490,22 @@ export default function InboxPage() {
           </button>
         </div>
 
-        {/* Toggle Unread & Search Box */}
-        <div className="flex items-center gap-3">
+        {/* Toggle Unread, Grouping & Search Box */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setGroupByTask(!groupByTask)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+              groupByTask
+                ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-[#FACC15] border-indigo-200 dark:border-indigo-800 shadow-2xs'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700'
+            }`}
+            title={tMsg('Group notifications by task (email style)', 'Kelompokkan notifikasi per tugas (seperti email)')}
+          >
+            <span className="material-symbols-outlined text-sm">forum</span>
+            <span>{groupByTask ? tMsg('Grouped per Task', 'Kelompokkan Per Tugas') : tMsg('Individual', 'Per Notifikasi')}</span>
+          </button>
+
           <label className="flex items-center gap-2 text-xs font-bold cursor-pointer select-none">
             <input
               type="checkbox"
@@ -445,7 +515,8 @@ export default function InboxPage() {
             />
             <span>{tMsg('Unread Only', 'Belum Dibaca Saja')}</span>
           </label>
-          <div className="relative flex-1 md:w-60">
+
+          <div className="relative flex-1 md:w-56">
             <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">search</span>
             <input
               type="text"
@@ -462,7 +533,7 @@ export default function InboxPage() {
       <div className="flex-1 flex gap-4 min-h-0 overflow-hidden">
         {/* Left Column: Notification Feed List */}
         <div className="w-full md:w-1/2 lg:w-5/12 bg-white dark:bg-[#121B2D] rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs overflow-y-auto custom-scrollbar divide-y divide-neutral-100 dark:divide-neutral-800/60 min-h-0">
-          {filteredNotifications.length === 0 ? (
+          {displayItems.length === 0 ? (
             <div className="p-12 text-center text-neutral-400 flex flex-col items-center justify-center">
               <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800/60 flex items-center justify-center mb-3 text-neutral-300 dark:text-neutral-600">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
@@ -479,9 +550,12 @@ export default function InboxPage() {
               </p>
             </div>
           ) : (
-            filteredNotifications.map((n) => {
-              const isUnread = !n.is_read;
-              const isSelected = selectedNotification?.id === n.id;
+            displayItems.map((item) => {
+              const n = item.mainNotif;
+              const isUnread = item.hasUnread;
+              const isSelected = selectedNotification?.id === n.id || (item.related_task_id && targetTask && String(item.related_task_id) === String(targetTask.id));
+              const itemTask = item.related_task_id ? (tasks || []).find((t) => String(t.id) === String(item.related_task_id)) : null;
+
               const cleanText = (n.message || '')
                 .replace(/<!--TASK_ID:\d+-->/g, '')
                 .replace(/Smart Assistant 🤖/g, 'Luruka')
@@ -489,10 +563,20 @@ export default function InboxPage() {
                 .replace(/Luruka 🤖/g, 'Luruka')
                 .replace(/🤖/g, '');
 
+              const titleText = groupByTask && itemTask ? itemTask.project_name : cleanText;
+
               return (
                 <div
-                  key={n.id}
-                  onClick={() => handleItemClick(n)}
+                  key={item.key}
+                  onClick={() => {
+                    item.items.forEach((it) => {
+                      if (!it.is_read && handleReadNotification) handleReadNotification(it.id);
+                    });
+                    setSelectedNotifId(n.id);
+                    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                      handleOpenFullModal(n);
+                    }
+                  }}
                   className={`p-3.5 transition-all cursor-pointer flex items-start gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 relative ${
                     isSelected
                       ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-l-4 border-indigo-600 dark:border-[#FACC15]'
@@ -505,15 +589,27 @@ export default function InboxPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <p className={`text-xs ${isUnread || isSelected ? 'font-black text-[#111E38] dark:text-white' : 'font-medium text-neutral-700 dark:text-neutral-300'} line-clamp-2`}>
-                        {cleanText}
+                        {titleText}
                       </p>
                     </div>
+                    {groupByTask && itemTask && (
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mb-1">
+                        {cleanText}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between gap-2 mt-1">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
-                        {n.type?.replace(/_/g, ' ')}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+                          {n.type?.replace(/_/g, ' ')}
+                        </span>
+                        {groupByTask && item.count > 1 && (
+                          <span className="text-[9px] font-black text-indigo-600 dark:text-[#FACC15] bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/40">
+                            {item.count} {tMsg('notifs', 'pesan')}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[10px] font-bold text-neutral-400 shrink-0">
-                        {formatDateMMM(n.timestamp)}
+                        {formatDateMMM(item.timestamp)}
                       </span>
                     </div>
                   </div>
@@ -527,16 +623,16 @@ export default function InboxPage() {
         </div>
 
         {/* Right Column: Split View Detail Preview Panel */}
-        <div className="hidden md:flex flex-1 bg-white dark:bg-[#121B2D] rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs flex-col overflow-hidden p-5">
+        <div className="hidden md:flex flex-1 bg-white dark:bg-[#121B2D] rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs flex-col overflow-hidden p-5 min-h-0">
           {selectedNotification ? (
             <div className="flex-1 flex flex-col min-h-0">
               {/* Header Preview */}
-              <div className="pb-4 mb-4 border-b border-neutral-200/70 dark:border-neutral-800 flex items-start justify-between gap-4 shrink-0">
+              <div className="pb-3 mb-3 border-b border-neutral-200/70 dark:border-neutral-800 flex items-start justify-between gap-4 shrink-0">
                 <div className="flex items-start gap-3">
                   {getNotificationIcon(selectedNotification.type)}
                   <div>
                     <h2 className="text-sm md:text-base font-black text-[#111E38] dark:text-white leading-tight">
-                      {(selectedNotification.message || '')
+                      {targetTask ? targetTask.project_name : (selectedNotification.message || '')
                         .replace(/<!--TASK_ID:\d+-->/g, '')
                         .replace(/Smart Assistant 🤖/g, 'Luruka')
                         .replace(/Smart Assistant/g, 'Luruka')
@@ -560,8 +656,8 @@ export default function InboxPage() {
                 </button>
               </div>
 
-              {/* Body Content Details & Conversation Thread */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1">
+              {/* Body Content Details & Conversation Thread (Scrollable Area) */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 min-h-0">
                 {targetTask ? (
                   <div className="bg-neutral-50 dark:bg-neutral-900/60 p-4 rounded-xl border border-neutral-200/60 dark:border-neutral-800 space-y-3">
                     <div className="flex items-center justify-between gap-2">
@@ -600,21 +696,48 @@ export default function InboxPage() {
                   </div>
                 ) : null}
 
-                {/* Conversation Thread Messages */}
+                {/* Conversation Thread Messages with History Filter */}
                 {taskComments.length > 0 && (
-                  <div className="space-y-2.5 pt-2">
-                    <h4 className="text-xs font-extrabold text-neutral-400 uppercase tracking-wider">
-                      {tMsg('Conversation History', 'Riwayat Percakapan')} ({taskComments.length})
-                    </h4>
-                    <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                      {taskComments.map((c) => (
+                  <div className="space-y-2.5 pt-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-extrabold text-neutral-400 uppercase tracking-wider">
+                        {tMsg('Conversation History', 'Riwayat Percakapan')} ({taskComments.length})
+                      </h4>
+                      {taskComments.length > 5 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllComments(!showAllComments)}
+                          className="text-xs font-bold text-indigo-600 dark:text-[#FACC15] hover:underline cursor-pointer"
+                        >
+                          {showAllComments
+                            ? tMsg('Show Recent 5 Only', 'Tampilkan 5 Terakhir')
+                            : tMsg(`Show All (${taskComments.length})`, `Lihat Semua (${taskComments.length})`)}
+                        </button>
+                      )}
+                    </div>
+
+                    {taskComments.length > 5 && !showAllComments && (
+                      <div className="text-center py-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowAllComments(true)}
+                          className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-full text-[11px] font-bold text-neutral-500 dark:text-neutral-300 transition-all cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                        >
+                          <span className="material-symbols-outlined text-xs">unfold_more</span>
+                          <span>{tMsg(`Load ${taskComments.length - 5} older comments...`, `Tampilkan ${taskComments.length - 5} pesan sebelumnya...`)}</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="space-y-2 pr-1">
+                      {visibleComments.map((c) => (
                         <div key={c.id} className="p-3 bg-white dark:bg-neutral-800/80 rounded-xl border border-neutral-200/70 dark:border-neutral-700/80 text-xs shadow-2xs">
                           <div className="flex items-center justify-between gap-2 mb-1">
                             <span className="font-bold text-[#111E38] dark:text-[#FACC15]">@{c.username}</span>
                             <span className="text-[10px] text-neutral-400">{formatDateMMM(c.timestamp)}</span>
                           </div>
                           <div
-                            className="text-neutral-700 dark:text-neutral-200 leading-normal overflow-hidden break-words text-xs space-y-1"
+                            className="text-neutral-700 dark:text-neutral-200 leading-normal overflow-hidden wrap-break-word text-xs space-y-1"
                             dangerouslySetInnerHTML={{
                               __html: renderChatMessageContent(c.comment || c.text || '', c.username === currentUser),
                             }}
@@ -624,10 +747,12 @@ export default function InboxPage() {
                     </div>
                   </div>
                 )}
+              </div>
 
-                {/* Quick Reply Box with Interactive Mention Suggestions */}
-                {selectedNotification && (
-                  <div className="bg-neutral-50 dark:bg-neutral-900/60 p-4 rounded-xl border border-neutral-200/60 dark:border-neutral-800 space-y-2 relative">
+              {/* Pinned Quick Reply Footer at Bottom */}
+              {selectedNotification && (
+                <div className="pt-3 mt-2 border-t border-neutral-200/70 dark:border-neutral-800 shrink-0 bg-white dark:bg-[#121B2D]">
+                  <div className="bg-neutral-50 dark:bg-neutral-900/60 p-3 rounded-xl border border-neutral-200/60 dark:border-neutral-800 space-y-2 relative">
                     <h4 className="text-xs font-bold text-[#111E38] dark:text-white flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-sm text-indigo-500">reply</span>
                       <span>{tMsg('Quick Reply / Comment', 'Balas Cepat / Komentar')}</span>
@@ -659,7 +784,7 @@ export default function InboxPage() {
                         }}
                         rows={2}
                         placeholder={tMsg('Write a quick reply... (type @ to mention)', 'Tulis balasan cepat... (ketik @ untuk tag)')}
-                        className="w-full p-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-black dark:text-white focus:outline-none focus:border-[#FACC15] resize-none"
+                        className="w-full p-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs text-black dark:text-white focus:outline-none focus:border-[#FACC15] resize-none"
                       />
 
                       {/* Mention Floating Suggestion Popup */}
@@ -697,8 +822,8 @@ export default function InboxPage() {
                       </div>
                     </form>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 p-8 text-center">
