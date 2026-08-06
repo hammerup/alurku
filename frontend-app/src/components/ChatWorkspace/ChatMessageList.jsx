@@ -56,7 +56,16 @@ export default function ChatMessageList({
               </div>
             )}
 
-            {messages.map((c, index, arr) => {
+            {(messages || [])
+              .filter(
+                (c) =>
+                  c &&
+                  c.username !== 'System' &&
+                  c.username?.toLowerCase() !== 'system' &&
+                  !c?.text?.startsWith('[ACTIVITY]') &&
+                  !c?.text?.includes('[ACTIVITY]')
+              )
+              .map((c, index, arr) => {
               const currDate = new Date(c.timestamp.replace(/-/g, '/')).toDateString();
               const prevDate =
                 index > 0 ? new Date(arr[index - 1].timestamp.replace(/-/g, '/')).toDateString() : null;

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { IconPerson, Avatar } from './SharedUI';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { HighlightText, stripHtml, useCloseAnimation, LoadingSpinner, renderRichText } from './Utils';
+import { useAppContext } from './hooks/useAppContext';
 import ChatMessage from './ChatMessage';
 import TaskDetailHeader from './components/TaskDetail/TaskDetailHeader';
 import TaskDetailSidebar from './components/TaskDetail/TaskDetailSidebar';
@@ -346,6 +347,25 @@ export default function TaskDetailModal({
       }
     }
   }, [regularComments, activeTab, selectedTask.id, currentUser, firstUnreadId]);
+
+  const appCtx = useAppContext();
+  React.useEffect(() => {
+    if (selectedTask && selectedTask.id && regularComments.length > 0 && appCtx) {
+      const targetIdStr = String(selectedTask.id);
+      const notifs = appCtx.notifications || [];
+      const unreadForThis = notifs.filter(
+        (n) => !n.is_read && (n.related_task_id === selectedTask.id || String(n.related_task_id) === targetIdStr)
+      );
+      if (unreadForThis.length > 0 && appCtx.handleReadNotification) {
+        unreadForThis.forEach((n) => appCtx.handleReadNotification(n.id));
+      }
+      localStorage.setItem(
+        `alurku_last_read_task_${selectedTask.id}_${currentUser}`,
+        regularComments[regularComments.length - 1].timestamp
+      );
+      if (appCtx.fetchInboxChats) appCtx.fetchInboxChats();
+    }
+  }, [selectedTask?.id, regularComments, appCtx, currentUser]);
 
   React.useEffect(() => {
     if (activeTab === 'comments' && comments.length > 0 && currentUser) {

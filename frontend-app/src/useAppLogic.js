@@ -2207,7 +2207,7 @@ export default function useAppLogic() {
     axios.put(`/api/notifications/${id}/read`).then(fetchNotifications).catch(console.error);
   };
   const handleReadAllNotifications = () => {
-    axios.put('/api/notifications/read_all').then(fetchNotifications).catch(console.error);
+    handleMarkAllInboxAsRead();
   };
 
   const handleMarkAllInboxAsRead = async () => {
@@ -2682,7 +2682,7 @@ export default function useAppLogic() {
         let msgs = res.data.comments || [];
         msgs = msgs
           .map((c) => {
-            const match = c.text.match(/<!--PRIVATE:([\w.-]+)-->/);
+            const match = c.text ? c.text.match(/<!--PRIVATE:([\w.-]+)-->/) : null;
             if (match) {
               return {
                 ...c,
@@ -2693,7 +2693,15 @@ export default function useAppLogic() {
             }
             return c;
           })
-          .filter((c) => !c.isPrivate || c.privateUser === currentUser);
+          .filter(
+            (c) =>
+              c &&
+              c.username !== 'System' &&
+              c.username?.toLowerCase() !== 'system' &&
+              !c.text?.startsWith('[ACTIVITY]') &&
+              !c.text?.includes('[ACTIVITY]') &&
+              (!c.isPrivate || c.privateUser === currentUser)
+          );
 
         if (loadMore) {
           setHasMoreComments(msgs.length === 50);
@@ -2794,7 +2802,7 @@ export default function useAppLogic() {
       .post(`/api/tasks/${taskId}/comments`, { text: commentText })
       .then(() => {
         fetchComments(taskId);
-        return axios.post(`/api/tasks/${taskId}/ai-reply`, { text: aiPromptText });
+        return axios.post(`/api/tasks/${taskId}/ai-reply`, { text: aiPromptText }, { timeout: 120000 });
       })
       .then(() => {
         fetchComments(taskId);
@@ -2803,7 +2811,10 @@ export default function useAppLogic() {
         console.error('AI Task Chat Error:', err);
         showNotification(err.response?.data?.detail || err.message || 'AI failed to reply', 'error');
       })
-      .finally(() => setIsAiReplying(false));
+      .finally(() => {
+        fetchComments(taskId);
+        setIsAiReplying(false);
+      });
   };
 
   const handleDeleteComment = (commentId) => {
@@ -2863,7 +2874,7 @@ export default function useAppLogic() {
         let msgs = res.data.messages || [];
         msgs = msgs
           .map((c) => {
-            const match = c.text.match(/<!--PRIVATE:([\w.-]+)-->/);
+            const match = c.text ? c.text.match(/<!--PRIVATE:([\w.-]+)-->/) : null;
             if (match) {
               return {
                 ...c,
@@ -2874,7 +2885,15 @@ export default function useAppLogic() {
             }
             return c;
           })
-          .filter((c) => !c.isPrivate || c.privateUser === currentUser);
+          .filter(
+            (c) =>
+              c &&
+              c.username !== 'System' &&
+              c.username?.toLowerCase() !== 'system' &&
+              !c.text?.startsWith('[ACTIVITY]') &&
+              !c.text?.includes('[ACTIVITY]') &&
+              (!c.isPrivate || c.privateUser === currentUser)
+          );
 
         if (loadMore) {
           setHasMoreProjectChat(msgs.length === 50);

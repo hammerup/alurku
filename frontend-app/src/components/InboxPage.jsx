@@ -111,7 +111,15 @@ export default function InboxPage() {
   // Initial fetch of task comments when targetTask changes
   React.useEffect(() => {
     let isMounted = true;
+    if (selectedNotification && !selectedNotification.is_read && handleReadNotification) {
+      handleReadNotification(selectedNotification.id);
+    }
     if (targetTask && targetTask.id) {
+      const storageKey = `alurku_last_read_task_${targetTask.id}_${currentUser}`;
+      const nowStr = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      localStorage.setItem(storageKey, nowStr);
+      if (context.fetchInboxChats) context.fetchInboxChats();
+
       axios
         .get(`/api/tasks/${targetTask.id}/comments`)
         .then((res) => {
@@ -128,7 +136,7 @@ export default function InboxPage() {
     } else {
       setTaskComments([]);
     }
-  }, [targetTask]);
+  }, [targetTask, selectedNotification]);
 
   // Real-time WebSocket event listener for instant comment updates
   React.useEffect(() => {
@@ -186,6 +194,24 @@ export default function InboxPage() {
     if (!text) return;
 
     if (targetTask) {
+      const lowerText = text.toLowerCase();
+      const isPrivateAI = lowerText.includes('@ai (private)') || lowerText.includes('🕵️') || lowerText.includes('@ai (privat)');
+      const isAITarget = lowerText.includes('@smart assistant') || lowerText.includes('@ai') || lowerText.includes('@luruka');
+
+      if (isAITarget && context.handleAskAITaskChat && !context.isAiReplying) {
+        context.handleAskAITaskChat(
+          targetTask.id,
+          text,
+          text,
+          () => {
+            setQuickReplyText('');
+            setIsMentioning(false);
+          },
+          isPrivateAI
+        );
+        return;
+      }
+
       axios
         .post(`/api/tasks/${targetTask.id}/comments`, {
           text: text,

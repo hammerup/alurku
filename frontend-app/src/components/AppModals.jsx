@@ -28,7 +28,7 @@ import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import AdminModal from '../AdminModal';
 import DocumentationModal from '../DocumentationModal';
-import ChatWorkspaceModal from '../ChatWorkspaceModal';
+
 import SystemSpecsModal from '../SystemSpecsModal';
 import MoMNotepadModal from './SmartAssistant/MoMNotepadModal';
 import ArchivedProjectsModal from './ArchivedProjectsModal';
@@ -671,114 +671,7 @@ export default function AppModals() {
           language={language}
         />
       )}
-      {isChatWorkspaceOpen && (
-        <ChatWorkspaceModal
-          setIsChatWorkspaceOpen={setIsChatWorkspaceOpen}
-          boards={boards}
-          tasks={tasks}
-          avatarsMap={avatarsMap}
-          currentUser={currentUser}
-          formatDateMMM={formatDateMMM}
-          language={language}
-          handleAskAITaskChat={handleAskAITaskChat}
-          handleToggleReaction={handleToggleReaction}
-          handleDeleteComment={handleDeleteComment}
-          deleteProjectChatMessage={deleteProjectChatMessage}
-          showNotification={showNotification}
-          accountStatus={accountStatus}
-          isAiReplying={isAiReplying}
-          setSelectedTask={setSelectedTask}
-          isSuperAdmin={isSuperAdmin}
-          notifications={notifications}
-          handleNotificationTaskClick={handleNotificationTaskClick}
-          handleReadNotification={handleReadNotification}
-          userDirectory={userDirectory}
-          dmConversations={dmConversations}
-          setDmConversations={setDmConversations}
-          fetchDmConversations={fetchDmConversations}
-          inboxChats={inboxChats}
-          isInboxLoading={isInboxLoading}
-          fetchInboxChats={fetchInboxChats}
-          handleMarkAllInboxAsRead={handleMarkAllInboxAsRead}
-          chatBg={chatBg}
-          workspaceChatTarget={workspaceChatTarget}
-          setWorkspaceChatTarget={setWorkspaceChatTarget}
-        >
-          {selectedTask && (
-            <TaskDetailModal
-              isInline={true}
-              onCloseInline={() => setSelectedTask(null)}
-              tasks={tasks}
-              selectedTask={selectedTask}
-              setSelectedTask={setSelectedTask}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              handleDirectStatusChange={handleDirectStatusChange}
-              columns={columns}
-              editFormData={editFormData}
-              setEditFormData={setEditFormData}
-              formatDateMMM={formatDateMMM}
-              handleRequesterChange={handleRequesterChange}
-              isMentioning={isMentioning}
-              teamMembers={teamMembers}
-              mentionQuery={mentionQuery}
-              insertMention={insertMention}
-              categories={categories}
-              handleOpenAddBoard={handleOpenAddBoard}
-              handleOpenRenameBoard={handleOpenRenameBoard}
-              handleOpenDeleteBoard={handleOpenDeleteBoard}
-              handleEditSubmit={handleEditSubmit}
-              isSuperAdmin={isSuperAdmin}
-              currentUser={currentUser}
-              selectedBoard={selectedBoard}
-              accountStatus={accountStatus}
-              subtasks={subtasks}
-              handleToggleSubtask={handleToggleSubtask}
-              handleUpdateSubtaskAssignee={handleUpdateSubtaskAssignee}              
-              handleDeleteSubtask={handleDeleteSubtask}
-              handleSubtaskDragEnd={handleSubtaskDragEnd}
-              newSubtaskName={newSubtaskName}
-              setNewSubtaskName={setNewSubtaskName}
-              newSubtaskAssignee={newSubtaskAssignee}
-              setNewSubtaskAssignee={setNewSubtaskAssignee}
-              handleAddSubtask={handleAddSubtask}
-              comments={comments}
-              avatarsMap={avatarsMap}
-              handleDeleteComment={handleDeleteComment}
-              newComment={newComment}
-              isAiReplying={isAiReplying}
-              handleAskAITaskChat={handleAskAITaskChat}
-              handleCommentChange={handleCommentChange}
-              insertCommentMention={insertCommentMention}
-              handleAddComment={handleAddComment}
-              setIsDeleteConfirmOpen={setIsDeleteConfirmOpen}
-              startEditing={startEditing}
-              mentionIndex={mentionIndex}
-              setMentionIndex={setMentionIndex}
-              setIsMentioning={setIsMentioning}
-              isCommentMentioning={isCommentMentioning}
-              commentMentionQuery={commentMentionQuery}
-              userDirectory={userDirectory}
-              commentMentionIndex={commentMentionIndex}
-              setCommentMentionIndex={setCommentMentionIndex}
-              setIsCommentMentioning={setIsCommentMentioning}
-              boards={boards}
-              setSelectedBoard={setSelectedBoard}
-              handleQuickLinkAdd={handleQuickLinkAdd}
-              handleQuickLinkRemove={handleQuickLinkRemove}
-              isSubtasksLoading={isSubtasksLoading}
-              hasMoreComments={hasMoreComments}
-              loadMoreComments={loadMoreComments}
-              chatBg={chatBg}
-              handleToggleReaction={handleToggleReaction}
-              language={language}
-              showNotification={showNotification}
-              handleToggleAutoNudge={handleToggleAutoNudge}
-              isSubmitting={isSubmitting}
-            />
-          )}
-        </ChatWorkspaceModal>
-      )}
+
       {isPrivacyOpen && <PrivacyPolicyModal setIsPrivacyOpen={setIsPrivacyOpen} language={language} />}
       {isTermsOpen && <TermsOfServiceModal setIsTermsOpen={setIsTermsOpen} language={language} />}
       {isSpecsOpen && <SystemSpecsModal setIsSpecsOpen={setIsSpecsOpen} language={language} />}

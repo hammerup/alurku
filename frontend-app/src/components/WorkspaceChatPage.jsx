@@ -19,6 +19,7 @@ export default function WorkspaceChatPage() {
     avatarsMap,
     language,
     notifications,
+    handleReadNotification,
     userDirectory,
     dmConversations,
     setDmConversations,
@@ -166,7 +167,18 @@ export default function WorkspaceChatPage() {
 
     axios.get(`/api/tasks/${targetId}/comments`)
       .then((res) => {
-        setTaskPreviewComments(res.data?.comments || res.data || []);
+        const rawComments = res.data?.comments || res.data || [];
+        const cleanComments = Array.isArray(rawComments)
+          ? rawComments.filter(
+              (c) =>
+                c &&
+                c.username !== 'System' &&
+                c.username?.toLowerCase() !== 'system' &&
+                !c?.text?.startsWith('[ACTIVITY]') &&
+                !c?.text?.includes('[ACTIVITY]')
+            )
+          : [];
+        setTaskPreviewComments(cleanComments);
       })
       .catch(console.error);
   }, [tasks, activeChat, handleNotificationTaskClick]);
@@ -279,27 +291,99 @@ export default function WorkspaceChatPage() {
   const [dismissedMentions, setDismissedMentions] = useState(new Set());
   const sessionLastReadRef = useRef(null);
   const initialScrollDoneRef = useRef(false);
+  const lastMsgIdRef = useRef(null);
 
-  // Auto-scroll chat list to bottom on messages load/change & activeChat switch
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+  React.useEffect(() => {
+    initialScrollDoneRef.current = false;
+    setFirstUnreadId(null);
+    lastMsgIdRef.current = null;
+    if (activeChat) {
+      const storageKey =
+        activeChat.type === 'project'
+          ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
+          : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
+      sessionLastReadRef.current = localStorage.getItem(storageKey);
     }
-  }, [messages, activeChat?.id]);
+  }, [activeChat?.id, activeChat?.type, currentUser]);
 
-  // Mention detection logic
+  // Unread Line, Auto Scroll, and Mentions Tracking
   useEffect(() => {
-    if (!messages || messages.length === 0 || !currentUser) return;
-    const mentionMsg = [...messages].reverse().find(
-      (m) =>
-        m.text &&
-        m.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`) &&
-        m.username !== currentUser
-    );
-    if (mentionMsg) {
-      setLatestMentionId(mentionMsg.id);
+    if (messages.length > 0 && activeChat) {
+      const lastRead = sessionLastReadRef.current;
+      let targetId = firstUnreadId;
+      const latestMsgId = messages[messages.length - 1].id;
+      const isFirstLoad = lastMsgIdRef.current === null;
+      const isNewMessageAtBottom = !isFirstLoad && lastMsgIdRef.current !== latestMsgId;
+      lastMsgIdRef.current = latestMsgId;
+
+      if (!targetId && lastRead && isFirstLoad) {
+        const unreadMsg = messages.find((c) => c.timestamp > lastRead && c.username !== currentUser);
+        if (unreadMsg) {
+          targetId = unreadMsg.id;
+          setFirstUnreadId(targetId);
+          initialScrollDoneRef.current = false;
+        }
+      }
+
+      const storageKey =
+        activeChat.type === 'project'
+          ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
+          : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
+
+      if (!initialScrollDoneRef.current) {
+        initialScrollDoneRef.current = true;
+        if (targetId) {
+          let attempts = 0;
+          const interval = setInterval(() => {
+            const el = document.getElementById(`cw-msg-${targetId}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'auto', block: 'center' });
+              setShowScrollBottom(true);
+              clearInterval(interval);
+            } else {
+              attempts++;
+              if (attempts >= 10) {
+                clearInterval(interval);
+                messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+                setShowScrollBottom(false);
+              }
+            }
+          }, 100);
+        } else {
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+            setShowScrollBottom(false);
+            localStorage.setItem(storageKey, messages[messages.length - 1].timestamp);
+          }, 150);
+        }
+      } else if (isNewMessageAtBottom) {
+        const container = scrollContainerRef.current;
+        if (container) {
+          const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 300;
+          const isMyMessage = messages[messages.length - 1].username === currentUser;
+          if (isNearBottom || isMyMessage) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            setShowScrollBottom(false);
+            localStorage.setItem(storageKey, messages[messages.length - 1].timestamp);
+          } else {
+            setShowScrollBottom(true);
+          }
+        }
+      }
+
+      // Mention tracking
+      const mention = [...messages]
+        .reverse()
+        .find(
+          (m) =>
+            (m.text.toLowerCase().includes(`@${currentUser.toLowerCase()}`) || m.text.includes('@team') || m.text.includes('@all')) &&
+            m.username !== currentUser &&
+            !dismissedMentions.has(m.id)
+        );
+      if (mention) setLatestMentionId(mention.id);
+      else setLatestMentionId(null);
     }
-  }, [messages, currentUser]);
+  }, [messages, activeChat, currentUser, firstUnreadId, dismissedMentions]);
 
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
@@ -427,8 +511,18 @@ export default function WorkspaceChatPage() {
     axios
       .get(endpoint, { params })
       .then((res) => {
-        const msgs = res.data.messages || res.data.comments || [];
-        setMessages(msgs);
+        const rawMsgs = res.data.messages || res.data.comments || [];
+        const cleanMsgs = Array.isArray(rawMsgs)
+          ? rawMsgs.filter(
+              (c) =>
+                c &&
+                c.username !== 'System' &&
+                c.username?.toLowerCase() !== 'system' &&
+                !c?.text?.startsWith('[ACTIVITY]') &&
+                !c?.text?.includes('[ACTIVITY]')
+            )
+          : [];
+        setMessages(cleanMsgs);
         if (isInitial) setIsLoadingMessages(false);
       })
       .catch((err) => {
@@ -442,6 +536,45 @@ export default function WorkspaceChatPage() {
       fetchMessages(true);
     }
   }, [activeChat?.id, activeChat?.type]);
+
+  // Clear unread badges for active chat and sync notifications
+  useEffect(() => {
+    if (activeChat && notifications && handleReadNotification && messages.length > 0) {
+      const targetIdStr = String(activeChat.id);
+      const unreadForThis = notifications.filter(
+        (n) => !n.is_read && (n.related_task_id === activeChat.id || String(n.related_task_id) === targetIdStr)
+      );
+      if (unreadForThis.length > 0) unreadForThis.forEach((n) => handleReadNotification(n.id));
+
+      const storageKey =
+        activeChat.type === 'project'
+          ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
+          : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
+      localStorage.setItem(storageKey, messages[messages.length - 1].timestamp);
+      if (fetchInboxChats) fetchInboxChats();
+    }
+  }, [activeChat, messages, notifications, handleReadNotification, currentUser]);
+
+  // Clear DM Unread
+  useEffect(() => {
+    if (activeChat && activeChat.type === 'dm' && messages.length > 0) {
+      const partner = activeChat.partner || activeChat.id;
+      axios.put(`/api/dm/${partner}/read`)
+        .then(() => {
+          if (fetchDmConversations) fetchDmConversations();
+          if (fetchInboxChats) fetchInboxChats();
+        })
+        .catch(console.error);
+    }
+  }, [activeChat, messages]);
+
+  const prevAiReplying = useRef(isAiReplying);
+  useEffect(() => {
+    if (prevAiReplying.current && !isAiReplying && activeChat) {
+      fetchMessages();
+    }
+    prevAiReplying.current = isAiReplying;
+  }, [isAiReplying, activeChat]);
 
   const sendMessage = (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -640,11 +773,11 @@ export default function WorkspaceChatPage() {
             <button
               type="button"
               onClick={() => {
-                const el = document.getElementById(`msg-${latestMentionId}`);
+                const el = document.getElementById(`cw-msg-${latestMentionId}`);
                 if (el) {
                   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } else if (scrollContainerRef.current) {
-                  scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                  el.classList.add('ring-2', 'ring-[#FACC15]', 'bg-[#FACC15]/20');
+                  setTimeout(() => el.classList.remove('ring-2', 'ring-[#FACC15]', 'bg-[#FACC15]/20'), 2500);
                 }
                 setDismissedMentions((prev) => new Set(prev).add(latestMentionId));
               }}

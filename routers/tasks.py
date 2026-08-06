@@ -1361,12 +1361,12 @@ Use pure Markdown. Do not wrap your response in JSON. Respond in the same langua
         )
 
     mentions = set(re.findall(r"@([\w.-]+)", ai_response_text))
-    mentions.add(current_user)
     for m in mentions:
         if (
             m != "Luruka"
             and m != "Luruka 🤖"
             and m != "Smart Assistant 🤖"
+            and m != current_user
             and db.query(User).filter(User.username == m).first()
             and has_task_read_access(db, task, m)
         ):
@@ -1379,6 +1379,27 @@ Use pure Markdown. Do not wrap your response in JSON. Respond in the same langua
             )
 
     update_board_activity(db, task.board_id)
+
+    # Broadcast websocket event so UI refreshes without F5
+    from utils import broadcast_chat_message_event
+    ws_id = 1
+    if task and task.board_id:
+        board = db.query(Board).filter(Board.id == task.board_id).first()
+        if board and board.workspace_id:
+            ws_id = board.workspace_id
+
+    try:
+        broadcast_chat_message_event(
+            workspace_id=ws_id,
+            chat_type="task",
+            target_id=task.id,
+            sender="Luruka",
+            text=ai_text,
+            timestamp=now_str
+        )
+    except Exception as e:
+        print("Failed to broadcast AI reply websocket message:", e)
+
     return {"message": "AI Replied successfully"}
 
 

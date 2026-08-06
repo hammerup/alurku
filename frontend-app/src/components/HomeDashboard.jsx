@@ -898,10 +898,12 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
                           onClick={() => {
                             if (chat.is_dm) {
                               setWorkspaceChatTarget({ type: 'dm', id: chat.partner_username, name: chat.partner_username, partner: chat.partner_username });
-                              setIsChatWorkspaceOpen(true);
+                              window.history.pushState({}, '', '/chat');
+                              window.dispatchEvent(new Event('popstate'));
                             } else if (chat.is_project_chat) {
                               setWorkspaceChatTarget({ type: 'project', id: chat.board_id, name: chat.board_name || 'Project Chat', board_id: chat.board_id });
-                              setIsChatWorkspaceOpen(true);
+                              window.history.pushState({}, '', '/chat');
+                              window.dispatchEvent(new Event('popstate'));
                             } else {
                               handleNotificationTaskClick(chat.task_id);
                             }

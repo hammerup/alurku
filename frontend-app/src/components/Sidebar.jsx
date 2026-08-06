@@ -297,41 +297,20 @@ export default function Sidebar() {
       if (chat.is_dm) return (chat.unread_count || 0) > 0;
       if (chat.is_project_chat) {
         const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
-        const hasUnreadNotification = (notifications || []).some(
-          (n) =>
-            !n.is_read &&
-            String(n.related_task_id) === String(chat.board_id) &&
-            (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
-        );
-        if (!lastRead) return true;
-        return chat.timestamp > lastRead || hasUnreadNotification;
+        if (!lastRead) return false; // Jangan fallback true tanpa interaksi
+        return chat.timestamp > lastRead;
       } else {
         const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
-        const hasUnreadNotification = (notifications || []).some(
-          (n) =>
-            !n.is_read &&
-            String(n.related_task_id) === String(chat.task_id) &&
-            (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
-        );
-        if (!lastRead) return true;
-        return chat.timestamp > lastRead || hasUnreadNotification;
+        if (!lastRead) return false;
+        return chat.timestamp > lastRead;
       }
     }).length;
-  }, [inboxChats, notifications, currentUser]);
+  }, [inboxChats, currentUser]);
 
   const totalUnreadChats = useMemo(() => {
     const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
-    const unreadMentionsAndComments = (notifications || []).filter(
-      (n) =>
-        !n.is_read &&
-        (n.type === 'comment' ||
-          n.type === 'mention' ||
-          n.type === 'mention_no_email' ||
-          n.type === 'team_chat' ||
-          n.type === 'team_chat_no_email')
-    ).length;
-    return Math.max(unreadInboxChatsCount, unreadDms + unreadMentionsAndComments);
-  }, [unreadInboxChatsCount, notifications, dmConversations]);
+    return unreadDms + unreadInboxChatsCount;
+  }, [unreadInboxChatsCount, dmConversations]);
 
   const [sortMode, setSortMode] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'recent';

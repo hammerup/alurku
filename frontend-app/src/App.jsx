@@ -44,7 +44,6 @@ import MeetingsLeavesPage from './components/MeetingsLeavesPage';
 import MyTasksPage from './components/MyTasksPage';
 import PersonalDashboardPage from './components/PersonalDashboardPage';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
-import ChatWorkspaceModal from './ChatWorkspaceModal';
 import SystemSpecsModal from './SystemSpecsModal';
 import LandingPage from './LandingPage';
 import { useAppContext } from './hooks/useAppContext';
@@ -489,17 +488,8 @@ function App() {
 
   const totalUnreadChats = useMemo(() => {
     const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
-    const unreadMentionsAndComments = (notifications || []).filter(
-      (n) =>
-        !n.is_read &&
-        (n.type === 'comment' ||
-          n.type === 'mention' ||
-          n.type === 'mention_no_email' ||
-          n.type === 'team_chat' ||
-          n.type === 'team_chat_no_email')
-    ).length;
-    return unreadDms + unreadMentionsAndComments;
-  }, [notifications, dmConversations]);
+    return unreadDms;
+  }, [dmConversations]);
 
   const chatContainerRef = React.useRef(null);
   const [firstUnreadProjectChatId, setFirstUnreadProjectChatId] = useState(null);
