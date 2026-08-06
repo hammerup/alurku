@@ -1464,7 +1464,7 @@ function App() {
           ) : currentPath === '/my-tasks' || currentPath.endsWith('/my-tasks') || currentPath === '/tugas-saya' ? (
             <MyTasksPage />
           ) : currentPath === '/dashboard' || currentPath.endsWith('/dashboard') || currentPath === '/dasbor' ? (
-            <PersonalDashboardPage />
+            <HomeDashboard />
           ) : !selectedBoard ? (
             currentPath.startsWith('/workspace') ? (
               <WorkspaceOverview />
