@@ -24,6 +24,7 @@ function getLocalToday() {
 export default function MyTasksPage({ initialFilter = 'all' }) {
   const {
     tasks = [],
+    setTasks,
     boards = [],
     currentUser,
     language = 'id',
@@ -32,25 +33,59 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
     setViewMode,
     navigateTo,
     avatarsMap,
+    showNotification,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
-  // Active filter tab: 'all' | 'today' | 'overdue' | 'done'
+  // Active filter tab: 'all' | 'today' | 'this-week' | 'overdue' | 'completed'
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [groupByBoard, setGroupByBoard] = useState(false);
   const [sortBy, setSortBy] = useState('deadline'); // 'deadline' | 'priority' | 'status'
 
+  // Helper for Sunday to Saturday check
+  const isDueThisWeek = (task) => {
+    if (!task.deadline) return false;
+    const dl = String(task.deadline).split('T')[0].split(' ')[0];
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 (Sun) - 6 (Sat)
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - dayOfWeek);
+    sunday.setHours(0, 0, 0, 0);
+
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+    saturday.setHours(23, 59, 59, 999);
+
+    const sunStr = `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+    const satStr = `${saturday.getFullYear()}-${String(saturday.getMonth() + 1).padStart(2, '0')}-${String(saturday.getDate()).padStart(2, '0')}`;
+
+    return dl >= sunStr && dl <= satStr;
+  };
+
   // Read filter from URL on mount/navigation
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const f = params.get('filter');
-    if (f === 'overdue') setActiveFilter('today');
-    else if (f === 'done') setActiveFilter('done');
-    else setActiveFilter('all');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [window.location.href]);
+    const updateFilter = () => {
+      const params = new URLSearchParams(window.location.search);
+      const f = params.get('filter');
+      if (f === 'today') setActiveFilter('today');
+      else if (f === 'this-week') setActiveFilter('this-week');
+      else if (f === 'overdue') setActiveFilter('overdue');
+      else if (f === 'completed' || f === 'done') setActiveFilter('completed');
+      else setActiveFilter('all');
+    };
+    
+    updateFilter();
+    
+    window.addEventListener('popstate', updateFilter);
+    window.addEventListener('alurku-navigate', updateFilter);
+    
+    return () => {
+      window.removeEventListener('popstate', updateFilter);
+      window.removeEventListener('alurku-navigate', updateFilter);
+    };
+  }, []);
 
   const todayStr = getLocalToday();
 
@@ -83,6 +118,38 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
 
   const isDone = (t) => t.status === 'Done' || t.status === 'Completed' || t.status === 'Rejected';
 
+  const toggleTaskCompletion = async (e, task) => {
+    e.stopPropagation();
+    const newStatus = isDone(task) ? 'In Progress' : 'Done';
+    const updated = { ...task, status: newStatus };
+
+    // Optimistic UI update
+    if (setTasks) {
+      setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+    }
+
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error();
+      if (showNotification) {
+        showNotification(
+          newStatus === 'Done'
+            ? tMsg('Task marked as completed!', 'Tugas ditandai selesai!')
+            : tMsg('Task marked as in progress', 'Tugas dikembalikan ke proses')
+        );
+      }
+    } catch {
+      // Revert on error
+      if (setTasks) {
+        setTasks(prev => prev.map(t => t.id === task.id ? task : t));
+      }
+    }
+  };
+
   const myTasks = useMemo(() => {
     return tasks.filter(isUserAssigned);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,12 +159,16 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
     let filtered = myTasks;
 
     switch (activeFilter) {
+      case 'today':
+        filtered = filtered.filter(t => !isDone(t) && isDueToday(t));
+        break;
+      case 'this-week':
+        filtered = filtered.filter(t => !isDone(t) && isDueThisWeek(t));
+        break;
       case 'overdue':
         filtered = filtered.filter(t => !isDone(t) && isOverdue(t));
         break;
-      case 'today':
-        filtered = filtered.filter(t => !isDone(t) && (isDueToday(t) || isOverdue(t)));
-        break;
+      case 'completed':
       case 'done':
         filtered = filtered.filter(t => isDone(t));
         break;
@@ -109,7 +180,7 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(t =>
-        (t.name || '').toLowerCase().includes(q) ||
+        (t.project_name || t.name || t.title || '').toLowerCase().includes(q) ||
         (t.description || '').toLowerCase().includes(q) ||
         (boardMap[t.board_id]?.name || '').toLowerCase().includes(q)
       );
@@ -149,10 +220,8 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
   }, [filteredTasks, groupByBoard]);
 
   const handleOpenTask = (task) => {
-    const board = boardMap[task.board_id];
-    if (board) {
-      setSelectedBoard(board);
-    }
+    // Only set selected task, leave the board context alone 
+    // to prevent navigating away from My Tasks
     setSelectedTask(task);
   };
 
@@ -172,40 +241,50 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
   };
 
   const overdueCount = useMemo(() => myTasks.filter(t => !isDone(t) && isOverdue(t)).length, [myTasks]);
-  const todayCount = useMemo(() => myTasks.filter(t => !isDone(t) && (isDueToday(t) || isOverdue(t))).length, [myTasks]);
+  const todayCount = useMemo(() => myTasks.filter(t => !isDone(t) && isDueToday(t)).length, [myTasks]);
+  const thisWeekCount = useMemo(() => myTasks.filter(t => !isDone(t) && isDueThisWeek(t)).length, [myTasks]);
   const allActiveCount = useMemo(() => myTasks.filter(t => !isDone(t)).length, [myTasks]);
+  const completedCount = useMemo(() => myTasks.filter(t => isDone(t)).length, [myTasks]);
 
   const FILTERS = [
     {
       key: 'all',
-      labelEn: 'Active',
-      labelId: 'Aktif',
+      labelEn: 'All Active',
+      labelId: 'Ditugaskan ke Saya',
       count: allActiveCount,
-      icon: 'task_alt',
+      icon: 'person_check',
       iconColor: 'text-indigo-500',
     },
     {
       key: 'today',
-      labelEn: 'Today & Overdue',
-      labelId: 'Hari Ini & Terlambat',
+      labelEn: 'Due Today',
+      labelId: 'Tenggat Hari Ini',
       count: todayCount,
-      icon: 'schedule',
-      iconColor: 'text-rose-500',
+      icon: 'today',
+      iconColor: 'text-amber-500',
+    },
+    {
+      key: 'this-week',
+      labelEn: 'This Week',
+      labelId: 'Minggu Ini',
+      count: thisWeekCount,
+      icon: 'date_range',
+      iconColor: 'text-indigo-500',
     },
     {
       key: 'overdue',
-      labelEn: 'Overdue Only',
-      labelId: 'Hanya Terlambat',
+      labelEn: 'Overdue',
+      labelId: 'Terlambat',
       count: overdueCount,
-      icon: 'event_busy',
+      icon: 'warning',
       iconColor: 'text-rose-600',
     },
     {
-      key: 'done',
+      key: 'completed',
       labelEn: 'Completed',
       labelId: 'Selesai',
-      count: null,
-      icon: 'check_circle',
+      count: completedCount,
+      icon: 'task_alt',
       iconColor: 'text-emerald-500',
     },
   ];
@@ -217,6 +296,12 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
     const isToday = dl && isDueToday(task) && !isDone(task);
     const statusColor = STATUS_COLORS[task.status] || STATUS_COLORS['To Do'];
     const priorityColor = PRIORITY_COLORS[task.priority] || 'text-neutral-400';
+    const taskTitle = task.project_name || task.name || task.title || tMsg('Untitled Task', 'Tugas Tanpa Judul');
+    const taskDone = isDone(task);
+
+    // Subtasks progress if available
+    const subtasks = task.subtasks || [];
+    const completedSubtasks = subtasks.filter(st => st.is_completed || st.completed).length;
 
     return (
       <div
@@ -225,56 +310,106 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && handleOpenTask(task)}
-        className="w-full flex items-start gap-3 px-4 py-3 bg-white dark:bg-[#121B2D] border border-neutral-200/70 dark:border-neutral-800/60 rounded-xl hover:border-[#FACC15]/60 dark:hover:border-[#FACC15]/40 hover:shadow-sm transition-all cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-[#FACC15]"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-[#121B2D] border border-neutral-200/70 dark:border-neutral-800/60 rounded-xl hover:border-[#FACC15]/60 dark:hover:border-[#FACC15]/40 hover:shadow-sm transition-all cursor-pointer group outline-none focus-visible:ring-2 focus-visible:ring-[#FACC15]"
       >
-        {/* Priority indicator */}
-        <span
-          className={`material-symbols-outlined text-[18px] mt-0.5 shrink-0 ${priorityColor}`}
-          title={task.priority || 'No priority'}
-        >
-          {task.priority === 'Critical' ? 'priority_high' : task.priority === 'High' ? 'arrow_upward' : task.priority === 'Low' ? 'arrow_downward' : 'remove'}
-        </span>
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Interactive Checkbox for Task Completion */}
+          <button
+            type="button"
+            onClick={(e) => toggleTaskCompletion(e, task)}
+            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
+              taskDone
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'border-neutral-300 dark:border-neutral-600 hover:border-[#FACC15] dark:hover:border-[#FACC15] bg-transparent'
+            }`}
+            title={taskDone ? tMsg('Mark as incomplete', 'Tandai belum selesai') : tMsg('Mark as complete', 'Tandai selesai')}
+          >
+            {taskDone && <span className="material-symbols-outlined text-[14px] font-bold">check</span>}
+          </button>
 
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-semibold truncate ${isDone(task) ? 'line-through text-neutral-400' : 'text-[#111E38] dark:text-neutral-100'}`}>
-            {task.name}
-          </p>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            {/* Status Badge */}
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${statusColor}`}>
-              {task.status || 'To Do'}
-            </span>
+          {/* Priority Icon */}
+          <span
+            className={`material-symbols-outlined text-[16px] shrink-0 ${priorityColor}`}
+            title={tMsg(`Priority: ${task.priority || 'Normal'}`, `Prioritas: ${task.priority || 'Normal'}`)}
+          >
+            {task.priority === 'Critical' ? 'priority_high' : task.priority === 'High' ? 'arrow_upward' : task.priority === 'Low' ? 'arrow_downward' : 'remove'}
+          </span>
 
-            {/* Board tag */}
-            {board && (
-              <button
-                onClick={(e) => { e.stopPropagation(); handleGoToBoard(board.id); }}
-                className="text-[10px] font-medium text-slate-500 dark:text-slate-400 hover:text-[#111E38] dark:hover:text-white flex items-center gap-0.5 transition-colors"
-                title={tMsg('Go to project', 'Buka proyek')}
-              >
-                <span className="material-symbols-outlined text-[11px]">folder</span>
-                {board.name}
-              </button>
-            )}
+          {/* Task Main Details */}
+          <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+            <h3 className={`text-sm font-semibold truncate ${taskDone ? 'line-through text-neutral-400 dark:text-neutral-500' : 'text-[#111E38] dark:text-neutral-100'}`}>
+              {taskTitle}
+            </h3>
 
-            {/* Category */}
-            {task.category && (
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                {task.category}
+            <div className="flex items-center gap-2 flex-wrap text-[11px]">
+              {/* Status Badge */}
+              <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${statusColor}`}>
+                {task.status || 'To Do'}
               </span>
-            )}
+
+              {/* Project/Board Tag */}
+              {board && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleGoToBoard(board.id); }}
+                  className="text-slate-500 dark:text-slate-400 hover:text-[#111E38] dark:hover:text-[#FACC15] font-medium flex items-center gap-1 transition-colors"
+                  title={tMsg('Open Project', 'Buka Proyek')}
+                >
+                  <span className="material-symbols-outlined text-[13px]">folder</span>
+                  <span className="truncate max-w-40">{board.name}</span>
+                </button>
+              )}
+
+              {/* Category */}
+              {task.category && (
+                <span className="text-neutral-400 dark:text-neutral-500 flex items-center gap-0.5">
+                  • <span>{task.category}</span>
+                </span>
+              )}
+
+              {/* Subtask count */}
+              {subtasks.length > 0 && (
+                <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-0.5 ml-1">
+                  <span className="material-symbols-outlined text-[12px]">checklist</span>
+                  {completedSubtasks}/{subtasks.length}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Deadline */}
-        {dl && (
-          <div className={`text-[11px] font-semibold shrink-0 flex items-center gap-1 ${isOv ? 'text-rose-500' : isToday ? 'text-amber-500' : 'text-neutral-400 dark:text-neutral-500'}`}>
-            <span className="material-symbols-outlined text-[13px]">
-              {isOv ? 'event_busy' : isToday ? 'today' : 'calendar_today'}
-            </span>
-            {dl}
-          </div>
-        )}
+        {/* Right Details: Assignee + Deadline */}
+        <div className="flex items-center gap-3 shrink-0">
+          {/* Assignee Avatar */}
+          {task.assignee && (
+            <div
+              className="w-6 h-6 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 text-white text-[10px] font-bold flex items-center justify-center uppercase shadow-2xs"
+              title={`${tMsg('Assignee', 'Ditugaskan ke')}: ${task.assignee}`}
+            >
+              {task.assignee.substring(0, 2)}
+            </div>
+          )}
+
+          {/* Deadline */}
+          {dl ? (
+            <div className={`text-xs font-bold flex items-center gap-1 px-2 py-1 rounded-lg ${
+              isDone(task)
+                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400'
+                : isOv
+                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/50'
+                : isToday
+                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50'
+                : 'text-slate-500 dark:text-slate-400'
+            }`}>
+              <span className="material-symbols-outlined text-[14px]">
+                {isOv ? 'event_busy' : isToday ? 'today' : 'calendar_today'}
+              </span>
+              <span>{dl}</span>
+            </div>
+          ) : (
+            <span className="text-xs text-neutral-400 italic shrink-0">{tMsg('No deadline', 'Tanpa deadline')}</span>
+          )}
+        </div>
       </div>
     );
   };

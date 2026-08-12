@@ -285,6 +285,38 @@ export default function Sidebar() {
     }).length;
   }, [tasks, currentUser]);
 
+  const dueTodayCount = useMemo(() => {
+    const nowStr = new Date().toISOString().split('T')[0];
+    return (tasks || []).filter((t) => {
+      const isMyTask = (t.assignee && t.assignee.toLowerCase() === currentUser?.toLowerCase()) || t.owner_username === currentUser;
+      const isDone = t.status === 'Done' || t.status === 'Completed' || t.status === 'Rejected';
+      const deadlineStr = t.deadline ? String(t.deadline).split('T')[0] : '';
+      return isMyTask && !isDone && deadlineStr === nowStr;
+    }).length;
+  }, [tasks, currentUser]);
+
+  const dueThisWeekCount = useMemo(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 (Sun) - 6 (Sat)
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - dayOfWeek);
+    sunday.setHours(0, 0, 0, 0);
+
+    const saturday = new Date(sunday);
+    saturday.setDate(sunday.getDate() + 6);
+    saturday.setHours(23, 59, 59, 999);
+
+    const sunStr = sunday.toISOString().split('T')[0];
+    const satStr = saturday.toISOString().split('T')[0];
+
+    return (tasks || []).filter((t) => {
+      const isMyTask = (t.assignee && t.assignee.toLowerCase() === currentUser?.toLowerCase()) || t.owner_username === currentUser;
+      const isDone = t.status === 'Done' || t.status === 'Completed' || t.status === 'Rejected';
+      const deadlineStr = t.deadline ? String(t.deadline).split('T')[0] : '';
+      return isMyTask && !isDone && deadlineStr >= sunStr && deadlineStr <= satStr;
+    }).length;
+  }, [tasks, currentUser]);
+
   const getBoardTaskCount = (boardId) => {
     return (tasks || []).filter(
       (t) => parseInt(t.board_id) === parseInt(boardId) && t.status !== 'Done' && t.status !== 'Completed' && t.status !== 'Rejected'
@@ -979,94 +1011,191 @@ export default function Sidebar() {
             {/* TAB 2: MY TASKS */}
             {activeRailTab === 'tasks' && (
               <div className="space-y-3">
-                <div className="space-y-0.5">
-                  {/* Quick Add Task Button */}
-                  <button
-                    onClick={() => {
-                      setIsFormOpen(true);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-[#FACC15] font-bold text-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all mb-1 border border-indigo-200/50 dark:border-indigo-800/40"
-                  >
-                    <IconPlus className="w-3.5 h-3.5" />
-                    <span>{tMsg('Add New Task', 'Tambah Tugas Baru')}</span>
-                  </button>
+                {/* Brand-compliant Quick Add Task Button */}
+                <button
+                  onClick={() => {
+                    setIsFormOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold text-xs hover:opacity-90 transition-all mb-2 shadow-2xs"
+                >
+                  <IconPlus className="w-3.5 h-3.5" />
+                  <span>{tMsg('Add New Task', 'Tambah Tugas Baru')}</span>
+                </button>
 
-                  {/* Assigned to Me */}
-                  <button
-                    onClick={() => {
-                      setSelectedBoard(null);
-                      setIsMobileMenuOpen(false);
-                      window.history.pushState({}, '', '/my-tasks');
-                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
-                    }}
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                      activePath === '/my-tasks' && !activePath?.includes('overdue')
-                        ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
-                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px]">person_check</span>
-                      <span className="truncate">{tMsg('Assigned to me', 'Ditugaskan ke saya')}</span>
-                    </div>
-                    {assignedToMeCount > 0 && (
-                      <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{assignedToMeCount}</span>
-                    )}
-                  </button>
-
-                  {/* Today & Overdue */}
-                  <button
-                    onClick={() => {
-                      setSelectedBoard(null);
-                      setIsMobileMenuOpen(false);
-                      window.history.pushState({}, '', '/my-tasks?filter=overdue');
-                      window.dispatchEvent(new CustomEvent('alurku-navigate'));
-                    }}
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                      showOverdueOnly
-                        ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold'
-                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px] text-rose-500">schedule</span>
-                      <span className="truncate">{tMsg('Today & Overdue', 'Hari Ini & Terlambat')}</span>
-                    </div>
-                    {overdueCount > 0 && (
-                      <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
-                        {overdueCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Personal Tasks */}
-                  {todoListBoard && (
+                {/* Section 1: Smart Views */}
+                <div>
+                  <div className="px-2 py-1 text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider select-none">
+                    {tMsg('Smart Views', 'Tampilan Cerdas')}
+                  </div>
+                  <div className="space-y-0.5 mt-0.5">
+                    {/* All Assigned Tasks */}
                     <button
                       onClick={() => {
-                        setSelectedBoard(todoListBoard);
-                        setShowMyTasks(false);
-                        setShowOverdueOnly(false);
-                        setViewMode('kanban');
+                        setSelectedBoard(null);
                         setIsMobileMenuOpen(false);
-                        const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
-                        const wsSlug = slugify(activeWorkspace?.name);
-                        const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
-                        window.history.pushState({}, '', targetUrl);
+                        window.history.pushState({}, '', '/my-tasks');
                         window.dispatchEvent(new CustomEvent('alurku-navigate'));
                       }}
                       className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                        selectedBoard?.id === todoListBoard.id
+                        activePath === '/my-tasks' && !activePath?.includes('filter=')
                           ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
                           : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px] text-amber-500">lock</span>
-                        <span className="truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
+                        <span className="material-symbols-outlined text-[18px]">person_check</span>
+                        <span className="truncate">{tMsg('Assigned to me', 'Ditugaskan ke saya')}</span>
+                      </div>
+                      {assignedToMeCount > 0 && (
+                        <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{assignedToMeCount}</span>
+                      )}
+                    </button>
+
+                    {/* Today */}
+                    <button
+                      onClick={() => {
+                        setSelectedBoard(null);
+                        setIsMobileMenuOpen(false);
+                        window.history.pushState({}, '', '/my-tasks?filter=today');
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                        activePath?.includes('filter=today')
+                          ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 font-bold'
+                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-[18px] text-amber-500">today</span>
+                        <span className="truncate">{tMsg('Due Today', 'Tenggat Hari Ini')}</span>
+                      </div>
+                      {dueTodayCount > 0 && (
+                        <span className="min-w-4 h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
+                          {dueTodayCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* This Week (Minggu - Sabtu) */}
+                    <button
+                      onClick={() => {
+                        setSelectedBoard(null);
+                        setIsMobileMenuOpen(false);
+                        window.history.pushState({}, '', '/my-tasks?filter=this-week');
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                        activePath?.includes('filter=this-week')
+                          ? 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-bold'
+                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-[18px] text-indigo-500">date_range</span>
+                        <span className="truncate">{tMsg('This Week', 'Minggu Ini')}</span>
+                      </div>
+                      {dueThisWeekCount > 0 && (
+                        <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">{dueThisWeekCount}</span>
+                      )}
+                    </button>
+
+                    {/* Overdue */}
+                    <button
+                      onClick={() => {
+                        setSelectedBoard(null);
+                        setIsMobileMenuOpen(false);
+                        window.history.pushState({}, '', '/my-tasks?filter=overdue');
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                        activePath?.includes('filter=overdue') || showOverdueOnly
+                          ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold'
+                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-[18px] text-rose-500">warning</span>
+                        <span className="truncate">{tMsg('Overdue', 'Terlambat')}</span>
+                      </div>
+                      {overdueCount > 0 && (
+                        <span className="min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center leading-none">
+                          {overdueCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Completed */}
+                    <button
+                      onClick={() => {
+                        setSelectedBoard(null);
+                        setIsMobileMenuOpen(false);
+                        window.history.pushState({}, '', '/my-tasks?filter=completed');
+                        window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                      }}
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                        activePath?.includes('filter=completed')
+                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold'
+                          : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="material-symbols-outlined text-[18px] text-emerald-500">task_alt</span>
+                        <span className="truncate">{tMsg('Completed', 'Selesai')}</span>
                       </div>
                     </button>
-                  )}
+                  </div>
+                </div>
+
+                {/* Section 2: Personal Space */}
+                <div className="pt-2 border-t border-neutral-200/60 dark:border-neutral-800/60">
+                  <div className="px-2 py-1 text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider select-none">
+                    {tMsg('Personal Space', 'Ruang Pribadi')}
+                  </div>
+                  <div className="space-y-0.5 mt-0.5">
+                    {todoListBoard ? (
+                      <button
+                        onClick={() => {
+                          setSelectedBoard(todoListBoard);
+                          setShowMyTasks(false);
+                          setShowOverdueOnly(false);
+                          setViewMode('kanban');
+                          setIsMobileMenuOpen(false);
+                          const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
+                          const wsSlug = slugify(activeWorkspace?.name);
+                          const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
+                          window.history.pushState({}, '', targetUrl);
+                          window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                        }}
+                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${
+                          selectedBoard?.id === todoListBoard.id
+                            ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                            : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="material-symbols-outlined text-[18px] text-amber-500">folder_special</span>
+                          <span className="truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
+                        </div>
+                        {getBoardTaskCount(todoListBoard.id) > 0 && (
+                          <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500">
+                            {getBoardTaskCount(todoListBoard.id)}
+                          </span>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setIsCreateBoardOpen(true);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 italic"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">add_circle_outline</span>
+                        <span className="truncate">{tMsg('+ Create Personal Board', '+ Buat Board Pribadi')}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
