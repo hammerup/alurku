@@ -81,6 +81,8 @@ export default function Sidebar() {
     setFilterCategory,
     filterAssignee,
     setFilterAssignee,
+    groupBy,
+    setGroupBy,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -133,6 +135,11 @@ export default function Sidebar() {
 
   // Saved Views State
   const [activeSavedViewId, setActiveSavedViewId] = useState(null);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [saveViewName, setSaveViewName] = useState('');
+  const [saveViewIcon, setSaveViewIcon] = useState('bookmark');
+  const [pendingSnapshot, setPendingSnapshot] = useState(null);
+
   const [savedViews, setSavedViews] = useState(() => {
     if (typeof window !== 'undefined' && currentUser) {
       try {
@@ -141,25 +148,71 @@ export default function Sidebar() {
       } catch {}
     }
     return [
-      { id: 'sv-assigned', nameEn: 'Assigned to Me', nameId: 'Ditugaskan ke Saya', icon: 'person_check', type: 'assigned' },
-      { id: 'sv-overdue', nameEn: 'Overdue Tasks', nameId: 'Tugas Terlambat', icon: 'schedule', type: 'overdue' },
+      { id: 'sv-assigned', nameEn: 'Assigned to Me', nameId: 'Ditugaskan ke Saya', icon: 'person_check', type: 'assigned', targetUrl: '/my-tasks' },
+      { id: 'sv-overdue', nameEn: 'Overdue Tasks', nameId: 'Tugas Terlambat', icon: 'schedule', type: 'overdue', targetUrl: '/my-tasks?filter=overdue' },
     ];
   });
 
-  const handleSaveCurrentView = () => {
-    const viewName = prompt(tMsg('Enter a name for this custom view:', 'Masukkan nama untuk filter tersimpan ini:'));
-    if (!viewName || !viewName.trim()) return;
-    const newView = {
-      id: `sv-${Date.now()}`,
-      nameEn: viewName.trim(),
-      nameId: viewName.trim(),
-      icon: 'bookmark',
-      type: 'custom',
+  const handleOpenSaveModal = () => {
+    const currentPathname = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
+    
+    // Auto-suggest a descriptive default name based on what's active
+    let defaultName = '';
+    let defaultIcon = 'bookmark';
+
+    if (selectedBoard && selectedBoard.id !== 'global') {
+      defaultName = `${selectedBoard.name} (${viewMode || 'kanban'})`;
+      defaultIcon = viewMode === 'timeline' ? 'timeline' : viewMode === 'list' ? 'view_list' : viewMode === 'calendar' ? 'calendar_month' : 'view_kanban';
+    } else if (currentPathname.includes('/my-tasks')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const filter = urlParams.get('filter') || 'all';
+      defaultName = `My Tasks - ${filter.charAt(0).toUpperCase() + filter.slice(1)}`;
+      defaultIcon = 'task_alt';
+    } else if (currentPathname.includes('/assigned-comments')) {
+      defaultName = 'Comments & Mentions';
+      defaultIcon = 'comment';
+    } else if (currentPathname.includes('/meetings-leaves')) {
+      defaultName = 'Team Leaves & Schedule';
+      defaultIcon = 'event_available';
+    } else if (currentPathname.includes('/inbox')) {
+      defaultName = 'Inbox Feed';
+      defaultIcon = 'inbox';
+    } else if (currentPathname.includes('/dashboard')) {
+      defaultName = 'Personal Dashboard';
+      defaultIcon = 'home';
+    } else {
+      defaultName = selectedBoard?.name || 'Custom View';
+      defaultIcon = 'bookmark';
+    }
+
+    setSaveViewName(defaultName);
+    setSaveViewIcon(defaultIcon);
+    setPendingSnapshot({
+      targetUrl: currentPathname || (selectedBoard ? `/workspace/${activeWorkspace?.id || 'main'}/project/${selectedBoard.id}` : '/my-tasks'),
+      boardId: selectedBoard?.id || null,
+      board: selectedBoard || null,
+      viewMode: viewMode || 'kanban',
+      groupBy: groupBy || 'Status',
       filterStatus: filterStatus || 'All',
       filterCategory: filterCategory || 'All',
       filterAssignee: filterAssignee || 'All',
       showMyTasks: showMyTasks || false,
       showOverdueOnly: showOverdueOnly || false,
+    });
+    setIsSaveModalOpen(true);
+  };
+
+  const handleSaveModalSubmit = (e) => {
+    e.preventDefault();
+    if (!saveViewName.trim() || !pendingSnapshot) return;
+
+    const newView = {
+      id: `sv-${Date.now()}`,
+      nameEn: saveViewName.trim(),
+      nameId: saveViewName.trim(),
+      icon: saveViewIcon || 'bookmark',
+      type: 'custom',
+      ...pendingSnapshot,
     };
     const updated = [...savedViews, newView];
     setSavedViews(updated);
@@ -167,8 +220,10 @@ export default function Sidebar() {
       localStorage.setItem(`alurku_saved_views_${currentUser}`, JSON.stringify(updated));
     }
     if (showNotification) {
-      showNotification(tMsg('Custom view saved!', 'Filter tersimpan berhasil ditambahkan!'));
+      showNotification(tMsg('Shortcut view saved to sidebar!', 'Shortcut tampilan berhasil disimpan ke sidebar!'));
     }
+    setIsSaveModalOpen(false);
+    setPendingSnapshot(null);
   };
 
   const handleDeleteSavedView = (e, viewId) => {
@@ -1462,7 +1517,7 @@ export default function Sidebar() {
                     </span>
                   </span>
                   <button
-                    onClick={handleSaveCurrentView}
+                    onClick={handleOpenSaveModal}
                     className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 cursor-pointer"
                     title={tMsg('Save Current Active Filter', 'Simpan Filter Saat Ini')}
                   >
@@ -1486,20 +1541,39 @@ export default function Sidebar() {
                           <button
                             onClick={() => {
                               setActiveSavedViewId(sv.id);
-                              setSelectedBoard(null);
-                              let targetUrl = '/my-tasks';
-                              if (sv.type === 'overdue') {
-                                targetUrl = '/my-tasks?filter=overdue';
-                              } else if (sv.type === 'assigned') {
-                                targetUrl = '/my-tasks';
-                              } else if (sv.type === 'custom') {
-                                if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
-                                if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
-                                if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
-                                if (sv.showMyTasks !== undefined && setShowMyTasks) setShowMyTasks(sv.showMyTasks);
-                                if (sv.showOverdueOnly !== undefined && setShowOverdueOnly) setShowOverdueOnly(sv.showOverdueOnly);
-                              }
                               setIsMobileMenuOpen(false);
+
+                              // 1. Restore Board / Project
+                              if (sv.boardId) {
+                                if (sv.boardId === 'global') {
+                                  setSelectedBoard({
+                                    id: 'global',
+                                    name: tMsg('All Projects', 'Semua Proyek'),
+                                    owner_username: currentUser,
+                                    role: 'owner',
+                                    isVirtual: true,
+                                  });
+                                } else {
+                                  const targetBoard = (boards || []).find((b) => String(b.id) === String(sv.boardId)) || sv.board;
+                                  if (targetBoard) setSelectedBoard(targetBoard);
+                                }
+                              } else if (sv.type === 'assigned' || sv.type === 'overdue' || sv.targetUrl?.includes('/my-tasks') || sv.targetUrl?.includes('/inbox') || sv.targetUrl?.includes('/meetings') || sv.targetUrl?.includes('/dashboard')) {
+                                setSelectedBoard(null);
+                              }
+
+                              // 2. Restore View Mode & Grouping
+                              if (sv.viewMode && setViewMode) setViewMode(sv.viewMode);
+                              if (sv.groupBy && setGroupBy) setGroupBy(sv.groupBy);
+
+                              // 3. Restore Filters
+                              if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
+                              if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
+                              if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
+                              if (sv.showMyTasks !== undefined && setShowMyTasks) setShowMyTasks(sv.showMyTasks);
+                              if (sv.showOverdueOnly !== undefined && setShowOverdueOnly) setShowOverdueOnly(sv.showOverdueOnly);
+
+                              // 4. Restore URL
+                              const targetUrl = sv.targetUrl || (sv.type === 'overdue' ? '/my-tasks?filter=overdue' : '/my-tasks');
                               window.history.pushState({}, '', targetUrl);
                               window.dispatchEvent(new CustomEvent('alurku-navigate'));
                             }}
@@ -1543,6 +1617,137 @@ export default function Sidebar() {
         </aside>
 
       </div>
+
+      {/* ════════════════════════════════════════════════════════════════════════ */}
+      {/* CUSTOM MODAL: SAVE CURRENT VIEW / SMART BOOKMARK */}
+      {/* ════════════════════════════════════════════════════════════════════════ */}
+      {isSaveModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-99 animate-fade-in">
+          <div 
+            className="bg-white dark:bg-[#121B2D] border border-neutral-200 dark:border-neutral-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#FACC15]/15 text-[#111E38] dark:text-[#FACC15] flex items-center justify-center font-bold">
+                  <span className="material-symbols-outlined text-[20px]">bookmark_add</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#111E38] dark:text-white">
+                    {tMsg('Save Current View', 'Simpan Tampilan Saat Ini')}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {tMsg('Create a personal sidebar shortcut for this view', 'Buat shortcut personal di sidebar untuk tampilan ini')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsSaveModalOpen(false);
+                  setPendingSnapshot(null);
+                }}
+                className="text-neutral-400 hover:text-slate-700 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveModalSubmit} className="space-y-4">
+              {/* Name Input */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {tMsg('View Name', 'Nama Tampilan')}
+                </label>
+                <input
+                  type="text"
+                  value={saveViewName}
+                  onChange={(e) => setSaveViewName(e.target.value)}
+                  placeholder={tMsg('e.g. Sprint 2 - High Impact', 'Contoh: Sprint 2 - Tugas Kritis')}
+                  autoFocus
+                  required
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/60 text-slate-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-[#FACC15] focus:border-transparent transition-all"
+                />
+              </div>
+
+              {/* Icon Selector */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  {tMsg('Choose Icon', 'Pilih Ikon')}
+                </label>
+                <div className="grid grid-cols-6 gap-2">
+                  {[
+                    { id: 'bookmark', icon: 'bookmark' },
+                    { id: 'view_kanban', icon: 'view_kanban' },
+                    { id: 'view_list', icon: 'view_list' },
+                    { id: 'timeline', icon: 'timeline' },
+                    { id: 'calendar_month', icon: 'calendar_month' },
+                    { id: 'task_alt', icon: 'task_alt' },
+                    { id: 'flag', icon: 'flag' },
+                    { id: 'star', icon: 'star' },
+                    { id: 'bolt', icon: 'bolt' },
+                    { id: 'folder', icon: 'folder' },
+                    { id: 'insights', icon: 'insights' },
+                    { id: 'inbox', icon: 'inbox' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSaveViewIcon(item.icon)}
+                      className={`h-9 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                        saveViewIcon === item.icon
+                          ? 'border-[#111E38] dark:border-[#FACC15] bg-[#111E38]/10 dark:bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold shadow-xs'
+                          : 'border-neutral-200 dark:border-neutral-800 text-slate-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Snapshot Summary Pill */}
+              {pendingSnapshot && (
+                <div className="p-2.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/60 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+                  <div className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[14px] text-emerald-500">check_circle</span>
+                    <span>{tMsg('Captured Settings', 'Pengaturan yang Direkam')}:</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-2 gap-y-0.5">
+                    <span>• {tMsg('Mode', 'Mode')}: <strong>{pendingSnapshot.viewMode}</strong></span>
+                    {pendingSnapshot.board?.name && <span>• {tMsg('Project', 'Proyek')}: <strong>{pendingSnapshot.board.name}</strong></span>}
+                    {pendingSnapshot.filterStatus !== 'All' && <span>• {tMsg('Status', 'Status')}: <strong>{pendingSnapshot.filterStatus}</strong></span>}
+                    {pendingSnapshot.filterCategory !== 'All' && <span>• {tMsg('Category', 'Kategori')}: <strong>{pendingSnapshot.filterCategory}</strong></span>}
+                    {pendingSnapshot.showOverdueOnly && <span>• <strong>{tMsg('Overdue Only', 'Hanya Terlambat')}</strong></span>}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSaveModalOpen(false);
+                    setPendingSnapshot(null);
+                  }}
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer"
+                >
+                  {tMsg('Cancel', 'Batal')}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-[#EAB308] rounded-lg transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  <span>{tMsg('Save View', 'Simpan Tampilan')}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
