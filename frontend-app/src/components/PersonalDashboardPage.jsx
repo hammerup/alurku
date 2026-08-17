@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
 import { Avatar } from '../SharedUI';
+import { isUserAssigned } from '../useAppLogic';
 
 function getLocalToday() {
   const d = new Date();
@@ -32,15 +33,10 @@ export default function PersonalDashboardPage() {
     return map;
   }, [boards]);
 
-  // Filter tasks assigned to current user
+  // Filter tasks assigned to current user using unified matcher
   const myTasks = useMemo(() => {
     if (!currentUser) return [];
-    const cu = currentUser.toLowerCase();
-    return tasks.filter((t) => {
-      if (t.assignee && t.assignee.toLowerCase() === cu) return true;
-      if (t.owner_username && t.owner_username.toLowerCase() === cu) return true;
-      return false;
-    });
+    return tasks.filter((t) => isUserAssigned(t, currentUser));
   }, [tasks, currentUser]);
 
   // Statistics calculation
@@ -88,7 +84,8 @@ export default function PersonalDashboardPage() {
         const dl = t.deadline ? String(t.deadline).split('T')[0].split(' ')[0] : '';
         const isOverdue = dl && dl < todayStr;
         const isToday = dl && dl === todayStr;
-        const isHigh = t.priority === 'Critical' || t.priority === 'High';
+        const rawImpact = t.impact || t.priority || t.priority_str;
+        const isHigh = rawImpact === 'Critical' || rawImpact === 'High';
         return isOverdue || isToday || isHigh;
       })
       .slice(0, 5);

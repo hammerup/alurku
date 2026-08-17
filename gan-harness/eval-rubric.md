@@ -1,17 +1,12 @@
-# Design-Focused Evaluation Rubric (Kanban Board)
+# Evaluation Rubric for Alurku. GAN-Build
 
-### Design Quality (weight: 0.35)
-- Does the Kanban Board feel premium, modern, and aligned with alurku. Brand Book (Deep Navy #111E38, Flat Yellow #FACC15, Off-White #FAFAFA)?
-- Is typography crisp, legible, and hierarchical across task cards and headers?
-- Are status indicator dots, badges, and avatars visually harmonized?
+| Criterion | Weight | Score (1-10) | Description |
+|---|---|---|---|
+| **1. Functional Completeness & Zero Dead Buttons** | 30% | | All navigation links, buttons, toggles, form inputs, modals, and actions execute real API calls or state mutations with zero dead clicks or uncaught exceptions. |
+| **2. Routing, Permalinks & URL Bidirectionality** | 20% | | Direct page loads, browser back/forward (popstate), and tab transitions preserve state and exact permalinks (`/my-tasks`, `/inbox`, `/leaves`, `/masuk`, etc.). |
+| **3. UI/UX Consistency & Brand Guidelines** | 20% | | Adherence to alurku. brandbook: Flat yellow `#FACC15`, Navy `#111E38`, Calm Gray `#F3F4F6`, Plus Jakarta Sans typography, smooth micro-animations, no generic clichés. |
+| **4. Backend API Robustness & Error Handling** | 15% | | Clean FastAPI endpoint responses, proper auth check & exception handling, no 500 errors on edge cases or empty parameters. |
+| **5. Code Quality, Immutability & Clean Architecture** | 15% | | Clean state management, no direct state mutations, modular component tree, no console error spam. |
 
-### Originality (weight: 0.30)
-- Does the UI feel custom, distinctive, and award-worthy rather than a generic Trello clone?
-- Are drag-and-drop micro-interactions, empty column drop zone highlights, and subtask progress bars visually engaging?
-
-### Craft (weight: 0.25)
-- Is the alignment, card spacing, column width, and padding consistent?
-- Are SVG icons, avatars, and metadata badges rendered with pixel-perfect precision?
-
-### Functionality (weight: 0.10)
-- Do drag-and-drop operations, task selection, project board routing, and archive toggles work without breaking application state?
+### Passing Score Threshold: >= 7.5 / 10.0
+- **Plateau Condition:** If score does not improve over 2 consecutive iterations, stop and report.

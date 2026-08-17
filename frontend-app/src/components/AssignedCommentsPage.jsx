@@ -49,8 +49,14 @@ export default function AssignedCommentsPage() {
 
     const result = [];
     tasks.forEach((task) => {
-      const isAssignee = (task.assignees || []).some(
-        (a) => (typeof a === 'string' ? a : a?.username || a?.name) === currentUser
+      const uname = (currentUser || '').toLowerCase();
+      const reqLower = (task.requester || '').toLowerCase();
+      const isMentionedExact = reqLower ? new RegExp(`@${uname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w.-])`, 'i').test(reqLower) : false;
+      const isAssignedSubtask = (task.subtask_assignees || '').toLowerCase().split(', ').includes(uname);
+      const isMainAssignee = (task.main_assignee || '').toLowerCase() === uname;
+      const isOwner = (task.owner_username || '').toLowerCase() === uname;
+      const isAssignee = isMentionedExact || isAssignedSubtask || isMainAssignee || isOwner || (task.assignees || []).some(
+        (a) => (typeof a === 'string' ? a : a?.username || a?.name || '').toLowerCase() === uname
       );
 
       const hasNotification = notifiedTaskIds.has(task.id);
@@ -96,12 +102,12 @@ export default function AssignedCommentsPage() {
 
         result.push({
           taskId: task.id,
-          taskTitle: task.title,
-          projectName: task.project_name || 'General',
+          taskTitle: task.project_name || task.title || task.name || 'Untitled Task',
+          projectName: task.board_name || task.category || 'General',
           lastComment,
           hasMention,
           unreadCount,
-          updatedAt: lastComment?.timestamp || task.updated_at || task.created_at,
+          updatedAt: lastComment?.timestamp || task.updated_at || task.timestamp || task.created_at,
         });
       }
     });

@@ -198,6 +198,18 @@ export default function MeetingsLeavesPage() {
     return map;
   }, [combinedLeaves]);
 
+  // Index tasks by deadline date (YYYY-MM-DD)
+  const tasksByDate = useMemo(() => {
+    const map = {};
+    (tasks || []).forEach((t) => {
+      if (!t.deadline) return;
+      const dateKey = String(t.deadline).split('T')[0].split(' ')[0];
+      if (!map[dateKey]) map[dateKey] = [];
+      map[dateKey].push(t);
+    });
+    return map;
+  }, [tasks]);
+
   const filteredLeavesList = useMemo(() => {
     return combinedLeaves
       .filter((l) => {
@@ -370,6 +382,17 @@ export default function MeetingsLeavesPage() {
               <span className="material-symbols-outlined text-[15px] leading-none">verified</span>
               <span>{tMsg('Public Holiday', 'Libur Nasional')}</span>
             </button>
+            <button
+              onClick={() => setSelectedTypeFilter('task_deadlines')}
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                selectedTypeFilter === 'task_deadlines'
+                  ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] shadow-2xs'
+                  : 'text-neutral-500 hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[15px] leading-none">alarm</span>
+              <span>{tMsg('Task Deadlines', 'Tenggat Tugas')}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -392,19 +415,24 @@ export default function MeetingsLeavesPage() {
           {/* Grid Cells */}
           <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-neutral-200/50 dark:divide-neutral-800/60 border-b border-neutral-200/50 dark:border-neutral-800">
             {calendarDays.map((cell) => {
-              const dayLeaves = (leavesByDate[cell.dateStr] || []).filter((l) => {
+              const dayLeaves = selectedTypeFilter === 'task_deadlines' ? [] : (leavesByDate[cell.dateStr] || []).filter((l) => {
                 if (selectedTypeFilter === 'all') return true;
                 return l.leave_type === selectedTypeFilter;
               });
 
+              const dayTasks = selectedTypeFilter === 'personal' || selectedTypeFilter === 'mass_leave' || selectedTypeFilter === 'public_holiday'
+                ? []
+                : (tasksByDate[cell.dateStr] || []);
+
               const isToday = cell.dateStr === todayStr;
+              const totalEvents = dayLeaves.length + dayTasks.length;
 
               return (
                 <div
                   key={cell.dateStr}
                   className={`min-h-28 md:min-h-32 p-2 flex flex-col justify-between transition-colors ${
                     cell.isWeekend
-                      ? 'bg-neutral-100/70 dark:bg-neutral-950/80 border-rose-100/30' // 2. Weekend Blocked Color
+                      ? 'bg-neutral-100/70 dark:bg-neutral-950/80 border-rose-100/30'
                       : cell.isCurrentMonth
                       ? 'bg-white dark:bg-neutral-900/90'
                       : 'bg-neutral-50/40 dark:bg-neutral-950/30 text-neutral-400'
@@ -424,14 +452,14 @@ export default function MeetingsLeavesPage() {
                     >
                       {cell.dayNum}
                     </span>
-                    {dayLeaves.length > 0 && (
+                    {totalEvents > 0 && (
                       <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-[#FACC15]">
-                        {dayLeaves.length} Event
+                        {totalEvents}
                       </span>
                     )}
                   </div>
 
-                  {/* Day Events Feed */}
+                  {/* Day Events & Tasks Feed */}
                   <div className="space-y-1 overflow-y-auto max-h-20 custom-scrollbar pr-0.5">
                     {dayLeaves.map((item) => (
                       <div
@@ -459,7 +487,7 @@ export default function MeetingsLeavesPage() {
                           </span>
                         </div>
 
-                        {/* 4. Delete Confirmation modal trigger on X click */}
+                        {/* Delete Confirmation modal trigger on X click */}
                         {(item.username === currentUser || isSuperAdmin) && item.leave_type !== 'public_holiday' && !item.is_google && (
                           <button
                             onClick={() => setLeaveToDelete(item)}
@@ -469,6 +497,19 @@ export default function MeetingsLeavesPage() {
                             <span className="material-symbols-outlined text-[14px]">close</span>
                           </button>
                         )}
+                      </div>
+                    ))}
+
+                    {/* Task Deadlines in cell */}
+                    {dayTasks.map((t) => (
+                      <div
+                        key={`task-${t.id}`}
+                        onClick={() => context?.setSelectedTask && context.setSelectedTask(t)}
+                        className="p-1 rounded-lg text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 flex items-center gap-1 shadow-2xs hover:border-[#FACC15] cursor-pointer transition-all truncate"
+                        title={`Deadline: ${t.project_name || t.name || t.title || 'Task'}`}
+                      >
+                        <span className="material-symbols-outlined text-[12px] text-indigo-500 shrink-0">task_alt</span>
+                        <span className="truncate">{t.project_name || t.name || t.title}</span>
                       </div>
                     ))}
                   </div>
