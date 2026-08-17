@@ -6,6 +6,7 @@ export default function MeetingsLeavesPage() {
   const context = useAppContext();
   const {
     leaves = [],
+    tasks = [],
     handleAddLeave,
     handleDeleteLeave,
     leaveForm,
@@ -14,7 +15,8 @@ export default function MeetingsLeavesPage() {
     currentUser,
     language = 'id',
     isSubmitting,
-  } = context;
+    setSelectedTask,
+  } = context || {};
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
