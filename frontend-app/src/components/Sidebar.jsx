@@ -132,6 +132,7 @@ export default function Sidebar() {
   });
 
   // Saved Views State
+  const [activeSavedViewId, setActiveSavedViewId] = useState(null);
   const [savedViews, setSavedViews] = useState(() => {
     if (typeof window !== 'undefined' && currentUser) {
       try {
@@ -167,6 +168,21 @@ export default function Sidebar() {
     }
     if (showNotification) {
       showNotification(tMsg('Custom view saved!', 'Filter tersimpan berhasil ditambahkan!'));
+    }
+  };
+
+  const handleDeleteSavedView = (e, viewId) => {
+    e.stopPropagation();
+    const updated = savedViews.filter((v) => v.id !== viewId);
+    setSavedViews(updated);
+    if (currentUser) {
+      localStorage.setItem(`alurku_saved_views_${currentUser}`, JSON.stringify(updated));
+    }
+    if (activeSavedViewId === viewId) {
+      setActiveSavedViewId(null);
+    }
+    if (showNotification) {
+      showNotification(tMsg('Saved view removed', 'Filter tersimpan berhasil dihapus'));
     }
   };
 
@@ -1163,7 +1179,7 @@ export default function Sidebar() {
                           setIsMobileMenuOpen(false);
                           const slugify = (text) => (text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '');
                           const wsSlug = slugify(activeWorkspace?.name);
-                          const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks`;
+                          const targetUrl = `/workspace/${wsSlug}/${activeWorkspace?.id}/project/personal-tasks/${todoListBoard.id}`;
                           window.history.pushState({}, '', targetUrl);
                           window.dispatchEvent(new CustomEvent('alurku-navigate'));
                         }}
@@ -1200,7 +1216,7 @@ export default function Sidebar() {
               </div>
             )}
 
-            {/* TAB 3: SPACES / PROJECTS */}
+            {/* TAB 3: SPACES / PROJECTS TREE */}
             {activeRailTab === 'spaces' && (
               <div className="space-y-3">
                 {/* All Tasks & Projects (Master View) */}
@@ -1235,18 +1251,30 @@ export default function Sidebar() {
                   <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>
                 </button>
 
-                {/* Team Spaces Tree */}
+                {/* Brand-compliant Quick Add Project Button */}
+                <button
+                  onClick={() => {
+                    setIsCreateBoardOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold text-xs hover:opacity-90 transition-all mb-2 shadow-2xs"
+                >
+                  <IconPlus className="w-3.5 h-3.5" />
+                  <span>{tMsg('Add New Project', 'Tambah Proyek Baru')}</span>
+                </button>
+
+                {/* Section: Spaces & Projects Tree */}
                 <div>
-                  <div
-                    onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
-                    className="w-full flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px]">folder_copy</span>
-                      <span className="text-xs truncate font-semibold">{tMsg('Team Spaces', 'Ruang Kerja Tim')}</span>
-                    </div>
+                  <div className="flex items-center justify-between px-2 py-1 select-none">
                     <span
-                      className="material-symbols-outlined text-[14px] text-neutral-400 transition-transform duration-200"
+                      onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
+                      className="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider cursor-pointer flex items-center gap-1"
+                    >
+                      {tMsg('Projects', 'Daftar Proyek')} ({displayBoards.length})
+                    </span>
+                    <span
+                      onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
+                      className="material-symbols-outlined text-[14px] text-neutral-400 cursor-pointer transition-transform duration-200"
                       style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
                     >
                       expand_more
@@ -1435,7 +1463,7 @@ export default function Sidebar() {
                   </span>
                   <button
                     onClick={handleSaveCurrentView}
-                    className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50"
+                    className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors p-0.5 rounded hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 cursor-pointer"
                     title={tMsg('Save Current Active Filter', 'Simpan Filter Saat Ini')}
                   >
                     <IconPlus className="w-3 h-3" />
@@ -1444,30 +1472,56 @@ export default function Sidebar() {
 
                 {isSavedViewsOpen && (
                   <div className="flex flex-col gap-0.5">
-                    {savedViews.map((sv) => (
-                      <button
-                        key={sv.id}
-                        onClick={() => {
-                          setSelectedBoard(null);
-                          let targetUrl = '/my-tasks';
-                          if (sv.type === 'overdue') {
-                            targetUrl = '/my-tasks?filter=overdue';
-                          } else if (sv.type === 'custom') {
-                            if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
-                            if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
-                            if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
-                          }
-                          setIsMobileMenuOpen(false);
-                          window.history.pushState({}, '', targetUrl);
-                          window.dispatchEvent(new CustomEvent('alurku-navigate'));
-                        }}
-                        className="w-full flex items-center gap-2 px-2 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 transition-colors"
-                        title={tMsg(`Filter: ${sv.nameEn}`, `Filter: ${sv.nameId}`)}
-                      >
-                        <span className="material-symbols-outlined text-[15px] text-indigo-500 dark:text-[#FACC15]">{sv.icon}</span>
-                        <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
-                      </button>
-                    ))}
+                    {savedViews.map((sv) => {
+                      const isActive = activeSavedViewId === sv.id;
+                      return (
+                        <div
+                          key={sv.id}
+                          className={`w-full flex items-center justify-between px-2 py-1 rounded-lg text-xs font-medium group transition-colors ${
+                            isActive
+                              ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-bold'
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60'
+                          }`}
+                        >
+                          <button
+                            onClick={() => {
+                              setActiveSavedViewId(sv.id);
+                              setSelectedBoard(null);
+                              let targetUrl = '/my-tasks';
+                              if (sv.type === 'overdue') {
+                                targetUrl = '/my-tasks?filter=overdue';
+                              } else if (sv.type === 'assigned') {
+                                targetUrl = '/my-tasks';
+                              } else if (sv.type === 'custom') {
+                                if (sv.filterStatus && setFilterStatus) setFilterStatus(sv.filterStatus);
+                                if (sv.filterCategory && setFilterCategory) setFilterCategory(sv.filterCategory);
+                                if (sv.filterAssignee && setFilterAssignee) setFilterAssignee(sv.filterAssignee);
+                                if (sv.showMyTasks !== undefined && setShowMyTasks) setShowMyTasks(sv.showMyTasks);
+                                if (sv.showOverdueOnly !== undefined && setShowOverdueOnly) setShowOverdueOnly(sv.showOverdueOnly);
+                              }
+                              setIsMobileMenuOpen(false);
+                              window.history.pushState({}, '', targetUrl);
+                              window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                            }}
+                            className="flex items-center gap-2 min-w-0 flex-1 text-left cursor-pointer"
+                            title={tMsg(`Filter: ${sv.nameEn}`, `Filter: ${sv.nameId}`)}
+                          >
+                            <span className="material-symbols-outlined text-[15px] text-indigo-500 dark:text-[#FACC15] shrink-0">{sv.icon}</span>
+                            <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
+                          </button>
+
+                          {sv.type === 'custom' && (
+                            <button
+                              onClick={(e) => handleDeleteSavedView(e, sv.id)}
+                              className="text-neutral-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0"
+                              title={tMsg('Delete saved view', 'Hapus filter tersimpan')}
+                            >
+                              <span className="material-symbols-outlined text-[14px]">delete</span>
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
