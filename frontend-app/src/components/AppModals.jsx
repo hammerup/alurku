@@ -26,7 +26,6 @@ import TaskDetailModal from '../TaskDetailModal';
 import ChangelogModal from '../ChangelogModal';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
-import AdminModal from '../AdminModal';
 import DocumentationModal from '../DocumentationModal';
 
 import SystemSpecsModal from '../SystemSpecsModal';
@@ -348,6 +347,7 @@ export default function AppModals() {
           isSubmitting={isSubmitting}
           handleManualFormClick={handleManualFormClick}
           selectedBoard={selectedBoard}
+          boards={boards}
         />
       )}
 
@@ -605,20 +605,6 @@ export default function AppModals() {
           formatDateMMM={formatDateMMM}
           language={language}
           isSubmitting={isSubmitting}
-        />
-      )}
-      {isAdminModalOpen && (
-        <AdminModal
-          setIsAdminModalOpen={setIsAdminModalOpen}
-          adminUsers={adminUsers}
-          handleDeleteUser={handleDeleteUser}
-          handleUpdateUserStatus={handleUpdateUserStatus}
-          handleToggleSuperAdmin={handleToggleSuperAdmin}
-          handleManualVerify={handleManualVerify}
-          currentUser={currentUser}
-          language={language}
-          showNotification={showNotification}
-          setAdminUsers={setAdminUsers}
         />
       )}
       {isFeedbackOpen && (

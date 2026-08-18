@@ -3277,6 +3277,20 @@ export default function useAppLogic() {
       return;
     }
 
+    const targetBoardId =
+      formData.board_id ||
+      (selectedBoard && selectedBoard.id !== 'global' ? selectedBoard.id : null) ||
+      boards.find((b) => b.id !== 'global')?.id ||
+      boards[0]?.id;
+
+    if (!targetBoardId) {
+      showNotification(
+        language === 'id' ? 'Silakan pilih proyek tujuan terlebih dahulu!' : 'Please select a target project first!',
+        'error'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     const formattedData = {
       ...formData,
@@ -3288,7 +3302,7 @@ export default function useAppLogic() {
     };
 
     axios
-      .post(`/api/boards/${selectedBoard.id}/tasks`, formattedData)
+      .post(`/api/boards/${targetBoardId}/tasks`, formattedData)
       .then(() => {
         setIsFormOpen(false);
         setFormData({
@@ -3305,7 +3319,7 @@ export default function useAppLogic() {
         setFormSubtaskInput('');
         setFormSubtaskAssignee('');
         fetchTasks();
-        showNotification('New task added successfully!', 'success');
+        showNotification(language === 'id' ? 'Tugas baru berhasil ditambahkan!' : 'New task added successfully!', 'success');
         setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
       })
       .catch((err) => {
@@ -4294,13 +4308,16 @@ export default function useAppLogic() {
   };
 
   const openAdminModal = () => {
+    setSelectedBoard(null);
+    setIsMobileMenuOpen(false);
+    window.history.pushState({}, '', '/admin');
+    window.dispatchEvent(new CustomEvent('alurku-navigate'));
     axios
       .get('/api/admin/users')
       .then((res) => {
         setAdminUsers(res.data.users || []);
-        setIsAdminModalOpen(true);
       })
-      .catch((err) => showNotification('Failed to load users or unauthorized', 'error'));
+      .catch(() => showNotification('Failed to load users or unauthorized', 'error'));
   };
 
   const handleToggleSuperAdmin = (username) => {

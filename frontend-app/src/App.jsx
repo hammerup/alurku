@@ -34,7 +34,7 @@ import TermsOfServiceModal from './TermsOfServiceModal';
 import AppThemes from './ThemeStyles';
 import TaskFormModal from './TaskFormModal';
 import TaskDetailModal from './TaskDetailModal';
-import AdminModal from './AdminModal';
+import AdminPage from './AdminPage';
 import DocumentationModal from './DocumentationModal';
 import ProactiveAIPage from './ProactiveAIPage';
 import WorkspaceChatPage from './components/WorkspaceChatPage';
@@ -1455,6 +1455,8 @@ function App() {
             />
           ) : currentPath.endsWith('/chat') ? (
             <WorkspaceChatPage />
+          ) : currentPath === '/admin' || currentPath.endsWith('/admin') ? (
+            <AdminPage />
           ) : currentPath === '/assigned-comments' || currentPath.endsWith('/assigned-comments') || currentPath === '/komentar' || currentPath === '/comments' ? (
             <AssignedCommentsPage />
           ) : currentPath === '/inbox' || currentPath.endsWith('/inbox') || currentPath === '/kotak-masuk' || currentPath === '/inbox-replies' ? (

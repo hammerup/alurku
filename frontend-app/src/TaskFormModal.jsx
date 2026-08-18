@@ -33,6 +33,7 @@ export default function TaskFormModal({
   isSubmitting,
   handleManualFormClick,
   selectedBoard,
+  boards = [],
   userDirectory,
 }) {
   const [isClosing, close] = useCloseAnimation(() => setIsFormOpen(false));
@@ -387,6 +388,29 @@ Format:
                           )}
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Target Project Selector */}
+                  <div className="sm:col-span-3 group">
+                    <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                      <svg className="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                      {tMsg('Target Project', 'Proyek Tujuan')}
+                    </label>
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-11.5 sm:h-12.5">
+                      <select
+                        value={formData.board_id || (selectedBoard && selectedBoard.id !== 'global' ? selectedBoard.id : (boards.find((b) => b.id !== 'global')?.id || ''))}
+                        onChange={(e) => setFormData({ ...formData, board_id: e.target.value })}
+                        className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
+                      >
+                        {boards.filter((b) => b.id !== 'global').map((b) => (
+                          <option key={b.id} value={b.id}>
+                            📁 {b.name} {b.is_private ? `(${tMsg('Private', 'Privat')})` : ''}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 

@@ -193,9 +193,9 @@ export default function MobileTopBar() {
                       openAdminModal();
                       setIsMobileProfileOpen(false);
                     }}
-                    className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center gap-2 transition-colors"
+                    className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-neutral-100 dark:hover:bg-neutral-800 text-[#111E38] dark:text-[#FACC15] flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    <span>🔑</span> {tMsg('Manage Users', 'Kelola Pengguna')}
+                    <span>🛡️</span> {tMsg('Admin Dashboard', 'Dasbor Admin')}
                   </button>
                 )}
                 <button
