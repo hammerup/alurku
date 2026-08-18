@@ -10,6 +10,7 @@ export default function InboxPage() {
     notifications = [],
     unreadCount = 0,
     handleReadNotification,
+    handleDeleteNotification,
     handleReadAllNotifications,
     handleNotificationTaskClick,
     setIsInvitesModalOpen,
@@ -645,15 +646,29 @@ export default function InboxPage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleOpenFullModal(selectedNotification)}
-                  className="px-3 py-1.5 rounded-xl bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] text-xs font-bold hover:opacity-90 transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
-                >
-                  <span>{tMsg('Open Full Context', 'Buka Penuh')}</span>
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  {handleDeleteNotification && (
+                    <button
+                      onClick={() => {
+                        handleDeleteNotification(selectedNotification.id);
+                        setSelectedNotifId(null);
+                      }}
+                      className="p-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                      title={tMsg('Delete notification', 'Hapus notifikasi')}
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleOpenFullModal(selectedNotification)}
+                    className="px-3 py-1.5 rounded-xl bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] text-xs font-bold hover:opacity-90 transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
+                  >
+                    <span>{tMsg('Open Full Context', 'Buka Penuh')}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               {/* Body Content Details & Conversation Thread (Scrollable Area) */}

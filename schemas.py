@@ -179,3 +179,8 @@ class AIChatSessionUpdate(BaseModel):
     messages: Optional[str] = None
     is_pinned: Optional[int] = None
 
+
+class AccountDeleteModel(BaseModel):
+    password: str
+    confirmation: Optional[str] = None
+

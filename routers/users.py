@@ -283,3 +283,46 @@ def get_my_tickets(
         )
     return {"tickets": tasks_list}
 
+
+@router.delete("/api/notifications/{notif_id}")
+def delete_notification(
+    notif_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    notif = (
+        db.query(Notification)
+        .filter(Notification.id == notif_id, Notification.user_username == current_user)
+        .first()
+    )
+    if not notif:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    db.delete(notif)
+    db.commit()
+    return {"message": "Notification deleted"}
+
+
+@router.delete("/api/profile/delete-account")
+def delete_account(
+    payload: AccountDeleteModel,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.username == current_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(payload.password, user.password):
+        raise HTTPException(
+            status_code=400, detail="Incorrect password. Account deletion aborted."
+        )
+
+    # Clean up user records safely
+    db.query(Notification).filter(Notification.user_username == current_user).delete()
+    db.query(LeaveRecord).filter(LeaveRecord.user_username == current_user).delete()
+    db.query(LeaveDay).filter(LeaveDay.user_username == current_user).delete()
+    db.query(BoardMember).filter(BoardMember.member_username == current_user).delete()
+    db.delete(user)
+    db.commit()
+    return {"message": "Account successfully deleted"}
+

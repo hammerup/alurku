@@ -30,6 +30,7 @@ export default function WorkspaceOverview() {
     workspaces,
     switchWorkspace,
     fetchWorkspaces,
+    setIsCreateBoardOpen,
   } = useAppContext();
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -352,6 +353,36 @@ export default function WorkspaceOverview() {
   
   const doneThisWeekGlobal = globalDoneTasks.length; 
   const remainingTasksGlobal = globalTodoTasks.length + globalDoingTasks.length;
+
+  // Real-time team workload distribution analytics
+  const memberWorkloads = useMemo(() => {
+    const activeTasksList = tasks.filter(t => (t.status || '').toLowerCase() !== 'done' && (t.status || '').toLowerCase() !== 'rejected');
+    const targetMembers = (members && members.length > 0) ? members : [{ username: currentUser, full_name: currentUser }];
+    
+    return targetMembers.map(m => {
+      const u = (m.username || '').toLowerCase();
+      const memberTasks = activeTasksList.filter(t => {
+        const req = (t.requester || '').toLowerCase();
+        const isReq = req.includes(`@${u}`) || req === u;
+        const isSub = (t.subtask_assignees || '').toLowerCase().includes(u);
+        const isOwner = (t.owner_username || '').toLowerCase() === u && !req.includes('@');
+        return isReq || isSub || isOwner;
+      });
+      const count = memberTasks.length;
+      let status = 'optimal'; // 'light' | 'optimal' | 'heavy'
+      if (count <= 2) status = 'light';
+      else if (count >= 7) status = 'heavy';
+
+      return {
+        username: m.username,
+        full_name: m.full_name || m.username,
+        avatar: avatarsMap[m.username],
+        activeCount: count,
+        status,
+        percentage: activeTasksList.length > 0 ? Math.min(100, Math.round((count / activeTasksList.length) * 100)) : 0,
+      };
+    }).sort((a, b) => b.activeCount - a.activeCount);
+  }, [members, tasks, avatarsMap, currentUser]);
 
   if (isViewingMembers) {
     return (
@@ -763,17 +794,32 @@ export default function WorkspaceOverview() {
         <div className="col-span-12 xl:col-span-8 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-[#111E38] dark:text-white">{tMsg('Active Projects', 'Proyek Aktif')}</h2>
-            {activeProjects.length > 4 && (
-              <button 
-                onClick={() => setShowAllProjects(!showAllProjects)} 
-                className="text-sky-600 dark:text-[#FACC15] text-sm font-bold flex items-center gap-1 hover:underline"
-              >
-                {showAllProjects ? tMsg('Show Less', 'Tampilkan Lebih Sedikit') : tMsg('View All', 'Lihat Semua')}
-                <span className="material-symbols-outlined text-sm">
-                  {showAllProjects ? 'expand_less' : 'arrow_forward'}
-                </span>
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {(() => {
+                const currentUserMember = (members || []).find((m) => m.username === currentUser);
+                const isCurrentUserAdmin = currentUserMember?.role === 'admin' || activeWorkspace?.owner_username === currentUser;
+                return isCurrentUserAdmin ? (
+                  <button
+                    onClick={() => setIsCreateBoardOpen(true)}
+                    className="bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] text-xs font-bold px-3 py-1.5 rounded-xl hover:opacity-90 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm font-bold">add</span>
+                    <span>{tMsg('New Project', 'Proyek Baru')}</span>
+                  </button>
+                ) : null;
+              })()}
+              {activeProjects.length > 4 && (
+                <button 
+                  onClick={() => setShowAllProjects(!showAllProjects)} 
+                  className="text-sky-600 dark:text-[#FACC15] text-sm font-bold flex items-center gap-1 hover:underline"
+                >
+                  {showAllProjects ? tMsg('Show Less', 'Tampilkan Lebih Sedikit') : tMsg('View All', 'Lihat Semua')}
+                  <span className="material-symbols-outlined text-sm">
+                    {showAllProjects ? 'expand_less' : 'arrow_forward'}
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1064,6 +1110,90 @@ export default function WorkspaceOverview() {
                 )}
               </div>
 
+            </div>
+          </div>
+
+          {/* Team Workload Analytics Section */}
+          <div className="bg-white dark:bg-[#121B2D] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-[#111E38] dark:text-white flex items-center gap-2">
+                  <span className="material-symbols-outlined text-amber-500 text-xl">balance</span>
+                  {tMsg('Team Workload Distribution', 'Distribusi Beban Kerja Tim')}
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 font-medium">
+                  {tMsg('Real-time task distribution to prevent overload and ensure fair balance.', 'Distribusi tugas aktif real-time untuk mencegah penumpukan pekerjaan.')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 text-[10px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  {tMsg('Light (1-2)', 'Ringan (1-2)')}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800/40 text-[10px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                  {tMsg('Optimal (3-6)', 'Optimal (3-6)')}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40 text-[10px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  {tMsg('Heavy (7+)', 'Padat (7+)')}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {memberWorkloads.map((mw) => {
+                const statusColor = mw.status === 'light' 
+                  ? 'bg-emerald-500 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40'
+                  : mw.status === 'heavy'
+                  ? 'bg-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40'
+                  : 'bg-sky-500 text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-800/40';
+
+                const barColor = mw.status === 'light' ? 'bg-emerald-500' : mw.status === 'heavy' ? 'bg-amber-500' : 'bg-[#FACC15]';
+
+                return (
+                  <div key={mw.username} className="p-3.5 rounded-xl bg-neutral-50/70 dark:bg-slate-900/40 border border-neutral-100 dark:border-neutral-800/80 hover:border-neutral-250 dark:hover:border-neutral-700 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={mw.username} url={mw.avatar} size="w-8 h-8" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-[#111E38] dark:text-white">
+                              {mw.full_name}
+                            </span>
+                            {mw.username === currentUser && (
+                              <span className="text-[9px] font-black uppercase tracking-wider text-sky-600 dark:text-sky-400 bg-sky-100 dark:bg-sky-950 px-1.5 py-0.2 rounded">
+                                {tMsg('You', 'Anda')}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-neutral-400">@{mw.username}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${statusColor.split(' ').slice(1).join(' ')}`}>
+                          {mw.status === 'light' ? tMsg('Light', 'Ringan') : mw.status === 'heavy' ? tMsg('Heavy', 'Padat') : tMsg('Optimal', 'Optimal')}
+                        </span>
+                        <span className="text-xs font-black text-[#111E38] dark:text-white min-w-[3rem] text-right">
+                          {mw.activeCount} {tMsg('tasks', 'tugas')}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-neutral-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className={`${barColor} h-full rounded-full transition-all duration-700`}
+                        style={{ width: `${Math.max(5, mw.percentage)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {memberWorkloads.length === 0 && (
+                <div className="text-center py-6 text-xs text-neutral-400">
+                  {tMsg('No workload data available.', 'Tidak ada data beban kerja.')}
+                </div>
+              )}
             </div>
           </div>
         </div>

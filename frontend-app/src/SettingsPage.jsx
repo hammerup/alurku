@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Avatar, SegmentedControl } from './SharedUI';
 
 const SettingsSection = ({ title, description, children }) => (
@@ -93,6 +94,39 @@ export default function SettingsPage({
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
+
+  // Danger Zone: Delete Account states
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleConfirmDeleteAccount = async () => {
+    if (!deleteAccountPassword) return;
+    setIsDeletingAccount(true);
+    try {
+      await axios.delete('/api/profile/delete-account', {
+        data: { password: deleteAccountPassword },
+      });
+      showNotification(
+        tMsg('Your account has been deleted. Redirecting...', 'Akun Anda telah dihapus. Mengalihkan...'),
+        'success'
+      );
+      setTimeout(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/masuk';
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+      showNotification(
+        err.response?.data?.detail ||
+          tMsg('Failed to delete account. Incorrect password.', 'Gagal menghapus akun. Kata sandi salah.'),
+        'error'
+      );
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
 
   const onProfileSubmit = (e) => {
     e.preventDefault();
@@ -461,12 +495,34 @@ export default function SettingsPage({
                   <div className="flex justify-end mt-8">
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-md transition-all flex items-center gap-2"
+                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
                     >
                       💾 {tMsg('Save Profile Changes', 'Simpan Perubahan Profil')}
                     </button>
                   </div>
                 </form>
+
+                {/* Danger Zone */}
+                <div className="mt-12 pt-8 border-t border-rose-200 dark:border-rose-900/40">
+                  <h4 className="text-sm font-black text-rose-600 dark:text-rose-400 flex items-center gap-2 mb-1.5 uppercase tracking-wider">
+                    <span className="material-symbols-outlined text-base">warning</span>
+                    {tMsg('Danger Zone', 'Zona Bahaya')}
+                  </h4>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4 font-medium">
+                    {tMsg(
+                      'Permanently delete your account, private tasks, and personal records. This action is irreversible.',
+                      'Hapus akun, tugas privat, dan data pribadi Anda secara permanen. Tindakan ini tidak dapat dibatalkan.'
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteAccountModalOpen(true)}
+                    className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-800/60 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">person_remove</span>
+                    {tMsg('Delete Account Permanently', 'Hapus Akun Secara Permanen')}
+                  </button>
+                </div>
               </SettingsSection>
             )}
 
@@ -1167,6 +1223,68 @@ export default function SettingsPage({
           </div>
         </div>
       </div>
+
+      {/* Delete Account Permanent Confirmation Modal */}
+      {isDeleteAccountModalOpen && (
+        <div className="fixed inset-0 bg-[#111E38]/50 dark:bg-black/80 backdrop-blur-xs flex items-center justify-center z-110 p-4 transition-opacity animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#121B2D] p-6 md:p-7 border border-rose-200 dark:border-rose-900/50 shadow-2xl rounded-2xl w-full max-w-md">
+            <div className="flex items-center gap-3 mb-3 text-rose-600 dark:text-rose-400">
+              <span className="material-symbols-outlined text-2xl">error</span>
+              <h3 className="text-lg font-black tracking-tight">
+                {tMsg('Confirm Permanent Account Deletion', 'Konfirmasi Hapus Akun Permanen')}
+              </h3>
+            </div>
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-4 leading-relaxed font-medium">
+              {tMsg(
+                'Please enter your account password to confirm deletion. Once confirmed, all your private tasks, personal records, and notifications will be wiped immediately.',
+                'Harap masukkan kata sandi akun Anda untuk mengonfirmasi penghapusan. Setelah dikonfirmasi, seluruh tugas privat, data pribadi, dan notifikasi Anda akan dihapus seketika.'
+              )}
+            </p>
+
+            <div className="mb-5">
+              <label className="block text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
+                {tMsg('Account Password', 'Kata Sandi Akun')}
+              </label>
+              <input
+                type="password"
+                value={deleteAccountPassword}
+                onChange={(e) => setDeleteAccountPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3.5 py-2.5 bg-[#F3F4F6] dark:bg-slate-900 border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm font-bold text-[#111E38] dark:text-white outline-none focus:ring-2 focus:ring-rose-500"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteAccountModalOpen(false);
+                  setDeleteAccountPassword('');
+                }}
+                className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                {tMsg('Cancel', 'Batal')}
+              </button>
+              <button
+                type="button"
+                disabled={!deleteAccountPassword || isDeletingAccount}
+                onClick={handleConfirmDeleteAccount}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-xs font-extrabold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+              >
+                {isDeletingAccount ? (
+                  <span>{tMsg('Deleting...', 'Menghapus...')}</span>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-sm">delete_forever</span>
+                    <span>{tMsg('Permanently Delete', 'Hapus Permanen')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

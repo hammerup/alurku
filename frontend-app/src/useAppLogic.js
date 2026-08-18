@@ -2206,6 +2206,9 @@ export default function useAppLogic() {
   const handleReadNotification = (id) => {
     axios.put(`/api/notifications/${id}/read`).then(fetchNotifications).catch(console.error);
   };
+  const handleDeleteNotification = (id) => {
+    axios.delete(`/api/notifications/${id}`).then(fetchNotifications).catch(console.error);
+  };
   const handleReadAllNotifications = () => {
     handleMarkAllInboxAsRead();
   };
@@ -5021,6 +5024,7 @@ export default function useAppLogic() {
     handleMouseMove,
     showNotification,
     handleReadNotification,
+    handleDeleteNotification,
     handleReadAllNotifications,
     handleMarkAllInboxAsRead,
     handleNotificationTaskClick,

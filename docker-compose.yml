@@ -38,7 +38,7 @@ services:
       - backend
 
   databasement:
-    image: davidcrty/databasement:1.6.7
+    image: davidcrty/databasement:1.7.3
     container_name: databasement
     restart: unless-stopped
     ports:
@@ -54,7 +54,7 @@ services:
       - db
 
   databasement-worker:
-    image: davidcrty/databasement:1.6.7
+    image: davidcrty/databasement:1.7.3
     container_name: databasement-worker
     restart: unless-stopped
     command: sh -c "php artisan db:wait --check-migrations && php artisan queue:work --queue=backups,default --tries=3 --timeout=3600 --sleep=3 --max-jobs=1000"

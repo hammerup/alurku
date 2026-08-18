@@ -196,6 +196,65 @@ export default function TableList({
     }
   };
 
+  const [isBulkOperating, setIsBulkOperating] = useState(false);
+
+  const handleBulkMarkStatus = async (newStatus) => {
+    if (selectedTaskIds.length === 0) return;
+    setIsBulkOperating(true);
+    try {
+      await Promise.all(
+        selectedTaskIds.map((id) => axios.put(`/api/tasks/${id}`, { status: newStatus }))
+      );
+      const count = selectedTaskIds.length;
+      setSelectedTaskIds([]);
+      if (fetchTasks) fetchTasks();
+      if (showNotification) {
+        showNotification(
+          language === 'id'
+            ? `Berhasil mengubah status ${count} tugas menjadi ${newStatus}`
+            : `Successfully updated status for ${count} tasks to ${newStatus}`,
+          'success'
+        );
+      }
+    } catch (e) {
+      console.error(e);
+      if (showNotification) showNotification('Failed to update some tasks', 'error');
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTaskIds.length === 0) return;
+    const confirmMsg = language === 'id' 
+      ? `Apakah Anda yakin ingin menghapus ${selectedTaskIds.length} tugas terpilih secara permanen?`
+      : `Are you sure you want to permanently delete ${selectedTaskIds.length} selected tasks?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsBulkOperating(true);
+    try {
+      await Promise.all(
+        selectedTaskIds.map((id) => axios.delete(`/api/tasks/${id}`))
+      );
+      const count = selectedTaskIds.length;
+      setSelectedTaskIds([]);
+      if (fetchTasks) fetchTasks();
+      if (showNotification) {
+        showNotification(
+          language === 'id'
+            ? `Berhasil menghapus ${count} tugas`
+            : `Successfully deleted ${count} tasks`,
+          'success'
+        );
+      }
+    } catch (e) {
+      console.error(e);
+      if (showNotification) showNotification('Failed to delete some tasks', 'error');
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
   const handleBulkMove = async () => {
     if (!bulkTargetBoard || selectedTaskIds.length === 0) return;
     setIsBulkMoving(true);
@@ -564,18 +623,53 @@ export default function TableList({
               {[{ key: 'queue', label: 'Queue' }, { key: 'project_name', label: 'Name' }, { key: 'status', label: 'Status' }, { key: 'start_date', label: 'Start Date' }, { key: 'deadline', label: 'Deadline' }, { key: 'priority_lvl', label: 'Priority' }].map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
             </select>
             {isBulkSelectMode && (
-              <div className="ml-auto flex items-center gap-3">
+              <div className="ml-auto flex flex-wrap items-center gap-2">
                 {selectedTaskIds.length > 0 && (
-                  <div className="flex items-center gap-2 mr-1 border-r border-neutral-200 dark:border-neutral-700/50 pr-3">
-                    <span className="text-indigo-600 dark:text-indigo-400 font-extrabold text-[10px] uppercase tracking-wider">
-                      {selectedTaskIds.length} Selected:
+                  <div className="flex flex-wrap items-center gap-1.5 mr-1 border-r border-neutral-200 dark:border-neutral-700/50 pr-3">
+                    <span className="text-[#111E38] dark:text-[#FACC15] font-black text-[10px] uppercase tracking-wider bg-amber-100/70 dark:bg-amber-950/50 px-2 py-1 rounded-md">
+                      {selectedTaskIds.length} {tMsg('Selected', 'Terpilih')}
                     </span>
+                    
+                    {/* Bulk Mark as Done */}
+                    <button
+                      onClick={() => handleBulkMarkStatus('Done')}
+                      disabled={isBulkOperating}
+                      className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                      title={tMsg('Mark selected tasks as Done', 'Tandai tugas terpilih sebagai selesai')}
+                    >
+                      <span className="material-symbols-outlined text-xs">check_circle</span>
+                      <span className="hidden sm:inline">{tMsg('Done', 'Selesai')}</span>
+                    </button>
+
+                    {/* Bulk Mark as In Progress */}
+                    <button
+                      onClick={() => handleBulkMarkStatus('In Progress')}
+                      disabled={isBulkOperating}
+                      className="bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                      title={tMsg('Set status to In Progress', 'Ubah status ke Sedang Dikerjakan')}
+                    >
+                      <span className="material-symbols-outlined text-xs">play_arrow</span>
+                      <span className="hidden sm:inline">{tMsg('In Progress', 'Kerjakan')}</span>
+                    </button>
+
+                    {/* Bulk Delete */}
+                    <button
+                      onClick={handleBulkDelete}
+                      disabled={isBulkOperating}
+                      className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                      title={tMsg('Delete selected tasks', 'Hapus tugas terpilih')}
+                    >
+                      <span className="material-symbols-outlined text-xs">delete</span>
+                      <span className="hidden sm:inline">{tMsg('Delete', 'Hapus')}</span>
+                    </button>
+
+                    {/* Bulk Move to Project */}
                     <select
                       value={bulkTargetBoard}
                       onChange={(e) => setBulkTargetBoard(e.target.value)}
-                      className="py-1 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-800 dark:text-white text-[10px] font-bold outline-none"
+                      className="py-1 px-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-800 dark:text-white text-[10px] font-bold outline-none"
                     >
-                      <option value="" className="text-slate-800 dark:text-white">Move to Project</option>
+                      <option value="" className="text-slate-800 dark:text-white">{tMsg('Move to...', 'Pindah ke...')}</option>
                       {boards?.map((b) => (
                         <option key={b.id} value={b.id} className="text-slate-800 dark:text-white">
                           {b.name}
@@ -584,21 +678,21 @@ export default function TableList({
                     </select>
                     <button
                       onClick={handleBulkMove}
-                      disabled={!bulkTargetBoard || isBulkMoving || isSameBoard}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-[10px] font-bold shadow-sm disabled:opacity-50 transition-colors"
+                      disabled={!bulkTargetBoard || isBulkMoving || isBulkOperating || isSameBoard}
+                      className="bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
                     >
-                      {isBulkMoving ? 'Moving...' : 'Move'}
+                      {isBulkMoving ? '...' : tMsg('Move', 'Pindah')}
                     </button>
                   </div>
                 )}
-                <label className="flex items-center gap-2 cursor-pointer bg-neutral-200 dark:bg-neutral-800 px-3 py-1.5 rounded-md text-neutral-800 dark:text-neutral-200 transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer bg-neutral-200 dark:bg-neutral-800 px-3 py-1.5 rounded-md text-neutral-800 dark:text-neutral-200 transition-colors text-xs font-bold">
                   <input
                     type="checkbox"
                     checked={currentTasks.length > 0 && selectedTaskIds.length === currentTasks.length}
                     onChange={handleSelectAllCurrentPage}
                     className="rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                   />
-                  Select All
+                  {tMsg('Select All', 'Pilih Semua')}
                 </label>
               </div>
             )}
