@@ -9,6 +9,7 @@ import ChatHeader from './ChatWorkspace/ChatHeader';
 import ChatMessageList from './ChatWorkspace/ChatMessageList';
 import ChatInputArea from './ChatWorkspace/ChatInputArea';
 import TaskDetailModal from '../TaskDetailModal';
+import StartMeetingModal from './StartMeetingModal';
 
 export default function WorkspaceChatPage() {
   const context = useAppContext();
@@ -246,6 +247,7 @@ export default function WorkspaceChatPage() {
 
   const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(!activeChat);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDmConversations();
@@ -721,6 +723,101 @@ export default function WorkspaceChatPage() {
     }, 400);
   };
 
+  const meetingInfo = useMemo(() => {
+    if (!activeChat) return { title: 'Meeting', roomName: 'meeting', targetMention: '@all' };
+    if (activeChat.type === 'dm') {
+      const partner = activeChat.partner || activeChat.id;
+      const sortedUsers = [currentUser, partner].sort().join('-').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return {
+        title: `DM with @${partner}`,
+        roomName: `dm-${sortedUsers}`,
+        targetMention: `@${partner}`,
+      };
+    } else if (activeChat.type === 'project') {
+      const boardObj = boards?.find((b) => String(b.id) === String(activeChat.id));
+      const cleanName = (boardObj?.name || activeChat.name || 'project')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      return {
+        title: boardObj?.name || activeChat.name || 'Project Chat',
+        roomName: `project-${activeChat.id}-${cleanName}`,
+        targetMention: '@team',
+      };
+    } else {
+      const cleanName = (activeChat.name || 'task')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      return {
+        title: activeChat.name || 'Task Discussion',
+        roomName: `task-${activeChat.id}-${cleanName}`,
+        targetMention: '@all',
+      };
+    }
+  }, [activeChat, currentUser, boards]);
+
+  const handleMeetNow = () => {
+    if (!activeChat) return;
+    setIsMeetingModalOpen(true);
+  };
+
+  const handleSendMeetingLink = (link, serviceName = 'Video Meeting') => {
+    if (!activeChat) return;
+    const targetName = meetingInfo.targetMention || '@all';
+
+    const invitationMessage = `${targetName} 🎥 ${tMsg("I've started a video meeting! Join here:", "Saya telah memulai pertemuan video! Bergabung di sini:")} ${link}`;
+
+    let endpoint = '';
+    let body = { text: invitationMessage, comment: invitationMessage };
+    if (activeChat.type === 'project') {
+      endpoint = `/api/boards/${activeChat.id}/chat`;
+    } else if (activeChat.type === 'task') {
+      endpoint = `/api/tasks/${activeChat.id}/comments`;
+    } else if (activeChat.type === 'dm') {
+      endpoint = `/api/dm/${activeChat.partner || activeChat.id}`;
+    }
+
+    if (endpoint) {
+      axios
+        .post(endpoint, body)
+        .then(() => {
+          fetchMessages();
+          if (activeChat.type === 'dm' && fetchDmConversations) fetchDmConversations();
+        })
+        .catch(console.error);
+    }
+  };
+
+  const handleConfirmDeleteDmConversation = () => {
+    if (!dmConvToDelete) return;
+    const partner = dmConvToDelete;
+    axios
+      .delete(`/api/dm/conversations/${partner}`)
+      .then(() => {
+        if (activeChat?.type === 'dm' && (activeChat.partner === partner || activeChat.id === partner)) {
+          if (boards && boards.length > 0) {
+            const b = boards.find((item) => item.id !== 'global') || boards[0];
+            setActiveChat({ type: 'project', id: b.id, name: `${b.name} (General)`, board_id: b.id });
+          } else {
+            setActiveChat(null);
+          }
+        }
+        setDmConvToDelete(null);
+        if (fetchDmConversations) fetchDmConversations();
+        if (showNotification) showNotification(tMsg('Conversation deleted', 'Percakapan berhasil dihapus'), 'success');
+      })
+      .catch((err) => {
+        setDmConvToDelete(null);
+        if (showNotification) {
+          showNotification(
+            err.response?.data?.detail || tMsg('Failed to delete conversation', 'Gagal menghapus percakapan'),
+            'error'
+          );
+        }
+      });
+  };
+
   return (
     <div
       ref={wrapperRef}
@@ -793,7 +890,7 @@ export default function WorkspaceChatPage() {
           avatarsMap={avatarsMap}
           tMsg={tMsg}
           formatDateMMM={formatDateMMM}
-          handleMeetNow={() => {}}
+          handleMeetNow={handleMeetNow}
           handleNotificationTaskClick={handleOpenTaskPreview}
           activeTaskPreview={activeTaskPreview}
           setActiveTaskPreview={setActiveTaskPreview}
@@ -887,6 +984,13 @@ export default function WorkspaceChatPage() {
           currentUser={currentUser}
           handleAskAITaskChat={handleAskAITaskChat}
           tMsg={tMsg}
+          isAiReplying={isAiReplying}
+          setMessages={setMessages}
+          messagesEndRef={messagesEndRef}
+          accountStatus={accountStatus}
+          isSuperAdmin={isSuperAdmin}
+          chatBg={chatBg}
+          getLocalTimestamp={getLocalTimestamp}
         />
       </div>
 
@@ -994,6 +1098,54 @@ export default function WorkspaceChatPage() {
           </div>
         </>
       )}
+
+      {/* Delete DM Conversation Confirmation Modal */}
+      {dmConvToDelete && (
+        <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-70 p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-neutral-950 p-6 sm:p-8 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl text-center">
+            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm border border-red-200 dark:border-red-800/50">
+              🗑️
+            </div>
+            <h3 className="text-lg font-black text-black dark:text-white mb-2 uppercase tracking-tighter">
+              {tMsg('Delete Conversation?', 'Hapus Percakapan?')}
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-6 text-xs leading-relaxed">
+              {tMsg(
+                `Are you sure you want to delete all messages with @${dmConvToDelete}? This action cannot be undone.`,
+                `Apakah Anda yakin ingin menghapus semua pesan dengan @${dmConvToDelete}? Tindakan ini tidak dapat dibatalkan.`
+              )}
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setDmConvToDelete(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs transition-colors uppercase tracking-wider"
+              >
+                {tMsg('Cancel', 'Batal')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteDmConversation}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-md text-xs transition-all uppercase tracking-wider hover:-translate-y-0.5"
+              >
+                {tMsg('Delete', 'Hapus')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Start Meeting Smart Modal */}
+      <StartMeetingModal
+        isOpen={isMeetingModalOpen}
+        onClose={() => setIsMeetingModalOpen(false)}
+        title={meetingInfo.title}
+        roomName={meetingInfo.roomName}
+        targetMention={meetingInfo.targetMention}
+        onSendMeetingLink={handleSendMeetingLink}
+        language={language}
+        showNotification={showNotification}
+      />
     </div>
   );
 }

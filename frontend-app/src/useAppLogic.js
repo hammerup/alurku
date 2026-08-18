@@ -2943,17 +2943,17 @@ export default function useAppLogic() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
-    const roomName = `project-board-${cleanName}`;
-    const meetLink = `https://meet.google.com/lookup/${roomName}`;
+    const roomName = `project-${boardId}-${cleanName}`;
+    const meetLink = `https://meet.jit.si/alurku-${roomName}`;
 
-    // Buka Google Meet dalam jendela Popup terpisah agar terasa seperti In-App
+    // Buka Ruang Meeting dalam jendela Popup terpisah agar terasa seperti In-App
     const popupFeatures =
       'width=1000,height=700,left=100,top=100,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes';
-    window.open(meetLink, 'GoogleMeetPopup', popupFeatures);
+    window.open(meetLink, 'MeetingPopup', popupFeatures);
 
     axios
       .post(`/api/boards/${boardId}/chat`, {
-        text: `@team 🎥 I've started a Google Meet for this project! Join here: ${meetLink}`,
+        text: `@team 🎥 I've started a video meeting for this project! Join here: ${meetLink}`,
       })
       .then(() => fetchProjectChat())
       .catch(console.error);

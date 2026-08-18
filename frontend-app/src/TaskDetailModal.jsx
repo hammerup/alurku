@@ -11,6 +11,7 @@ import TaskDetailSubtasks from './components/TaskDetail/TaskDetailSubtasks';
 import TaskDetailActivity from './components/TaskDetail/TaskDetailActivity';
 import TaskDetailComments from './components/TaskDetail/TaskDetailComments';
 import TaskDetailCommentForm from './components/TaskDetail/TaskDetailCommentForm';
+import StartMeetingModal from './components/StartMeetingModal';
 export default function TaskDetailModal({
   tasks,
   selectedTask,
@@ -100,6 +101,7 @@ export default function TaskDetailModal({
 
   const [isGeneratingNudge, setIsGeneratingNudge] = useState(false);
   const [isNudgeConfirmOpen, setIsNudgeConfirmOpen] = useState(false);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
 
   const assignedUsers = [];
   if (selectedTask?.requester) {
@@ -222,19 +224,15 @@ export default function TaskDetailModal({
   };
 
   const handleStartTaskMeet = () => {
-    const cleanName = (selectedTask.project_name || 'task')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    const roomName = `task-${selectedTask.id}-${cleanName}`.substring(0, 50);
-    const meetLink = `https://meet.google.com/lookup/${roomName}`;
+    setIsMeetingModalOpen(true);
+  };
 
-    // Buka Google Meet dalam jendela Popup terpisah agar terasa seperti In-App
-    const popupFeatures =
-      'width=1000,height=700,left=100,top=100,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes';
-    window.open(meetLink, 'GoogleMeetPopup', popupFeatures);
-    // Secara otomatis mengirim pesan undangan dengan link Meet
-    handleAddComment(null, `@all 🎥 I've started a Google Meet for this task! Join here: ${meetLink}`);
+  const handleSendTaskMeetingLink = (link, serviceName = 'Video Meeting') => {
+    if (!selectedTask?.id || !handleAddComment) return;
+    handleAddComment(
+      null,
+      `@all 🎥 ${tMsg("I've started a video meeting for this task! Join here:", "Saya telah memulai pertemuan video untuk tugas ini! Bergabung di sini:")} ${link}`
+    );
   };
 
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
@@ -1792,6 +1790,18 @@ export default function TaskDetailModal({
             </div>
           </div>
         )}
+
+        {/* Start Meeting Smart Modal */}
+        <StartMeetingModal
+          isOpen={isMeetingModalOpen}
+          onClose={() => setIsMeetingModalOpen(false)}
+          title={selectedTask?.project_name || 'Task Discussion'}
+          roomName={`task-${selectedTask?.id || 'room'}-${(selectedTask?.project_name || 'task').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+          targetMention="@all"
+          onSendMeetingLink={handleSendTaskMeetingLink}
+          language={language}
+          showNotification={showNotification}
+        />
       </div>
     </div>
   );
