@@ -150,7 +150,6 @@ export default function WorkspaceChatPage() {
     const found = (tasks || []).find((t) => String(t.id) === String(targetId));
     if (found) {
       setActiveTaskPreview(found);
-      if (setSelectedTask) setSelectedTask(found);
     }
 
     axios.get(`/api/tasks/${targetId}`)
@@ -158,7 +157,6 @@ export default function WorkspaceChatPage() {
         const taskData = res.data?.task || res.data;
         if (taskData && typeof taskData === 'object') {
           setActiveTaskPreview(taskData);
-          if (setSelectedTask) setSelectedTask(taskData);
         }
       })
       .catch(() => {
@@ -980,7 +978,18 @@ export default function WorkspaceChatPage() {
               language={language}
               showNotification={showNotification}
               isSubmitting={isSubmitting}
-              handleToggleAutoNudge={handleToggleAutoNudge}
+              handleToggleAutoNudge={(taskId, val) => {
+                if (typeof handleToggleAutoNudge === 'function') handleToggleAutoNudge(taskId, val);
+                if (activeTaskPreview) {
+                  const taskObj = activeTaskPreview.task || activeTaskPreview;
+                  if (String(taskObj.id) === String(taskId)) {
+                    setActiveTaskPreview((prev) => {
+                      if (prev.task) return { ...prev, task: { ...prev.task, auto_nudge: val } };
+                      return { ...prev, auto_nudge: val };
+                    });
+                  }
+                }
+              }}
             />
           </div>
         </>

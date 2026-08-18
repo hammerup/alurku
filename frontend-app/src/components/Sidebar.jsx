@@ -412,8 +412,10 @@ export default function Sidebar() {
 
   const totalUnreadChats = useMemo(() => {
     const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
-    return unreadDms + unreadInboxChatsCount;
-  }, [unreadInboxChatsCount, dmConversations]);
+    // Count unread workspace chats by checking notifications that are linked to a board_id or related_task_id
+    const unreadWorkspace = (notifications || []).filter(n => !n.is_read && (n.board_id || n.related_task_id)).length;
+    return unreadDms + unreadWorkspace;
+  }, [dmConversations, notifications]);
 
   const [sortMode, setSortMode] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'recent';

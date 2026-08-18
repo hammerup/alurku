@@ -125,8 +125,6 @@ export default function TaskDetailModal({
   const executeSmartNudge = async () => {
     setIsNudgeConfirmOpen(false);
     setIsGeneratingNudge(true);
-    setActiveTab('comments');
-    setMobileTab('activity');
 
     const promptText = `Please act as the Smart Assistant. Write a short, friendly, and professional follow-up message (1-2 sentences) to check the progress of the task "${
       selectedTask.project_name
