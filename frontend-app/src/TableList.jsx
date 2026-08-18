@@ -61,6 +61,8 @@ export default function TableList({
   searchQuery = '',
   language = 'en',
 }) {
+  const tMsg = (en, id) => (language === 'id' ? id : en);
+
   const getTaskDeadlineInfo = (task) => {
     if (!task.deadline) return null;
     const today = new Date();
@@ -69,7 +71,6 @@ export default function TableList({
     dl.setHours(0, 0, 0, 0);
     const diffDays = Math.round((dl - today) / (1000 * 60 * 60 * 24));
 
-    const tMsg = (en, id) => (language === 'id' ? id : en);
     let timeStr = '';
     let badgeColor = 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700';
 

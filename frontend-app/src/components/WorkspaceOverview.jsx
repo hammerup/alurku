@@ -1215,7 +1215,7 @@ export default function WorkspaceOverview() {
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-[#111E38] dark:text-white">{tMsg('Team Activity', 'Aktivitas Tim')}</h2>
                 <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Latest 10
+                  {tMsg('Latest 15', '15 Terkini')}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 bg-[#FACC15]/20 border border-[#FACC15]/40 text-[#111E38] dark:text-[#FACC15] text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
@@ -1224,8 +1224,8 @@ export default function WorkspaceOverview() {
               </div>
             </div>
             
-            <div className="flex-1 p-6 space-y-6 relative">
-              {activityFeed.slice(0, 10).map((act, index, arr) => (
+            <div className="flex-1 p-6 space-y-6 relative max-h-[600px] overflow-y-auto custom-scrollbar">
+              {activityFeed.slice(0, 15).map((act, index, arr) => (
                 <div key={act.id} className="flex gap-4 relative z-10 animate-activity-item">
                   <div className="shrink-0 flex flex-col items-center relative">
                     <div className="ring-2 ring-white dark:ring-[#121B2D] bg-white dark:bg-[#121B2D] rounded-full z-10">

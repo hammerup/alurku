@@ -27,6 +27,12 @@ self.addEventListener('activate', (event) => {
 // ── Fetch: Network-First untuk HTML/API, Cache-First untuk aset statis ──
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
+  // Hanya proses HTTP/HTTPS GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+
   const url = new URL(request.url);
 
   // 1. Selalu lewatkan API dan WebSocket ke network (tidak pernah di-cache)
@@ -34,36 +40,55 @@ self.addEventListener('fetch', (event) => {
     return; // biarkan browser handle langsung
   }
 
-  // 2. HTML navigasi: SELALU Network-First
-  //    Ini memastikan index.html terbaru selalu diambil setelah deploy
+  // 2. HTML navigasi (SPA routes): SELALU Network-First
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      fetch(request).catch(() => caches.match(request))
+      fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+          const cachedIndex = await caches.match('/index.html');
+          if (cachedIndex) return cachedIndex;
+          return fetch('/index.html').catch(() => new Response('Offline', { status: 503, statusText: 'Offline' }));
+        })
     );
     return;
   }
 
   // 3. Aset statis dengan hash (js, css, gambar): Cache-First
-  //    Aman karena Vite ubah nama file (hash) setiap build baru
   const ext = url.pathname.match(/\.[^.]+$/)?.[0] || '';
   if (CACHE_EXTENSIONS.includes(ext) || url.pathname.match(/\/assets\//)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        });
+        return fetch(request)
+          .then((response) => {
+            if (response && response.ok) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            }
+            return response;
+          })
+          .catch(() => new Response('', { status: 404, statusText: 'Not Found' }));
       })
     );
     return;
   }
 
-  // 4. Semua request lainnya: Network-First
+  // 4. Semua request GET lainnya: Network-First dengan fallback cache
   event.respondWith(
-    fetch(request).catch(() => caches.match(request))
+    fetch(request)
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        return new Response('', { status: 404, statusText: 'Not Found' });
+      })
   );
 });
