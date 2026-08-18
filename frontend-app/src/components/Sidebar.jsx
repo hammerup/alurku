@@ -519,7 +519,7 @@ export default function Sidebar() {
         role="button"
         tabIndex={0}
         key={`sb-${isFavoriteSection ? 'fav' : 'all'}-${board.id}`}
-        title={isCollapsed ? board.name : undefined}
+        title={board.name}
         draggable
         onDragStart={() => setDraggedBoardId(board.id)}
         onDragOver={(e) => e.preventDefault()}
@@ -538,133 +538,183 @@ export default function Sidebar() {
           window.history.pushState({}, '', targetUrl);
           window.dispatchEvent(new CustomEvent('alurku-navigate'));
         }}
-        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all group relative cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#111E38] ${
+        className={`w-full flex items-center justify-between pl-2 pr-1.5 py-1.5 rounded-lg transition-all group relative cursor-pointer outline-none select-none ${
           isActive
             ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-semibold'
-            : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-600 dark:text-slate-400 font-medium'
+            : 'hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
         }`}
       >
         {isActive && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
         )}
-        <div className="flex items-center gap-1.5 min-w-0">
-          <span
-            className="material-symbols-outlined text-[15px] text-neutral-400 dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0 -ml-0.5"
-            title={tMsg('Drag to reorder', 'Geser untuk menata ulang')}
-          >
-            drag_indicator
-          </span>
+
+        {/* Drag handle */}
+        <span
+          className="material-symbols-outlined text-[13px] text-neutral-400 dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0 -ml-1 mr-0.5"
+          title={tMsg('Drag to reorder', 'Geser untuk menata ulang')}
+        >
+          drag_indicator
+        </span>
+
+        {/* Left: Initials Icon + Sub-badge for Private/Lock */}
+        <div className="relative shrink-0 mr-2">
           <div
-            className={`w-4.5 h-4.5 rounded bg-linear-to-br ${gradient} text-white flex items-center justify-center text-[8px] font-black shrink-0 shadow-2xs opacity-90`}
+            className={`w-5 h-5 rounded-md bg-linear-to-br ${gradient} text-white flex items-center justify-center text-[9px] font-black shadow-2xs`}
           >
             {getInitials(board.name)}
           </div>
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <span className={`text-xs truncate ${isActive ? 'font-bold text-[#111E38] dark:text-[#FACC15]' : 'font-medium'}`}>
-              {board.name}
+          {!!board.is_private && (
+            <span
+              className="absolute -bottom-1 -right-1 bg-white dark:bg-neutral-900 text-neutral-500 dark:text-neutral-300 rounded-full p-0.5 shadow-2xs border border-neutral-200 dark:border-neutral-700 leading-none flex items-center justify-center"
+              title={tMsg('Private Project', 'Proyek Privat')}
+            >
+              <svg className="w-2 h-2 text-neutral-600 dark:text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
             </span>
-            {!!board.is_private && (
-              <span className="opacity-60 shrink-0" title={tMsg('Private Project', 'Proyek Privat')}>
-                <svg className="w-3 h-3 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+          )}
+        </div>
+
+        {/* Middle: Full Readable Project Name with Tooltip */}
+        <div className="flex-1 min-w-0 pr-1 text-left">
+          <span
+            className={`text-xs truncate block ${
+              isActive ? 'font-bold text-[#111E38] dark:text-[#FACC15]' : 'font-medium text-slate-700 dark:text-slate-200'
+            }`}
+            title={board.name}
+          >
+            {board.name}
+          </span>
+        </div>
+
+        {/* Right Area: Smart Swap between Status Badges (Default) and Action Buttons (Hover) */}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Default Info (Visible when NOT hovering, hides smoothly on hover unless unread) */}
+          <div className="flex items-center gap-1 group-hover:hidden transition-all">
+            {isPinned && !isFavoriteSection && (
+              <span className="material-symbols-outlined text-[13px] text-amber-400 shrink-0" title={tMsg('Pinned', 'Disematkan')}>
+                star
+              </span>
+            )}
+            {unreadChats > 0 && (
+              <span
+                className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none shadow-2xs"
+                title={`${unreadChats} unread`}
+              >
+                {unreadChats > 9 ? '9+' : unreadChats}
+              </span>
+            )}
+            {unreadChats === 0 && board.health_alert?.includes('Attention') && (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" title="Attention Needed"></span>
+            )}
+            {unreadChats === 0 && taskCount > 0 && (
+              <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 tabular-nums">
+                {taskCount}
               </span>
             )}
           </div>
-        </div>
 
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isPinned) {
-                setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
-              } else {
-                setFavoriteBoards([...favoriteBoards, board.id]);
-              }
-            }}
-            className={`p-0.5 rounded transition-all ${
-              isPinned
-                ? 'text-amber-400 opacity-100'
-                : 'text-neutral-400 hover:text-amber-400 opacity-0 group-hover:opacity-100'
-            }`}
-            title={isPinned ? tMsg('Unpin Project', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
-          >
-            <span className="material-symbols-outlined text-[15px]">{isPinned ? 'star' : 'star_border'}</span>
-          </button>
-
-          {taskCount > 0 && (
-            <span className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 ml-0.5">{taskCount}</span>
-          )}
-          {unreadChats > 0 && (
-            <span className="min-w-3.5 h-3.5 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none" title={`${unreadChats} unread`}>
-              {unreadChats > 9 ? '9+' : unreadChats}
-            </span>
-          )}
-          {board.health_alert?.includes('Attention') && unreadChats === 0 && (
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="Attention Needed"></span>
-          )}
-          <div className="relative">
+          {/* Hover Actions (Smoothly appear on hover in place of badges) */}
+          <div className="hidden group-hover:flex items-center gap-0.5 transition-all">
+            {unreadChats > 0 && (
+              <span
+                className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none mr-0.5 shadow-2xs"
+                title={`${unreadChats} unread`}
+              >
+                {unreadChats > 9 ? '9+' : unreadChats}
+              </span>
+            )}
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                const menuKey = `${isFavoriteSection ? 'fav' : 'all'}-${board.id}`;
-                setActiveBoardMenuId(activeBoardMenuId === menuKey ? null : menuKey);
+                if (isPinned) {
+                  setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
+                } else {
+                  setFavoriteBoards([...favoriteBoards, board.id]);
+                }
               }}
-              className="p-0.5 rounded text-neutral-400 hover:text-neutral-900 dark:hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-              title={tMsg('Project Options', 'Opsi Proyek')}
+              className={`p-1 rounded-md transition-all hover:bg-black/5 dark:hover:bg-white/10 ${
+                isPinned ? 'text-amber-400' : 'text-neutral-400 hover:text-amber-400'
+              }`}
+              title={isPinned ? tMsg('Unpin Project', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
             >
-              <span className="material-symbols-outlined text-[15px]">more_vert</span>
+              <span className="material-symbols-outlined text-[15px]">{isPinned ? 'star' : 'star_border'}</span>
             </button>
-            {activeBoardMenuId === `${isFavoriteSection ? 'fav' : 'all'}-${board.id}` && (
-              <>
-                <div className="fixed inset-0 z-45" onClick={(e) => { e.stopPropagation(); setActiveBoardMenuId(null); }}></div>
-                <div className="absolute right-0 bottom-0 mb-6 w-40 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 py-1 text-xs">
-                  <button
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const menuKey = `${isFavoriteSection ? 'fav' : 'all'}-${board.id}`;
+                  setActiveBoardMenuId(activeBoardMenuId === menuKey ? null : menuKey);
+                }}
+                className="p-1 rounded-md text-neutral-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                title={tMsg('Project Options', 'Opsi Proyek')}
+              >
+                <span className="material-symbols-outlined text-[15px]">more_vert</span>
+              </button>
+
+              {activeBoardMenuId === `${isFavoriteSection ? 'fav' : 'all'}-${board.id}` && (
+                <>
+                  <div
+                    className="fixed inset-0 z-45"
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveBoardMenuId(null);
-                      if (isPinned) {
-                        setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
-                      } else {
-                        setFavoriteBoards([...favoriteBoards, board.id]);
-                      }
                     }}
-                    className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
-                  >
-                    <span className="material-symbols-outlined text-sm">{isPinned ? 'star_half' : 'star'}</span>
-                    {isPinned ? tMsg('Unpin', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
-                  </button>
-                  {(isSuperAdmin || board.owner_username === currentUser) && (
-                    <>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveBoardMenuId(null);
-                          archiveBoard(board);
-                        }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
-                      >
-                        <span className="material-symbols-outlined text-sm">inventory_2</span>
-                        {tMsg('Archive', 'Arsipkan')}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveBoardMenuId(null);
-                          setBoardToDelete(board);
-                        }}
-                        className="w-full text-left px-3 py-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold"
-                      >
-                        <span className="material-symbols-outlined text-sm">delete</span>
-                        {tMsg('Delete', 'Hapus')}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
+                  ></div>
+                  <div className="absolute right-0 bottom-0 mb-6 w-44 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 py-1 text-xs animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveBoardMenuId(null);
+                        if (isPinned) {
+                          setFavoriteBoards(favoriteBoards.filter((id) => id !== board.id));
+                        } else {
+                          setFavoriteBoards([...favoriteBoards, board.id]);
+                        }
+                      }}
+                      className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium"
+                    >
+                      <span className="material-symbols-outlined text-sm">{isPinned ? 'star_half' : 'star'}</span>
+                      {isPinned ? tMsg('Unpin from Top', 'Lepas Sematan') : tMsg('Pin to Top', 'Sematkan ke Atas')}
+                    </button>
+                    {(isSuperAdmin || board.owner_username === currentUser) && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveBoardMenuId(null);
+                            archiveBoard(board);
+                          }}
+                          className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium"
+                        >
+                          <span className="material-symbols-outlined text-sm">inventory_2</span>
+                          {tMsg('Archive Project', 'Arsipkan Proyek')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveBoardMenuId(null);
+                            setBoardToDelete(board);
+                          }}
+                          className="w-full text-left px-3 py-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                          {tMsg('Delete Project', 'Hapus Proyek')}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -846,7 +896,7 @@ export default function Sidebar() {
           className={`bg-[#FAFAFA]/95 dark:bg-[#121B2D]/95 backdrop-blur-xl flex flex-col border-r border-neutral-200/50 dark:border-neutral-800/50 transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${
             isCollapsed
               ? 'w-0 opacity-0 pointer-events-none border-r-0 border-transparent'
-              : 'w-56 md:w-60 opacity-100'
+              : 'w-60 md:w-64 opacity-100'
           } ${
             isMobileMenuOpen ? 'fixed inset-y-0 left-14 z-90 translate-x-0' : ''
           }`}
