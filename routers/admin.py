@@ -299,3 +299,136 @@ def admin_transfer_board(
         board.id,
     )
     return {"message": f"Project ownership transferred to @{new_user.username}"}
+
+
+@router.get("/api/admin/stats")
+def get_admin_dashboard_stats(
+    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    if not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    total_users = db.query(func.count(User.username)).scalar() or 0
+    verified_users = db.query(func.count(User.username)).filter(User.is_verified == 1).scalar() or 0
+    superadmins = db.query(func.count(User.username)).filter(User.is_superadmin == 1).scalar() or 0
+    frozen_users = db.query(func.count(User.username)).filter(User.account_status == "frozen").scalar() or 0
+    pending_deletions = db.query(func.count(User.username)).filter(User.account_status.in_(["pending_deletion", "offboarding"])).scalar() or 0
+
+    total_boards = db.query(func.count(Board.id)).scalar() or 0
+    total_tasks = db.query(func.count(Request.id)).scalar() or 0
+    completed_tasks = db.query(func.count(Request.id)).filter(Request.status.ilike("%done%")).scalar() or 0
+    pending_tasks = total_tasks - completed_tasks
+    total_subtasks = db.query(func.count(Subtask.id)).scalar() or 0
+    total_comments = db.query(func.count(Comment.id)).scalar() or 0
+
+    return {
+        "users": {
+            "total": total_users,
+            "verified": verified_users,
+            "superadmins": superadmins,
+            "frozen": frozen_users,
+            "pending_deletions": pending_deletions,
+        },
+        "projects": {
+            "total": total_boards,
+        },
+        "tasks": {
+            "total": total_tasks,
+            "pending": pending_tasks,
+            "completed": completed_tasks,
+            "subtasks": total_subtasks,
+            "comments": total_comments,
+        },
+        "system_health": {
+            "database_online": True,
+            "smtp_configured": bool(os.getenv("SMTP_SERVER")),
+            "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
+            "groq_configured": bool(os.getenv("GROQ_API_KEY")),
+            "calendar_configured": bool(os.getenv("GOOGLE_CALENDAR_API_KEY")),
+            "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    }
+
+
+@router.get("/api/admin/policies")
+def get_system_policies(
+    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    if not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    default_policies = {
+        "org_name": "alurku.",
+        "default_language": "id",
+        "allow_public_signup": True,
+        "allowed_domains": "",
+        "session_duration_days": 30,
+        "soft_delete_grace_days": 90,
+        "max_upload_size_mb": 10,
+        "default_ai_engine": "auto",
+        "enable_proactive_nudge": True,
+        "enable_auto_subtasks": True,
+    }
+    saved_policies = get_security_log(db, "system_policies", default_policies)
+    if not isinstance(saved_policies, dict):
+        saved_policies = default_policies
+    return {**default_policies, **saved_policies}
+
+
+@router.put("/api/admin/policies")
+def update_system_policies(
+    payload: SystemPolicyModel,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    set_security_log(db, "system_policies", payload.dict())
+    return {"message": "Kebijakan sistem berhasil diperbarui / System policies updated successfully!"}
+
+
+@router.post("/api/admin/maintenance/cleanup-orphans")
+def cleanup_orphaned_records(
+    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    if not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    valid_task_ids = [t[0] for t in db.query(Request.id).all()]
+    deleted_subtasks = db.query(Subtask).filter(~Subtask.request_id.in_(valid_task_ids)).delete(synchronize_session=False) if valid_task_ids else 0
+    deleted_comments = db.query(Comment).filter(~Comment.request_id.in_(valid_task_ids)).delete(synchronize_session=False) if valid_task_ids else 0
+
+    db.commit()
+    return {
+        "message": f"Pembersihan data selesai: {deleted_subtasks} subtask yatim dan {deleted_comments} komentar usang dibersihkan.",
+        "cleaned_subtasks": deleted_subtasks,
+        "cleaned_comments": deleted_comments,
+    }
+
+
+@router.post("/api/admin/maintenance/purge-expired")
+def purge_expired_accounts(
+    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    if not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    expired_users = db.query(User).filter(
+        User.account_status.in_(["pending_deletion", "offboarding"]),
+        User.deletion_date != None,
+        User.deletion_date <= now_str,
+        User.username != "admin"
+    ).all()
+
+    count = 0
+    for u in expired_users:
+        db.query(Notification).filter(Notification.user_username == u.username).delete()
+        db.query(BoardMember).filter(BoardMember.member_username == u.username).delete()
+        db.query(LeaveRecord).filter(LeaveRecord.username == u.username).delete()
+        db.delete(u)
+        count += 1
+
+    db.commit()
+    return {"message": f"Berhasil menghapus {count} akun kedaluwarsa secara permanen.", "purged_count": count}

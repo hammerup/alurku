@@ -150,6 +150,7 @@ export default function WorkspaceChatPage() {
     const found = (tasks || []).find((t) => String(t.id) === String(targetId));
     if (found) {
       setActiveTaskPreview(found);
+      if (setSelectedTask) setSelectedTask(found);
     }
 
     axios.get(`/api/tasks/${targetId}`)
@@ -157,6 +158,7 @@ export default function WorkspaceChatPage() {
         const taskData = res.data?.task || res.data;
         if (taskData && typeof taskData === 'object') {
           setActiveTaskPreview(taskData);
+          if (setSelectedTask) setSelectedTask(taskData);
         }
       })
       .catch(() => {
@@ -168,17 +170,7 @@ export default function WorkspaceChatPage() {
     axios.get(`/api/tasks/${targetId}/comments`)
       .then((res) => {
         const rawComments = res.data?.comments || res.data || [];
-        const cleanComments = Array.isArray(rawComments)
-          ? rawComments.filter(
-              (c) =>
-                c &&
-                c.username !== 'System' &&
-                c.username?.toLowerCase() !== 'system' &&
-                !c?.text?.startsWith('[ACTIVITY]') &&
-                !c?.text?.includes('[ACTIVITY]')
-            )
-          : [];
-        setTaskPreviewComments(cleanComments);
+        setTaskPreviewComments(Array.isArray(rawComments) ? rawComments : []);
       })
       .catch(console.error);
   }, [tasks, activeChat, handleNotificationTaskClick]);
@@ -512,17 +504,7 @@ export default function WorkspaceChatPage() {
       .get(endpoint, { params })
       .then((res) => {
         const rawMsgs = res.data.messages || res.data.comments || [];
-        const cleanMsgs = Array.isArray(rawMsgs)
-          ? rawMsgs.filter(
-              (c) =>
-                c &&
-                c.username !== 'System' &&
-                c.username?.toLowerCase() !== 'system' &&
-                !c?.text?.startsWith('[ACTIVITY]') &&
-                !c?.text?.includes('[ACTIVITY]')
-            )
-          : [];
-        setMessages(cleanMsgs);
+        setMessages(Array.isArray(rawMsgs) ? rawMsgs : []);
         if (isInitial) setIsLoadingMessages(false);
       })
       .catch((err) => {
@@ -537,36 +519,46 @@ export default function WorkspaceChatPage() {
     }
   }, [activeChat?.id, activeChat?.type]);
 
-  // Clear unread badges for active chat and sync notifications
+  // Clear unread badges for active chat and sync notifications with guard
+  const lastReadNotifChatRef = useRef(null);
   useEffect(() => {
-    if (activeChat && notifications && handleReadNotification && messages.length > 0) {
-      const targetIdStr = String(activeChat.id);
-      const unreadForThis = notifications.filter(
-        (n) => !n.is_read && (n.related_task_id === activeChat.id || String(n.related_task_id) === targetIdStr)
-      );
-      if (unreadForThis.length > 0) unreadForThis.forEach((n) => handleReadNotification(n.id));
+    if (!activeChat?.id || !notifications || !handleReadNotification) return;
+    const currentChatKey = `${activeChat.type}_${activeChat.id}`;
+    if (lastReadNotifChatRef.current === currentChatKey) return;
 
-      const storageKey =
-        activeChat.type === 'project'
-          ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
-          : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
-      localStorage.setItem(storageKey, messages[messages.length - 1].timestamp);
-      if (fetchInboxChats) fetchInboxChats();
+    const targetIdStr = String(activeChat.id);
+    const unreadForThis = notifications.filter(
+      (n) => !n.is_read && (String(n.related_task_id) === targetIdStr || n.related_task_id === activeChat.id)
+    );
+    if (unreadForThis.length > 0) {
+      lastReadNotifChatRef.current = currentChatKey;
+      unreadForThis.forEach((n) => handleReadNotification(n.id));
     }
-  }, [activeChat, messages, notifications, handleReadNotification, currentUser]);
+  }, [activeChat?.id, activeChat?.type, notifications]);
 
-  // Clear DM Unread
+  // Update local storage last read timestamp without calling network API in loop
   useEffect(() => {
-    if (activeChat && activeChat.type === 'dm' && messages.length > 0) {
+    if (!activeChat?.id || !messages || messages.length === 0) return;
+    const lastMsg = messages[messages.length - 1];
+    if (!lastMsg?.timestamp) return;
+
+    const storageKey =
+      activeChat.type === 'project'
+        ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
+        : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
+    localStorage.setItem(storageKey, lastMsg.timestamp);
+  }, [activeChat?.id, activeChat?.type, messages?.length, currentUser]);
+
+  // Clear DM Unread on chat selection once
+  const lastDmReadPartnerRef = useRef(null);
+  useEffect(() => {
+    if (activeChat?.type === 'dm') {
       const partner = activeChat.partner || activeChat.id;
-      axios.put(`/api/dm/${partner}/read`)
-        .then(() => {
-          if (fetchDmConversations) fetchDmConversations();
-          if (fetchInboxChats) fetchInboxChats();
-        })
-        .catch(console.error);
+      if (!partner || lastDmReadPartnerRef.current === partner) return;
+      lastDmReadPartnerRef.current = partner;
+      axios.put(`/api/dm/${partner}/read`).catch(console.error);
     }
-  }, [activeChat, messages]);
+  }, [activeChat?.id, activeChat?.type, activeChat?.partner]);
 
   const prevAiReplying = useRef(isAiReplying);
   useEffect(() => {
@@ -666,10 +658,75 @@ export default function WorkspaceChatPage() {
     setNewDmSearch('');
   };
 
+  const deleteWorkspaceMessage = (msgId) => {
+    if (!activeChat || !msgId) return;
+    let endpoint = '';
+    if (activeChat.type === 'project') {
+      endpoint = `/api/boards/${activeChat.id}/chat/${msgId}`;
+    } else if (activeChat.type === 'task') {
+      endpoint = `/api/tasks/${activeChat.id}/comments/${msgId}`;
+    } else if (activeChat.type === 'dm') {
+      endpoint = `/api/dm/${msgId}`;
+    }
+
+    if (!endpoint) return;
+
+    axios
+      .delete(endpoint)
+      .then(() => {
+        setMessages((prev) => prev.filter((m) => m.id !== msgId));
+        if (showNotification) {
+          showNotification(tMsg('Message deleted', 'Pesan berhasil dihapus'), 'success');
+        }
+      })
+      .catch((err) => {
+        if (showNotification) {
+          showNotification(
+            err.response?.data?.detail || tMsg('Failed to delete message', 'Gagal menghapus pesan'),
+            'error'
+          );
+        }
+      });
+  };
+
+  const handleStatusChangeInPreview = (newStatus, force = false, targetTaskId = null) => {
+    let taskId = targetTaskId || activeTaskPreview?.task?.id || activeTaskPreview?.id || selectedTask?.id;
+    if (taskId === 'undefined' || taskId === 'null') taskId = null;
+    if (!taskId) return;
+
+    // Optimistically update preview state immediately so UI updates instantly without refresh
+    setActiveTaskPreview((prev) => {
+      if (!prev) return prev;
+      if (prev.task) {
+        return { ...prev, task: { ...prev.task, status: newStatus } };
+      }
+      return { ...prev, status: newStatus };
+    });
+
+    // Call the global logic handler
+    handleDirectStatusChange(newStatus, force, taskId);
+
+    // Re-fetch comments & activities for this task after a short delay so the new activity log appears immediately
+    setTimeout(() => {
+      axios
+        .get(`/api/tasks/${taskId}/comments`)
+        .then((res) => {
+          const rawComments = res.data?.comments || res.data || [];
+          if (Array.isArray(rawComments)) {
+            setTaskPreviewComments(rawComments);
+            if (activeChat?.type === 'task' && String(activeChat.id) === String(taskId)) {
+              setMessages(rawComments);
+            }
+          }
+        })
+        .catch(console.error);
+    }, 400);
+  };
+
   return (
     <div
       ref={wrapperRef}
-      className="flex-1 flex flex-col md:flex-row h-full max-h-full min-h-0 bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 overflow-hidden shadow-xs m-2 md:m-3 relative"
+      className="flex-1 flex flex-col md:flex-row min-h-0 bg-[#F3F4F6] dark:bg-[#0d0f11] text-[#111E38] dark:text-white rounded-none border-0 md:border-t md:border-neutral-200/80 md:dark:border-neutral-800/80 overflow-hidden relative"
     >
       {/* Sidebar Channels & DMs */}
       <ChatSidebar
@@ -747,25 +804,28 @@ export default function WorkspaceChatPage() {
         />
 
         {/* Message List */}
-        <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-3 relative">
-          <ChatMessageList
-            messages={messages}
-            isLoadingMessages={isLoadingMessages}
-            hasMoreMessages={hasMoreMessages}
-            loadMoreMessages={() => fetchMessages(false, true)}
-            activeChat={activeChat}
-            currentUser={currentUser}
-            avatarsMap={avatarsMap}
-            formatDateMMM={formatDateMMM}
-            setReplyingTo={setReplyingTo}
-            handleToggleReaction={handleToggleReaction}
-            setMsgToDelete={setMsgToDelete}
-            tMsg={tMsg}
-            firstUnreadId={firstUnreadId}
-            messagesEndRef={messagesEndRef}
-            isAiReplying={isAiReplying}
-          />
-        </div>
+        <ChatMessageList
+          scrollContainerRef={scrollContainerRef}
+          handleScroll={handleScroll}
+          messages={messages}
+          isLoadingMessages={isLoadingMessages}
+          hasMoreMessages={hasMoreMessages}
+          loadMoreMessages={() => fetchMessages(false, true)}
+          activeChat={activeChat}
+          currentUser={currentUser}
+          avatarsMap={avatarsMap}
+          formatDateMMM={formatDateMMM}
+          setReplyingTo={setReplyingTo}
+          deleteWorkspaceMessage={deleteWorkspaceMessage}
+          showNotification={showNotification}
+          toggleWorkspaceReaction={handleToggleReaction}
+          isSuperAdmin={isSuperAdmin}
+          accountStatus={accountStatus}
+          tMsg={tMsg}
+          firstUnreadId={firstUnreadId}
+          messagesEndRef={messagesEndRef}
+          isAiReplying={isAiReplying}
+        />
 
         {/* Floating Jump to Bottom & Mention Action Buttons */}
         <div className="absolute right-6 bottom-24 z-30 flex flex-col gap-2 pointer-events-auto">
@@ -859,10 +919,7 @@ export default function WorkspaceChatPage() {
               onCloseInline={() => setActiveTaskPreview(null)}
               selectedTask={activeTaskPreview?.task || activeTaskPreview}
               tasks={tasks}
-              setSelectedTask={setSelectedTask}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              handleDirectStatusChange={handleDirectStatusChange}
+              handleDirectStatusChange={handleStatusChangeInPreview}
               columns={columns}
               editFormData={editFormData}
               setEditFormData={setEditFormData}

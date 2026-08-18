@@ -184,3 +184,16 @@ class AccountDeleteModel(BaseModel):
     password: str
     confirmation: Optional[str] = None
 
+
+class SystemPolicyModel(BaseModel):
+    org_name: Optional[str] = "alurku."
+    default_language: Optional[str] = "id"
+    allow_public_signup: Optional[bool] = True
+    allowed_domains: Optional[str] = ""
+    session_duration_days: Optional[int] = 30
+    soft_delete_grace_days: Optional[int] = 90
+    max_upload_size_mb: Optional[int] = 10
+    default_ai_engine: Optional[str] = "auto"
+    enable_proactive_nudge: Optional[bool] = True
+    enable_auto_subtasks: Optional[bool] = True
+

@@ -174,7 +174,7 @@ export default function TaskDetailModal({
     [comments]
   );
   const activityLogs = React.useMemo(() => {
-    return comments
+    const logs = (comments || [])
       .filter((c) => {
         if (!c || !c.text) return false;
         const txt = c.text;
@@ -196,7 +196,20 @@ export default function TaskDetailModal({
         return false;
       })
       .reverse();
-  }, [comments]);
+
+    const hasCreateLog = logs.some((l) => (l.text || '').toLowerCase().includes('created'));
+    if (!hasCreateLog && selectedTask) {
+      const creator = selectedTask.owner_username || selectedTask.requester || 'User';
+      const createdTime = selectedTask.created_at || selectedTask.timestamp || new Date().toISOString();
+      logs.push({
+        id: `synth-create-${selectedTask.id || 'curr'}`,
+        text: `[ACTIVITY] **@${creator}** created this task.`,
+        timestamp: createdTime,
+        username: 'System',
+      });
+    }
+    return logs;
+  }, [comments, selectedTask]);
 
   const handleTaskChatScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -533,7 +546,7 @@ export default function TaskDetailModal({
           isInline={isInline}
           isEditing={isEditing}
           selectedTask={selectedTask}
-          handleDirectStatusChange={handleDirectStatusChange}
+          handleDirectStatusChange={(newStatus) => handleDirectStatusChange(newStatus, false, selectedTask?.id)}
           columns={columns}
           isPreviewMode={isPreviewMode}
           accountStatus={accountStatus}

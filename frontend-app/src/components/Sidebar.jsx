@@ -953,12 +953,12 @@ export default function Sidebar() {
             <div className="relative">
               <button
                 onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
-                className="px-2.5 py-1 bg-white hover:bg-[#111E38] text-[#111E38] hover:text-white dark:bg-neutral-800 dark:hover:bg-[#FACC15] dark:text-neutral-200 dark:hover:text-[#111E38] border border-neutral-300 dark:border-neutral-700 text-[11px] font-extrabold rounded-lg transition-all flex items-center gap-1 shadow-2xs cursor-pointer group"
+                className="px-2.5 py-1 bg-[#FACC15] hover:bg-[#EAB308] text-[#111E38] dark:text-[#111E38] border border-amber-400/80 text-[11px] font-extrabold rounded-lg transition-all flex items-center gap-1 shadow-2xs cursor-pointer select-none group"
                 title={tMsg('Create Task or Project', 'Buat Tugas atau Proyek')}
               >
-                <IconPlus className="w-3 h-3 text-current transition-colors" />
-                <span className="text-current transition-colors">{tMsg('Create', 'Buat')}</span>
-                <span className="material-symbols-outlined text-[12px] text-current opacity-70 group-hover:opacity-100 transition-opacity">expand_more</span>
+                <IconPlus className="w-3 h-3 text-[#111E38] shrink-0" />
+                <span className="text-[#111E38] group-hover:text-[#111E38] font-black">{tMsg('Create', 'Buat')}</span>
+                <span className="material-symbols-outlined text-[12px] text-[#111E38] opacity-80">expand_more</span>
               </button>
 
               {isCreateMenuOpen && (

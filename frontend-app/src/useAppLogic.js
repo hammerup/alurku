@@ -1977,28 +1977,36 @@ export default function useAppLogic() {
       .catch((err) => console.error(err));
   };
 
+  const isDmFetchingRef = useRef(false);
   const fetchDmConversations = () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || isDmFetchingRef.current) return;
+    isDmFetchingRef.current = true;
     axios
       .get('/api/dm/conversations')
       .then((res) => setDmConversations(res.data.conversations || []))
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => {
+        setTimeout(() => {
+          isDmFetchingRef.current = false;
+        }, 500);
+      });
   };
 
+  const isInboxFetchingRef = useRef(false);
   const fetchInboxChats = () => {
-    if (!isAuthenticated) return;
-    setIsInboxLoading(true);    if (inboxChats.length === 0) {
-      setIsInboxLoading(true);
-    }
+    if (!isAuthenticated || isInboxFetchingRef.current) return;
+    isInboxFetchingRef.current = true;
     axios
       .get('/api/my-chats')
       .then((res) => {
         setInboxChats(res.data.chats || []);
-        setIsInboxLoading(false);
       })
-      .catch((err) => {
-        console.error(err);
+      .catch(console.error)
+      .finally(() => {
         setIsInboxLoading(false);
+        setTimeout(() => {
+          isInboxFetchingRef.current = false;
+        }, 500);
       });
   };
 
@@ -2699,10 +2707,6 @@ export default function useAppLogic() {
           .filter(
             (c) =>
               c &&
-              c.username !== 'System' &&
-              c.username?.toLowerCase() !== 'system' &&
-              !c.text?.startsWith('[ACTIVITY]') &&
-              !c.text?.includes('[ACTIVITY]') &&
               (!c.isPrivate || c.privateUser === currentUser)
           );
 
@@ -3586,20 +3590,29 @@ export default function useAppLogic() {
       .finally(() => setIsSubmitting(false));
   };
 
-  const handleDirectStatusChange = (newStatus, force = false) => {
+  const handleDirectStatusChange = (newStatus, force = false, targetTaskId = null) => {
+    const activeId = targetTaskId || selectedTask?.id;
+    if (!activeId || activeId === 'undefined' || activeId === 'null') {
+      console.warn('handleDirectStatusChange called without valid taskId', { newStatus, activeId, selectedTask });
+      return;
+    }
+
+    const currentTask = (tasks || []).find((t) => String(t.id) === String(activeId)) || selectedTask;
+    if (!currentTask) return;
+
     if (!force && newStatus === 'Done') {
-      const freshTask = tasks.find((t) => t.id === selectedTask?.id) || selectedTask;
+      const freshTask = currentTask;
       const hasIncomplete = isSubtasksLoading
         ? freshTask.subtask_done < freshTask.subtask_total
         : subtasks.some((st) => st.is_done === 0);
 
       if (hasIncomplete) {
-        setPendingStatusChange({ type: 'direct', payload: newStatus });
+        setPendingStatusChange({ type: 'direct', payload: newStatus, targetTaskId: activeId });
         return;
       }
     }
 
-    const updatedTask = { ...selectedTask, status: newStatus };
+    const updatedTask = { ...currentTask, status: newStatus };
     if (newStatus === 'Done' || newStatus === 'Rejected') {
       const now = new Date();
       updatedTask.completed_time = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
@@ -3616,23 +3629,23 @@ export default function useAppLogic() {
     }
     setSelectedTask(updatedTask);
 
-    setTasks(tasks.map((t) => (t.id === selectedTask.id ? updatedTask : t)));
+    setTasks((prev) => prev.map((t) => (String(t.id) === String(activeId) ? updatedTask : t)));
 
     axios
-      .put(`/api/tasks/${selectedTask.id}`, { status: newStatus })
+      .put(`/api/tasks/${activeId}`, { status: newStatus })
       .then((res) => {
         if (res.data?.cloned_task_id) {
           setClonedTaskIds((prev) => new Set(prev).add(Number(res.data.cloned_task_id)));
         }
         fetchTasks();
-        fetchComments(selectedTask.id);
+        fetchComments(activeId);
         showNotification(`Task marked as ${newStatus}`, 'success');
         setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
       })
       .catch((err) => {
         showNotification(err.response?.data?.detail || 'Failed to update status!', 'error');
         fetchTasks();
-        setSelectedTask(tasks.find((t) => t.id === selectedTask.id) || selectedTask);
+        setSelectedTask((tasks || []).find((t) => String(t.id) === String(activeId)) || selectedTask);
       });
   };
 

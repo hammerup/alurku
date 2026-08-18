@@ -1278,7 +1278,7 @@ function App() {
       ) : (
         <div
           className={`flex pt-20 text-black dark:text-white font-sans transition-colors duration-200 ${
-            selectedBoard && viewMode === 'kanban' ? 'h-screen overflow-hidden' : 'min-h-screen'
+            (selectedBoard && viewMode === 'kanban') || (typeof currentPath === 'string' && (currentPath === '/chat' || currentPath.endsWith('/chat'))) ? 'h-screen overflow-hidden' : 'min-h-screen'
           } ${
           (!appTheme ||
             appTheme === 'gamer' ||
@@ -1673,45 +1673,46 @@ function App() {
               </main>
             </div>
           )}
-
-          {/* Universal Footer for Logged In User */}
-          <footer className="flex flex-col sm:flex-row py-2.5 px-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black justify-between items-center gap-2 sm:gap-4 shrink-0 z-40 relative">
-            <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest text-center sm:text-left">
-              © {new Date().getFullYear()} Alurku.
-            </p>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-              <button
-                onClick={() => setIsSpecsOpen(true)}
-                className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
-              >
-                Specs
-              </button>
-              <button
-                onClick={() => setIsChangelogOpen(true)}
-                className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
-              >
-                Changelog
-              </button>
-              <button
-                onClick={() => setIsDocsOpen(true)}
-                className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
-              >
-                Docs
-              </button>
-              <button
-                onClick={() => setIsPrivacyOpen(true)}
-                className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
-              >
-                Privacy
-              </button>
-              <button
-                onClick={() => setIsTermsOpen(true)}
-                className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
-              >
-                Terms
-              </button>
-            </div>
-          </footer>
+          {/* Universal Footer for Logged In User (Hidden in app views like Chat, Kanban, Inbox) */}
+          {!(currentPath.endsWith('/chat') || (selectedBoard && viewMode === 'kanban') || currentPath.endsWith('/inbox') || currentPath.includes('/meetings-leaves')) && (
+            <footer className="flex flex-col sm:flex-row py-2.5 px-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black justify-between items-center gap-2 sm:gap-4 shrink-0 z-40 relative">
+              <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest text-center sm:text-left">
+                © {new Date().getFullYear()} Alurku.
+              </p>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+                <button
+                  onClick={() => setIsSpecsOpen(true)}
+                  className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
+                >
+                  Specs
+                </button>
+                <button
+                  onClick={() => setIsChangelogOpen(true)}
+                  className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
+                >
+                  Changelog
+                </button>
+                <button
+                  onClick={() => setIsDocsOpen(true)}
+                  className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
+                >
+                  Docs
+                </button>
+                <button
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
+                >
+                  Privacy
+                </button>
+                <button
+                  onClick={() => setIsTermsOpen(true)}
+                  className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
+                >
+                  Terms
+                </button>
+              </div>
+            </footer>
+          )}
 
           {/* Floating Trash for Drag and Drop Deletion */}
           <div

@@ -6,7 +6,7 @@ export default function ChatMessageList({
   scrollContainerRef,
   handleScroll,
   isLoadingMessages,
-  messages,
+  messages = [],
   hasMoreMessages,
   loadMoreMessages,
   tMsg,
@@ -23,24 +23,28 @@ export default function ChatMessageList({
   accountStatus,
   isAiReplying,
   messagesEndRef,
-  latestMentionId,
-  setDismissedMentions,
-  setLatestMentionId,
-  showScrollBottom,
-  setShowScrollBottom,
 }) {
+  const filteredMessages = (messages || []).filter(
+    (c) =>
+      c &&
+      c.username !== 'System' &&
+      c.username?.toLowerCase() !== 'system' &&
+      !c?.text?.startsWith('[ACTIVITY]') &&
+      !c?.text?.includes('[ACTIVITY]')
+  );
+
   return (
     <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
-      className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar bg-neutral-50/50 dark:bg-neutral-900/30 relative z-10"
+      className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 custom-scrollbar bg-neutral-50/50 dark:bg-neutral-900/30 relative z-10 flex flex-col"
     >
-      <div className="relative z-10 flex flex-col gap-4">
-        {isLoadingMessages && messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full opacity-50 py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent mb-2"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">
-              Loading...
+      <div className="relative z-10 flex flex-col gap-4 flex-1">
+        {isLoadingMessages && filteredMessages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center my-auto py-20 opacity-60">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-[#111E38] dark:border-[#FACC15] border-t-transparent mb-3"></div>
+            <span className="text-xs font-bold tracking-wider text-neutral-500 uppercase">
+              {tMsg('Loading messages...', 'Memuat pesan...')}
             </span>
           </div>
         ) : (
@@ -48,24 +52,16 @@ export default function ChatMessageList({
             {hasMoreMessages && (
               <div className="flex justify-center my-2 relative">
                 <button
+                  type="button"
                   onClick={loadMoreMessages}
-                  className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 px-4 py-2 rounded-full transition-colors border border-indigo-200 dark:border-indigo-800/50 shadow-sm z-10"
+                  className="text-[11px] font-bold text-slate-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 px-4 py-2 rounded-full transition-colors border border-neutral-200 dark:border-neutral-700 shadow-2xs z-10"
                 >
-                  Load older messages
+                  {tMsg('Load older messages', 'Muat pesan terdahulu')}
                 </button>
               </div>
             )}
 
-            {(messages || [])
-              .filter(
-                (c) =>
-                  c &&
-                  c.username !== 'System' &&
-                  c.username?.toLowerCase() !== 'system' &&
-                  !c?.text?.startsWith('[ACTIVITY]') &&
-                  !c?.text?.includes('[ACTIVITY]')
-              )
-              .map((c, index, arr) => {
+            {filteredMessages.map((c, index, arr) => {
               const currDate = new Date(c.timestamp.replace(/-/g, '/')).toDateString();
               const prevDate =
                 index > 0 ? new Date(arr[index - 1].timestamp.replace(/-/g, '/')).toDateString() : null;
@@ -92,7 +88,7 @@ export default function ChatMessageList({
                   onReply={() => setReplyingTo(c)}
                   onDelete={() => deleteWorkspaceMessage(c.id)}
                   onCopy={() => {
-                    let cleanText = c.text
+                    let cleanText = (c.text || '')
                       .replace(/\*\*(.*?)\*\*/g, '$1')
                       .replace(/\*(.*?)\*/g, '$1')
                       .replace(/__(.*?)__/g, '$1');
@@ -132,14 +128,14 @@ export default function ChatMessageList({
                       @Luruka
                     </span>
                   </div>
-                  <div className="p-3 text-sm font-medium leading-relaxed shadow-sm shrink min-w-0 bg-white dark:bg-neutral-800 text-black dark:text-white border border-neutral-100 dark:border-neutral-700 rounded-2xl rounded-tl-sm flex gap-1.5 items-center h-10">
-                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></span>
+                  <div className="p-3 text-sm font-medium leading-relaxed shadow-2xs shrink min-w-0 bg-white dark:bg-neutral-800 text-black dark:text-white border border-neutral-100 dark:border-neutral-700 rounded-2xl rounded-tl-xs flex gap-1.5 items-center h-10">
+                    <span className="w-1.5 h-1.5 bg-[#111E38] dark:bg-[#FACC15] rounded-full animate-bounce"></span>
                     <span
-                      className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 bg-[#111E38] dark:bg-[#FACC15] rounded-full animate-bounce"
                       style={{ animationDelay: '150ms' }}
                     ></span>
                     <span
-                      className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 bg-[#111E38] dark:bg-[#FACC15] rounded-full animate-bounce"
                       style={{ animationDelay: '300ms' }}
                     ></span>
                   </div>
@@ -147,72 +143,32 @@ export default function ChatMessageList({
               </div>
             )}
 
-            {messages.length === 0 && (
-              <p className="text-center text-sm text-neutral-500 font-medium italic mt-10">
-                {activeChat?.type === 'dm'
-                  ? 'Start a conversation!'
-                  : 'No messages yet. Start the conversation!'}
-              </p>
+            {filteredMessages.length === 0 && !isLoadingMessages && (
+              <div className="flex-1 flex flex-col items-center justify-center my-auto py-16 px-4 text-center select-none">
+                <div className="w-14 h-14 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700/80 flex items-center justify-center text-2xl shadow-2xs mb-3">
+                  💬
+                </div>
+                <h3 className="text-sm font-extrabold text-slate-800 dark:text-white mb-1">
+                  {activeChat?.type === 'dm'
+                    ? tMsg('No messages yet', 'Belum ada pesan')
+                    : tMsg('Start the conversation', 'Mulai percakapan')}
+                </h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-sm">
+                  {activeChat?.type === 'dm'
+                    ? tMsg(
+                        `Send a direct message to start chatting with @${activeChat.partner || 'user'}.`,
+                        `Kirim pesan langsung untuk mulai mengobrol dengan @${activeChat.partner || 'user'}.`
+                      )
+                    : tMsg(
+                        'Collaborate, share task updates, and brainstorm with your workspace team.',
+                        'Berkolaborasi, bagikan progres tugas, dan diskusikan rencana bersama tim.'
+                      )}
+                </p>
+              </div>
             )}
           </>
         )}
-        <div ref={messagesEndRef} className="h-10 shrink-0" />
-      </div>
-
-      {/* Floating Mentions Jumper inside Area */}
-      <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-40 pointer-events-none [&>button]:pointer-events-auto">
-        {latestMentionId && (
-          <button
-            type="button"
-            onClick={() => {
-              const el = document.getElementById(`cw-msg-${latestMentionId}`);
-              if (el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                el.classList.add(
-                  'ring-2',
-                  'ring-indigo-500',
-                  'bg-indigo-50',
-                  'dark:bg-indigo-900/30',
-                  'scale-[1.02]',
-                  'z-50'
-                );
-                setTimeout(
-                  () =>
-                    el.classList.remove(
-                      'ring-2',
-                      'ring-indigo-500',
-                      'bg-indigo-50',
-                      'dark:bg-indigo-900/30',
-                      'scale-[1.02]',
-                      'z-50'
-                    ),
-                  2500
-                );
-              }
-              setDismissedMentions((prev) => new Set(prev).add(latestMentionId));
-              setLatestMentionId(null);
-            }}
-            className="w-10 h-10 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center font-black text-lg hover:scale-110 transition-transform"
-            title="Jump to mention"
-          >
-            @
-          </button>
-        )}
-        {showScrollBottom && (
-          <button
-            type="button"
-            onClick={() => {
-              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-              setShowScrollBottom(false);
-            }}
-            className="w-10 h-10 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center font-black hover:scale-110 transition-transform"
-            title="Scroll to bottom"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-            </svg>
-          </button>
-        )}
+        <div ref={messagesEndRef} className="h-6 shrink-0" />
       </div>
     </div>
   );
