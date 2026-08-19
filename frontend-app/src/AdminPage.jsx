@@ -1150,7 +1150,7 @@ export default function AdminPage(props) {
                     >
                       <option value="auto">Auto (Gemini & Groq Fallback)</option>
                       <option value="gemini">Google Gemini 2.5 Flash</option>
-                      <option value="groq">Groq (Llama 3.3 70B Versatile)</option>
+                      <option value="groq">Groq (GPT-OSS 120B)</option>
                     </select>
                   </div>
 
@@ -1397,7 +1397,7 @@ export default function AdminPage(props) {
 
                   <div>
                     <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
-                      Groq API Key (Llama 3.3 Fast Inference)
+                      Groq API Key (GPT-OSS 120B Fast Inference)
                     </label>
                     <div className="relative">
                       <input
@@ -1523,7 +1523,7 @@ export default function AdminPage(props) {
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-neutral-100 dark:border-neutral-800/60">
-                    <span className="text-neutral-400">Groq Llama 3.3</span>
+                    <span className="text-neutral-400">Groq GPT-OSS 120B</span>
                     <span className={stats?.system_health?.groq_configured ? 'text-emerald-500 font-bold' : 'text-neutral-400'}>
                       {stats?.system_health?.groq_configured ? 'Configured' : 'Not Configured'}
                     </span>

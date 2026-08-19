@@ -55,15 +55,16 @@ def generate_ai_text(
                 )
             raise Exception(error_str)
 
-    def call_llama():
+    def call_groq():
         if not groq_api_key:
             raise Exception("Groq API Key missing in .env")
+        groq_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
         headers = {
             "Authorization": f"Bearer {groq_api_key.strip()}",
             "Content-Type": "application/json",
         }
         data = {
-            "model": "openai/gpt-oss-120b",
+            "model": groq_model,
             "messages": [{"role": "user", "content": final_prompt}],
         }
         response = requests.post(
@@ -76,7 +77,7 @@ def generate_ai_text(
         response.raise_for_status()
         return {
             "text": response.json()["choices"][0]["message"]["content"],
-            "provider": "GPT-OSS 120B",
+            "provider": f"Groq ({groq_model})",
         }
 
     # Strict User Selection
@@ -85,16 +86,16 @@ def generate_ai_text(
             return call_gemini()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Gemini Error: {str(e)}")
-    elif payload.provider == "llama":
+    elif payload.provider in ["groq", "gpt-oss", "gpt_oss", "llama"]:
         try:
-            return call_llama()
+            return call_groq()
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"GPT-OSS Error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Groq Error: {str(e)}")
 
     # Default Fallback Logic (Auto) — Groq dulu karena lebih cepat, Gemini sebagai fallback
     if groq_api_key:
         try:
-            return call_llama()
+            return call_groq()
         except Exception as e:
             error_msgs.append(f"Groq: {str(e)}")
 
