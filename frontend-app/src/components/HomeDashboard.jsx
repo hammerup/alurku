@@ -177,6 +177,21 @@ export default function HomeDashboard() {
   const [aiSummary, setAiSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
 
+  const getTimeBasedGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 4 && hour < 11) {
+      return { en: 'Good Morning,', id: 'Selamat Pagi,', period: 'pagi' };
+    } else if (hour >= 11 && hour < 15) {
+      return { en: 'Good Afternoon,', id: 'Selamat Siang,', period: 'siang' };
+    } else if (hour >= 15 && hour < 18.5) {
+      return { en: 'Good Afternoon,', id: 'Selamat Sore,', period: 'sore' };
+    } else {
+      return { en: 'Good Evening,', id: 'Selamat Malam,', period: 'malam' };
+    }
+  };
+
+  const timeGreeting = getTimeBasedGreeting();
+
   const today = new Date();
   const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   const formattedDate = today.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', dateOptions);
@@ -204,7 +219,7 @@ export default function HomeDashboard() {
   }).length;
 
   const visibleChatsForKey = wsInboxChats.filter(chat => !(chat.latest_message || '').includes('<!--PRIVATE:'));
-  const dataKey = `${activeWsId}_${myTasks.length}_${overdueTasksCount}_${activeProjectsCount}_${visibleChatsForKey.length}_${language}`;
+  const dataKey = `${activeWsId}_${myTasks.length}_${overdueTasksCount}_${activeProjectsCount}_${visibleChatsForKey.length}_${timeGreeting.period}_${language}`;
 
   const fetchAiSummary = async (currentDataKey) => {
     // Prevent spamming the API on every mount
@@ -237,23 +252,33 @@ export default function HomeDashboard() {
       const trulyUnreadCount = visibleChatsForKey.filter(chat => {
         if (chat.latest_sender === currentUser) return false;
         if (chat.is_dm) return (chat.unread_count || 0) > 0;
-        if (chat.is_project_chat) {
-          const lastRead = localStorage.getItem(`innocean_last_read_board_${chat.board_id}_${currentUser}`);
-          return !lastRead || chat.timestamp > lastRead;
-        } else {
-          const lastRead = localStorage.getItem(`innocean_last_read_task_${chat.task_id}_${currentUser}`);
-          return !lastRead || chat.timestamp > lastRead;
+        const lastReadKey = chat.is_project_chat
+          ? `alurku_last_read_board_${chat.board_id}_${currentUser}`
+          : `alurku_last_read_task_${chat.task_id}_${currentUser}`;
+        const lastRead = localStorage.getItem(lastReadKey);
+        if (lastRead && chat.timestamp) {
+          const lastReadTime = new Date(lastRead.replace(' ', 'T')).getTime();
+          const chatTime = new Date(chat.timestamp.replace(' ', 'T')).getTime();
+          if (!isNaN(lastReadTime) && !isNaN(chatTime)) {
+            return chatTime > lastReadTime;
+          }
+          return chat.timestamp > lastRead;
         }
+        return false;
       }).length;
 
       const workloadInfo = `The user's current active workload is ${Math.round(myActiveWorkloadEtc)} hours out of a total of ${Math.round(myTotalWorkloadEtc)} hours. `;
       const weeklyOverloadWarning = isWeeklyOverload ? tMsg('The user is currently experiencing a weekly overload. ', 'Pengguna saat ini mengalami kelebihan beban kerja mingguan. ') : '';
       const monthlyOverloadWarning = isMonthlyOverload ? tMsg("The user's total assigned work for this period indicates a monthly overload. ", 'Total pekerjaan yang ditugaskan pada pengguna untuk periode ini menunjukkan kelebihan beban bulanan. ') : '';
 
+      const currentHour = new Date().getHours();
+      const currentMin = String(new Date().getMinutes()).padStart(2, '0');
+
       const personaBase = getLurukaSystemPrompt({
         contextType: 'briefing',
         currentUser: currentUser || 'User',
         todayStr: new Date().toISOString().split('T')[0],
+        extraRules: `WAKTU LOKAL SAAT INI: Jam ${currentHour}:${currentMin} (${timeGreeting.period.toUpperCase()}). Jika menyapa di awal, sesuaikan dengan sapaan '${timeGreeting.id.replace(',', '')}' (JANGAN selalu menyapa selamat pagi bila sudah siang, sore, atau malam).`
       });
 
       const prompt = `${personaBase}
@@ -266,7 +291,7 @@ TASK & WORKLOAD DATA FOR EXECUTIVE BRIEFING:
 - Unread messages: ${trulyUnreadCount}
 
 INSTRUCTIONS FOR DAILY BRIEFING:
-Provide a super concise (max 2-3 sentences) executive briefing for @${currentUser} about their day. Address the user using 'Aku/Kamu'. Highlight key numbers or statuses using markdown bold syntax (**text**). If there are overload warnings or overdue tasks, give a warm but firm supportive warning. End with an encouraging kaomoji. Reply strictly in ${language === 'id' ? 'Indonesian' : 'English'}.`;
+Provide a super concise (max 2-3 sentences) executive briefing for @${currentUser} for this ${timeGreeting.period}. Address the user using 'Aku/Kamu'. Awali dengan sapaan ramah yang sesuai waktu saat ini (${timeGreeting.id.replace(',', '')}). Highlight key numbers or statuses using markdown bold syntax (**text**). If there are overload warnings or overdue tasks, give a warm but firm supportive warning. End with an encouraging kaomoji. Reply strictly in ${language === 'id' ? 'Indonesian' : 'English'}.`;
       
       const response = await axios.post('/api/ai/generate', {
         prompt: prompt,
@@ -293,18 +318,14 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
 
   useEffect(() => {
     if (isLoading || isTasksLoading || isBoardsLoading) return;
+    if (lastActiveDataKeyRef.current === dataKey && aiSummary) return;
 
-    const hasData = tasks.length > 0 || boards.length > 0;
-    let timer;
-
-    if (hasData) {
-      timer = setTimeout(() => fetchAiSummary(dataKey), 500);
-    } else {
-      timer = setTimeout(() => fetchAiSummary(dataKey), 5000);
-    }
+    const timer = setTimeout(() => {
+      fetchAiSummary(dataKey);
+    }, 800);
 
     return () => clearTimeout(timer);
-  }, [isLoading, isTasksLoading, isBoardsLoading, tasks.length > 0, boards.length > 0, dataKey]);
+  }, [isLoading, isTasksLoading, isBoardsLoading, dataKey]);
 
   const getTaskDeadlineInfo = (task) => {
     if (!task.deadline) return null;
@@ -419,7 +440,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
               {formattedDate}
             </p>
             <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none flex flex-wrap gap-x-2.5 items-baseline">
-              <span>{tMsg('Good Morning,', 'Selamat Pagi,')}</span>
+              <span>{tMsg(timeGreeting.en, timeGreeting.id)}</span>
               <span className="text-indigo-900 dark:text-indigo-100">{currentUser}</span>
             </h1>
             <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-3 font-medium">
@@ -886,10 +907,31 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
                     return visibleChats.length > 0 ? visibleChats.slice(0, 5).map(chat => {
                       const isUnread = (() => {
                         if (chat.latest_sender === currentUser) return false;
-                        if (chat.is_dm) return chat.unread_count > 0;
-                        const lastReadKey = chat.is_project_chat ? `alurku_last_read_board_${chat.board_id}_${currentUser}` : `alurku_last_read_task_${chat.task_id}_${currentUser}`;
+                        if (chat.is_dm) return (chat.unread_count || 0) > 0;
+                        const lastReadKey = chat.is_project_chat
+                          ? `alurku_last_read_board_${chat.board_id}_${currentUser}`
+                          : `alurku_last_read_task_${chat.task_id}_${currentUser}`;
                         const lastRead = localStorage.getItem(lastReadKey);
-                        return !lastRead || chat.timestamp > lastRead;
+                        if (lastRead && chat.timestamp) {
+                          const lastReadTime = new Date(lastRead.replace(' ', 'T')).getTime();
+                          const chatTime = new Date(chat.timestamp.replace(' ', 'T')).getTime();
+                          if (!isNaN(lastReadTime) && !isNaN(chatTime)) {
+                            return chatTime > lastReadTime;
+                          }
+                          return chat.timestamp > lastRead;
+                        }
+                        // If no local timestamp yet, check active notifications
+                        const hasUnreadNotif = (notifications || []).some((n) => {
+                          if (n.is_read) return false;
+                          if (chat.is_project_chat) {
+                            return parseInt(n.board_id) === parseInt(chat.board_id);
+                          }
+                          return (
+                            parseInt(n.related_task_id) === parseInt(chat.task_id) ||
+                            parseInt(n.task_id) === parseInt(chat.task_id)
+                          );
+                        });
+                        return hasUnreadNotif;
                       })();
 
                       return (

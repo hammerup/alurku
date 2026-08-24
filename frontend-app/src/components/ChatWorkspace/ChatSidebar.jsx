@@ -45,19 +45,31 @@ export default function ChatSidebar({
       if (chat.is_project_chat) {
         const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
         const hasUnreadNotification = (notifications || []).some(
-          n => !n.is_read && String(n.related_task_id) === String(chat.board_id) && 
+          n => !n.is_read && (String(n.board_id) === String(chat.board_id) || String(n.related_task_id) === String(chat.board_id)) && 
           (n.type === 'team_chat' || n.type === 'team_chat_no_email' || n.type === 'mention' || n.type === 'mention_no_email')
         );
-        if (!lastRead) return true;
-        return chat.timestamp > lastRead || hasUnreadNotification;
+        if (lastRead && chat.timestamp) {
+          const lastReadTime = new Date(lastRead.replace(' ', 'T')).getTime();
+          const chatTime = new Date(chat.timestamp.replace(' ', 'T')).getTime();
+          if (!isNaN(lastReadTime) && !isNaN(chatTime)) {
+            return chatTime > lastReadTime || hasUnreadNotification;
+          }
+        }
+        return hasUnreadNotification;
       } else {
         const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
         const hasUnreadNotification = (notifications || []).some(
-          n => !n.is_read && String(n.related_task_id) === String(chat.task_id) && 
+          n => !n.is_read && (String(n.related_task_id) === String(chat.task_id) || String(n.task_id) === String(chat.task_id)) && 
           (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
         );
-        if (!lastRead) return true;
-        return chat.timestamp > lastRead || hasUnreadNotification;
+        if (lastRead && chat.timestamp) {
+          const lastReadTime = new Date(lastRead.replace(' ', 'T')).getTime();
+          const chatTime = new Date(chat.timestamp.replace(' ', 'T')).getTime();
+          if (!isNaN(lastReadTime) && !isNaN(chatTime)) {
+            return chatTime > lastReadTime || hasUnreadNotification;
+          }
+        }
+        return hasUnreadNotification;
       }
     }).length;
   }, [inboxChats, notifications, currentUser]);

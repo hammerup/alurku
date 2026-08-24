@@ -527,26 +527,39 @@ export default function WorkspaceChatPage() {
     if (lastReadNotifChatRef.current === currentChatKey) return;
 
     const targetIdStr = String(activeChat.id);
-    const unreadForThis = notifications.filter(
-      (n) => !n.is_read && (String(n.related_task_id) === targetIdStr || n.related_task_id === activeChat.id)
-    );
+    const unreadForThis = notifications.filter((n) => {
+      if (n.is_read) return false;
+      if (activeChat.type === 'project') {
+        return (
+          String(n.board_id) === targetIdStr ||
+          String(n.related_task_id) === targetIdStr
+        );
+      }
+      return (
+        String(n.related_task_id) === targetIdStr ||
+        String(n.task_id) === targetIdStr
+      );
+    });
+
     if (unreadForThis.length > 0) {
       lastReadNotifChatRef.current = currentChatKey;
       unreadForThis.forEach((n) => handleReadNotification(n.id));
+      if (fetchInboxChats) fetchInboxChats();
     }
   }, [activeChat?.id, activeChat?.type, notifications]);
 
-  // Update local storage last read timestamp without calling network API in loop
+  // Update local storage last read timestamp when chat is opened or new messages arrive
   useEffect(() => {
-    if (!activeChat?.id || !messages || messages.length === 0) return;
-    const lastMsg = messages[messages.length - 1];
-    if (!lastMsg?.timestamp) return;
+    if (!activeChat?.id) return;
+    const nowIso = new Date().toISOString();
+    const lastMsg = messages && messages.length > 0 ? messages[messages.length - 1] : null;
+    const readTimestamp = lastMsg?.timestamp && lastMsg.timestamp > nowIso ? lastMsg.timestamp : nowIso;
 
     const storageKey =
       activeChat.type === 'project'
         ? `alurku_last_read_board_${activeChat.id}_${currentUser}`
         : `alurku_last_read_task_${activeChat.id}_${currentUser}`;
-    localStorage.setItem(storageKey, lastMsg.timestamp);
+    localStorage.setItem(storageKey, readTimestamp);
   }, [activeChat?.id, activeChat?.type, messages?.length, currentUser]);
 
   // Clear DM Unread on chat selection once

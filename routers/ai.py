@@ -24,10 +24,10 @@ def generate_ai_text(
 ):
     now_time = time.time()
     last_generate_time = get_security_log(db, f"ai_generate:{current_user}", 0)
-    if (now_time - last_generate_time) < 1:
+    if (now_time - last_generate_time) < 0.3:
         raise HTTPException(
             status_code=429,
-            detail="Please wait 1 second before generating another AI response.",
+            detail="Please wait a moment before generating another AI response.",
         )
     set_security_log(db, f"ai_generate:{current_user}", now_time)
 
@@ -41,18 +41,27 @@ def generate_ai_text(
     def call_gemini():
         if not gemini_api_key:
             raise Exception("Gemini API Key missing in .env")
+        gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
         client = genai.Client(api_key=gemini_api_key.strip())
         try:
             response = client.models.generate_content(
-                model="gemini-2.0-flash", contents=final_prompt
+                model=gemini_model, contents=final_prompt
             )
-            return {"text": response.text, "provider": "Google Gemini"}
+            return {"text": response.text, "provider": f"Google Gemini ({gemini_model})"}
         except Exception as e:
             error_str = str(e)
             if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
                 raise Exception(
-                    "Gemini API free tier limit reached. Please wait a moment or switch to GPT-OSS 120B."
+                    "Gemini API limit reached. Please wait a moment."
                 )
+            # Try secondary model if primary model is unavailable
+            try:
+                response = client.models.generate_content(
+                    model="gemini-1.5-flash", contents=final_prompt
+                )
+                return {"text": response.text, "provider": "Google Gemini (gemini-1.5-flash)"}
+            except Exception:
+                pass
             raise Exception(error_str)
 
     def call_groq():
@@ -62,6 +71,7 @@ def generate_ai_text(
         headers = {
             "Authorization": f"Bearer {groq_api_key.strip()}",
             "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Alurku/1.0",
         }
         data = {
             "model": groq_model,
@@ -71,9 +81,12 @@ def generate_ai_text(
             "https://api.groq.com/openai/v1/chat/completions",
             headers=headers,
             json=data,
+            timeout=15,
         )
         if response.status_code == 429:
             raise Exception("Groq AI limit reached. Please wait a moment.")
+        if response.status_code == 403:
+            raise Exception("Groq API Access Denied (Cloudflare / Geo block).")
         response.raise_for_status()
         return {
             "text": response.json()["choices"][0]["message"]["content"],
@@ -92,7 +105,7 @@ def generate_ai_text(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Groq Error: {str(e)}")
 
-    # Default Fallback Logic (Auto) — Groq dulu karena lebih cepat, Gemini sebagai fallback
+    # Default Fallback Logic (Auto) — Groq dulu, jika gagal langsung fallback ke Gemini
     if groq_api_key:
         try:
             return call_groq()
