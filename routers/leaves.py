@@ -5,6 +5,8 @@ import re
 import json
 from datetime import datetime, timedelta
 import os
+import urllib.parse
+import requests
 
 from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage
 from schemas import *
@@ -12,6 +14,77 @@ from dependencies import *
 from utils import *
 
 router = APIRouter()
+
+@router.get("/api/leaves/holidays")
+def get_public_holidays(year: int = 2026):
+    gcal_key = os.getenv("GOOGLE_CALENDAR_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if gcal_key:
+        try:
+            cal_id = urllib.parse.quote("en.indonesian#holiday@group.v.calendar.google.com")
+            time_min = f"{year}-01-01T00:00:00Z"
+            time_max = f"{year}-12-31T23:59:59Z"
+            url = f"https://www.googleapis.com/calendar/v3/calendars/{cal_id}/events?key={gcal_key.strip()}&timeMin={time_min}&timeMax={time_max}&singleEvents=true&orderBy=startTime"
+            res = requests.get(url, timeout=10)
+            if res.status_code == 200:
+                items = res.json().get("items", [])
+                holidays = []
+                for it in items:
+                    date_val = it.get("start", {}).get("date") or str(it.get("start", {}).get("dateTime", ""))[:10]
+                    if date_val:
+                        holidays.append({
+                            "id": f"gcal-{it.get('id')}",
+                            "leave_date": date_val,
+                            "description": it.get("summary", "Hari Libur Nasional"),
+                            "leave_type": "public_holiday",
+                            "is_google": True,
+                        })
+                if holidays:
+                    return {"holidays": holidays, "source": "google_calendar"}
+        except Exception as e:
+            print(f"GCal fetch error: {e}")
+
+    # Fallback dataset
+    calendar_fallback = {
+        2026: [
+            {"leave_date": "2026-01-01", "description": "Tahun Baru 2026 Masehi"},
+            {"leave_date": "2026-01-16", "description": "Isra Mikraj Nabi Muhammad SAW"},
+            {"leave_date": "2026-02-17", "description": "Tahun Baru Imlek 2577 Kongzili"},
+            {"leave_date": "2026-03-19", "description": "Hari Suci Nyepi Tahun Baru Saka 1948"},
+            {"leave_date": "2026-03-21", "description": "Hari Raya Idul Fitri 1447 H"},
+            {"leave_date": "2026-03-22", "description": "Hari Raya Idul Fitri 1447 H"},
+            {"leave_date": "2026-04-03", "description": "Wafat Yesus Kristus"},
+            {"leave_date": "2026-04-05", "description": "Kebangkitan Yesus Kristus (Paskah)"},
+            {"leave_date": "2026-05-01", "description": "Hari Buruh Internasional"},
+            {"leave_date": "2026-05-14", "description": "Kenaikan Yesus Kristus"},
+            {"leave_date": "2026-05-27", "description": "Hari Raya Idul Adha 1447 H"},
+            {"leave_date": "2026-05-31", "description": "Hari Raya Waisak 2570 BE"},
+            {"leave_date": "2026-06-01", "description": "Hari Lahir Pancasila"},
+            {"leave_date": "2026-06-16", "description": "Tahun Baru Islam 1448 H"},
+            {"leave_date": "2026-08-17", "description": "Hari Proklamasi Kemerdekaan RI"},
+            {"leave_date": "2026-08-25", "description": "Maulid Nabi Muhammad SAW"},
+            {"leave_date": "2026-12-25", "description": "Hari Raya Natal"},
+        ]
+    }
+    fallback_list = calendar_fallback.get(year, [
+        {"leave_date": f"{year}-01-01", "description": "Tahun Baru Masehi"},
+        {"leave_date": f"{year}-05-01", "description": "Hari Buruh Internasional"},
+        {"leave_date": f"{year}-06-01", "description": "Hari Lahir Pancasila"},
+        {"leave_date": f"{year}-08-17", "description": "Hari Proklamasi Kemerdekaan RI"},
+        {"leave_date": f"{year}-12-25", "description": "Hari Raya Natal"},
+    ])
+    return {
+        "holidays": [
+            {
+                "id": f"gcal-fallback-{year}-{i}",
+                "leave_date": h["leave_date"],
+                "description": h["description"],
+                "leave_type": "public_holiday",
+                "is_google": True,
+            }
+            for i, h in enumerate(fallback_list)
+        ],
+        "source": "fallback",
+    }
 
 @router.get("/api/leaves")
 def get_leaves(
@@ -58,17 +131,32 @@ def get_leaves(
         .all()
     )
 
+    db_leaves = [
+        {
+            "id": l.id,
+            "leave_date": l.leave_date.strftime("%Y-%m-%d") if hasattr(l.leave_date, "strftime") else str(l.leave_date)[:10],
+            "description": l.description,
+            "leave_type": l.leave_type,
+            "username": l.username,
+        }
+        for l in leaves
+    ]
+
+    # Sertakan juga Hari Libur Nasional resmi Google Calendar untuk tahun berjalan
+    try:
+        current_year = datetime.now().year
+        gcal_holidays = get_public_holidays(current_year).get("holidays", [])
+        existing_keys = set(f"{l['leave_date']}_{(l.get('description') or '').lower()}" for l in db_leaves)
+        for g in gcal_holidays:
+            k = f"{g['leave_date']}_{(g.get('description') or '').lower()}"
+            if k not in existing_keys:
+                db_leaves.append(g)
+                existing_keys.add(k)
+    except Exception as e:
+        print(f"Error merging holidays to leaves: {e}")
+
     return {
-        "leaves": [
-            {
-                "id": l.id,
-                "leave_date": l.leave_date.strftime("%Y-%m-%d") if hasattr(l.leave_date, "strftime") else str(l.leave_date)[:10],
-                "description": l.description,
-                "leave_type": l.leave_type,
-                "username": l.username,
-            }
-            for l in leaves
-        ]
+        "leaves": db_leaves
     }
 
 

@@ -67,58 +67,116 @@ export default function MeetingsLeavesPage() {
     const fetchGoogleCalendarHolidays = async () => {
       setIsFetchingGoogleHolidays(true);
       try {
-        const calendarId = encodeURIComponent('en.indonesian#holiday@group.v.calendar.google.com');
-        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || '';
-        
-        const timeMin = new Date(currentYear, 0, 1).toISOString();
-        const timeMax = new Date(currentYear, 11, 31).toISOString();
-
-        if (apiKey) {
-          const res = await axios.get(
-            `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${apiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`
-          );
-          if (isMounted && res.data?.items && res.data.items.length > 0) {
-            const fetched = res.data.items.map((item) => ({
-              id: `gcal-${item.id}`,
-              leave_date: item.start?.date || item.start?.dateTime?.slice(0, 10),
-              description: item.summary || 'Hari Libur Nasional',
-              leave_type: 'public_holiday',
-              is_google: true,
-            }));
-            setGoogleHolidays(fetched);
-            setIsFetchingGoogleHolidays(false);
-            return;
-          }
+        const res = await axios.get(`/api/leaves/holidays?year=${currentYear}`);
+        if (isMounted && res.data?.holidays && res.data.holidays.length > 0) {
+          setGoogleHolidays(res.data.holidays);
+          setIsFetchingGoogleHolidays(false);
+          return;
         }
       } catch (err) {
-        console.warn('Google Calendar API error or key missing, applying national holiday set:', err);
+        console.warn('Backend holiday sync error, falling back to local holiday dataset:', err);
       }
 
-      // Fallback: Default Public Holidays for Indonesia if API Key is not set or network fails
+      // Fallback: Default Official Public Holidays for Indonesia (SKB 3 Menteri & Google Calendar)
       if (isMounted) {
-        const defaultIDHolidays = [
-          { leave_date: `${currentYear}-01-01`, description: 'Tahun Baru Masehi' },
-          { leave_date: `${currentYear}-03-29`, description: 'Wafat Yesus Kristus' },
-          { leave_date: `${currentYear}-03-31`, description: 'Hari Raya Nyepi' },
-          { leave_date: `${currentYear}-04-10`, description: 'Hari Raya Idul Fitri' },
-          { leave_date: `${currentYear}-04-11`, description: 'Hari Raya Idul Fitri' },
-          { leave_date: `${currentYear}-05-01`, description: 'Hari Buruh Internasional' },
-          { leave_date: `${currentYear}-05-09`, description: 'Kenaikan Yesus Kristus' },
-          { leave_date: `${currentYear}-05-23`, description: 'Hari Raya Waisak' },
-          { leave_date: `${currentYear}-06-01`, description: 'Hari Lahir Pancasila' },
-          { leave_date: `${currentYear}-06-17`, description: 'Hari Raya Idul Adha' },
-          { leave_date: `${currentYear}-07-07`, description: 'Tahun Baru Islam 1446 H' },
-          { leave_date: `${currentYear}-08-17`, description: 'Hari Kemerdekaan RI' },
-          { leave_date: `${currentYear}-09-16`, description: 'Maulid Nabi Muhammad SAW' },
-          { leave_date: `${currentYear}-12-25`, description: 'Hari Raya Natal' },
-        ].map((h, idx) => ({
-          id: `gcal-fallback-${currentYear}-${idx}`,
-          leave_date: h.leave_date,
-          description: h.description,
-          leave_type: 'public_holiday',
-          is_google: true,
-        }));
-        setGoogleHolidays(defaultIDHolidays);
+        const getIndonesianHolidays = (year) => {
+          const calendar = {
+            2024: [
+              { leave_date: '2024-01-01', description: 'Tahun Baru 2024 Masehi' },
+              { leave_date: '2024-02-08', description: 'Isra Mikraj Nabi Muhammad SAW' },
+              { leave_date: '2024-02-10', description: 'Tahun Baru Imlek 2575 Kongzili' },
+              { leave_date: '2024-03-11', description: 'Hari Suci Nyepi Tahun Baru Saka 1946' },
+              { leave_date: '2024-03-29', description: 'Wafat Yesus Kristus' },
+              { leave_date: '2024-03-31', description: 'Hari Paskah' },
+              { leave_date: '2024-04-10', description: 'Hari Raya Idul Fitri 1445 H' },
+              { leave_date: '2024-04-11', description: 'Hari Raya Idul Fitri 1445 H' },
+              { leave_date: '2024-05-01', description: 'Hari Buruh Internasional' },
+              { leave_date: '2024-05-09', description: 'Kenaikan Yesus Kristus' },
+              { leave_date: '2024-05-23', description: 'Hari Raya Waisak 2568 BE' },
+              { leave_date: '2024-06-01', description: 'Hari Lahir Pancasila' },
+              { leave_date: '2024-06-17', description: 'Hari Raya Idul Adha 1445 H' },
+              { leave_date: '2024-07-07', description: 'Tahun Baru Islam 1446 H' },
+              { leave_date: '2024-08-17', description: 'Hari Proklamasi Kemerdekaan RI' },
+              { leave_date: '2024-09-16', description: 'Maulid Nabi Muhammad SAW' },
+              { leave_date: '2024-12-25', description: 'Hari Raya Natal' },
+            ],
+            2025: [
+              { leave_date: '2025-01-01', description: 'Tahun Baru 2025 Masehi' },
+              { leave_date: '2025-01-27', description: 'Isra Mikraj Nabi Muhammad SAW' },
+              { leave_date: '2025-01-29', description: 'Tahun Baru Imlek 2576 Kongzili' },
+              { leave_date: '2025-03-29', description: 'Hari Suci Nyepi Tahun Baru Saka 1947' },
+              { leave_date: '2025-03-31', description: 'Hari Raya Idul Fitri 1446 H' },
+              { leave_date: '2025-04-01', description: 'Hari Raya Idul Fitri 1446 H' },
+              { leave_date: '2025-04-18', description: 'Wafat Yesus Kristus (Jumat Agung)' },
+              { leave_date: '2025-04-20', description: 'Kebangkitan Yesus Kristus (Paskah)' },
+              { leave_date: '2025-05-01', description: 'Hari Buruh Internasional' },
+              { leave_date: '2025-05-12', description: 'Hari Raya Waisak 2569 BE' },
+              { leave_date: '2025-05-29', description: 'Kenaikan Yesus Kristus' },
+              { leave_date: '2025-06-01', description: 'Hari Lahir Pancasila' },
+              { leave_date: '2025-06-06', description: 'Hari Raya Idul Adha 1446 H' },
+              { leave_date: '2025-06-27', description: 'Tahun Baru Islam 1447 H' },
+              { leave_date: '2025-08-17', description: 'Hari Proklamasi Kemerdekaan RI' },
+              { leave_date: '2025-09-05', description: 'Maulid Nabi Muhammad SAW' },
+              { leave_date: '2025-12-25', description: 'Hari Raya Natal' },
+            ],
+            2026: [
+              { leave_date: '2026-01-01', description: 'Tahun Baru 2026 Masehi' },
+              { leave_date: '2026-01-16', description: 'Isra Mikraj Nabi Muhammad SAW' },
+              { leave_date: '2026-02-17', description: 'Tahun Baru Imlek 2577 Kongzili' },
+              { leave_date: '2026-03-19', description: 'Hari Suci Nyepi Tahun Baru Saka 1948' },
+              { leave_date: '2026-03-21', description: 'Hari Raya Idul Fitri 1447 H' },
+              { leave_date: '2026-03-22', description: 'Hari Raya Idul Fitri 1447 H' },
+              { leave_date: '2026-04-03', description: 'Wafat Yesus Kristus (Jumat Agung)' },
+              { leave_date: '2026-04-05', description: 'Kebangkitan Yesus Kristus (Paskah)' },
+              { leave_date: '2026-05-01', description: 'Hari Buruh Internasional' },
+              { leave_date: '2026-05-14', description: 'Kenaikan Yesus Kristus' },
+              { leave_date: '2026-05-27', description: 'Hari Raya Idul Adha 1447 H' },
+              { leave_date: '2026-05-31', description: 'Hari Raya Waisak 2570 BE' },
+              { leave_date: '2026-06-01', description: 'Hari Lahir Pancasila' },
+              { leave_date: '2026-06-16', description: 'Tahun Baru Islam 1448 H' },
+              { leave_date: '2026-08-17', description: 'Hari Proklamasi Kemerdekaan RI' },
+              { leave_date: '2026-08-25', description: 'Maulid Nabi Muhammad SAW' },
+              { leave_date: '2026-12-25', description: 'Hari Raya Natal' },
+            ],
+            2027: [
+              { leave_date: '2027-01-01', description: 'Tahun Baru 2027 Masehi' },
+              { leave_date: '2027-01-06', description: 'Isra Mikraj Nabi Muhammad SAW' },
+              { leave_date: '2027-02-06', description: 'Tahun Baru Imlek 2578 Kongzili' },
+              { leave_date: '2027-03-09', description: 'Hari Suci Nyepi Tahun Baru Saka 1949' },
+              { leave_date: '2027-03-10', description: 'Hari Raya Idul Fitri 1448 H' },
+              { leave_date: '2027-03-11', description: 'Hari Raya Idul Fitri 1448 H' },
+              { leave_date: '2027-03-26', description: 'Wafat Yesus Kristus (Jumat Agung)' },
+              { leave_date: '2027-03-28', description: 'Kebangkitan Yesus Kristus (Paskah)' },
+              { leave_date: '2027-05-01', description: 'Hari Buruh Internasional' },
+              { leave_date: '2027-05-06', description: 'Kenaikan Yesus Kristus' },
+              { leave_date: '2027-05-17', description: 'Hari Raya Idul Adha 1448 H' },
+              { leave_date: '2027-05-20', description: 'Hari Raya Waisak 2571 BE' },
+              { leave_date: '2027-06-01', description: 'Hari Lahir Pancasila' },
+              { leave_date: '2027-06-06', description: 'Tahun Baru Islam 1449 H' },
+              { leave_date: '2027-08-15', description: 'Maulid Nabi Muhammad SAW' },
+              { leave_date: '2027-08-17', description: 'Hari Proklamasi Kemerdekaan RI' },
+              { leave_date: '2027-12-25', description: 'Hari Raya Natal' },
+            ]
+          };
+
+          const list = calendar[year] || [
+            { leave_date: `${year}-01-01`, description: 'Tahun Baru Masehi' },
+            { leave_date: `${year}-05-01`, description: 'Hari Buruh Internasional' },
+            { leave_date: `${year}-06-01`, description: 'Hari Lahir Pancasila' },
+            { leave_date: `${year}-08-17`, description: 'Hari Proklamasi Kemerdekaan RI' },
+            { leave_date: `${year}-12-25`, description: 'Hari Raya Natal' },
+          ];
+
+          return list.map((h, idx) => ({
+            id: `gcal-holiday-${year}-${idx}`,
+            leave_date: h.leave_date,
+            description: h.description,
+            leave_type: 'public_holiday',
+            is_google: true,
+          }));
+        };
+
+        setGoogleHolidays(getIndonesianHolidays(currentYear));
         setIsFetchingGoogleHolidays(false);
       }
     };
@@ -422,6 +480,9 @@ export default function MeetingsLeavesPage() {
                 return l.leave_type === selectedTypeFilter;
               });
 
+              const hasPublicHoliday = dayLeaves.some(l => l.leave_type === 'public_holiday');
+              const isRedDate = cell.isWeekend || hasPublicHoliday;
+
               const dayTasks = selectedTypeFilter === 'personal' || selectedTypeFilter === 'mass_leave' || selectedTypeFilter === 'public_holiday'
                 ? []
                 : (tasksByDate[cell.dateStr] || []);
@@ -433,7 +494,9 @@ export default function MeetingsLeavesPage() {
                 <div
                   key={cell.dateStr}
                   className={`min-h-28 md:min-h-32 p-2 flex flex-col justify-between transition-colors ${
-                    cell.isWeekend
+                    hasPublicHoliday
+                      ? 'bg-rose-50/30 dark:bg-rose-950/20 border-rose-100/50'
+                      : cell.isWeekend
                       ? 'bg-neutral-100/70 dark:bg-neutral-950/80 border-rose-100/30'
                       : cell.isCurrentMonth
                       ? 'bg-white dark:bg-neutral-900/90'
@@ -445,7 +508,7 @@ export default function MeetingsLeavesPage() {
                       className={`text-xs font-extrabold w-6 h-6 flex items-center justify-center rounded-full ${
                         isToday
                           ? 'bg-[#FACC15] text-[#111E38]'
-                          : cell.isWeekend
+                          : isRedDate
                           ? 'text-rose-600 dark:text-rose-400 font-bold'
                           : cell.isCurrentMonth
                           ? 'text-[#111E38] dark:text-neutral-200'
