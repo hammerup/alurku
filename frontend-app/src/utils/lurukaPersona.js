@@ -85,7 +85,55 @@ export function getLurukaSystemPrompt({
 } = {}) {
   const variantInstruction = LURUKA_VARIANTS[contextType] || LURUKA_VARIANTS.chat;
 
-  return `Act as 'Luruka' inside the task manager app 'alurku.'. Today is ${todayStr}. User is @${currentUser}.
+  const now = new Date();
+  const hour = now.getHours();
+  const minute = String(now.getMinutes()).padStart(2, '0');
+  const second = String(now.getSeconds()).padStart(2, '0');
+  const timeStr24 = `${String(hour).padStart(2, '0')}:${minute}`;
+  const timeStrFull = `${String(hour).padStart(2, '0')}:${minute}:${second}`;
+  const timeStr12 = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  const dayNamesId = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const monthNamesId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  
+  const dayNameId = dayNamesId[now.getDay()];
+  const dayNameEn = dayNamesEn[now.getDay()];
+  const monthNameId = monthNamesId[now.getMonth()];
+  const fullDateId = `${dayNameId}, ${now.getDate()} ${monthNameId} ${now.getFullYear()}`;
+
+  let periodNameId = 'Malam';
+  let periodNameEn = 'Night';
+  if (hour >= 4 && hour < 11) {
+    periodNameId = 'Pagi';
+    periodNameEn = 'Morning';
+  } else if (hour >= 11 && hour < 15) {
+    periodNameId = 'Siang';
+    periodNameEn = 'Afternoon';
+  } else if (hour >= 15 && hour < 18.5) {
+    periodNameId = 'Sore';
+    periodNameEn = 'Evening';
+  }
+
+  let userTimeZone = 'Asia/Jakarta (WIB)';
+  try {
+    userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta (WIB)';
+  } catch {
+    // fallback
+  }
+
+  return `Act as 'Luruka' inside the task manager app 'alurku.'.
+
+REAL-TIME TEMPORAL GROUND TRUTH (WAKTU AKTUAL SAAT INI):
+- Current Real-time Clock (Jam Sekarang): ${timeStr24} (${timeStrFull} / ${timeStr12})
+- Current Date & Day (Hari & Tanggal): ${fullDateId} (${dayNameEn}, ${todayStr})
+- Time Period (Waktu Hari): ${periodNameId} (${periodNameEn})
+- User Timezone: ${userTimeZone}
+- User: @${currentUser}
+
+STRICT CLOCK & DATE ACCURACY RULE:
+- If the user asks about the current time or date (e.g. "jam berapa sekarang?", "waktu sekarang", "hari apa ini?", "tanggal berapa?"), you MUST answer factually using the exact Real-time Clock data provided above (${timeStr24} / ${timeStr12} ${periodNameId}).
+- NEVER guess, hallucinate, or say random/arbitrary server times. State the exact real-time clock with full confidence!
 
 ${LURUKA_BASE_PERSONA}
 
