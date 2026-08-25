@@ -6,7 +6,10 @@ import json
 from datetime import datetime, timedelta
 import os
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage
+from database import (
+    get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord,
+    Comment, Notification, DirectMessage, SecurityLog, get_security_log, set_security_log
+)
 from schemas import *
 from dependencies import *
 from utils import *
@@ -315,6 +318,12 @@ def get_admin_dashboard_stats(
     pending_deletions = db.query(func.count(User.username)).filter(User.account_status.in_(["pending_deletion", "offboarding"])).scalar() or 0
 
     total_boards = db.query(func.count(Board.id)).scalar() or 0
+    # A board is orphaned if its owner's account status is "pending_deletion", "offboarding", "frozen", or the user doesn't exist
+    # For simplicity here we just return the total_boards, but let's calculate orphans by querying Board joined with User
+    orphaned_boards = db.query(func.count(Board.id)).outerjoin(User, Board.owner_username == User.username).filter(
+        or_(User.username == None, User.account_status.in_(["pending_deletion", "offboarding", "frozen"]))
+    ).scalar() or 0
+
     total_tasks = db.query(func.count(Request.id)).scalar() or 0
     completed_tasks = db.query(func.count(Request.id)).filter(Request.status.ilike("%done%")).scalar() or 0
     pending_tasks = total_tasks - completed_tasks
@@ -331,6 +340,7 @@ def get_admin_dashboard_stats(
         },
         "projects": {
             "total": total_boards,
+            "orphans": orphaned_boards,
         },
         "tasks": {
             "total": total_tasks,
@@ -432,3 +442,214 @@ def purge_expired_accounts(
 
     db.commit()
     return {"message": f"Berhasil menghapus {count} akun kedaluwarsa secara permanen.", "purged_count": count}
+
+
+@router.get("/api/admin/content/search")
+def admin_content_search(
+    q: str = "",
+    type: str = "all",
+    username: str = "",
+    from_date: str = "",
+    to_date: str = "",
+    page: int = 1,
+    per_page: int = 25,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Search across all user-generated content for ToS compliance review."""
+    if not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    if per_page > 100:
+        per_page = 100
+    offset = (page - 1) * per_page
+    search_pattern = f"%{q}%" if q else "%"
+
+    results = []
+    total = 0
+
+    # Parse date filters safely
+    parsed_from = None
+    parsed_to = None
+    if from_date:
+        try:
+            parsed_from = datetime.strptime(from_date, "%Y-%m-%d")
+        except Exception:
+            pass
+    if to_date:
+        try:
+            parsed_to = datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=1, microseconds=-1)
+        except Exception:
+            pass
+
+    def apply_date_filter(query, date_col):
+        if parsed_from:
+            query = query.filter(date_col >= parsed_from)
+        if parsed_to:
+            query = query.filter(date_col <= parsed_to)
+        return query
+
+    # 1. Search Tasks (title + description, excluding internal system tasks)
+    if type in ("all", "task"):
+        task_query = db.query(Request).filter(
+            Request.project_name != "[SYSTEM] PROJECT CHAT"
+        )
+        if username:
+            task_query = task_query.filter(
+                or_(Request.requester == username, Request.owner_username == username)
+            )
+        if q:
+            task_query = task_query.filter(
+                or_(
+                    Request.description.ilike(search_pattern),
+                    Request.project_name.ilike(search_pattern),
+                    Request.category.ilike(search_pattern),
+                )
+            )
+        task_query = apply_date_filter(task_query, Request.timestamp)
+        task_count = task_query.count()
+        total += task_count
+
+        tasks = (
+            task_query.order_by(Request.id.desc())
+            .offset(offset if type == "task" else 0)
+            .limit(per_page if type == "task" else min(per_page, 15))
+            .all()
+        )
+        for t in tasks:
+            board = db.query(Board).filter(Board.id == t.board_id).first() if t.board_id else None
+            results.append({
+                "id": t.id,
+                "type": "task",
+                "author": t.requester or t.owner_username or "Unknown",
+                "preview": (t.project_name or "")[:80],
+                "content": f"{t.project_name}\n\n{t.description or ''}\n\nCategory: {t.category or ''}",
+                "project_name": board.name if board else None,
+                "task_title": t.project_name,
+                "board_id": t.board_id,
+                "task_id": t.id,
+                "created_at": t.timestamp.isoformat() if t.timestamp else None,
+            })
+
+    # 2. Search Task Comments (normal tasks, not chat)
+    if type in ("all", "task_comment"):
+        comment_query = (
+            db.query(Comment)
+            .join(Request, Comment.request_id == Request.id)
+            .filter(Request.project_name != "[SYSTEM] PROJECT CHAT")
+        )
+        if username:
+            comment_query = comment_query.filter(Comment.username == username)
+        if q:
+            comment_query = comment_query.filter(Comment.text.ilike(search_pattern))
+        comment_query = apply_date_filter(comment_query, Comment.timestamp)
+        comment_count = comment_query.count()
+        total += comment_count
+
+        comments = (
+            comment_query.order_by(Comment.id.desc())
+            .offset(offset if type == "task_comment" else 0)
+            .limit(per_page if type == "task_comment" else min(per_page, 15))
+            .all()
+        )
+        for c in comments:
+            task = db.query(Request).filter(Request.id == c.request_id).first()
+            board = db.query(Board).filter(Board.id == task.board_id).first() if (task and task.board_id) else None
+            results.append({
+                "id": c.id,
+                "type": "task_comment",
+                "author": c.username,
+                "preview": (c.text or "")[:80],
+                "content": c.text,
+                "project_name": board.name if board else None,
+                "task_title": task.project_name if task else None,
+                "board_id": task.board_id if task else None,
+                "task_id": c.request_id,
+                "created_at": c.timestamp.isoformat() if c.timestamp else None,
+            })
+
+    # 3. Search Team Chat (comments on [SYSTEM] PROJECT CHAT tasks)
+    if type in ("all", "chat"):
+        chat_query = (
+            db.query(Comment)
+            .join(Request, Comment.request_id == Request.id)
+            .filter(Request.project_name == "[SYSTEM] PROJECT CHAT")
+        )
+        if username:
+            chat_query = chat_query.filter(Comment.username == username)
+        if q:
+            chat_query = chat_query.filter(Comment.text.ilike(search_pattern))
+        chat_query = apply_date_filter(chat_query, Comment.timestamp)
+        chat_count = chat_query.count()
+        total += chat_count
+
+        chats = (
+            chat_query.order_by(Comment.id.desc())
+            .offset(offset if type == "chat" else 0)
+            .limit(per_page if type == "chat" else min(per_page, 15))
+            .all()
+        )
+        for ch in chats:
+            chat_task = db.query(Request).filter(Request.id == ch.request_id).first()
+            board = db.query(Board).filter(Board.id == chat_task.board_id).first() if (chat_task and chat_task.board_id) else None
+            results.append({
+                "id": ch.id,
+                "type": "chat",
+                "author": ch.username,
+                "preview": (ch.text or "")[:80],
+                "content": ch.text,
+                "project_name": board.name if board else None,
+                "task_title": None,
+                "board_id": chat_task.board_id if chat_task else None,
+                "task_id": ch.request_id,
+                "created_at": ch.timestamp.isoformat() if ch.timestamp else None,
+            })
+
+    # 4. Search Direct Messages
+    if type in ("all", "dm"):
+        dm_query = db.query(DirectMessage)
+        if username:
+            dm_query = dm_query.filter(
+                or_(
+                    DirectMessage.sender_username == username,
+                    DirectMessage.receiver_username == username,
+                )
+            )
+        if q:
+            dm_query = dm_query.filter(DirectMessage.text.ilike(search_pattern))
+        dm_query = apply_date_filter(dm_query, DirectMessage.timestamp)
+        dm_count = dm_query.count()
+        total += dm_count
+
+        dms = (
+            dm_query.order_by(DirectMessage.id.desc())
+            .offset(offset if type == "dm" else 0)
+            .limit(per_page if type == "dm" else min(per_page, 15))
+            .all()
+        )
+        for dm in dms:
+            results.append({
+                "id": dm.id,
+                "type": "dm",
+                "author": dm.sender_username,
+                "preview": (dm.text or "")[:80],
+                "content": dm.text,
+                "project_name": None,
+                "task_title": f"DM → @{dm.receiver_username}",
+                "board_id": None,
+                "task_id": None,
+                "created_at": dm.timestamp.isoformat() if dm.timestamp else None,
+            })
+
+    # Sort all results by created_at descending when type is 'all'
+    if type == "all":
+        results.sort(key=lambda x: x.get("created_at") or "", reverse=True)
+        results = results[:per_page]
+
+    return {
+        "results": results,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+    }
+

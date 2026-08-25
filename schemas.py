@@ -197,3 +197,9 @@ class SystemPolicyModel(BaseModel):
     enable_proactive_nudge: Optional[bool] = True
     enable_auto_subtasks: Optional[bool] = True
 
+
+class ContentModerationActionModel(BaseModel):
+    content_id: int
+    content_type: str
+    reason: Optional[str] = None
+
