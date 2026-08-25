@@ -1,12 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { IconPerson } from './SharedUI';
 import { getTaskAssignee } from './useAppLogic';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
+const renderGroupIcon = (groupByType) => {
+  if (groupByType === 'Assignee') {
+    return (
+      <svg className="w-3.5 h-3.5 inline text-[#111E38] dark:text-[#FACC15] shrink-0 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    );
+  }
+  if (groupByType === 'Category') {
+    return (
+      <svg className="w-3.5 h-3.5 inline text-[#111E38] dark:text-[#FACC15] shrink-0 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+      </svg>
+    );
+  }
+  if (groupByType === 'Status') {
+    return (
+      <svg className="w-3.5 h-3.5 inline text-[#111E38] dark:text-[#FACC15] shrink-0 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="w-3.5 h-3.5 inline text-[#111E38] dark:text-[#FACC15] shrink-0 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+    </svg>
+  );
+};
+
 export default function TimelineView({
-  filteredTasks,
-  leaves,
+  filteredTasks = [],
+  leaves = [],
   currentUser,
   isUserAssigned,
   timelineDrag,
@@ -21,7 +51,7 @@ export default function TimelineView({
   setHoveredTimelineRow,
   isTrashHovered,
   isDarkMode,
-  language,
+  language = 'id',
 }) {
   const tMsg = (en, id) => (language === 'id' ? id : en);
   const [isExporting, setIsExporting] = useState(false);
@@ -340,133 +370,137 @@ export default function TimelineView({
     return p;
   };
 
-  let minD = new Date('2100-01-01');
-  let maxD = new Date('1970-01-01');
-  let hasActiveTasks = false;
+  const { parsedTasks, minD, maxD, days, months, sortedGroups } = useMemo(() => {
+    let computedMinD = new Date('2100-01-01');
+    let computedMaxD = new Date('1970-01-01');
+    let hasActiveTasks = false;
 
-  const parsedTasks = filteredTasks.map((t) => {
-    let start = parseDate(t.start_date || t.timestamp.split(' ')[0]);
+    const pTasks = filteredTasks.map((t) => {
+      let start = parseDate(t.start_date || (t.timestamp && t.timestamp.split(' ')[0]));
 
-    // Visual Snap: Mulai render balok dari hari kerja pertama (menghindari balok nyangkut/tak terlihat di hari libur)
-    while (true) {
-      const dStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(
-        start.getDate()
-      ).padStart(2, '0')}`;
-      const isWeekend = start.getDay() === 0 || start.getDay() === 6;
-      const isHoliday = leaves.some(
-        (l) => l.leave_date === dStr && (l.leave_type !== 'personal' || isUserAssigned(t, l.username))
+      while (true) {
+        const dStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(
+          start.getDate()
+        ).padStart(2, '0')}`;
+        const isWeekend = start.getDay() === 0 || start.getDay() === 6;
+        const isHoliday = leaves.some(
+          (l) => l.leave_date === dStr && (l.leave_type !== 'personal' || isUserAssigned(t, l.username))
+        );
+        if (isWeekend || isHoliday) {
+          start.setDate(start.getDate() + 1);
+        } else {
+          break;
+        }
+      }
+
+      let end = parseDate(
+        (t.status === 'Done' || t.status === 'Rejected') && t.completed_time ? t.completed_time : t.deadline
       );
-      if (isWeekend || isHoliday) {
-        start.setDate(start.getDate() + 1);
-      } else {
-        break;
+      if (end < start) end = new Date(start.getTime());
+
+      if (timelineDrag && timelineDrag.task && timelineDrag.task.id === t.id) {
+        if (timelineDrag.mode === 'end') {
+          end.setDate(end.getDate() + timelineDrag.startOffsetDays);
+          if (end < start) end = new Date(start.getTime());
+        } else if (timelineDrag.mode === 'start') {
+          start.setDate(start.getDate() + timelineDrag.startOffsetDays);
+          if (start > end) start = new Date(end.getTime());
+        } else if (timelineDrag.mode === 'both') {
+          start.setDate(start.getDate() + timelineDrag.startOffsetDays);
+          end.setDate(end.getDate() + timelineDrag.startOffsetDays);
+        }
       }
-    }
 
-    let end = parseDate(
-      (t.status === 'Done' || t.status === 'Rejected') && t.completed_time ? t.completed_time : t.deadline
-    );
-    if (end < start) end = new Date(start.getTime());
-
-    if (timelineDrag && timelineDrag.task && timelineDrag.task.id === t.id) {
-      if (timelineDrag.mode === 'end') {
-        end.setDate(end.getDate() + timelineDrag.startOffsetDays);
-        if (end < start) end = new Date(start.getTime());
-      } else if (timelineDrag.mode === 'start') {
-        start.setDate(start.getDate() + timelineDrag.startOffsetDays);
-        if (start > end) start = new Date(end.getTime());
-      } else if (timelineDrag.mode === 'both') {
-        start.setDate(start.getDate() + timelineDrag.startOffsetDays);
-        end.setDate(end.getDate() + timelineDrag.startOffsetDays);
+      if (t.status !== 'Done' && t.status !== 'Rejected') {
+        if (start < computedMinD) computedMinD = new Date(start);
+        if (end > computedMaxD) computedMaxD = new Date(end);
+        hasActiveTasks = true;
       }
-    }
 
-    if (t.status !== 'Done' && t.status !== 'Rejected') {
-      if (start < minD) minD = new Date(start);
-      if (end > maxD) maxD = new Date(end);
-      hasActiveTasks = true;
-    }
-
-    return { ...t, start, end };
-  });
-
-  if (!hasActiveTasks) {
-    parsedTasks.forEach((t) => {
-      if (t.start < minD) minD = new Date(t.start);
-      if (t.end > maxD) maxD = new Date(t.end);
+      return { ...t, start, end };
     });
-  }
-  if (minD.getFullYear() === 2100) {
-    minD = new Date();
-    maxD = new Date();
-  }
 
-  if (parsedTasks.length === 0) {
-    return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center text-slate-500 dark:text-slate-400 font-medium">
-        No tasks available for timeline view.
-      </div>
-    );
-  }
-
-  minD.setDate(minD.getDate() - 2);
-  maxD.setDate(maxD.getDate() + 7);
-
-  const days = [];
-  for (let d = new Date(minD); d <= maxD; d.setDate(d.getDate() + 1)) {
-    days.push(new Date(d));
-  }
-
-  const months = [];
-  let currentMonth = null;
-  let currentMonthCount = 0;
-  days.forEach((d) => {
-    const mStr = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    if (mStr !== currentMonth) {
-      if (currentMonth) months.push({ label: currentMonth, count: currentMonthCount });
-      currentMonth = mStr;
-      currentMonthCount = 1;
-    } else {
-      currentMonthCount++;
+    if (!hasActiveTasks) {
+      pTasks.forEach((t) => {
+        if (t.start < computedMinD) computedMinD = new Date(t.start);
+        if (t.end > computedMaxD) computedMaxD = new Date(t.end);
+      });
     }
-  });
-  if (currentMonth) months.push({ label: currentMonth, count: currentMonthCount });
-
-  const grouped = parsedTasks.reduce((acc, t) => {
-    let key, title, icon;
-    if (groupBy === 'Assignee') {
-      key = getTaskAssignee(t);
-      title = key;
-      icon = '👤';
-    } else if (groupBy === 'Category') {
-      key = t.category || 'Uncategorized';
-      title = key;
-      icon = '📂';
-    } else if (groupBy === 'Status') {
-      key = t.status || 'Unknown';
-      title = key;
-      icon = '📌';
-    } else {
-      key = t.board_id || 'unknown';
-      title = t.board_name || 'Unknown Project';
-      icon = '📁';
+    if (computedMinD.getFullYear() === 2100) {
+      computedMinD = new Date();
+      computedMaxD = new Date();
     }
 
-    if (!acc[key]) acc[key] = { title, icon, tasks: [] };
-    acc[key].tasks.push(t);
-    return acc;
-  }, {});
+    computedMinD.setDate(computedMinD.getDate() - 2);
+    computedMaxD.setDate(computedMaxD.getDate() + 7);
 
-  const sortedGroups = Object.entries(grouped).sort((a, b) => a[1].title.localeCompare(b[1].title));
+    const computedDays = [];
+    for (let d = new Date(computedMinD); d <= computedMaxD; d.setDate(d.getDate() + 1)) {
+      computedDays.push(new Date(d));
+    }
 
+    const computedMonths = [];
+    let currentMonth = null;
+    let currentMonthCount = 0;
+    computedDays.forEach((d) => {
+      const mStr = d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'long', year: 'numeric' });
+      if (mStr !== currentMonth) {
+        if (currentMonth) computedMonths.push({ label: currentMonth, count: currentMonthCount });
+        currentMonth = mStr;
+        currentMonthCount = 1;
+      } else {
+        currentMonthCount++;
+      }
+    });
+    if (currentMonth) computedMonths.push({ label: currentMonth, count: currentMonthCount });
 
+    const grouped = pTasks.reduce((acc, t) => {
+      let key, title;
+      if (groupBy === 'Assignee') {
+        key = getTaskAssignee(t);
+        title = key;
+      } else if (groupBy === 'Category') {
+        key = t.category || 'Uncategorized';
+        title = key;
+      } else if (groupBy === 'Status') {
+        key = t.status || 'Unknown';
+        title = key;
+      } else {
+        key = t.board_id || 'unknown';
+        title = t.board_name || 'Unknown Project';
+      }
+
+      if (!acc[key]) acc[key] = { title, groupType: groupBy, tasks: [] };
+      acc[key].tasks.push(t);
+      return acc;
+    }, {});
+
+    const sGroups = Object.entries(grouped).sort((a, b) => a[1].title.localeCompare(b[1].title));
+
+    return {
+      parsedTasks: pTasks,
+      minD: computedMinD,
+      maxD: computedMaxD,
+      days: computedDays,
+      months: computedMonths,
+      sortedGroups: sGroups,
+    };
+  }, [filteredTasks, leaves, isUserAssigned, timelineDrag, groupBy, language]);
 
   const toggleGroup = (key) => {
     setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  if (parsedTasks.length === 0) {
+    return (
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 p-12 text-center text-slate-500 dark:text-slate-400 font-medium">
+        {tMsg('No tasks available for timeline view.', 'Tidak ada tugas yang tersedia untuk tampilan timeline.')}
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-140px)] min-h-125">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-140px)] min-h-125">
       <div id="timeline-scroll-wrapper" className="overflow-auto flex-1 relative">
         <div id="timeline-export-container" className="flex w-max min-w-full relative bg-white dark:bg-slate-800">
           {/* Left Sidebar for Labels */}
@@ -486,15 +520,26 @@ export default function TimelineView({
             )}
             <div className="h-20 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-2 md:px-4 sticky top-0 bg-slate-50 dark:bg-slate-800 z-30 gap-1">
               <span className="font-extrabold text-[9px] md:text-xs text-slate-500 dark:text-slate-400 tracking-wider truncate">
-                {isMobile ? 'TASKS' : 'PROJECT & TASK'}
+                {isMobile ? tMsg('TASKS', 'TUGAS') : tMsg('PROJECT & TASK', 'PROYEK & TUGAS')}
               </span>
               <div id="timeline-export-dropdown" className="relative z-50">
                 <button
                   disabled={isExporting}
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 md:px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 flex items-center gap-1"
+                  className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 md:px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                 >
-                  {isExporting ? '⏳' : '💾'} {!isMobile && (isExporting ? ' Exporting...' : ' Export')} {!isMobile && <span className="text-[8px] opacity-70">▼</span>}
+                  {isExporting ? (
+                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                  )}
+                  {!isMobile && (isExporting ? tMsg('Exporting...', 'Mengekspor...') : tMsg('Export', 'Ekspor'))}
+                  {!isMobile && <span className="text-[8px] opacity-70">▼</span>}
                 </button>
                 {showExportMenu && !isExporting && (
                   <div className="absolute left-0 md:left-auto md:right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-xl rounded-xl overflow-hidden z-50">
@@ -503,18 +548,24 @@ export default function TimelineView({
                         handleExport('pdf');
                         setShowExportMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 cursor-pointer"
                     >
-                      📄 {tMsg('Export PDF', 'Ekspor PDF')}
+                      <svg className="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                      </svg>
+                      {tMsg('Export PDF', 'Ekspor PDF')}
                     </button>
                     <button
                       onClick={() => {
                         handleExport('png');
                         setShowExportMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                      className="w-full text-left px-4 py-2.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 cursor-pointer"
                     >
-                      🖼️ {tMsg('Export High-Res Image', 'Ekspor Gambar High-Res')}
+                      <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                      </svg>
+                      {tMsg('Export High-Res Image', 'Ekspor Gambar High-Res')}
                     </button>
                   </div>
                 )}
@@ -536,8 +587,9 @@ export default function TimelineView({
                     onClick={() => toggleGroup(key)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs md:text-sm text-slate-800 dark:text-slate-200 truncate leading-tight pr-2 md:pr-4">
-                        {group.icon} {group.title}
+                      <span className="font-bold text-xs md:text-sm text-slate-800 dark:text-slate-200 truncate leading-tight pr-2 md:pr-4 flex items-center">
+                        {renderGroupIcon(groupBy)}
+                        {group.title}
                       </span>
                       <span
                         className="text-slate-500 dark:text-slate-400 text-[10px] shrink-0 transition-transform duration-200"
@@ -651,12 +703,12 @@ export default function TimelineView({
                             : 'text-slate-400 dark:text-slate-500'
                         }`}
                       >
-                        {d.toLocaleDateString('en-US', { weekday: 'short' })}
+                        {d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { weekday: 'short' })}
                       </span>
                       <span
                         className={`font-bold ${
                           isToday
-                            ? 'text-blue-600 dark:text-blue-400 text-sm leading-none'
+                            ? 'text-[#111E38] dark:text-[#FACC15] text-sm leading-none font-black'
                             : hasHoliday
                             ? 'text-red-700 dark:text-red-300 text-xs leading-none'
                             : d.getDay() === 0 || d.getDay() === 6
@@ -669,7 +721,7 @@ export default function TimelineView({
                       <span
                         className={`${
                           isToday
-                            ? 'text-blue-500 dark:text-blue-400 font-bold text-[8px] leading-none mt-0.5'
+                            ? 'text-[#111E38] dark:text-[#FACC15] font-bold text-[8px] leading-none mt-0.5'
                             : hasHoliday
                             ? 'text-red-600 dark:text-red-400 text-[8px] leading-none mt-0.5'
                             : d.getDay() === 0 || d.getDay() === 6
@@ -677,7 +729,7 @@ export default function TimelineView({
                             : 'text-slate-400 dark:text-slate-500 text-[8px] leading-none mt-0.5'
                         }`}
                       >
-                        {d.toLocaleDateString('en-US', { month: 'short' })}
+                        {d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { month: 'short' })}
                       </span>
                     </div>
                   );
@@ -694,8 +746,8 @@ export default function TimelineView({
                 );
 
                 let cellBg = '';
-                if (hasHoliday) cellBg = 'bg-red-100/80 dark:bg-red-900/30';
-                else if (d.getDay() === 0 || d.getDay() === 6) cellBg = 'bg-slate-200/70 dark:bg-slate-900/60';
+                if (hasHoliday) cellBg = 'bg-rose-50/70 dark:bg-rose-950/20';
+                else if (d.getDay() === 0 || d.getDay() === 6) cellBg = 'bg-slate-100/70 dark:bg-slate-900/60';
                 return (
                   <div
                     key={i}
@@ -712,7 +764,7 @@ export default function TimelineView({
                 const offset = Math.round((today - minD) / (1000 * 60 * 60 * 24));
                 return (
                   <div
-                    className="absolute top-20 bottom-0 w-0.5 bg-blue-400 dark:bg-blue-500 z-10 pointer-events-none"
+                    className="absolute top-20 bottom-0 w-0.5 bg-[#FACC15] shadow-xs z-10 pointer-events-none"
                     style={{ left: `${offset * DAY_WIDTH + DAY_WIDTH / 2}px` }}
                   ></div>
                 );

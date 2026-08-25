@@ -330,7 +330,7 @@ export default function KanbanBoard({
                         <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a5.97 5.97 0 00-.942 3.197m0 0A9.093 9.093 0 012.25 18.24a3 3 0 014.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584" />
                         </svg>
-                        Shared by {task.owner_username}
+                        {tMsg(`Shared by ${task.owner_username}`, `Dibagikan oleh ${task.owner_username}`)}
                       </div>
                     )}
 
@@ -563,7 +563,7 @@ export default function KanbanBoard({
                                     </svg>
                                   </div>
                                   <span className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500">
-                                    {tMsg('Belum ada tugas di tahap ini', 'No tasks in this stage')}
+                                    {tMsg('No tasks in this stage', 'Belum ada tugas di tahap ini')}
                                   </span>
                                 </div>
                               )}
@@ -571,7 +571,7 @@ export default function KanbanBoard({
                               {visibleTasks.length === 0 && snapshotTask.isDraggingOver && (
                                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center border-2 border-dashed border-[#FACC15] bg-[#FACC15]/10 rounded-xl my-auto select-none">
                                   <span className="text-xs font-black text-[#111E38] dark:text-[#FACC15]">
-                                    {tMsg('Lepaskan tugas di sini', 'Drop task here')}
+                                    {tMsg('Drop task here', 'Lepaskan tugas di sini')}
                                   </span>
                                 </div>
                               )}
@@ -594,9 +594,14 @@ export default function KanbanBoard({
                               <div className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-2 shrink-0 border-t border-neutral-200/70 dark:border-neutral-800">
                                 <button
                                   onClick={() => toggleArchive(colName)}
-                                  className="w-full py-2.5 bg-neutral-200/50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-[10px] font-extrabold uppercase tracking-widest rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors shadow-xs shrink-0 cursor-pointer"
+                                  className="w-full py-2.5 bg-neutral-200/50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-[10px] font-extrabold uppercase tracking-widest rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
                                 >
-                                  {isExpanded ? '⬆ Hide Archived Tasks' : `📂 View ${archivedCount} Archived Tasks`}
+                                  <svg className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                  </svg>
+                                  {isExpanded
+                                    ? tMsg('Hide Archived Tasks', 'Sembunyikan Arsip')
+                                    : tMsg(`View ${archivedCount} Archived Tasks`, `Lihat ${archivedCount} Arsip`)}
                                 </button>
                               </div>
                             )}
@@ -620,7 +625,9 @@ export default function KanbanBoard({
           className="bg-white/40 dark:bg-[#121B2D]/40 border-2 border-dashed border-neutral-300 dark:border-neutral-700 hover:border-[#FACC15] hover:bg-[#FACC15]/10 text-neutral-500 hover:text-[#111E38] dark:hover:text-white rounded-2xl w-80 h-14 shrink-0 flex items-center justify-center cursor-pointer transition-all uppercase tracking-widest text-xs font-black shadow-xs active:scale-98"
         >
           <IconPlus className="w-4 h-4 mr-2" />
-          <span className="font-extrabold">Add {groupBy}</span>
+          <span className="font-extrabold">
+            {tMsg(`Add ${groupBy}`, `Tambah ${groupBy === 'Status' ? 'Status' : 'Kategori'}`)}
+          </span>
         </div>
       )}
     </div>

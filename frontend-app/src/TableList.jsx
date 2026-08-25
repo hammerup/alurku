@@ -1,38 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HighlightText } from './Utils';
-
-const IconPerson = ({ className }) => (
-  <svg className={className || 'w-4 h-4'} fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-  </svg>
-);
-
-const Avatar = ({ name, url, size, textClass }) => {
-  if (url)
-    return (
-      <img
-        src={url}
-        alt={name || 'User'}
-        className={`${size || 'w-6 h-6'} rounded-full object-cover`}
-        title={name?.replace('@', '').trim()}
-      />
-    );
-  const initial = name ? name.replace('@', '').charAt(0).toUpperCase() : '?';
-  const cleanName = name ? name.replace('@', '').trim() : '';
-  return (
-    <div
-      className={`${
-        size || 'w-6 h-6'
-      } rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-bold border border-indigo-200 dark:border-indigo-700 ${
-        textClass || 'text-xs'
-      }`}
-      title={cleanName}
-    >
-      {initial}
-    </div>
-  );
-};
+import { IconPerson, Avatar } from './SharedUI';
 
 export default function TableList({
   clonedTaskIds,
@@ -75,21 +44,21 @@ export default function TableList({
     let badgeColor = 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700';
 
     if (diffDays < 0) {
-      timeStr = tMsg(`${Math.abs(diffDays)}d overdue`, `${Math.abs(diffDays)}h lewat`);
+      timeStr = tMsg(`${Math.abs(diffDays)}d overdue`, `${Math.abs(diffDays)} hari lewat`);
       badgeColor = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50';
     } else if (diffDays === 0) {
       timeStr = tMsg('Today', 'Hari Ini');
       badgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/50';
     } else if (diffDays === 1) {
-      timeStr = tMsg('1d left', '1h lagi');
+      timeStr = tMsg('1d left', '1 hari lagi');
       badgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/50';
     } else if (diffDays < 7) {
-      timeStr = tMsg(`${diffDays}d left`, `${diffDays}h lagi`);
+      timeStr = tMsg(`${diffDays}d left`, `${diffDays} hari lagi`);
       badgeColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50';
     } else {
       const w = Math.floor(diffDays / 7);
       const d = diffDays % 7;
-      timeStr = d === 0 ? tMsg(`${w}w left`, `${w}m lagi`) : tMsg(`${w}w ${d}d left`, `${w}m ${d}h lagi`);
+      timeStr = d === 0 ? tMsg(`${w}w left`, `${w} minggu lagi`) : tMsg(`${w}w ${d}d left`, `${w} minggu ${d} hari lagi`);
       badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/50';
     }
 
@@ -198,6 +167,7 @@ export default function TableList({
   };
 
   const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   const handleBulkMarkStatus = async (newStatus) => {
     if (selectedTaskIds.length === 0) return;
@@ -219,20 +189,16 @@ export default function TableList({
       }
     } catch (e) {
       console.error(e);
-      if (showNotification) showNotification('Failed to update some tasks', 'error');
+      if (showNotification) showNotification(tMsg('Failed to update some tasks', 'Gagal memperbarui beberapa tugas'), 'error');
     } finally {
       setIsBulkOperating(false);
     }
   };
 
-  const handleBulkDelete = async () => {
+  const executeBulkDelete = async () => {
     if (selectedTaskIds.length === 0) return;
-    const confirmMsg = language === 'id' 
-      ? `Apakah Anda yakin ingin menghapus ${selectedTaskIds.length} tugas terpilih secara permanen?`
-      : `Are you sure you want to permanently delete ${selectedTaskIds.length} selected tasks?`;
-    if (!window.confirm(confirmMsg)) return;
-
     setIsBulkOperating(true);
+    setShowBulkDeleteConfirm(false);
     try {
       await Promise.all(
         selectedTaskIds.map((id) => axios.delete(`/api/tasks/${id}`))
@@ -250,7 +216,7 @@ export default function TableList({
       }
     } catch (e) {
       console.error(e);
-      if (showNotification) showNotification('Failed to delete some tasks', 'error');
+      if (showNotification) showNotification(tMsg('Failed to delete some tasks', 'Gagal menghapus beberapa tugas'), 'error');
     } finally {
       setIsBulkOperating(false);
     }
@@ -484,8 +450,15 @@ export default function TableList({
 
   const renderSortIcon = (columnKey) => {
     if (sortConfig.key !== columnKey) return null;
-    if (sortConfig.direction === 'ascending') return <span className="ml-1 text-indigo-500">↑</span>;
-    return <span className="ml-1 text-indigo-500">↓</span>;
+    return (
+      <svg className="w-3 h-3 inline ml-1 text-[#111E38] dark:text-[#FACC15]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+        {sortConfig.direction === 'ascending' ? (
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        ) : (
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        )}
+      </svg>
+    );
   };
 
   const activeTasks = useMemo(
@@ -655,7 +628,7 @@ export default function TableList({
 
                     {/* Bulk Delete */}
                     <button
-                      onClick={handleBulkDelete}
+                      onClick={() => setShowBulkDeleteConfirm(true)}
                       disabled={isBulkOperating}
                       className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
                       title={tMsg('Delete selected tasks', 'Hapus tugas terpilih')}
@@ -1305,11 +1278,15 @@ export default function TableList({
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-neutral-400 dark:text-neutral-600">
-                  <p className="text-4xl mb-2 opacity-50">🎉</p>
+                  <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
                   <p className="text-xs font-bold text-center">
-                    No completed tasks yet.
+                    {tMsg('No completed tasks yet.', 'Belum ada tugas yang selesai.')}
                     <br />
-                    Keep going!
+                    <span className="text-neutral-500 font-medium">{tMsg('Keep going!', 'Tetap semangat!')}</span>
                   </p>
                 </div>
               )}
@@ -1318,15 +1295,66 @@ export default function TableList({
               <div className="p-4 shrink-0 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-950/30 rounded-b-3xl">
                 <button
                   onClick={() => setIsArchiveExpanded(!isArchiveExpanded)}
-                  className="w-full py-3 bg-neutral-200/50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors shadow-sm"
+                  className="w-full py-3 bg-neutral-200/50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {isArchiveExpanded ? '⬆ Hide Archived Tasks' : `📂 View ${archivedCount} Archived Tasks`}
+                  <svg className={`w-3.5 h-3.5 transition-transform ${isArchiveExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                  {isArchiveExpanded
+                    ? tMsg('Hide Archived Tasks', 'Sembunyikan Arsip Tugas')
+                    : tMsg(`View ${archivedCount} Archived Tasks`, `Lihat ${archivedCount} Arsip Tugas`)}
                 </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* In-App Bulk Delete Confirmation Modal */}
+      {showBulkDeleteConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 transition-opacity"
+          onClick={() => setShowBulkDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white dark:bg-[#121B2D] p-6 sm:p-7 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-2xl text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-3 shadow-xs border border-rose-200 dark:border-rose-800">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <h3 className="text-base font-extrabold text-[#111E38] dark:text-white mb-2">
+              {tMsg('Delete Selected Tasks?', 'Hapus Tugas Terpilih?')}
+            </h3>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-5 text-xs font-medium leading-relaxed">
+              {tMsg(
+                `Are you sure you want to permanently delete ${selectedTaskIds.length} selected tasks? This action cannot be undone.`,
+                `Apakah kamu yakin ingin menghapus ${selectedTaskIds.length} tugas terpilih secara permanen? Tindakan ini tidak dapat dibatalkan.`
+              )}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-xs cursor-pointer"
+              >
+                {tMsg('Cancel', 'Batal')}
+              </button>
+              <button
+                type="button"
+                onClick={executeBulkDelete}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors text-xs shadow-xs cursor-pointer"
+              >
+                {tMsg('Delete', 'Hapus')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
