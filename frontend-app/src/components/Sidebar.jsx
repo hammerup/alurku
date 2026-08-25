@@ -595,8 +595,12 @@ export default function Sidebar() {
           <div className={`flex items-center gap-1 transition-opacity duration-150 ${
             isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 group-hover:opacity-0 group-hover:pointer-events-none'
           }`}>
-            {isPinned && !isFavoriteSection && (
-              <span className="material-symbols-outlined text-[13px] text-amber-400 shrink-0" title={tMsg('Pinned', 'Disematkan')}>
+            {isPinned && (
+              <span
+                className="material-symbols-outlined text-[14px] text-[#FACC15] shrink-0"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+                title={tMsg('Pinned Project', 'Proyek Disematkan')}
+              >
                 star
               </span>
             )}
@@ -1399,19 +1403,31 @@ export default function Sidebar() {
                     <div className="ml-2.5 pl-2 border-l border-neutral-200/70 dark:border-neutral-800 flex flex-col gap-0.5 mt-1">
                       {/* Pinned Projects Section */}
                       {favorites.length > 0 && (
-                        <div className="mb-1">
-                          <div className="px-2 py-0.5 text-[9px] font-bold text-neutral-400 uppercase tracking-wider">
-                            {tMsg('Pinned', 'Disematkan')}
+                        <div className="mb-2 pb-1.5 border-b border-neutral-200/50 dark:border-neutral-800/60">
+                          <div className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-amber-500 dark:text-[#FACC15] uppercase tracking-wider">
+                            <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                            <span>{tMsg('Pinned', 'Disematkan')}</span>
+                            <span className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 ml-auto">({favorites.length})</span>
                           </div>
-                          {favorites.map((b) => renderBoardItem(b, true))}
+                          <div className="flex flex-col gap-0.5 mt-0.5">
+                            {favorites.map((b) => renderBoardItem(b, true))}
+                          </div>
                         </div>
                       )}
 
                       {/* Unpinned Projects List */}
-                      {unpinnedDisplayBoards.length === 0 ? (
+                      {favorites.length > 0 && unpinnedDisplayBoards.length > 0 && (
+                        <div className="px-2 pt-1 pb-0.5 text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider flex items-center justify-between">
+                          <span>{tMsg('Other Projects', 'Proyek Lainnya')}</span>
+                          <span className="text-[8px]">({unpinnedDisplayBoards.length})</span>
+                        </div>
+                      )}
+                      {unpinnedDisplayBoards.length === 0 && favorites.length === 0 ? (
                         <div className="px-2 py-1 text-xs text-neutral-400 italic">{tMsg('No other projects', 'Tidak ada proyek lain')}</div>
                       ) : (
-                        unpinnedDisplayBoards.map((b) => renderBoardItem(b))
+                        <div className="flex flex-col gap-0.5">
+                          {unpinnedDisplayBoards.map((b) => renderBoardItem(b))}
+                        </div>
                       )}
 
                       {/* Team Docs */}
