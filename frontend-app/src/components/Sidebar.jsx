@@ -491,6 +491,7 @@ export default function Sidebar() {
     const isActive = selectedBoard?.id === board.id;
     const taskCount = getBoardTaskCount(board.id);
     const isPinned = favoriteBoards.includes(board.id);
+    const isMenuOpen = activeBoardMenuId === `${isFavoriteSection ? 'fav' : 'all'}-${board.id}`;
     const unreadChats = notifications.filter(
       (n) =>
         !n.is_read &&
@@ -538,7 +539,7 @@ export default function Sidebar() {
           window.history.pushState({}, '', targetUrl);
           window.dispatchEvent(new CustomEvent('alurku-navigate'));
         }}
-        className={`w-full flex items-center justify-between pl-2 pr-1.5 py-1.5 rounded-lg transition-all group relative cursor-pointer outline-none select-none ${
+        className={`w-full flex items-center justify-between pl-2 pr-1.5 py-1.5 rounded-lg transition-colors group relative cursor-pointer outline-none select-none ${
           isActive
             ? 'bg-[#111E38]/8 dark:bg-[#FACC15]/10 text-[#111E38] dark:text-[#FACC15] font-semibold'
             : 'hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
@@ -550,7 +551,7 @@ export default function Sidebar() {
 
         {/* Drag handle */}
         <span
-          className="material-symbols-outlined text-[13px] text-neutral-400 dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0 -ml-1 mr-0.5"
+          className="material-symbols-outlined text-[13px] text-neutral-400 dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0 -ml-1 mr-0.5 select-none"
           title={tMsg('Drag to reorder', 'Geser untuk menata ulang')}
         >
           drag_indicator
@@ -588,10 +589,12 @@ export default function Sidebar() {
           </span>
         </div>
 
-        {/* Right Area: Smart Swap between Status Badges (Default) and Action Buttons (Hover) */}
-        <div className="flex items-center gap-1 shrink-0">
-          {/* Default Info (Visible when NOT hovering, hides smoothly on hover unless unread) */}
-          <div className="flex items-center gap-1 group-hover:hidden transition-all">
+        {/* Right Area: Smart Layered Badges & Hover Actions without layout reflow */}
+        <div className="relative flex items-center justify-end shrink-0 min-w-8 min-h-6">
+          {/* Default Info (Visible when NOT hovering, smoothly fades out on hover) */}
+          <div className={`flex items-center gap-1 transition-opacity duration-150 ${
+            isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 group-hover:opacity-0 group-hover:pointer-events-none'
+          }`}>
             {isPinned && !isFavoriteSection && (
               <span className="material-symbols-outlined text-[13px] text-amber-400 shrink-0" title={tMsg('Pinned', 'Disematkan')}>
                 star
@@ -615,8 +618,10 @@ export default function Sidebar() {
             )}
           </div>
 
-          {/* Hover Actions (Smoothly appear on hover in place of badges) */}
-          <div className="hidden group-hover:flex items-center gap-0.5 transition-all">
+          {/* Hover Actions (Smoothly appear on hover in place of badges without expanding width) */}
+          <div className={`absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-opacity duration-150 ${
+            isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto'
+          }`}>
             {unreadChats > 0 && (
               <span
                 className="min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none mr-0.5 shadow-2xs"
@@ -627,6 +632,7 @@ export default function Sidebar() {
             )}
             <button
               type="button"
+              draggable="false"
               onClick={(e) => {
                 e.stopPropagation();
                 if (isPinned) {
@@ -635,7 +641,7 @@ export default function Sidebar() {
                   setFavoriteBoards([...favoriteBoards, board.id]);
                 }
               }}
-              className={`p-1 rounded-md transition-all hover:bg-black/5 dark:hover:bg-white/10 ${
+              className={`p-1 rounded-md transition-colors hover:bg-black/5 dark:hover:bg-white/10 ${
                 isPinned ? 'text-amber-400' : 'text-neutral-400 hover:text-amber-400'
               }`}
               title={isPinned ? tMsg('Unpin Project', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
@@ -646,6 +652,7 @@ export default function Sidebar() {
             <div className="relative">
               <button
                 type="button"
+                draggable="false"
                 onClick={(e) => {
                   e.stopPropagation();
                   const menuKey = `${isFavoriteSection ? 'fav' : 'all'}-${board.id}`;
