@@ -130,7 +130,9 @@ export default function KanbanBoard({
                     {...provided.dragHandleProps}
                     className={`group/card relative task-card p-4 rounded-xl border border-l-[3.5px] ${getCardStripeColor(
                       task
-                    )} mb-3 w-full max-w-full min-w-0 box-border transition-all duration-200 ${
+                    )} mb-3 w-full max-w-full min-w-0 box-border ${
+                      snapshot.isDragging ? 'transition-none' : 'transition-[box-shadow,border-color] duration-150'
+                    } ${
                       hasUnreadNotif || isNewClone
                         ? 'bg-white dark:bg-[#121B2D] border-amber-400 dark:border-amber-400 ring-2 ring-[#FACC15]/50 shadow-md'
                         : 'bg-white dark:bg-[#121B2D] border-neutral-200/80 dark:border-neutral-800/80 hover:border-amber-400/60 dark:hover:border-amber-400/50 hover:shadow-md'
@@ -148,11 +150,12 @@ export default function KanbanBoard({
                     onClick={() => setSelectedTask(task)}
                     style={{
                       ...provided.draggableProps.style,
-                      margin: isClone ? 0 : provided.draggableProps.style?.margin,
-                      transform:
-                        snapshot.isDragging && !isTrashHovered && !isOriginalBeingDragged
-                          ? `${provided.draggableProps.style?.transform || ''} scale(1.02) rotate(2deg)`
-                          : provided.draggableProps.style?.transform,
+                      ...(snapshot.isDragging && !isTrashHovered && !isOriginalBeingDragged
+                        ? {
+                            transform: `${provided.draggableProps.style?.transform || ''} scale(1.02) rotate(2deg)`,
+                            transformOrigin: 'center center',
+                          }
+                        : {}),
                       ...(cardTheme &&
                       task.status !== 'Done' &&
                       task.status !== 'Rejected' &&
@@ -547,9 +550,7 @@ export default function KanbanBoard({
                             <div
                               ref={providedTask.innerRef}
                               {...providedTask.droppableProps}
-                              className={`kanban-column-scroll flex flex-col flex-1 overflow-y-visible ${
-                                isKanbanDragging ? 'sm:overflow-y-visible' : 'sm:overflow-y-auto'
-                              } custom-scrollbar px-3.5 sm:px-4 pt-4 pb-3 sm:pb-4 transition-colors rounded-b-2xl h-fit sm:h-full min-h-37.5 ${
+                              className={`kanban-column-scroll flex flex-col flex-1 overflow-y-visible sm:overflow-y-auto custom-scrollbar px-3.5 sm:px-4 pt-4 pb-3 sm:pb-4 transition-colors rounded-b-2xl h-fit sm:h-full min-h-37.5 ${
                                 snapshotTask.isDraggingOver
                                   ? 'bg-amber-400/10 dark:bg-amber-400/5 ring-2 ring-[#FACC15]/40'
                                   : ''

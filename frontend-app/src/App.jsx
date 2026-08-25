@@ -876,16 +876,6 @@ function App() {
     );
   }
 
-  const handleBeforeCapture = (before) => {
-    // Instantly remove overflow from columns so r-b-dnd ignores them and registers <main> as the scroll parent.
-    // This is required because r-b-dnd only supports ONE scroll parent. By making <main> the scroll parent,
-    // horizontal scrolling of the board will correctly update the drop hitboxes of the columns!
-    const cols = document.querySelectorAll('.kanban-column-scroll');
-    cols.forEach((col) => {
-      col.style.setProperty('overflow-y', 'visible', 'important');
-    });
-  };
-
   const handleGlobalDragStart = (start) => {
     setActiveDragType(start?.type || null);
     setIsKanbanDragging(true);
@@ -894,12 +884,6 @@ function App() {
   const handleGlobalDragEnd = (result) => {
     setActiveDragType(null);
     setIsKanbanDragging(false);
-
-    // Restore column overflow
-    const cols = document.querySelectorAll('.kanban-column-scroll');
-    cols.forEach((col) => {
-      col.style.removeProperty('overflow-y');
-    });
 
     // Intersepsi Manual Jika Tugas Dijatuhkan Ke Tong Sampah (Tanpa perlu Droppable Pustaka)
     if (isTrashHovered && result.draggableId && result.type !== 'subtask') {
@@ -1114,7 +1098,7 @@ function App() {
   }, [isKanbanDragging, activeDragType, timelineDrag, isTrashHovered, setIsTrashHovered]);
 
   return (
-    <DragDropContext onBeforeCapture={handleBeforeCapture} onDragStart={handleGlobalDragStart} onDragEnd={handleGlobalDragEnd}>
+    <DragDropContext onDragStart={handleGlobalDragStart} onDragEnd={handleGlobalDragEnd}>
       <AppThemes appTheme={appTheme} />
       <style>{`
       @keyframes mac-enter {
