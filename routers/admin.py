@@ -351,6 +351,7 @@ def get_admin_dashboard_stats(
         },
         "system_health": {
             "database_online": True,
+            "db_type": "PostgreSQL" if "postgresql" in os.getenv("DATABASE_URL", "").lower() else "SQLite",
             "smtp_configured": bool(os.getenv("SMTP_SERVER")),
             "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
             "groq_configured": bool(os.getenv("GROQ_API_KEY")),

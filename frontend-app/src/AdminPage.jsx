@@ -6,7 +6,6 @@ import AdminStatsCards from './admin/AdminStatsCards';
 import AdminUsersTab from './admin/AdminUsersTab';
 import AdminProjectsTab from './admin/AdminProjectsTab';
 import AdminPoliciesTab from './admin/AdminPoliciesTab';
-import AdminConfigTab from './admin/AdminConfigTab';
 import AdminMaintenanceTab from './admin/AdminMaintenanceTab';
 import AdminContentReviewTab from './admin/AdminContentReviewTab';
 
@@ -25,19 +24,12 @@ export default function AdminPage(props) {
 
   const tMsg = useCallback((en, id) => (language === 'id' ? id : en), [language]);
 
-  // Tabs: 'users' | 'projects' | 'policies' | 'config' | 'maintenance' | 'content'
+  // Tabs: 'users' | 'projects' | 'content' | 'policies' | 'maintenance'
   const [activeTab, setActiveTab] = useState('users');
 
   // Stats State
   const [stats, setStats] = useState(null);
   const [isStatsLoading, setIsStatsLoading] = useState(false);
-
-  // Sudo Security State
-  const [isSudoVerified, setIsSudoVerified] = useState(false);
-  const [showSudoModal, setShowSudoModal] = useState(false);
-  const [sudoPassword, setSudoPassword] = useState('');
-  const [isSudoLoading, setIsSudoLoading] = useState(false);
-  const [showSudoPass, setShowSudoPass] = useState(false);
 
   // Fetch Stats
   const fetchStats = useCallback(() => {
@@ -63,41 +55,11 @@ export default function AdminPage(props) {
     fetchUsers();
   }, [fetchStats, fetchUsers]);
 
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') {
-        setShowSudoModal(false);
-      }
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
-
-  // Sudo Gate Handler
-  const handleSudoVerify = (e) => {
-    e.preventDefault();
-    if (!sudoPassword.trim()) return;
-    setIsSudoLoading(true);
-    axios
-      .post('/api/admin/verify-sudo', { password: sudoPassword })
-      .then(() => {
-        setIsSudoVerified(true);
-        setShowSudoModal(false);
-        setSudoPassword('');
-        showNotification(tMsg('Sudo access granted', 'Akses Sudo disetujui'), 'success');
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || tMsg('Incorrect password', 'Kata sandi salah'), 'error');
-      })
-      .finally(() => setIsSudoLoading(false));
-  };
-
   const tabs = [
     { id: 'users', label: tMsg('Users & Accounts', 'Pengguna & Akun'), icon: 'group' },
     { id: 'projects', label: tMsg('Project Directory', 'Direktori Proyek'), icon: 'folder_open' },
     { id: 'content', label: tMsg('Content Review', 'Moderasi Konten'), icon: 'content_paste_search' },
     { id: 'policies', label: tMsg('Org Policies', 'Kebijakan Organisasi'), icon: 'shield' },
-    { id: 'config', label: tMsg('System Config', 'Konfigurasi Sistem'), icon: 'settings' },
     { id: 'maintenance', label: tMsg('Maintenance', 'Pemeliharaan'), icon: 'cleaning_services' },
   ];
 
@@ -157,13 +119,7 @@ export default function AdminPage(props) {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => {
-                if (tab.id === 'config' && !isSudoVerified) {
-                  setShowSudoModal(true);
-                } else {
-                  setActiveTab(tab.id);
-                }
-              }}
+              onClick={() => setActiveTab(tab.id)}
               className={`flex-1 min-w-[140px] px-4 py-3 sm:py-4 text-xs font-bold transition-all flex items-center justify-center gap-2 border-b-2 cursor-pointer ${
                 activeTab === tab.id
                   ? 'border-[#111E38] dark:border-[#FACC15] text-[#111E38] dark:text-[#FACC15] bg-neutral-50/50 dark:bg-neutral-900/30'
@@ -172,9 +128,6 @@ export default function AdminPage(props) {
             >
               <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
               <span className="whitespace-nowrap">{tab.label}</span>
-              {tab.id === 'config' && !isSudoVerified && (
-                <span className="material-symbols-outlined text-[14px] ml-1 opacity-50">lock</span>
-              )}
             </button>
           ))}
         </div>
@@ -217,14 +170,6 @@ export default function AdminPage(props) {
             />
           )}
 
-          {activeTab === 'config' && isSudoVerified && (
-            <AdminConfigTab
-              language={language}
-              showNotification={showNotification}
-              isSudoVerified={isSudoVerified}
-            />
-          )}
-
           {activeTab === 'maintenance' && (
             <AdminMaintenanceTab
               language={language}
@@ -236,68 +181,6 @@ export default function AdminPage(props) {
           )}
         </div>
       </div>
-
-      {/* SUDO MODAL */}
-      {showSudoModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-100 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121B2D] p-6 sm:p-8 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl animate-fadeIn text-center">
-            <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-500 flex items-center justify-center mx-auto mb-4 border border-red-200 dark:border-red-800">
-              <span className="material-symbols-outlined text-[32px]">admin_panel_settings</span>
-            </div>
-            <h3 className="text-lg font-black text-[#111E38] dark:text-white uppercase tracking-tight mb-2">
-              {tMsg('Root Access', 'Akses Root')}
-            </h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-6">
-              {tMsg('Please enter your administrator password to access system configurations.', 'Harap masukkan kata sandi administrator Anda untuk mengakses konfigurasi sistem.')}
-            </p>
-
-            <form onSubmit={handleSudoVerify} className="space-y-4 text-left">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3.5 top-3.5 text-neutral-400 text-[18px]">key</span>
-                <input
-                  type={showSudoPass ? 'text' : 'password'}
-                  required
-                  value={sudoPassword}
-                  onChange={(e) => setSudoPassword(e.target.value)}
-                  placeholder={tMsg('Root Password', 'Kata Sandi Root')}
-                  className="w-full pl-10 pr-10 py-3 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm font-bold outline-none focus:border-[#111E38] dark:focus:border-[#FACC15] transition-colors"
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSudoPass(!showSudoPass)}
-                  className="absolute right-3.5 top-3.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 cursor-pointer"
-                  tabIndex="-1"
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    {showSudoPass ? 'visibility_off' : 'visibility'}
-                  </span>
-                </button>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSudoModal(false);
-                    setSudoPassword('');
-                  }}
-                  className="flex-1 py-3 rounded-xl text-xs font-bold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 transition-colors cursor-pointer"
-                >
-                  {tMsg('Cancel', 'Batal')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSudoLoading}
-                  className="flex-1 py-3 rounded-xl text-xs font-black bg-[#111E38] hover:bg-[#1a2d54] dark:bg-[#FACC15] dark:hover:bg-amber-400 dark:text-[#111E38] text-white shadow-md transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  {isSudoLoading ? tMsg('Verifying...', 'Memverifikasi...') : tMsg('Unlock', 'Buka Kunci')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
