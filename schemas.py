@@ -4,6 +4,8 @@ from typing import List, Optional, Dict, Any
 class AIGenerateModel(BaseModel):
     prompt: str
     provider: Optional[str] = "auto"
+    # Optional type hint for policy enforcement: 'nudge', 'subtask', 'chat', etc.
+    prompt_type: Optional[str] = None
 
 
 class RequestFormModel(BaseModel):

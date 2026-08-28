@@ -8,7 +8,8 @@ import os
 
 from database import (
     get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord,
-    Comment, Notification, DirectMessage, SecurityLog, get_security_log, set_security_log
+    Comment, Notification, DirectMessage, SecurityLog, get_security_log, set_security_log,
+    get_system_policies
 )
 from schemas import *
 from dependencies import *
@@ -129,8 +130,10 @@ def update_user_status(
 
     user.account_status = payload.status
     if payload.status == "pending_deletion":
-        # Set 3 Months (90 Days) Notice Period
-        user.deletion_date = (datetime.now() + timedelta(days=90)).strftime(
+        # Gunakan soft_delete_grace_days dari org policy (default 90 hari)
+        policies = get_system_policies(db)
+        grace_days = max(7, min(int(policies.get("soft_delete_grace_days", 90)), 365))
+        user.deletion_date = (datetime.now() + timedelta(days=grace_days)).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
     elif payload.status == "offboarding" and payload.offboard_date:
@@ -397,6 +400,24 @@ def update_system_policies(
 
     set_security_log(db, "system_policies", payload.dict())
     return {"message": "Kebijakan sistem berhasil diperbarui / System policies updated successfully!"}
+
+
+@router.get("/api/public/policies")
+def get_public_policies(db: Session = Depends(get_db)):
+    """
+    Public endpoint — no auth required.
+    Returns only safe, UI-relevant policy fields for the frontend
+    (excludes any internal or sensitive settings).
+    """
+    p = get_system_policies(db)
+    return {
+        "org_name": p.get("org_name", "alurku."),
+        "default_language": p.get("default_language", "id"),
+        "allow_public_signup": p.get("allow_public_signup", True),
+        "default_ai_engine": p.get("default_ai_engine", "auto"),
+        "enable_proactive_nudge": p.get("enable_proactive_nudge", True),
+        "enable_auto_subtasks": p.get("enable_auto_subtasks", True),
+    }
 
 
 @router.post("/api/admin/maintenance/cleanup-orphans")

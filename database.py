@@ -250,6 +250,29 @@ def set_security_log(db, key: str, value):
     db.commit()
 
 
+# ── System Policies Helper ───────────────────────────────────────────────────
+_DEFAULT_POLICIES = {
+    "org_name": "alurku.",
+    "default_language": "id",
+    "allow_public_signup": True,
+    "allowed_domains": "",
+    "session_duration_days": 30,
+    "soft_delete_grace_days": 90,
+    "max_upload_size_mb": 10,
+    "default_ai_engine": "auto",
+    "enable_proactive_nudge": True,
+    "enable_auto_subtasks": True,
+}
+
+def get_system_policies(db) -> dict:
+    """Return merged system policies (saved overrides default values)."""
+    saved = get_security_log(db, "system_policies", {})
+    if not isinstance(saved, dict):
+        saved = {}
+    return {**_DEFAULT_POLICIES, **saved}
+# ────────────────────────────────────────────────────────────────────────────
+
+
 def setup_db():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()

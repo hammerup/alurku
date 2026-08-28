@@ -10,7 +10,7 @@ import time
 import requests
 from google import genai
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember, get_security_log, set_security_log, AIChatSession
+from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember, get_security_log, set_security_log, AIChatSession, get_system_policies
 from routers.workspaces import get_active_workspace_id
 from schemas import *
 from dependencies import *
@@ -30,6 +30,31 @@ def generate_ai_text(
             detail="Please wait a moment before generating another AI response.",
         )
     set_security_log(db, f"ai_generate:{current_user}", now_time)
+
+    # ── Org Policy Enforcement ─────────────────────────────────────────────────
+    policies = get_system_policies(db)
+
+    # Block nudge/proactive AI if admin disabled it
+    if payload.prompt_type == "nudge" and not policies.get("enable_proactive_nudge", True):
+        raise HTTPException(
+            status_code=403,
+            detail="Fitur pengingat deadline otomatis (AI Nudge) sedang dinonaktifkan oleh administrator. / AI proactive nudge is disabled by administrator policy."
+        )
+
+    # Block auto subtask generation if admin disabled it
+    if payload.prompt_type == "subtask" and not policies.get("enable_auto_subtasks", True):
+        raise HTTPException(
+            status_code=403,
+            detail="Fitur pemecahan subtask otomatis sedang dinonaktifkan oleh administrator. / AI auto subtask generation is disabled by administrator policy."
+        )
+
+    # Determine effective provider: explicit request → policy default → fallback auto
+    effective_provider = payload.provider or "auto"
+    if effective_provider == "auto":
+        policy_engine = policies.get("default_ai_engine", "auto")
+        if policy_engine in ["gemini", "groq"]:
+            effective_provider = policy_engine
+    # ─────────────────────────────────────────────────────────────────────────
 
     groq_api_key = os.getenv("GROQ_API_KEY")
     gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -93,13 +118,13 @@ def generate_ai_text(
             "provider": f"Groq ({groq_model})",
         }
 
-    # Strict User Selection
-    if payload.provider == "gemini":
+    # Strict User Selection (explicit provider in request always wins)
+    if effective_provider == "gemini":
         try:
             return call_gemini()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Gemini Error: {str(e)}")
-    elif payload.provider in ["groq", "gpt-oss", "gpt_oss", "llama"]:
+    elif effective_provider in ["groq", "gpt-oss", "gpt_oss", "llama"]:
         try:
             return call_groq()
         except Exception as e:
@@ -134,7 +159,6 @@ def generate_ai_text(
     raise HTTPException(
         status_code=500, detail=clean_detail
     )
-
 
 @router.get("/api/ai/context")
 def get_ai_context(

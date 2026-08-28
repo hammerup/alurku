@@ -7,7 +7,7 @@ import os
 import requests
 import time
 
-from database import get_db, User, get_security_log, set_security_log, Workspace, WorkspaceMember
+from database import get_db, User, get_security_log, set_security_log, Workspace, WorkspaceMember, get_system_policies
 from schemas import RegisterModel, LoginModel, GoogleLoginModel, VerifyModel, QuickRegisterModel
 from dependencies import get_password_hash, verify_password, create_access_token, get_current_user, SECRET_KEY, ALGORITHM
 import jwt
@@ -24,6 +24,29 @@ router = APIRouter()
 
 @router.post("/api/register")
 def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    # ── System Policy Enforcement ─────────────────────────────────────────────
+    policies = get_system_policies(db)
+
+    # Block self-registration if disabled by admin
+    if not policies.get("allow_public_signup", True):
+        raise HTTPException(
+            status_code=403,
+            detail="Pendaftaran akun baru sedang dinonaktifkan oleh administrator. / Self-registration is currently disabled by the administrator."
+        )
+
+    # Email domain whitelist enforcement
+    allowed_domains_str = policies.get("allowed_domains", "").strip()
+    if allowed_domains_str:
+        allowed_domains = [d.strip().lower() for d in allowed_domains_str.split(",") if d.strip()]
+        if allowed_domains:
+            email_domain = user_data.email.split("@")[-1].lower()
+            if email_domain not in allowed_domains:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Pendaftaran hanya diizinkan untuk domain email: {', '.join(allowed_domains)}. / Registration is restricted to: {', '.join(allowed_domains)}."
+                )
+    # ─────────────────────────────────────────────────────────────────────────
+
     # Validasi Standar Industri untuk Kekuatan Password
     if len(user_data.password) < 8:
         raise HTTPException(
@@ -111,6 +134,27 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Se
 
 @router.post("/api/quick-register")
 def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    # ── System Policy Enforcement ─────────────────────────────────────────────
+    policies = get_system_policies(db)
+
+    if not policies.get("allow_public_signup", True):
+        raise HTTPException(
+            status_code=403,
+            detail="Pendaftaran akun baru sedang dinonaktifkan oleh administrator. / Self-registration is currently disabled by the administrator."
+        )
+
+    allowed_domains_str = policies.get("allowed_domains", "").strip()
+    if allowed_domains_str:
+        allowed_domains = [d.strip().lower() for d in allowed_domains_str.split(",") if d.strip()]
+        if allowed_domains:
+            email_domain = user_data.email.split("@")[-1].lower()
+            if email_domain not in allowed_domains:
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"Pendaftaran hanya diizinkan untuk domain email: {', '.join(allowed_domains)}. / Registration is restricted to: {', '.join(allowed_domains)}."
+                )
+    # ─────────────────────────────────────────────────────────────────────────
+
     # Validasi format email sederhana
     if not re.match(r"[^@]+@[^@]+\.[^@]+", user_data.email):
         raise HTTPException(status_code=400, detail="Invalid email address.")
@@ -223,7 +267,13 @@ def login(credentials: LoginModel, db: Session = Depends(get_db)):
 
             # Bersihkan log kegagalan jika login berhasil
             set_security_log(db, f"login_attempts:{credentials.username}", {"count": 0, "lockout_time": 0})
-            access_token = create_access_token(data={"sub": user.username})
+            # Gunakan session_duration_days dari org policy
+            policies = get_system_policies(db)
+            session_days = max(1, min(int(policies.get("session_duration_days", 30)), 365))
+            access_token = create_access_token(
+                data={"sub": user.username},
+                expires_delta=timedelta(days=session_days)
+            )
             return {"message": "Login successful", "token": access_token}
 
     # Tambahkan rekam jejak kegagalan login
