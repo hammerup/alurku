@@ -365,28 +365,13 @@ def get_admin_dashboard_stats(
 
 
 @router.get("/api/admin/policies")
-def get_system_policies(
+def get_admin_system_policies(
     current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     if not is_user_superadmin(db, current_user):
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    default_policies = {
-        "org_name": "alurku.",
-        "default_language": "id",
-        "allow_public_signup": True,
-        "allowed_domains": "",
-        "session_duration_days": 30,
-        "soft_delete_grace_days": 90,
-        "max_upload_size_mb": 10,
-        "default_ai_engine": "auto",
-        "enable_proactive_nudge": True,
-        "enable_auto_subtasks": True,
-    }
-    saved_policies = get_security_log(db, "system_policies", default_policies)
-    if not isinstance(saved_policies, dict):
-        saved_policies = default_policies
-    return {**default_policies, **saved_policies}
+    return get_system_policies(db)
 
 
 @router.put("/api/admin/policies")
