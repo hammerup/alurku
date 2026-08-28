@@ -3,13 +3,17 @@ import axios from 'axios';
 
 // Live clock: ticks every second client-side, syncs offset from server_time once on mount
 function LiveServerClock({ stats, tMsg, fetchStats }) {
-  const [displayTime, setDisplayTime] = useState('—');
+  const [displayServerTime, setDisplayServerTime] = useState('—');
+  const [displayLocalTime, setDisplayLocalTime] = useState('—');
   const offsetRef = useRef(null);
 
   // Calculate offset once when server_time is first available
   useEffect(() => {
-    if (stats?.system_health?.server_time && offsetRef.current === null) {
-      const serverMs = new Date(stats.system_health.server_time.replace(' ', 'T')).getTime();
+    if (stats?.system_health?.server_time_iso) {
+      const serverMs = new Date(stats.system_health.server_time_iso).getTime();
+      offsetRef.current = serverMs - Date.now();
+    } else if (stats?.system_health?.server_time && offsetRef.current === null) {
+      const serverMs = new Date(stats.system_health.server_time.replace(' ', 'T') + 'Z').getTime();
       offsetRef.current = serverMs - Date.now();
     }
   }, [stats]);
@@ -18,13 +22,18 @@ function LiveServerClock({ stats, tMsg, fetchStats }) {
   useEffect(() => {
     const tick = () => {
       const offset = offsetRef.current ?? 0;
-      const adjusted = new Date(Date.now() + offset);
-      setDisplayTime(
-        adjusted.toLocaleString('id-ID', {
-          year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit', second: '2-digit',
-          hour12: false,
-        })
+      const now = new Date();
+      const adjustedServer = new Date(Date.now() + offset);
+
+      // Local browser time (e.g. WIB / Asia/Jakarta)
+      const localTzName = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Lokal';
+      setDisplayLocalTime(
+        `${now.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' })} ${now.toLocaleTimeString('id-ID', { hour12: false })} (${localTzName})`
+      );
+
+      // Server UTC time
+      setDisplayServerTime(
+        `${adjustedServer.getUTCFullYear()}-${String(adjustedServer.getUTCMonth() + 1).padStart(2, '0')}-${String(adjustedServer.getUTCDate()).padStart(2, '0')} ${String(adjustedServer.getUTCHours()).padStart(2, '0')}:${String(adjustedServer.getUTCMinutes()).padStart(2, '0')}:${String(adjustedServer.getUTCSeconds()).padStart(2, '0')} UTC`
       );
     };
     tick();
@@ -40,13 +49,22 @@ function LiveServerClock({ stats, tMsg, fetchStats }) {
   }, [fetchStats]);
 
   return (
-    <div className="flex justify-between py-2 border-b border-neutral-100 dark:border-neutral-800/60">
-      <span className="text-neutral-400 flex items-center gap-1">
-        <span className="material-symbols-outlined text-[13px]">schedule</span>
-        {tMsg('Server Time (Live)', 'Waktu Server (Langsung)')}
-      </span>
-      <span className="font-mono font-bold tabular-nums">{displayTime}</span>
-    </div>
+    <>
+      <div className="flex justify-between py-2 border-b border-neutral-100 dark:border-neutral-800/60">
+        <span className="text-neutral-400 flex items-center gap-1">
+          <span className="material-symbols-outlined text-[13px]">public</span>
+          {tMsg('Server & Database Time (UTC)', 'Waktu Server & Database (UTC)')}
+        </span>
+        <span className="font-mono font-bold tabular-nums text-neutral-600 dark:text-neutral-300">{displayServerTime}</span>
+      </div>
+      <div className="flex justify-between py-2 border-b border-neutral-100 dark:border-neutral-800/60">
+        <span className="text-neutral-400 flex items-center gap-1">
+          <span className="material-symbols-outlined text-[13px]">schedule</span>
+          {tMsg('Your Local Time', 'Waktu Lokal Anda')}
+        </span>
+        <span className="font-mono font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{displayLocalTime}</span>
+      </div>
+    </>
   );
 }
 
@@ -189,6 +207,17 @@ export default function AdminMaintenanceTab({ language, showNotification, stats,
               <span className={stats?.system_health?.smtp_configured ? 'text-emerald-500 font-bold' : 'text-neutral-400'}>
                 {stats?.system_health?.smtp_configured ? tMsg('Configured', 'Terkonfigurasi') : tMsg('Not Configured', 'Belum Terkonfigurasi')}
               </span>
+            </div>
+
+            {/* Timezone & UTC Standard explanation */}
+            <div className="p-3 bg-neutral-50 dark:bg-neutral-900/50 rounded-xl border border-neutral-200/50 dark:border-neutral-800/50 text-[11px] text-neutral-500 dark:text-neutral-400 flex items-start gap-2 mt-2">
+              <span className="material-symbols-outlined text-[15px] text-blue-500 shrink-0 mt-0.5">info</span>
+              <p className="leading-relaxed">
+                {tMsg(
+                  'Database & server timestamps are stored in UTC (+00:00) by standard. Your web browser converts deadlines and activity to your local timezone.',
+                  'Data waktu server & database disimpan dalam standar UTC (+00:00). Antarmuka web otomatis mengonversi jadwal ke zona waktu lokal Anda (WIB/GMT+7).'
+                )}
+              </p>
             </div>
           </div>
         </div>

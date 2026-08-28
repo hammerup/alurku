@@ -359,7 +359,9 @@ def get_admin_dashboard_stats(
             "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
             "groq_configured": bool(os.getenv("GROQ_API_KEY")),
             "calendar_configured": bool(os.getenv("GOOGLE_CALENDAR_API_KEY")),
-            "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "server_time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            "server_time_iso": datetime.utcnow().isoformat() + "Z",
+            "server_timezone": "UTC",
         }
     }
 

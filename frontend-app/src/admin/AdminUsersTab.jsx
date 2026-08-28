@@ -88,6 +88,8 @@ export default function AdminUsersTab({
         return axios.put('/api/admin/users/status', { username, status: 'frozen' });
       } else if (bulkUserActionType === 'soft_delete') {
         return axios.put('/api/admin/users/status', { username, status: 'pending_deletion' });
+      } else if (bulkUserActionType === 'restore') {
+        return axios.put('/api/admin/users/status', { username, status: 'active' });
       }
       return Promise.resolve();
     });
@@ -198,6 +200,15 @@ export default function AdminUsersTab({
               </button>
               <button
                 onClick={() => {
+                  setBulkUserActionType('restore');
+                  setBulkUserConfirmOpen(true);
+                }}
+                className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer"
+              >
+                {tMsg('Restore All', 'Pulihkan Semua')}
+              </button>
+              <button
+                onClick={() => {
                   setBulkUserActionType('freeze');
                   setBulkUserConfirmOpen(true);
                 }}
@@ -212,7 +223,7 @@ export default function AdminUsersTab({
                 }}
                 className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold cursor-pointer"
               >
-                {tMsg('Soft Delete (90d)', 'Hapus (90 Hari)')}
+                {tMsg('Soft Delete', 'Hapus Bertahap')}
               </button>
               <button
                 onClick={() => {
@@ -364,6 +375,22 @@ export default function AdminUsersTab({
                               <span className="material-symbols-outlined text-[16px]">
                                 {u.is_superadmin === 1 ? 'shield_person' : 'security'}
                               </span>
+                            </button>
+                          )}
+
+                          {/* Restore Account (Cancel Deletion / Offboarding) */}
+                          {!isRootAdmin && (u.account_status === 'pending_deletion' || u.account_status === 'offboarding') && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUserToProcess(u.username);
+                                setProcessAction('restore');
+                              }}
+                              className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
+                              title={tMsg('Cancel Deletion & Restore User', 'Batalkan Hapus & Pulihkan Akun')}
+                            >
+                              <span className="material-symbols-outlined text-[14px]">published_with_changes</span>
+                              <span>{tMsg('Restore', 'Pulihkan')}</span>
                             </button>
                           )}
 
@@ -535,9 +562,11 @@ export default function AdminUsersTab({
               {processAction === 'purge'
                 ? tMsg('Purge User Account', 'Hapus Akun Permanen')
                 : processAction === 'schedule'
-                ? tMsg('Schedule 90-Day Deletion', 'Jadwalkan Penghapusan 90 Hari')
+                ? tMsg('Schedule Deletion (Grace Period)', 'Jadwalkan Penghapusan (Masa Tenggang)')
                 : processAction === 'offboard'
                 ? tMsg('Schedule Offboarding', 'Jadwalkan Offboarding')
+                : processAction === 'restore'
+                ? tMsg('Restore User Account', 'Pulihkan Akun Pengguna')
                 : processAction === 'promote'
                 ? tMsg('Promote to Admin', 'Jadikan Super Admin')
                 : processAction === 'demote'
@@ -550,6 +579,21 @@ export default function AdminUsersTab({
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
               {tMsg('Target user:', 'Pengguna sasaran:')} <strong className="text-[#111E38] dark:text-white">@{userToProcess}</strong>
             </p>
+
+            {processAction === 'restore' && (
+              <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl text-left text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                <div className="font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-emerald-600">published_with_changes</span>
+                  {tMsg('Cancel deletion & reactivate account', 'Batalkan jadwal hapus & aktifkan akun')}
+                </div>
+                <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 leading-relaxed">
+                  {tMsg(
+                    'The deletion countdown will be stopped immediately. The user will regain normal access to their account and workspace projects.',
+                    'Hitung mundur penghapusan akan dihentikan seketika. Pengguna akan mendapatkan kembali akses penuh ke akun dan proyek workspace mereka.'
+                  )}
+                </p>
+              </div>
+            )}
 
             {processAction === 'offboard' && (
               <div className="text-left space-y-1">
@@ -598,9 +642,13 @@ export default function AdminUsersTab({
                   confirmText !== userToProcess &&
                   confirmText !== `@${userToProcess}`
                 }
-                className="flex-1 py-2.5 rounded-xl text-xs font-black bg-red-600 hover:bg-red-700 text-white shadow-md disabled:opacity-40 cursor-pointer"
+                className={`flex-1 py-2.5 rounded-xl text-xs font-black text-white shadow-md disabled:opacity-40 cursor-pointer ${
+                  processAction === 'restore'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
               >
-                {tMsg('Confirm', 'Konfirmasi')}
+                {processAction === 'restore' ? tMsg('Restore Account', 'Pulihkan Akun') : tMsg('Confirm', 'Konfirmasi')}
               </button>
             </div>
           </div>
