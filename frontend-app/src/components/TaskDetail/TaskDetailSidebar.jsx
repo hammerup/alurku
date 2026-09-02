@@ -1,5 +1,5 @@
-import React from 'react';
 import axios from 'axios';
+import { usePublicPolicies } from '../../hooks/usePublicPolicies';
 
 export default function TaskDetailSidebar({
   selectedTask,
@@ -23,6 +23,7 @@ export default function TaskDetailSidebar({
   setSelectedTask,
   showNotification,
 }) {
+  const { policies } = usePublicPolicies();
   return (
     <div className="flex flex-col gap-4 sm:gap-5 mb-6 mt-2">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
@@ -120,8 +121,8 @@ export default function TaskDetailSidebar({
                 const dl = new Date(selectedTask.deadline.replace(/-/g, '/'));
                 dl.setHours(0, 0, 0, 0);
                 const diffDays = Math.round((dl - today) / (1000 * 60 * 60 * 24));
-                let timeStr = '';
-                let timeClass = 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700';
+                let timeStr;
+                let timeClass;
                 if (diffDays < 0) {
                   timeStr = tMsg(`${Math.abs(diffDays)}d overdue`, `${Math.abs(diffDays)}h lewat`);
                   timeClass = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50';
@@ -179,7 +180,7 @@ export default function TaskDetailSidebar({
             <svg className="w-3 h-3 text-blue-600 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             {tMsg('Add to Calendar', 'Ke Kalender')}
           </button>
-          {!isPreviewMode && (
+          {!isPreviewMode && policies.enable_proactive_nudge && (
             <button
               type="button"
               onClick={() => setIsNudgeConfirmOpen(true)}
@@ -195,7 +196,7 @@ export default function TaskDetailSidebar({
               {tMsg('Smart Nudge', 'Pantauan Cerdas')}
             </button>
           )}
-          {isTaskAdmin && accountStatus !== 'suspended' && !isPreviewMode && (
+          {isTaskAdmin && accountStatus !== 'suspended' && !isPreviewMode && policies.enable_proactive_nudge && (
             <button
               type="button"
               onClick={(e) => {
@@ -218,10 +219,10 @@ export default function TaskDetailSidebar({
                     });
                 }
               }}
-              className={`text-[9px] font-bold px-4 py-2 rounded-lg border transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center gap-1.5 shadow-sm ${!!selectedTask.auto_nudge ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50' : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-900/30 dark:text-neutral-400 dark:border-neutral-800/50'}`}
+              className={`text-[9px] font-bold px-4 py-2 rounded-lg border transition-all hover:-translate-y-0.5 hover:shadow-md flex items-center gap-1.5 shadow-sm ${selectedTask.auto_nudge ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50' : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:bg-neutral-100 dark:bg-neutral-900/30 dark:text-neutral-400 dark:border-neutral-800/50'}`}
             >
               <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-              {!!selectedTask.auto_nudge ? tMsg('Auto Nudge: ON', 'Auto Nudge: AKTIF') : tMsg('Auto Nudge: OFF', 'Auto Nudge: MATI')}
+              {selectedTask.auto_nudge ? tMsg('Auto Nudge: ON', 'Auto Nudge: AKTIF') : tMsg('Auto Nudge: OFF', 'Auto Nudge: MATI')}
             </button>
           )}
         </div>

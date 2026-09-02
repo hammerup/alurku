@@ -8,6 +8,7 @@ import SmartAssistantPlanner from './components/SmartAssistant/SmartAssistantPla
 import SmartAssistantChat from './components/SmartAssistant/SmartAssistantChat';
 import { useAppContext } from './hooks/useAppContext';
 import { getLurukaSystemPrompt, LURUKA_THINKING_PHRASES } from './utils/lurukaPersona';
+import { usePublicPolicies } from './hooks/usePublicPolicies';
 
 export default function SmartAssistant({
   currentUser,
@@ -44,6 +45,7 @@ export default function SmartAssistant({
   chatBg,
 }) {
   const { activeWorkspace } = useAppContext ? (useAppContext() || {}) : {};
+  const { policies } = usePublicPolicies();
   const [messages, setMessages] = useState([]);
   const [assistantMode, setAssistantMode] = useState('landing'); // 'landing', 'chat', 'quick_todo', 'planner'
   const [quickTasks, setQuickTasks] = useState([]);
@@ -3184,17 +3186,21 @@ JSON SCHEMA:
     "category": "Identify the best category (e.g. Development, Design, Marketing).",
     "impact": "High, Medium, or Low",
     "deadline": "YYYY-MM-DD. ONLY provide a deadline if the user explicitly mentions a time or date frame. Otherwise, return an empty string ''. Must be >= ${getLocalToday()}.",
-    "auto_nudge": "Boolean. Return true ONLY if the user explicitly asks to be reminded or notified about this task. Otherwise false.",
+    "auto_nudge": ${policies.enable_proactive_nudge ? '"Boolean. Return true ONLY if the user explicitly asks to be reminded or notified about this task. Otherwise false."' : '"Always false."'},
     "etc": "Estimate the REALISTIC time consumption in hours (e.g. 2.5). Base this heavily on the complexity of the task.",
     "description": "Highly detailed and comprehensive brief expanding on the user's request.",
-    "subtasks": ["Break down the task into 3-5 actionable sub-tasks as an array of strings."]
+    "subtasks": ${policies.enable_auto_subtasks ? '["Break down the task into 3-5 actionable sub-tasks as an array of strings."]' : '[]'}
   }
 ]
 
 USER REQUEST:
 """${plannerPrompt}"""`;
 
-      const resAi = await axios.post('/api/ai/generate', { prompt: aiPrompt, provider: selectedModel });
+      const resAi = await axios.post('/api/ai/generate', {
+        prompt: aiPrompt,
+        prompt_type: policies.enable_auto_subtasks ? 'subtask' : 'general',
+        provider: selectedModel
+      });
       let jsonStr = resAi.data.text
         .trim()
         .replace(/```json/gi, '')
@@ -3234,7 +3240,8 @@ USER REQUEST:
           id: Math.random().toString(),
           deadline: t.deadline && t.deadline !== '' ? t.deadline : '',
           impact: t.impact || 'Medium',
-          auto_nudge: t.auto_nudge === true || t.auto_nudge === 'true',
+          auto_nudge: policies.enable_proactive_nudge ? (t.auto_nudge === true || t.auto_nudge === 'true') : false,
+          subtasks: policies.enable_auto_subtasks && Array.isArray(t.subtasks) ? t.subtasks : [],
           target_board_id: matchedBoardId,
           selected: true,
         };

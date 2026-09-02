@@ -401,6 +401,7 @@ def get_public_policies(db: Session = Depends(get_db)):
         "org_name": p.get("org_name", "alurku."),
         "default_language": p.get("default_language", "id"),
         "allow_public_signup": p.get("allow_public_signup", True),
+        "allowed_domains": p.get("allowed_domains", ""),
         "default_ai_engine": p.get("default_ai_engine", "auto"),
         "enable_proactive_nudge": p.get("enable_proactive_nudge", True),
         "enable_auto_subtasks": p.get("enable_auto_subtasks", True),

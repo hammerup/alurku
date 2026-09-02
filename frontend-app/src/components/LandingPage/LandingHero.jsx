@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { usePublicPolicies } from '../../hooks/usePublicPolicies';
 
 export default function LandingHero({ setIsLoginMode, setShowAuthForm, language }) {
   const isId = language === 'id';
@@ -21,14 +22,41 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const { policies, allowedDomainList, isEmailDomainAllowed } = usePublicPolicies();
+
   const handleStart = () => {
-    setIsLoginMode(false);
+    setIsLoginMode(!policies.allow_public_signup);
     setShowAuthForm(true);
   };
 
   const handleQuickSignup = (e) => {
     e.preventDefault();
     if (!email.trim()) return;
+
+    if (!policies.allow_public_signup) {
+      window.dispatchEvent(new CustomEvent('show-notification', { 
+        detail: { 
+          message: isId 
+            ? 'Pendaftaran mandiri saat ini dinonaktifkan oleh administrator.' 
+            : 'Self-registration is currently disabled by the administrator.', 
+          type: 'warning' 
+        } 
+      }));
+      return;
+    }
+
+    if (!isEmailDomainAllowed(email.trim())) {
+      window.dispatchEvent(new CustomEvent('show-notification', { 
+        detail: { 
+          message: isId 
+            ? `Domain email tidak diizinkan. Hanya @${allowedDomainList.join(', @')}` 
+            : `Email domain is not permitted. Only @${allowedDomainList.join(', @')}`, 
+          type: 'error' 
+        } 
+      }));
+      return;
+    }
+
     setIsLoading(true);
 
     axios.post('/api/quick-register', { email: email.trim(), origin: window.location.origin })
@@ -122,6 +150,11 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   </button>
                 </div>
               </form>
+              {allowedDomainList.length > 0 && (
+                <p className="text-xs text-amber-300 font-semibold pl-0 lg:pl-4 text-center lg:text-left">
+                  {isId ? 'Domain yang diizinkan:' : 'Allowed domains:'} @{allowedDomainList.join(', @')}
+                </p>
+              )}
               <p className="text-xs text-neutral-400 font-medium pl-0 lg:pl-4 text-center lg:text-left">
                 ℹ️ {isId 
                   ? 'Pendaftaran akan otomatis membuat akun pengujian di Sandbox Private Beta kami.' 
@@ -132,16 +165,20 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <button
                 onClick={handleStart}
-                className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors text-center text-sm lg:text-base shadow-[0_4px_14px_rgba(250,204,21,0.4)]"
+                className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-[#111E38] bg-[#FACC15] hover:bg-[#EAB308] transition-colors text-center text-sm lg:text-base shadow-[0_4px_14px_rgba(250,204,21,0.4)] cursor-pointer"
               >
-                {isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.'}
+                {policies.allow_public_signup 
+                  ? (isId ? 'Mulai Rapikan alurku.' : 'Start tidying up alurku.')
+                  : (isId ? 'Masuk ke alurku.' : 'Sign in to alurku.')}
               </button>
-              <button
-                onClick={() => setShowEmailInput(true)}
-                className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-white border-2 border-white/20 hover:border-white hover:bg-white/10 transition-colors text-center text-sm lg:text-base backdrop-blur-sm"
-              >
-                {isId ? 'Daftar Akses Awal (Beta)' : 'Register Early Access (Beta)'}
-              </button>
+              {policies.allow_public_signup && (
+                <button
+                  onClick={() => setShowEmailInput(true)}
+                  className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-white border-2 border-white/20 hover:border-white hover:bg-white/10 transition-colors text-center text-sm lg:text-base backdrop-blur-sm cursor-pointer"
+                >
+                  {isId ? 'Daftar Akses Awal (Beta)' : 'Register Early Access (Beta)'}
+                </button>
+              )}
             </div>
           )}
         </motion.div>

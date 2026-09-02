@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { IconPlus } from './SharedUI';
 import { useCloseAnimation, LoadingSpinner } from './Utils';
+import { usePublicPolicies } from './hooks/usePublicPolicies';
 
 export default function TaskFormModal({
   setIsFormOpen,
@@ -16,8 +17,6 @@ export default function TaskFormModal({
   insertMention,
   categories,
   handleOpenAddBoard,
-  handleOpenRenameBoard,
-  handleOpenDeleteBoard,
   formSubtaskInput,
   setFormSubtaskInput,
   handleAddFormSubtask,
@@ -39,6 +38,8 @@ export default function TaskFormModal({
   const [isClosing, close] = useCloseAnimation(() => setIsFormOpen(false));
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
+  const { policies } = usePublicPolicies();
+
   const [formMode, setFormMode] = useState('ai'); // 'ai' atau 'manual'
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGeneratingTask, setIsGeneratingTask] = useState(false);
@@ -58,6 +59,7 @@ export default function TaskFormModal({
       const res = await axios.post('/api/ai/generate', { prompt });
       setFormData({ ...formData, description: res.data.text });
     } catch (err) {
+      console.error(err);
       alert(language === 'id' ? 'Gagal membuat deskripsi dengan AI.' : 'Failed to generate description with AI.');
     } finally {
       setIsGeneratingDesc(false);
@@ -70,12 +72,19 @@ export default function TaskFormModal({
     setIsGeneratingTask(true);
 
     const todayStr = new Date().toISOString().split('T')[0];
+    const subtaskInstruction = policies.enable_auto_subtasks
+      ? '3. Break down the task into 3-5 actionable "subtasks".'
+      : '3. Do NOT generate subtasks. Return an empty array [] for "subtasks".';
+    const subtaskFormat = policies.enable_auto_subtasks
+      ? '["Step 1", "Step 2", "Step 3"]'
+      : '[]';
+
     const promptStr = `You are a helpful project manager AI. Today is ${todayStr}.
 The user currently logged in is "@${currentUser}".
 The user wants to create a new task: "${aiPrompt}".
 1. Extract the details into a JSON object.
 2. "project_name" MUST ALWAYS be in English. "description" MUST be in the SAME LANGUAGE the user used (e.g., if the prompt is in Indonesian, write the description and notes in Indonesian).
-3. Break down the task into 3-5 actionable "subtasks".
+${subtaskInstruction}
 4. Determine the "requester" field. If the task is ASSIGNED TO someone, use an '@' prefix (e.g., "@budi"). If someone else REQUESTED the task for you to do, write their name WITHOUT the '@' prefix (e.g., "Robert"). If the user implies the task is for themselves to do, use "@${currentUser}".
 5. Find the closest "category" from: [${categories.join(
       ', '
@@ -97,11 +106,15 @@ Format:
   "impact": "High/Medium/Low",
   "etc": Estimated time in hours as a number (e.g. 2.5),
   "recurring": "none/daily/weekly/monthly",
-  "subtasks": ["Step 1", "Step 2", "Step 3"]
+  "subtasks": ${subtaskFormat}
 }`;
 
     try {
-      const res = await axios.post('/api/ai/generate', { prompt: promptStr, provider: 'auto' });
+      const res = await axios.post('/api/ai/generate', {
+        prompt: promptStr,
+        prompt_type: policies.enable_auto_subtasks ? 'subtask' : 'general',
+        provider: 'auto'
+      });
       let jsonStr = res.data.text
         .trim()
         .replace(/```json/gi, '')
@@ -128,8 +141,10 @@ Format:
         recurring: parsed.recurring || 'none',
       });
 
-      if (parsed.subtasks && Array.isArray(parsed.subtasks) && setFormSubtasks) {
+      if (policies.enable_auto_subtasks && parsed.subtasks && Array.isArray(parsed.subtasks) && setFormSubtasks) {
         setFormSubtasks(parsed.subtasks.map((name) => ({ task_name: name, assignee: null })));
+      } else if (!policies.enable_auto_subtasks && setFormSubtasks) {
+        setFormSubtasks([]);
       }
     } catch (err) {
       console.error(err);
@@ -559,6 +574,22 @@ Format:
                     </div>
                   </div>
                 </div>
+
+                {policies.enable_proactive_nudge && (
+                  <div className="flex items-center gap-2.5 px-4 py-2.5 bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                    <input
+                      type="checkbox"
+                      id="modal-auto-nudge"
+                      checked={!!formData.auto_nudge}
+                      onChange={(e) => setFormData({ ...formData, auto_nudge: e.target.checked })}
+                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 cursor-pointer"
+                    />
+                    <label htmlFor="modal-auto-nudge" className="text-xs font-bold text-neutral-800 dark:text-neutral-200 cursor-pointer flex items-center gap-1.5 select-none">
+                      <span className="material-symbols-outlined text-[16px] text-amber-500">notifications_active</span>
+                      <span>{tMsg('Enable AI Proactive Nudge for this task', 'Aktifkan Pengingat AI Otomatis untuk tugas ini')}</span>
+                    </label>
+                  </div>
+                )}
 
                 <div className="group pt-2">
                   <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
