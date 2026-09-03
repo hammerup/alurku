@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks, Request as FastAPIRequest
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func, text
 import re
@@ -932,6 +932,7 @@ def accept_access_request(board_id: int, member_id: int, current_user: str = Dep
 def invite_board_member(
     board_id: int,
     payload: InviteModel,
+    request: FastAPIRequest = None,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -992,6 +993,7 @@ def invite_board_member(
             if "@" in identifier and "." in identifier:
                 try:
                     from services.email_service import send_email_async
+                    signup_link = get_frontend_url(request, f"/daftar?email={identifier}")
                     subject = f"Undangan Bergabung ke Project '{board.name}' di alurku."
                     html_content = f"""
                     <div style="font-family: Arial, sans-serif; padding: 20px; color: #111E38;">
@@ -1000,7 +1002,7 @@ def invite_board_member(
                         <p><strong>@{current_user}</strong> mengundang Anda untuk bergabung dan berkolaborasi di project <strong>"{board.name}"</strong> pada aplikasi alurku.</p>
                         <p>Silakan mendaftar akun alurku. untuk langsung mengakses project Anda:</p>
                         <p style="margin-top: 20px;">
-                            <a href="http://localhost:5173/daftar?email={identifier}" style="background-color: #FACC15; color: #111E38; padding: 12px 24px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">Daftar Akun alurku.</a>
+                            <a href="{signup_link}" style="background-color: #FACC15; color: #111E38; padding: 12px 24px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">Daftar Akun alurku.</a>
                         </p>
                         <br/>
                         <p style="font-size: 12px; color: #666;">alurku. - Master your time, smooth your flow.</p>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request as FastAPIRequest
 from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import List, Optional
@@ -145,6 +145,7 @@ def create_workspace(
 def invite_to_workspace(
     workspace_id: int,
     payload: WorkspaceInviteModel,
+    request: FastAPIRequest = None,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -158,7 +159,7 @@ def invite_to_workspace(
         raise HTTPException(status_code=404, detail="Workspace not found")
 
     # 2. Verify current user is owner, admin of this workspace, or system administrator
-    from utils import is_user_superadmin, create_notification, log_and_broadcast_activity
+    from utils import is_user_superadmin, create_notification, log_and_broadcast_activity, get_frontend_url
     is_sa = is_user_superadmin(db, current_user)
     is_owner = (workspace.owner_username == current_user)
     admin_check = db.query(WorkspaceMember).filter(
@@ -189,6 +190,7 @@ def invite_to_workspace(
         if "@" in raw_target and "." in raw_target:
             try:
                 from services.email_service import send_email_async
+                signup_link = get_frontend_url(request, f"/daftar?email={raw_target}")
                 subject = f"[alurku.] Undangan Bergabung ke Ruang Kerja '{ws_name}'"
                 html_content = f"""
                 <div style="font-family: Arial, sans-serif; padding: 20px; color: #111E38; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -197,7 +199,7 @@ def invite_to_workspace(
                     <p><strong>@{current_user}</strong> mengundang Anda untuk bergabung dan berkolaborasi di Ruang Kerja (Workspace) <strong>"{ws_name}"</strong> sebagai <strong>{payload.role}</strong> pada aplikasi <strong>alurku.</strong>.</p>
                     <p>Silakan mendaftar akun alurku. untuk langsung mulai berkolaborasi:</p>
                     <p style="margin-top: 25px; text-align: center;">
-                        <a href="https://alurku.app/daftar?email={raw_target}" style="background-color: #FACC15; color: #111E38; padding: 12px 28px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">Daftar Akun alurku.</a>
+                        <a href="{signup_link}" style="background-color: #FACC15; color: #111E38; padding: 12px 28px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">Daftar Akun alurku.</a>
                     </p>
                     <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-top: 30px; margin-bottom: 15px;" />
                     <p style="font-size: 12px; color: #64748b; text-align: center;">alurku. - Kuasai Waktumu, Lancarkan Alurmu.</p>
@@ -262,6 +264,7 @@ def invite_to_workspace(
         try:
             from services.email_service import send_email_async
             subject = f"[alurku.] Undangan Bergabung ke Ruang Kerja '{ws_name}'"
+            login_link = get_frontend_url(request, "/masuk")
             html_content = f"""
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e8ed; border-radius: 8px;">
                 <h2 style="color: #111E38;">Halo @{target_user.username},</h2>
@@ -272,7 +275,7 @@ def invite_to_workspace(
                     Silakan masuk ke akun Anda untuk mulai melihat proyek dan berkolaborasi dengan tim.
                 </p>
                 <div style="margin-top: 30px; text-align: center;">
-                    <a href="https://alurku.app/masuk" style="background-color: #FACC15; color: #111E38; padding: 12px 24px; text-decoration: none; border-radius: 20px; font-weight: bold; font-size: 14px; display: inline-block;">Masuk ke alurku.</a>
+                    <a href="{login_link}" style="background-color: #FACC15; color: #111E38; padding: 12px 24px; text-decoration: none; border-radius: 20px; font-weight: bold; font-size: 14px; display: inline-block;">Masuk ke alurku.</a>
                 </div>
                 <hr style="border: 0; border-top: 1px solid #eeeeee; margin-top: 35px; margin-bottom: 20px;" />
                 <p style="font-size: 12px; color: #777777; text-align: center;">

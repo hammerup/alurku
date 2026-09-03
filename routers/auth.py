@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request as FastAPIRequest
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import re
@@ -15,15 +15,15 @@ import random
 import string
 from services.email_service import send_email
 
-# Import evaluate_user_lifecycle from backend_api to resolve NameError
+# Import evaluate_user_lifecycle and get_frontend_url from utils
 from utils import *
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://alurku.app")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 router = APIRouter()
 
 @router.post("/api/register")
-def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def register(user_data: RegisterModel, background_tasks: BackgroundTasks, request: FastAPIRequest = None, db: Session = Depends(get_db)):
     # ── System Policy Enforcement ─────────────────────────────────────────────
     policies = get_system_policies(db)
 
@@ -114,7 +114,7 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Se
     verify_token = create_access_token(
         data={"sub": new_user.username, "type": "verify"}
     )
-    verify_link = f"{FRONTEND_URL}/?verify={verify_token}"
+    verify_link = get_frontend_url(request, f"/?verify={verify_token}")
 
     html_body = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
@@ -133,7 +133,7 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, db: Se
 
 
 @router.post("/api/quick-register")
-def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTasks, request: FastAPIRequest = None, db: Session = Depends(get_db)):
     # ── System Policy Enforcement ─────────────────────────────────────────────
     policies = get_system_policies(db)
 
@@ -217,7 +217,7 @@ def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTa
     reset_token = create_access_token(
         data={"sub": new_user.username, "type": "reset"}
     )
-    frontend_url = user_data.origin if user_data.origin else FRONTEND_URL
+    frontend_url = user_data.origin if user_data.origin else get_frontend_url(request)
     reset_link = f"{frontend_url}/?token={reset_token}"
 
     html_body = f"""
@@ -363,9 +363,9 @@ def google_login(payload: GoogleLoginModel, db: Session = Depends(get_db)):
 
 
 @router.post("/api/forgot-password")
-def forgot_password(payload: dict, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def forgot_password(payload: dict, background_tasks: BackgroundTasks, request: FastAPIRequest = None, db: Session = Depends(get_db)):
     email = payload.get("email")
-    origin = payload.get("origin", FRONTEND_URL)
+    origin = payload.get("origin") or get_frontend_url(request)
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
 

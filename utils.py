@@ -16,6 +16,47 @@ from typing import List, Optional
 from fastapi import BackgroundTasks
 from services.email_service import send_email_async, send_email
 
+def get_frontend_url(request=None, path: str = "") -> str:
+    """
+    Mengambil URL dasar (base URL) frontend secara dinamis:
+    1. Membaca header 'Origin' dari HTTP Request browser jika tersedia.
+    2. Jika 'Origin' tidak ada, mencoba membaca 'Referer' (skema + host:port).
+    3. Jika request tidak ada (misal background task/cron), membaca environment variable 'FRONTEND_URL'.
+    4. Fallback aman ke 'http://localhost:5173' untuk kenyamanan pengembangan lokal.
+    
+    Argumen:
+        request: FastAPI Request instance (opsional)
+        path: Path tambahan (misal '/masuk' atau '/daftar?email=...')
+    """
+    base_url = None
+    if request:
+        try:
+            origin = request.headers.get("origin")
+            if origin and origin.strip():
+                base_url = origin.strip().rstrip("/")
+            else:
+                referer = request.headers.get("referer")
+                if referer and referer.strip():
+                    from urllib.parse import urlparse
+                    parsed = urlparse(referer.strip())
+                    if parsed.scheme and parsed.netloc:
+                        base_url = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+        except Exception:
+            pass
+
+    if not base_url:
+        env_url = os.getenv("FRONTEND_URL", "").strip()
+        if env_url:
+            base_url = env_url.rstrip("/")
+        else:
+            base_url = "http://localhost:5173"
+
+    if path:
+        clean_path = "/" + path.lstrip("/") if not path.startswith("/") else path
+        return f"{base_url}{clean_path}"
+
+    return base_url
+
 def format_dt(dt_val):
     if isinstance(dt_val, datetime):
         return dt_val.strftime("%Y-%m-%d %H:%M:%S")

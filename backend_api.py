@@ -107,19 +107,23 @@ load_dotenv()
 
 
 
-# Ambil URL frontend dari .env (jika ada), supaya bisa connect dari Vercel
-FRONTEND_URL = os.getenv(
-    "FRONTEND_URL", "https://alurku.app"
-)  # Sesuaikan dengan URL Vercel Alurku Anda
+# Ambil URL frontend dari .env (jika ada), default ke http://localhost:5173 untuk development
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
-# Mengizinkan React/Vue (Frontend) mengakses API ini
+# Mengizinkan Frontend mengakses API ini dari localhost maupun domain produksi
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if FRONTEND_URL and FRONTEND_URL not in origins:
+    origins.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        FRONTEND_URL,
-    ],  # Batasi hanya dari domain Frontend yang sah
+    allow_origins=origins,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?|https://.*\.vercel\.app|https://.*\.alurku\..*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

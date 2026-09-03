@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks, Request as FastAPIRequest
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func, text
 import re
@@ -6,13 +6,13 @@ import json
 from datetime import datetime, timedelta
 import os
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage
+from database import get_db, User, Request as DBRequest, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage
 from schemas import *
 from dependencies import *
 from utils import *
 from services.email_service import send_email
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://alurku.app")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 router = APIRouter()
 
@@ -37,6 +37,7 @@ def get_profile(
 def update_profile(
     payload: ProfileUpdateModel,
     background_tasks: BackgroundTasks,
+    request: FastAPIRequest = None,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -96,7 +97,7 @@ def update_profile(
             verify_token = create_access_token(
                 data={"sub": user.username, "type": "verify"}
             )
-            verify_link = f"{FRONTEND_URL}/?verify={verify_token}"
+            verify_link = get_frontend_url(request, f"/?verify={verify_token}")
 
             html_body = f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
