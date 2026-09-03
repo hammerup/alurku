@@ -337,11 +337,27 @@ export default function AdminUsersTab({
                           </span>
                         )}
                       </td>
-                      <td className="p-3.5 text-neutral-400 text-[11px]">
-                        {u.deletion_date ? (
-                          <span className="text-red-500 font-bold">{u.deletion_date.split(' ')[0]}</span>
-                        ) : (
-                          '—'
+                      <td className="p-3.5 text-[11px]">
+                        {u.deletion_date ? (() => {
+                          const delDate = new Date(u.deletion_date.replace(/-/g, '/'));
+                          const now = new Date();
+                          const diffMs = delDate - now;
+                          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                          const isExpired = diffDays <= 0;
+                          return (
+                            <div className="flex flex-col">
+                              <span className={`font-bold ${isExpired ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                {u.deletion_date.split(' ')[0]}
+                              </span>
+                              <span className={`text-[10px] font-medium ${isExpired ? 'text-red-500 animate-pulse font-bold' : 'text-neutral-400'}`}>
+                                {isExpired 
+                                  ? tMsg('Expired (Ready to purge)', 'Kedaluwarsa (Siap Hapus)') 
+                                  : tMsg(`${diffDays} days remaining`, `Sisa ${diffDays} hari`)}
+                              </span>
+                            </div>
+                          );
+                        })() : (
+                          <span className="text-neutral-400">—</span>
                         )}
                       </td>
                       <td className="p-3.5 pr-4 text-right">
@@ -386,11 +402,11 @@ export default function AdminUsersTab({
                                 setUserToProcess(u.username);
                                 setProcessAction('restore');
                               }}
-                              className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
-                              title={tMsg('Cancel Deletion & Restore User', 'Batalkan Hapus & Pulihkan Akun')}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs border border-emerald-200/50 dark:border-emerald-800/40"
+                              title={tMsg('Cancel deletion countdown and restore user', 'Batalkan hitung mundur hapus & pulihkan akun')}
                             >
                               <span className="material-symbols-outlined text-[14px]">published_with_changes</span>
-                              <span>{tMsg('Restore', 'Pulihkan')}</span>
+                              <span>{tMsg('Cancel Delete', 'Batalkan Hapus')}</span>
                             </button>
                           )}
 

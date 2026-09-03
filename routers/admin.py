@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, text
+from sqlalchemy import or_, and_, func, text, select
 import re
 import json
 from datetime import datetime, timedelta
@@ -133,11 +133,12 @@ def update_user_status(
         # Gunakan soft_delete_grace_days dari org policy (default 90 hari)
         policies = get_system_policies(db)
         grace_days = max(7, min(int(policies.get("soft_delete_grace_days", 90)), 365))
-        user.deletion_date = (datetime.now() + timedelta(days=grace_days)).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        user.deletion_date = datetime.utcnow() + timedelta(days=grace_days)
     elif payload.status == "offboarding" and payload.offboard_date:
-        user.deletion_date = payload.offboard_date + " 23:59:59"
+        try:
+            user.deletion_date = datetime.strptime(payload.offboard_date + " 23:59:59", "%Y-%m-%d %H:%M:%S")
+        except:
+            user.deletion_date = datetime.utcnow() + timedelta(days=30)
     else:
         user.deletion_date = None
 
@@ -333,6 +334,21 @@ def get_admin_dashboard_stats(
     total_subtasks = db.query(func.count(Subtask.id)).scalar() or 0
     total_comments = db.query(func.count(Comment.id)).scalar() or 0
 
+    task_ids_select = select(Request.id)
+    orphan_subtasks = db.query(func.count(Subtask.id)).filter(~Subtask.request_id.in_(task_ids_select)).scalar() or 0
+    orphan_comments = db.query(func.count(Comment.id)).filter(~Comment.request_id.in_(task_ids_select)).scalar() or 0
+
+    now_utc = datetime.utcnow()
+    expired_users_count = db.query(func.count(User.username)).filter(
+        User.account_status.in_(["pending_deletion", "offboarding"]),
+        User.deletion_date != None,
+        User.deletion_date <= now_utc,
+        User.username != "admin"
+    ).scalar() or 0
+
+    policies = get_system_policies(db)
+    grace_days = int(policies.get("soft_delete_grace_days", 90))
+
     return {
         "users": {
             "total": total_users,
@@ -340,6 +356,7 @@ def get_admin_dashboard_stats(
             "superadmins": superadmins,
             "frozen": frozen_users,
             "pending_deletions": pending_deletions,
+            "expired_accounts": expired_users_count,
         },
         "projects": {
             "total": total_boards,
@@ -351,6 +368,8 @@ def get_admin_dashboard_stats(
             "completed": completed_tasks,
             "subtasks": total_subtasks,
             "comments": total_comments,
+            "orphan_subtasks": orphan_subtasks,
+            "orphan_comments": orphan_comments,
         },
         "system_health": {
             "database_online": True,
@@ -362,6 +381,10 @@ def get_admin_dashboard_stats(
             "server_time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
             "server_time_iso": datetime.utcnow().isoformat() + "Z",
             "server_timezone": "UTC",
+            "soft_delete_grace_days": grace_days,
+            "orphan_subtasks": orphan_subtasks,
+            "orphan_comments": orphan_comments,
+            "expired_accounts": expired_users_count,
         }
     }
 
@@ -434,11 +457,11 @@ def purge_expired_accounts(
     if not is_user_superadmin(db, current_user):
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now_utc = datetime.utcnow()
     expired_users = db.query(User).filter(
         User.account_status.in_(["pending_deletion", "offboarding"]),
         User.deletion_date != None,
-        User.deletion_date <= now_str,
+        User.deletion_date <= now_utc,
         User.username != "admin"
     ).all()
 
