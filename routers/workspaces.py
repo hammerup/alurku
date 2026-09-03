@@ -149,55 +149,124 @@ def invite_to_workspace(
     db: Session = Depends(get_db)
 ):
     """
-    Mengundang pengguna lain ke workspace. Hanya Admin workspace yang dapat mengundang.
+    Mengundang pengguna lain ke workspace. Hanya Admin workspace, Owner, atau System Admin yang dapat mengundang.
+    Mendukung undangan anggota terdaftar maupun rekan baru via email.
     """
-    # Verify current user is admin of this workspace or system administrator
-    from utils import is_user_superadmin
+    # 1. Verify workspace exists
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    # 2. Verify current user is owner, admin of this workspace, or system administrator
+    from utils import is_user_superadmin, create_notification, log_and_broadcast_activity
     is_sa = is_user_superadmin(db, current_user)
+    is_owner = (workspace.owner_username == current_user)
     admin_check = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == workspace_id,
         WorkspaceMember.username == current_user,
         WorkspaceMember.role == "admin"
     ).first()
-    if not admin_check and not is_sa:
-        raise HTTPException(status_code=403, detail="Only workspace admins or system administrators can invite new members")
-        
-    # Find target user by username or email
+    if not is_owner and not admin_check and not is_sa:
+        raise HTTPException(status_code=403, detail="Hanya Admin Workspace, Pemilik, atau System Administrator yang dapat mengundang anggota baru.")
+
+    raw_target = payload.username_or_email.strip()
+    if not raw_target:
+        raise HTTPException(status_code=400, detail="Mohon masukkan username atau alamat email.")
+
+    # 3. Prevent self-invite
+    if raw_target.lower() == current_user.lower():
+        raise HTTPException(status_code=400, detail="Tidak dapat mengundang diri sendiri ke ruang kerja.")
+
+    # 4. Find target user by username or email
     target_user = db.query(User).filter(
-        (User.username == payload.username_or_email) | (User.email == payload.username_or_email)
+        (User.username.ilike(raw_target)) | (User.email.ilike(raw_target))
     ).first()
+
+    ws_name = workspace.name
+
+    # 5. Handle unregistered user invite via email
     if not target_user:
-        raise HTTPException(status_code=444, detail="User not found")
-        
-    # Check if already a member
+        if "@" in raw_target and "." in raw_target:
+            try:
+                from services.email_service import send_email_async
+                subject = f"[alurku.] Undangan Bergabung ke Ruang Kerja '{ws_name}'"
+                html_content = f"""
+                <div style="font-family: Arial, sans-serif; padding: 20px; color: #111E38; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h2 style="color: #111E38; font-weight: 800;">Undangan Ruang Kerja alurku.</h2>
+                    <p>Halo,</p>
+                    <p><strong>@{current_user}</strong> mengundang Anda untuk bergabung dan berkolaborasi di Ruang Kerja (Workspace) <strong>"{ws_name}"</strong> sebagai <strong>{payload.role}</strong> pada aplikasi <strong>alurku.</strong>.</p>
+                    <p>Silakan mendaftar akun alurku. untuk langsung mulai berkolaborasi:</p>
+                    <p style="margin-top: 25px; text-align: center;">
+                        <a href="https://alurku.app/daftar?email={raw_target}" style="background-color: #FACC15; color: #111E38; padding: 12px 28px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">Daftar Akun alurku.</a>
+                    </p>
+                    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-top: 30px; margin-bottom: 15px;" />
+                    <p style="font-size: 12px; color: #64748b; text-align: center;">alurku. - Kuasai Waktumu, Lancarkan Alurmu.</p>
+                </div>
+                """
+                send_email_async(raw_target, subject, html_content)
+                return {
+                    "message": f"Undangan telah dikirimkan ke email {raw_target}. Rekan Anda dapat mendaftar untuk bergabung.",
+                    "status": "invited_unregistered"
+                }
+            except Exception as ex:
+                print(f"Error triggering workspace invite email: {ex}")
+        raise HTTPException(status_code=404, detail="Pengguna tidak ditemukan. Pastikan username atau email yang dimasukkan benar.")
+
+    # 6. Check if target user is self
+    if target_user.username.lower() == current_user.lower():
+        raise HTTPException(status_code=400, detail="Tidak dapat mengundang diri sendiri ke ruang kerja.")
+
+    # 7. Check if already a member
     existing = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == workspace_id,
         WorkspaceMember.username == target_user.username
     ).first()
     if existing:
         raise HTTPException(status_code=400, detail="User is already a member of this workspace")
-        
+
+    role_to_assign = payload.role if payload.role in ["admin", "member", "viewer"] else "member"
     new_member = WorkspaceMember(
         workspace_id=workspace_id,
         username=target_user.username,
-        role=payload.role if payload.role in ["admin", "member", "viewer"] else "member"
+        role=role_to_assign
     )
     db.add(new_member)
     db.commit()
-    
-    # Send email notification asynchronously
+
+    # 8. Send in-app notification
+    try:
+        create_notification(
+            db,
+            target_user.username,
+            f"@{current_user} menambahkan Anda ke ruang kerja '{ws_name}' sebagai {role_to_assign}.",
+            "team_invite"
+        )
+    except Exception:
+        pass
+
+    # 9. Log and broadcast activity feed
+    try:
+        log_and_broadcast_activity(
+            db,
+            workspace_id,
+            current_user,
+            "workspace_member_invited",
+            target_user.username,
+            {"invited_user": target_user.username, "role": role_to_assign}
+        )
+    except Exception:
+        pass
+
+    # 10. Send email notification asynchronously to registered user
     if target_user.email:
         try:
             from services.email_service import send_email_async
-            workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
-            ws_name = workspace.name if workspace else "Workspace"
-            
             subject = f"[alurku.] Undangan Bergabung ke Ruang Kerja '{ws_name}'"
             html_content = f"""
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e8ed; border-radius: 8px;">
                 <h2 style="color: #111E38;">Halo @{target_user.username},</h2>
                 <p style="font-size: 16px; color: #333333; line-height: 1.6;">
-                    Anda telah diundang oleh <strong>@{current_user}</strong> untuk bergabung dan berkolaborasi di dalam Ruang Kerja (Workspace) <strong>{ws_name}</strong> pada aplikasi <strong>alurku.</strong>.
+                    Anda telah diundang oleh <strong>@{current_user}</strong> untuk bergabung dan berkolaborasi di dalam Ruang Kerja (Workspace) <strong>{ws_name}</strong> sebagai <strong>{role_to_assign}</strong> pada aplikasi <strong>alurku.</strong>.
                 </p>
                 <p style="font-size: 16px; color: #333333; line-height: 1.6;">
                     Silakan masuk ke akun Anda untuk mulai melihat proyek dan berkolaborasi dengan tim.
@@ -214,7 +283,7 @@ def invite_to_workspace(
             send_email_async(target_user.email, subject, html_content)
         except Exception as ex:
             print(f"Error triggering workspace invite email: {ex}")
-            
+
     return {
         "message": f"Successfully invited @{target_user.username} to the workspace"
     }
@@ -308,15 +377,19 @@ def update_workspace_member_role(
     if payload.role not in ["admin", "member", "viewer"]:
         raise HTTPException(status_code=400, detail="Invalid role. Must be 'admin', 'member', or 'viewer'.")
         
-    # Verify current user is admin or system administrator
+    # Verify current user is owner, admin, or system administrator
     from utils import is_user_superadmin
     is_sa = is_user_superadmin(db, current_user)
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    is_owner = (workspace.owner_username == current_user)
     admin_check = db.query(WorkspaceMember).filter(
         WorkspaceMember.workspace_id == workspace_id,
         WorkspaceMember.username == current_user,
         WorkspaceMember.role == "admin"
     ).first()
-    if not admin_check and not is_sa:
+    if not is_owner and not admin_check and not is_sa:
         raise HTTPException(status_code=403, detail="Only workspace admins or system administrators can update member roles")
         
     # Find target membership
@@ -328,8 +401,7 @@ def update_workspace_member_role(
         raise HTTPException(status_code=404, detail="Member not found in this workspace")
         
     # Prevent changing workspace owner's role
-    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
-    if workspace and workspace.owner_username == username:
+    if workspace.owner_username == username:
         raise HTTPException(status_code=400, detail="Cannot change role of the workspace owner.")
         
     old_role = membership.role
@@ -373,11 +445,18 @@ def remove_workspace_member(
     if not membership:
         raise HTTPException(status_code=404, detail="Member not found in this workspace")
         
+    # 1. Verify workspace exists
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
     # Check authorization:
-    # 1. Admin of workspace deleting someone else
-    # 2. User deleting themselves (leaving the workspace)
-    # 3. System Administrator
+    # 1. Workspace owner
+    # 2. Admin of workspace deleting someone else
+    # 3. User deleting themselves (leaving the workspace)
+    # 4. System Administrator
     is_self = (current_user == username)
+    is_owner = (workspace.owner_username == current_user)
     from utils import is_user_superadmin
     is_sa = is_user_superadmin(db, current_user)
     
@@ -387,12 +466,11 @@ def remove_workspace_member(
         WorkspaceMember.role == "admin"
     ).first()
     
-    if not is_self and not admin_check and not is_sa:
+    if not is_self and not is_owner and not admin_check and not is_sa:
         raise HTTPException(status_code=403, detail="Only admins or system administrators can remove other members")
         
     # Prevent owner from leaving without transferring ownership
-    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
-    if workspace and workspace.owner_username == username:
+    if workspace.owner_username == username:
         raise HTTPException(
             status_code=400, 
             detail="Pemilik workspace tidak dapat keluar. Harap ubah kepemilikan workspace terlebih dahulu sebelum keluar."

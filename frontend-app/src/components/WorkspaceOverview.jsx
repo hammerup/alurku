@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Avatar } from '../SharedUI';
 import { useAppContext } from '../contexts/AppContext';
@@ -12,7 +12,6 @@ export default function WorkspaceOverview() {
     renameProject,
     setBoardToDelete,
     archiveBoard,
-    isSuperAdmin,
     boards,
     workspaceBoards,
     tasks,
@@ -20,14 +19,12 @@ export default function WorkspaceOverview() {
     avatarsMap,
     currentUser,
     language,
-    openTeamModal,
     setSelectedBoard,
     viewMode,
     setViewMode,
     setSelectedTask,
     showNotification,
     userDirectory,
-    workspaces,
     switchWorkspace,
     fetchWorkspaces,
     setIsCreateBoardOpen,
@@ -116,6 +113,32 @@ export default function WorkspaceOverview() {
         </p>
       );
     }
+    if (action === 'workspace_member_invited') {
+      const invitedUser = extra_data?.invited_user || target_title;
+      const role = extra_data?.role || 'member';
+      return (
+        <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+          <span className="font-extrabold">{displayName}</span> {isIndo ? 'mengundang' : 'invited'} <span className="font-bold text-sky-600 dark:text-[#FACC15]">@{invitedUser}</span> {isIndo ? `sebagai ${role}` : `as ${role}`}
+        </p>
+      );
+    }
+    if (action === 'workspace_member_role_updated') {
+      const updatedUser = extra_data?.updated_user || target_title;
+      const newRole = extra_data?.new_role || 'member';
+      return (
+        <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+          <span className="font-extrabold">{displayName}</span> {isIndo ? 'mengubah peran' : 'updated role of'} <span className="font-bold text-sky-600 dark:text-[#FACC15]">@{updatedUser}</span> {isIndo ? `menjadi ${newRole}` : `to ${newRole}`}
+        </p>
+      );
+    }
+    if (action === 'workspace_member_removed' || action === 'workspace_left') {
+      const removedUser = extra_data?.removed_user || target_title;
+      return (
+        <p className="text-sm text-[#111E38] dark:text-white leading-snug">
+          <span className="font-extrabold">{displayName}</span> {action === 'workspace_left' ? (isIndo ? 'keluar dari ruang kerja' : 'left the workspace') : (isIndo ? `mengeluarkan @${removedUser}` : `removed @${removedUser}`)}
+        </p>
+      );
+    }
     
     return (
       <p className="text-sm text-[#111E38] dark:text-white leading-snug">
@@ -148,7 +171,7 @@ export default function WorkspaceOverview() {
       if (diffMin < 60) return isIndo ? `${diffMin} menit yang lalu` : `${diffMin}m ago`;
       if (diffHr < 24) return isIndo ? `${diffHr} jam yang lalu` : `${diffHr}h ago`;
       return isIndo ? `${diffDays} hari yang lalu` : `${diffDays}d ago`;
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };
@@ -216,6 +239,7 @@ export default function WorkspaceOverview() {
       })
       .then((res) => {
         showNotification(
+          res.data?.message ||
           tMsg(
             `Successfully invited @${inviteInput.trim()}`,
             `Berhasil mengundang @${inviteInput.trim()}`
@@ -243,6 +267,7 @@ export default function WorkspaceOverview() {
       .put(`/api/workspaces/${activeWorkspace.id}/members/${username}`, { role: newRole })
       .then((res) => {
         showNotification(
+          res.data?.message ||
           tMsg(`Successfully updated role for @${username} to ${newRole}`, `Berhasil mengubah peran @${username} menjadi ${newRole}`),
           "success"
         );
@@ -271,6 +296,7 @@ export default function WorkspaceOverview() {
           .delete(`/api/workspaces/${activeWorkspace.id}/members/${username}`)
           .then((res) => {
             showNotification(
+              res.data?.message ||
               tMsg(`Successfully removed @${username}`, `Berhasil mengeluarkan @${username}`),
               "success"
             );
@@ -300,6 +326,7 @@ export default function WorkspaceOverview() {
           .delete(`/api/workspaces/${activeWorkspace.id}/members/${currentUser}`)
           .then(async (res) => {
             showNotification(
+              res.data?.message ||
               tMsg("You have left the workspace successfully.", "Anda berhasil keluar dari ruang kerja."),
               "success"
             );
