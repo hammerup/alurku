@@ -28,6 +28,15 @@ def test_workspace_lifecycle_and_tenant_isolation():
         "password": "SecretPassword123!"
     }
 
+    from database import SessionLocal, User, set_security_log, get_security_log
+    db = SessionLocal()
+    existing_p = get_security_log(db, "system_policies", {})
+    if not isinstance(existing_p, dict):
+        existing_p = {}
+    set_security_log(db, "system_policies", {**existing_p, "allow_public_signup": True, "allowed_domains": ""})
+    db.commit()
+    db.close()
+
     # 1. Register User A and User B
     resp_reg_a = client.post("/api/register", json=user_a)
     assert resp_reg_a.status_code == 200

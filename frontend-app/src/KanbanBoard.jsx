@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
-import { IconPerson, IconPlus, Avatar } from './SharedUI';
+import { IconPlus, Avatar } from './SharedUI';
 import { getTaskAssignee } from './useAppLogic';
 import { HighlightText } from './Utils';
 
@@ -12,7 +12,6 @@ export default function KanbanBoard({
   DEFAULT_COLUMNS,
   avatarsMap,
   currentUser,
-  onDragEnd,
   handleOpenRenameBoard,
   handleOpenDeleteBoard,
   setSelectedTask,
@@ -22,13 +21,11 @@ export default function KanbanBoard({
   selectedBoard,
   boards,
   setSelectedBoard,
-  isSuperAdmin,
   notifications,
   cardTheme,
   isTrashHovered,
   language,
   clonedTaskIds,
-  isKanbanDragging,
 }) {
   const [expandedArchives, setExpandedArchives] = useState({});
   const [expandedSubtasksMap, setExpandedSubtasksMap] = useState({});
@@ -105,14 +102,6 @@ export default function KanbanBoard({
               const isWipOverloaded = columnTasks.length >= 7 && !isArchiveCol;
 
               const renderTaskCardContent = (task, provided, snapshot, isClone = false) => {
-                const isTaskAdmin =
-                  isSuperAdmin ||
-                  task.owner_username === currentUser ||
-                  (selectedBoard && selectedBoard.owner_username === currentUser) ||
-                  (task.requester &&
-                    new RegExp(`@${currentUser.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}(?![\\\\w.-])`, 'i').test(
-                      task.requester
-                    ));
                 const hasUnreadNotif = (notifications || []).some((n) => !n.is_read && n.related_task_id === task.id);
                 const isNewClone =
                   clonedTaskIds &&

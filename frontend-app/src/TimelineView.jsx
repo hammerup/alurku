@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { IconPerson } from './SharedUI';
 import { getTaskAssignee } from './useAppLogic';
 import { jsPDF } from 'jspdf';
@@ -371,10 +371,6 @@ export default function TimelineView({
   };
 
   const { parsedTasks, minD, maxD, days, months, sortedGroups } = useMemo(() => {
-    let computedMinD = new Date('2100-01-01');
-    let computedMaxD = new Date('1970-01-01');
-    let hasActiveTasks = false;
-
     const pTasks = filteredTasks.map((t) => {
       let start = parseDate(t.start_date || (t.timestamp && t.timestamp.split(' ')[0]));
 
@@ -411,20 +407,26 @@ export default function TimelineView({
         }
       }
 
-      if (t.status !== 'Done' && t.status !== 'Rejected') {
-        if (start < computedMinD) computedMinD = new Date(start);
-        if (end > computedMaxD) computedMaxD = new Date(end);
-        hasActiveTasks = true;
-      }
-
       return { ...t, start, end };
     });
 
-    if (!hasActiveTasks) {
-      pTasks.forEach((t) => {
+    let computedMinD = new Date('2100-01-01');
+    let computedMaxD = new Date('1970-01-01');
+    let hasActiveTasks = false;
+
+    for (const t of pTasks) {
+      if (t.status !== 'Done' && t.status !== 'Rejected') {
         if (t.start < computedMinD) computedMinD = new Date(t.start);
         if (t.end > computedMaxD) computedMaxD = new Date(t.end);
-      });
+        hasActiveTasks = true;
+      }
+    }
+
+    if (!hasActiveTasks) {
+      for (const t of pTasks) {
+        if (t.start < computedMinD) computedMinD = new Date(t.start);
+        if (t.end > computedMaxD) computedMaxD = new Date(t.end);
+      }
     }
     if (computedMinD.getFullYear() === 2100) {
       computedMinD = new Date();
@@ -909,7 +911,7 @@ export default function TimelineView({
                                     left: `${offsetDays * DAY_WIDTH + 4}px`,
                                     width: `${Math.max(durationDays * DAY_WIDTH - 8, 24)}px`,
                                   }}
-                                  onClick={(e) => {
+                                  onClick={() => {
                                     if (!timelineDrag || timelineDrag.startOffsetDays === 0) setSelectedTask(t);
                                   }}
                                   title={`${t.project_name} - ${t.status}`}

@@ -1,6 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import axios from 'axios';
-import DOMPurify from 'dompurify';
 import { Avatar } from './SharedUI';
 
 export default function AnalyticsView({
@@ -8,7 +7,6 @@ export default function AnalyticsView({
   columns,
   avatarsMap,
   teamMembers,
-  currentUser,
   setSelectedTask,
   language,
 }) {
@@ -277,7 +275,7 @@ export default function AnalyticsView({
   let maxCritical = 0;
 
   // 1. Cari nilai absolut tertinggi untuk menentukan tingkat bahaya (Threshold)
-  Object.entries(memberDetailedStats).forEach(([member, stats]) => {
+  Object.values(memberDetailedStats).forEach((stats) => {
     const pendingEtc = stats.total_etc - stats.done_etc; // Active + Pending Work in Hours
     if (pendingEtc > maxActiveEtc) maxActiveEtc = pendingEtc;
     if (stats.critical > maxCritical) maxCritical = stats.critical;
