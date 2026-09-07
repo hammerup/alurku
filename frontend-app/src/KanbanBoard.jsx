@@ -273,9 +273,13 @@ export default function KanbanBoard({
                                   ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-neutral-200 dark:border-neutral-700'
                                   : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
                               }`}
-                              title={`Impact: ${task.impact}`}
+                              title={language === 'id' ? `Prioritas: ${task.impact}` : `Priority: ${task.impact}`}
                             >
-                              {task.impact === 'High' ? 'High Impact' : task.impact === 'Low' ? 'Low Impact' : 'Med Impact'}
+                              {task.impact === 'High'
+                                ? (language === 'id' ? 'Prioritas Tinggi' : 'High Priority')
+                                : task.impact === 'Low'
+                                ? (language === 'id' ? 'Prioritas Rendah' : 'Low Priority')
+                                : (language === 'id' ? 'Prioritas Sedang' : 'Med Priority')}
                             </span>
 
                             <span

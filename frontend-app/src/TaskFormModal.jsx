@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { IconPlus } from './SharedUI';
 import { useCloseAnimation, LoadingSpinner } from './Utils';
@@ -175,7 +175,7 @@ Format:
       }
     } catch (err) {
       console.error(err);
-      alert(language === 'id' ? 'Gagal mengestimasi ETC.' : 'Failed to estimate ETC.');
+      alert(language === 'id' ? 'Gagal mengestimasi waktu pengerjaan tugas.' : 'Failed to estimate task time.');
     } finally {
       setIsEstimatingEtc(false);
     }
@@ -189,7 +189,7 @@ Format:
     )}`;
   };
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setFormData((prev) => ({
       ...prev,
       project_name: '',
@@ -208,7 +208,17 @@ Format:
     setFormSubtaskInput('');
     setFormSubtaskAssignee('');
     close();
-  };
+  }, [categories, setFormData, setFormSubtasks, setFormSubtaskInput, setFormSubtaskAssignee, close]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !isMentioning) {
+        handleCancel();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMentioning, handleCancel]);
 
   const globalMentionOptions = selectedBoard?.is_private
     ? [currentUser]
@@ -232,7 +242,11 @@ Format:
       >
         <div className="flex justify-between items-center p-5 sm:p-8 md:px-12 md:py-8 border-b border-neutral-200 dark:border-neutral-800 shrink-0 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl z-20">
           <h2 className="text-xl sm:text-2xl font-extrabold text-black dark:text-white tracking-tight flex items-center gap-2 sm:gap-3">
-            {formMode === 'ai' ? '✨' : <IconPlus className="w-6 h-6 sm:w-8 sm:h-8" />}
+            {formMode === 'ai' ? (
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 text-amber-500 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+            ) : (
+              <IconPlus className="w-6 h-6 sm:w-8 sm:h-8" />
+            )}
             {formMode === 'ai' ? tMsg('Smart Assistant', 'Asisten Pintar') : tMsg('Add Task', 'Tugas Baru')}
           </h2>
           <button
@@ -304,9 +318,10 @@ Format:
                 type="button"
                 onClick={handleAiSubmit}
                 disabled={!aiPrompt.trim() || isGeneratingTask}
-                className="flex-1 bg-indigo-600 text-white font-bold py-4 rounded-full text-xs hover:bg-indigo-700 transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-indigo-600 text-white font-bold py-4 rounded-full text-xs hover:bg-indigo-700 transition-all shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
-                ✨ {tMsg('Draft with AI', 'Buat dengan AI')}
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                <span>{tMsg('Draft with AI', 'Buat dengan AI')}</span>
               </button>
             </div>
           </div>
@@ -422,7 +437,7 @@ Format:
                       >
                         {boards.filter((b) => b.id !== 'global').map((b) => (
                           <option key={b.id} value={b.id}>
-                            📁 {b.name} {b.is_private ? `(${tMsg('Private', 'Privat')})` : ''}
+                            {b.name} {b.is_private ? `(${tMsg('Private', 'Privat')})` : ''}
                           </option>
                         ))}
                       </select>
@@ -448,14 +463,14 @@ Format:
                           ))}
                           {formData.category &&
                             !categories.some((c) => c.toLowerCase() === formData.category.toLowerCase()) && (
-                              <option value={formData.category}>{formData.category} ✨</option>
+                              <option value={formData.category}>{formData.category} ({tMsg('Custom', 'Kustom')})</option>
                             )}
                         </select>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleOpenAddBoard('Category')}
-                        className="bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 px-3 sm:px-4 rounded-2xl transition-colors text-sm font-bold flex items-center justify-center shrink-0 shadow-sm h-11.5 sm:h-12.5"
+                        className="bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 px-3 sm:px-4 rounded-2xl transition-colors text-sm font-bold flex items-center justify-center shrink-0 shadow-sm h-11.5 sm:h-12.5 cursor-pointer"
                         title={tMsg('Add New Category', 'Tambah Kategori Baru')}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -465,8 +480,8 @@ Format:
 
                   <div className="sm:col-span-1 group">
                     <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
-                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                      {tMsg('Impact', 'Dampak')}
+                      <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+                      {tMsg('Priority', 'Prioritas')}
                     </label>
                     <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center h-11.5 sm:h-12.5">
                       <select
@@ -474,9 +489,9 @@ Format:
                         onChange={(e) => setFormData({ ...formData, impact: e.target.value })}
                         className="w-full h-full bg-transparent border-0 focus:ring-0 p-3.5 text-xs font-bold text-black dark:text-white cursor-pointer outline-none [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                       >
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
+                        <option value="High">{tMsg('High', 'Tinggi')}</option>
+                        <option value="Medium">{tMsg('Medium', 'Sedang')}</option>
+                        <option value="Low">{tMsg('Low', 'Rendah')}</option>
                       </select>
                     </div>
                   </div>
@@ -532,9 +547,18 @@ Format:
                     </div>
                   </div>
                   <div className="group">
-                    <label className="flex items-center gap-2 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
+                    <label className="flex items-center gap-1.5 min-h-4 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
                       <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      {tMsg('ETC (Hrs)', 'ETC (Jam)')}
+                      <span>{tMsg('Time (Hrs)', 'Waktu (Jam)')}</span>
+                      <span className="relative group/etc-tip inline-flex items-center cursor-help">
+                        <svg className="w-3 h-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                          <circle cx="12" cy="12" r="10" />
+                          <path strokeLinecap="round" d="M12 16v-4m0-4h.01" />
+                        </svg>
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover/etc-tip:block px-2 py-1 text-[9px] font-medium text-white bg-neutral-900 dark:bg-neutral-800 rounded shadow-md whitespace-nowrap z-50">
+                          {tMsg('Estimated time in hours', 'Estimasi waktu dalam jam')}
+                        </span>
+                      </span>
                     </label>
                     <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center p-1.5 h-11.5 sm:h-12.5">
                       <button
@@ -542,7 +566,8 @@ Format:
                         onClick={() =>
                           setFormData({ ...formData, etc: Math.max(0, (parseFloat(formData.etc) || 0) - 0.5) })
                         }
-                        className="w-7 h-7 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl font-bold transition-colors shrink-0"
+                        className="w-7 h-7 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl font-bold transition-colors shrink-0 cursor-pointer"
+                        title={tMsg('Decrease by 0.5h', 'Kurangi 0.5 jam')}
                       >
                         -
                       </button>
@@ -558,7 +583,8 @@ Format:
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, etc: (parseFloat(formData.etc) || 0) + 0.5 })}
-                        className="w-7 h-7 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl font-bold transition-colors shrink-0"
+                        className="w-7 h-7 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-xl font-bold transition-colors shrink-0 cursor-pointer"
+                        title={tMsg('Increase by 0.5h', 'Tambah 0.5 jam')}
                       >
                         +
                       </button>
@@ -566,10 +592,14 @@ Format:
                         type="button"
                         onClick={handleEstimateEtc}
                         disabled={isEstimatingEtc}
-                        className="w-7 h-7 ml-1 flex items-center justify-center text-indigo-500 hover:text-white hover:bg-indigo-500 dark:hover:bg-indigo-600 rounded-xl font-bold transition-colors shrink-0 disabled:opacity-50"
-                        title="AI Estimate"
+                        className="w-7 h-7 ml-1 flex items-center justify-center text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
+                        title={tMsg('AI Time Estimation', 'Estimasi Waktu AI')}
                       >
-                        {isEstimatingEtc ? '⏳' : '✨'}
+                        {isEstimatingEtc ? (
+                          <svg className="w-3.5 h-3.5 animate-spin text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -638,9 +668,19 @@ Format:
                         type="button"
                         onClick={handleGenerateDesc}
                         disabled={isGeneratingDesc}
-                        className="ml-auto text-[10px] font-bold px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                        className="ml-auto text-[10px] font-bold px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-50 flex items-center gap-1.5 transition-colors cursor-pointer"
                       >
-                        {isGeneratingDesc ? '⏳...' : '✨ Auto Generate'}
+                        {isGeneratingDesc ? (
+                          <>
+                            <svg className="w-3 h-3 animate-spin text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                            <span>{tMsg('Generating...', 'Membuat...')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                            <span>{tMsg('Auto Generate', 'Buat Otomatis')}</span>
+                          </>
+                        )}
                       </button>
                     </div>
                     <textarea
@@ -661,7 +701,7 @@ Format:
                 <div className="group pt-2">
                   <label className="flex items-center gap-2 text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white mb-2">
                     <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                    {tMsg('External Links / Supporting Access', 'Tautan Eksternal / Akses Pendukung')}
+                    {tMsg('External Links / References', 'Tautan Eksternal / Referensi')}
                   </label>
                   <div className="flex flex-col gap-2 w-full min-w-0">
                     {(formData.supporting_access ? formData.supporting_access.split('\n') : ['']).map(
@@ -687,10 +727,10 @@ Format:
                                 const newLinks = arr.filter((_, i) => i !== idx);
                                 setFormData({ ...formData, supporting_access: newLinks.join('\n') });
                               }}
-                              className="text-neutral-400 hover:text-red-500 font-bold p-2 transition-colors"
-                              title="Remove Link"
+                              className="text-neutral-400 hover:text-red-500 p-2 transition-colors cursor-pointer"
+                              title={tMsg('Remove Link', 'Hapus Tautan')}
                             >
-                              ✖
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                           )}
                         </div>
@@ -727,7 +767,7 @@ Format:
                         handleAddFormSubtask(e);
                       }
                     }}
-                    className="flex-2 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-transparent p-3.5 text-sm font-medium text-black dark:text-white outline-none placeholder-neutral-400 focus:bg-white dark:focus:bg-black focus:border-neutral-300 dark:focus:border-neutral-700 transition-all"
+                    className="flex-2 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-transparent p-3.5 text-sm font-medium text-black dark:text-white outline-none placeholder-neutral-400 focus:bg-white dark:focus:bg-black focus:border-neutral-300 dark:focus-neutral-700 transition-all"
                     placeholder={tMsg('Add checklist item...', 'Tambah item daftar periksa...')}
                   />
                   <select
@@ -770,9 +810,10 @@ Format:
                         <button
                           type="button"
                           onClick={() => handleRemoveFormSubtask(i)}
-                          className="text-neutral-400 hover:text-red-500 font-bold opacity-100 md:opacity-0 group-hover/item:opacity-100 transition-opacity px-2 md:px-0"
+                          className="text-neutral-400 hover:text-red-500 opacity-100 md:opacity-0 group-hover/item:opacity-100 transition-opacity p-1.5 cursor-pointer"
+                          title={tMsg('Delete Subtask', 'Hapus Sub-tugas')}
                         >
-                          ✖
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       </div>
                     ))}

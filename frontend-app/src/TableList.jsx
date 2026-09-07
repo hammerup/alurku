@@ -105,7 +105,6 @@ export default function TableList({
       '0'
     )}`;
   };
-  const defaultDeadline = getLocalToday();
 
   const [quickAddData, setQuickAddData] = useState({
     project_name: '',
@@ -261,7 +260,6 @@ export default function TableList({
     setProcessingTaskId(task.id);
     
     const newStatus = task.status === 'Done' ? 'In Progress' : 'Done';
-    const originalStatus = task.status;
 
     // 1. MULAI ANIMASI KELUAR (SLIDE OUT) SEBELUM DATA BERPINDAH
     if (newStatus === 'Done') {
@@ -778,18 +776,20 @@ export default function TableList({
                     ))}
                   </select>
 
-                  {/* Impact Input */}
+                  {/* Priority Input */}
                   <select
                     value={quickAddData.impact}
                     onChange={(e) => setQuickAddData({ ...quickAddData, impact: e.target.value })}
                     className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 ring-indigo-500/50 cursor-pointer"
+                    title={tMsg('Priority', 'Prioritas')}
                   >
-                    <option value="High">High Impact</option>
-                    <option value="Medium">Medium Impact</option>
-                    <option value="Low">Low Impact</option>
+                    <option value="High">{tMsg('High Priority', 'Prioritas Tinggi')}</option>
+                    <option value="Medium">{tMsg('Med Priority', 'Prioritas Sedang')}</option>
+                    <option value="Low">{tMsg('Low Priority', 'Prioritas Rendah')}</option>
                   </select>
 
-                  {/* Dea                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
+                  {/* Deadline Input */}
+                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
                     <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     <input
                       type="date"
@@ -799,8 +799,8 @@ export default function TableList({
                     />
                   </div>
  
-                  {/* ETC Input */}
-                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
+                  {/* Time Estimate Input */}
+                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50" title={tMsg('Estimated time in hours', 'Estimasi waktu dalam jam')}>
                     <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <input
                       type="number"
@@ -809,7 +809,7 @@ export default function TableList({
                       value={quickAddData.etc}
                       onChange={(e) => setQuickAddData({ ...quickAddData, etc: parseFloat(e.target.value) || 0 })}
                       className="w-12 bg-transparent border-none focus:ring-0 outline-none text-xs font-bold text-slate-700 dark:text-slate-300 text-center"
-                      placeholder="Hours"
+                      placeholder={tMsg('Hours', 'Jam')}
                     />
                   </div>
                   {/* Mobile submit */}
@@ -825,7 +825,7 @@ export default function TableList({
 
             {/* Render List Tasks Aktif */}
             {currentTasks.length > 0 ? (
-              currentTasks.map((task, index) => {
+              currentTasks.map((task) => {
                 const isNewClone = clonedTaskIds && (clonedTaskIds.has(task.id) || clonedTaskIds.has(String(task.id)) || clonedTaskIds.has(Number(task.id)));
                 const isGlobal = !selectedBoard || selectedBoard.id === 'global';
                 const qPos = isGlobal ? task.queue_global_number : task.queue_project_number;
