@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { IconPerson } from './SharedUI';
 import { getTaskAssignee } from './useAppLogic';
 import { jsPDF } from 'jspdf';
@@ -77,6 +77,10 @@ export default function TimelineView({
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [rangePreset, setRangePreset] = useState('3_months'); // '3_months' | 'this_month' | 'fit_all' | 'custom'
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [hideDone, setHideDone] = useState(false);
 
   useEffect(() => {
     if (!showExportMenu) return;
@@ -371,7 +375,11 @@ export default function TimelineView({
   };
 
   const { parsedTasks, minD, maxD, days, months, sortedGroups } = useMemo(() => {
-    const pTasks = filteredTasks.map((t) => {
+    const effectiveTasks = hideDone
+      ? filteredTasks.filter((t) => t.status !== 'Done' && t.status !== 'Rejected')
+      : filteredTasks;
+
+    const pTasks = effectiveTasks.map((t) => {
       let start = parseDate(t.start_date || (t.timestamp && t.timestamp.split(' ')[0]));
 
       while (true) {
@@ -410,31 +418,61 @@ export default function TimelineView({
       return { ...t, start, end };
     });
 
-    let computedMinD = new Date('2100-01-01');
-    let computedMaxD = new Date('1970-01-01');
-    let hasActiveTasks = false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    for (const t of pTasks) {
-      if (t.status !== 'Done' && t.status !== 'Rejected') {
-        if (t.start < computedMinD) computedMinD = new Date(t.start);
-        if (t.end > computedMaxD) computedMaxD = new Date(t.end);
-        hasActiveTasks = true;
+    let computedMinD = null;
+    let computedMaxD = null;
+
+    if (rangePreset === 'this_month') {
+      computedMinD = new Date(today.getFullYear(), today.getMonth(), 1);
+      computedMaxD = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      computedMinD.setDate(computedMinD.getDate() - 1);
+      computedMaxD.setDate(computedMaxD.getDate() + 1);
+    } else if (rangePreset === '3_months') {
+      // Jendela fokus 90 hari aktif: 14 hari ke belakang, 76 hari ke depan
+      computedMinD = new Date(today);
+      computedMinD.setDate(computedMinD.getDate() - 14);
+      computedMaxD = new Date(today);
+      computedMaxD.setDate(computedMaxD.getDate() + 76);
+    } else if (rangePreset === 'custom' && customStart && customEnd) {
+      const cS = new Date(customStart.replace(/-/g, '/'));
+      const cE = new Date(customEnd.replace(/-/g, '/'));
+      if (!isNaN(cS.getTime()) && !isNaN(cE.getTime()) && cS <= cE) {
+        computedMinD = new Date(cS);
+        computedMaxD = new Date(cE);
+        computedMinD.setDate(computedMinD.getDate() - 1);
+        computedMaxD.setDate(computedMaxD.getDate() + 1);
       }
     }
 
-    if (!hasActiveTasks) {
+    if (!computedMinD || !computedMaxD) {
+      computedMinD = new Date('2100-01-01');
+      computedMaxD = new Date('1970-01-01');
+      let hasActiveTasks = false;
+
       for (const t of pTasks) {
-        if (t.start < computedMinD) computedMinD = new Date(t.start);
-        if (t.end > computedMaxD) computedMaxD = new Date(t.end);
+        if (t.status !== 'Done' && t.status !== 'Rejected') {
+          if (t.start < computedMinD) computedMinD = new Date(t.start);
+          if (t.end > computedMaxD) computedMaxD = new Date(t.end);
+          hasActiveTasks = true;
+        }
       }
-    }
-    if (computedMinD.getFullYear() === 2100) {
-      computedMinD = new Date();
-      computedMaxD = new Date();
-    }
 
-    computedMinD.setDate(computedMinD.getDate() - 2);
-    computedMaxD.setDate(computedMaxD.getDate() + 7);
+      if (!hasActiveTasks) {
+        for (const t of pTasks) {
+          if (t.start < computedMinD) computedMinD = new Date(t.start);
+          if (t.end > computedMaxD) computedMaxD = new Date(t.end);
+        }
+      }
+      if (computedMinD.getFullYear() === 2100) {
+        computedMinD = new Date();
+        computedMaxD = new Date();
+      }
+
+      computedMinD.setDate(computedMinD.getDate() - 2);
+      computedMaxD.setDate(computedMaxD.getDate() + 7);
+    }
 
     const computedDays = [];
     for (let d = new Date(computedMinD); d <= computedMaxD; d.setDate(d.getDate() + 1)) {
@@ -487,24 +525,166 @@ export default function TimelineView({
       months: computedMonths,
       sortedGroups: sGroups,
     };
-  }, [filteredTasks, leaves, isUserAssigned, timelineDrag, groupBy, language]);
+  }, [filteredTasks, leaves, isUserAssigned, timelineDrag, groupBy, language, rangePreset, customStart, customEnd, hideDone]);
 
   const toggleGroup = (key) => {
     setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  if (parsedTasks.length === 0) {
-    return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 p-12 text-center text-slate-500 dark:text-slate-400 font-medium">
-        {tMsg('No tasks available for timeline view.', 'Tidak ada tugas yang tersedia untuk tampilan timeline.')}
-      </div>
-    );
-  }
+  const scrollToToday = useCallback(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (minD && maxD && (today < minD || today > maxD)) {
+      setRangePreset('3_months');
+      return;
+    }
+
+    const scrollContainer = document.getElementById('timeline-scroll-wrapper');
+    if (!scrollContainer || !minD) return;
+    const offsetDays = Math.round((today - minD) / (1000 * 60 * 60 * 24));
+    const scrollLeft = Math.max(0, offsetDays * DAY_WIDTH - scrollContainer.clientWidth / 2 + activeSidebarWidth);
+    scrollContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+  }, [minD, maxD, DAY_WIDTH, activeSidebarWidth]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollToToday();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [scrollToToday, rangePreset, days.length]);
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xs border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-[calc(100vh-140px)] min-h-125">
+      {/* Top Toolbar: Date Range Selector, Custom Date Picker, Hide Done, & Today Button */}
+      <div className="px-3 md:px-4 py-2 bg-slate-50 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-20">
+        {/* Left: Range Presets & Custom Date Picker */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <svg className="w-3.5 h-3.5 inline text-[#111E38] dark:text-[#FACC15]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.253 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+            {tMsg('Range:', 'Rentang:')}
+          </span>
+
+          <div className="flex items-center bg-slate-200/70 dark:bg-slate-700/60 p-0.5 rounded-lg">
+            <button
+              type="button"
+              onClick={() => setRangePreset('3_months')}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                rangePreset === '3_months'
+                  ? 'bg-white dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tMsg('3 Months (Active)', '3 Bulan Aktif')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRangePreset('this_month')}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                rangePreset === 'this_month'
+                  ? 'bg-white dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tMsg('This Month', 'Bulan Ini')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRangePreset('fit_all')}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                rangePreset === 'fit_all'
+                  ? 'bg-white dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tMsg('All Tasks', 'Semua Tugas')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRangePreset('custom')}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                rangePreset === 'custom'
+                  ? 'bg-white dark:bg-slate-800 text-[#111E38] dark:text-[#FACC15] shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tMsg('Custom', 'Kustom')}
+            </button>
+          </div>
+
+          {rangePreset === 'custom' && (
+            <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 shadow-2xs">
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+                className="text-[11px] bg-transparent text-slate-800 dark:text-slate-200 outline-none font-medium cursor-pointer"
+                title={tMsg('Start Date', 'Tanggal Mulai')}
+              />
+              <span className="text-slate-400 text-xs">→</span>
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                className="text-[11px] bg-transparent text-slate-800 dark:text-slate-200 outline-none font-medium cursor-pointer"
+                title={tMsg('End Date', 'Tanggal Selesai')}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Right: Hide Done Toggle & Today Button */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setHideDone(!hideDone)}
+            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all flex items-center gap-1.5 cursor-pointer ${
+              hideDone
+                ? 'bg-amber-100/60 dark:bg-amber-900/30 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-300'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+            }`}
+            title={tMsg('Toggle visibility of Done and Rejected tasks', 'Tampilkan/Sembunyikan tugas Selesai dan Ditolak')}
+          >
+            {hideDone ? (
+              <svg className="w-3.5 h-3.5 inline text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5 inline text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            )}
+            {hideDone ? tMsg('Done Hidden', 'Selesai Disembunyikan') : tMsg('Hide Done', 'Sembunyikan Selesai')}
+          </button>
+
+          <button
+            type="button"
+            onClick={scrollToToday}
+            className="px-3 py-1 bg-[#111E38] hover:bg-slate-800 dark:bg-[#FACC15] dark:hover:bg-yellow-400 text-white dark:text-[#111E38] text-[11px] font-extrabold rounded-lg shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+            title={tMsg('Scroll timeline to today', 'Geser timeline ke hari ini')}
+          >
+            <svg className="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+            </svg>
+            {tMsg('Today', 'Hari Ini')}
+          </button>
+        </div>
+      </div>
+
       <div id="timeline-scroll-wrapper" className="overflow-auto flex-1 relative">
-        <div id="timeline-export-container" className="flex w-max min-w-full relative bg-white dark:bg-slate-800">
+        {parsedTasks.length === 0 ? (
+          <div className="p-12 text-center text-slate-500 dark:text-slate-400 font-medium">
+            {tMsg(
+              'No tasks available for timeline view in this range or filter.',
+              'Tidak ada tugas yang tersedia untuk tampilan timeline dalam rentang atau filter ini.'
+            )}
+          </div>
+        ) : (
+          <div id="timeline-export-container" className="flex w-max min-w-full relative bg-white dark:bg-slate-800">
           {/* Left Sidebar for Labels */}
           <div 
              className={`shrink-0 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] group/sidebar ${isResizingSidebar ? '' : 'transition-[width] duration-75'}`}
@@ -968,6 +1148,7 @@ export default function TimelineView({
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
