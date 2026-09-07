@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -156,10 +155,10 @@ export default function TaskDetailSubtasks({
                     {isTaskAdmin && accountStatus !== 'suspended' && (
                       <button
                         onClick={() => handleDeleteSubtask(st.id)}
-                        className="text-neutral-400 hover:text-red-500 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity text-sm md:text-xs font-bold mt-0.5 md:mt-1 px-2 py-1 md:p-0"
-                        title="Delete Subtask"
+                        className="text-neutral-400 hover:text-red-500 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity p-1 mt-0.5 md:mt-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                        title={tMsg ? tMsg('Delete Subtask', 'Hapus Subtugas') : 'Delete Subtask'}
                       >
-                        ✖
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
                     )}
                   </div>

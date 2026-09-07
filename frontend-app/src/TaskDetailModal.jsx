@@ -833,10 +833,10 @@ export default function TaskDetailModal({
                           <button
                             type="button"
                             onClick={() => handleOpenAddBoard('Category')}
-                            className="bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 px-3 sm:px-4 rounded-2xl transition-colors text-sm font-bold flex items-center justify-center shrink-0 shadow-sm"
+                            className="bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 px-3 sm:px-4 rounded-2xl transition-colors text-sm font-bold flex items-center justify-center shrink-0 shadow-xs cursor-pointer"
                             title={tMsg('Add New Category', 'Tambah Kategori Baru')}
                           >
-                            ➕
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                           </button>
                         </div>
                       </div>
@@ -864,7 +864,7 @@ export default function TaskDetailModal({
                       <div className="group col-span-1">
                         <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2 min-h-4 truncate">
                           <svg className="w-3.5 h-3.5 text-neutral-500 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                          <span>{tMsg('Impact', 'Dampak')}</span>
+                          <span>{tMsg('Priority', 'Prioritas')}</span>
                         </label>
                         <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center">
                           <select
@@ -872,21 +872,21 @@ export default function TaskDetailModal({
                             onChange={(e) => setEditFormData({ ...editFormData, impact: e.target.value })}
                             className="w-full bg-transparent border-0 focus:ring-0 p-3.5 text-[10px] sm:text-xs font-bold text-black dark:text-white cursor-pointer outline-none tracking-wider truncate [&>option]:bg-white dark:[&>option]:bg-neutral-950"
                           >
-                            <option value="High">High</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Low">Low</option>
+                            <option value="High">{tMsg('High', 'Tinggi')}</option>
+                            <option value="Medium">{tMsg('Medium', 'Sedang')}</option>
+                            <option value="Low">{tMsg('Low', 'Rendah')}</option>
                           </select>
                         </div>
                       </div>
                       <div className="group col-span-1">
                         <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2 min-h-4 truncate">
                           <svg className="w-3.5 h-3.5 text-neutral-500 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                          <span>{tMsg('ETC (Hrs)', 'ETC (Jam)')}</span>
+                          <span>{tMsg('Time (Hrs)', 'Waktu (Jam)')}</span>
                           <span
                             className="cursor-help text-neutral-400 font-normal tracking-normal"
-                            title="Estimated Time Consumption"
+                            title={tMsg('Estimated Time Consumption in Hours', 'Estimasi Waktu Pengerjaan dalam Jam')}
                           >
-                            🛈
+                            <svg className="w-3 h-3 text-neutral-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01"/></svg>
                           </span>
                         </label>
                         <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl border border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black transition-all flex items-center p-1 sm:pr-1">
@@ -903,17 +903,15 @@ export default function TaskDetailModal({
                             type="button"
                             onClick={handleEstimateEtc}
                             disabled={isEstimatingEtc}
-                            className="shrink-0 text-[10px] font-bold px-1.5 sm:px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg sm:rounded-xl shadow-sm border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-50 transition-colors"
-                            title="AI Estimate"
+                            className="shrink-0 text-[10px] font-bold px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg sm:rounded-xl shadow-xs border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-50 transition-colors flex items-center gap-1 cursor-pointer"
+                            title={tMsg('AI Time Estimation', 'Estimasi Waktu AI')}
                           >
                             {isEstimatingEtc ? (
-                              '⏳'
+                              <svg className="w-3 h-3 animate-spin text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
                             ) : (
-                              <>
-                                <span className="sm:hidden">✨</span>
-                                <span className="hidden sm:inline">✨ AI Est.</span>
-                              </>
+                              <svg className="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
                             )}
+                            <span className="hidden sm:inline">AI Est.</span>
                           </button>
                         </div>
                       </div>
@@ -978,9 +976,19 @@ export default function TaskDetailModal({
                             type="button"
                             onClick={handleGenerateDesc}
                             disabled={isGeneratingDesc}
-                            className="ml-auto text-[10px] font-bold px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-50 flex items-center gap-1 transition-colors"
+                            className="ml-auto text-[10px] font-bold px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 disabled:opacity-50 flex items-center gap-1.5 transition-colors cursor-pointer"
                           >
-                            {isGeneratingDesc ? '⏳...' : '✨ Auto Generate'}
+                            {isGeneratingDesc ? (
+                              <>
+                                <svg className="w-3 h-3 animate-spin text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                                <span>{tMsg('Generating...', 'Membuat...')}</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-3 h-3 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" /></svg>
+                                <span>{tMsg('Auto Generate', 'Buat Otomatis')}</span>
+                              </>
+                            )}
                           </button>
                         </div>
                         <textarea
@@ -1001,7 +1009,7 @@ export default function TaskDetailModal({
                     <div className="group pt-2">
                       <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2">
                         <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                        <span>{tMsg('External Links / Supporting Access', 'Tautan Eksternal / Akses Pendukung')}</span>
+                        <span>{tMsg('External Links / References', 'Tautan Eksternal / Referensi')}</span>
                       </label>
                       <div className="flex flex-col gap-2 w-full min-w-0">
                         {(editFormData.supporting_access ? editFormData.supporting_access.split('\n') : ['']).map(
@@ -1027,10 +1035,10 @@ export default function TaskDetailModal({
                                     const newLinks = arr.filter((_, i) => i !== idx);
                                     setEditFormData({ ...editFormData, supporting_access: newLinks.join('\n') });
                                   }}
-                                  className="text-neutral-400 hover:text-red-500 font-bold p-2 transition-colors"
-                                  title="Remove Link"
+                                  className="text-neutral-400 hover:text-red-500 p-2 transition-colors cursor-pointer"
+                                  title={tMsg('Remove Link', 'Hapus Tautan')}
                                 >
-                                  ✖
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                               )}
                             </div>
@@ -1316,10 +1324,10 @@ export default function TaskDetailModal({
                                       e.preventDefault();
                                       setLinkToRemove(trimmedLink);
                                     }}
-                                    className="p-3 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-colors shrink-0"
+                                    className="p-3 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-colors shrink-0 cursor-pointer"
                                     title={tMsg('Remove Link', 'Hapus Tautan')}
                                   >
-                                    ✖
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                   </button>
                                 )}
                               </div>
@@ -1782,9 +1790,16 @@ export default function TaskDetailModal({
                 <button
                   onClick={executeSmartNudge}
                   disabled={isGeneratingNudge}
-                  className="flex-1 px-4 py-4 rounded-full font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-md transition-all uppercase tracking-widest text-[10px] sm:text-xs hover:-translate-y-0.5 disabled:opacity-50"
+                  className="flex-1 px-4 py-4 rounded-full font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-md transition-all uppercase tracking-widest text-[10px] sm:text-xs hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  {isGeneratingNudge ? '⏳...' : tMsg('Yes, Send', 'Ya, Kirim')}
+                  {isGeneratingNudge ? (
+                    <>
+                      <svg className="w-3.5 h-3.5 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" /></svg>
+                      <span>{tMsg('Sending...', 'Mengirim...')}</span>
+                    </>
+                  ) : (
+                    tMsg('Yes, Send', 'Ya, Kirim')
+                  )}
                 </button>
               </div>
             </div>
