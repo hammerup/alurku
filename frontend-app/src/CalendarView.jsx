@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 // Modern SVG Icons replacing emojis per Brand Guidelines
 const IconCalendar = ({ className = 'w-4 h-4' }) => (
@@ -19,6 +19,34 @@ const IconLeave = ({ className = 'w-3.5 h-3.5' }) => (
   </svg>
 );
 
+// Pure date helper functions
+const getStartOfWeek = (d) => {
+  const res = new Date(d);
+  const day = res.getDay();
+  res.setDate(res.getDate() - day);
+  res.setHours(0, 0, 0, 0);
+  return res;
+};
+
+const getWeekDays = (d) => {
+  const start = getStartOfWeek(d);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(start);
+    day.setDate(start.getDate() + i);
+    days.push(day);
+  }
+  return days;
+};
+
+const parseDate = (d) => {
+  if (!d) return null;
+  const p = new Date(d.replace(/-/g, '/'));
+  if (isNaN(p)) return null;
+  p.setHours(0, 0, 0, 0);
+  return p;
+};
+
 export default function CalendarView({
   calDate,
   setCalDate,
@@ -36,9 +64,9 @@ export default function CalendarView({
   language = 'id',
   dateFormat = 'DD/MM/YYYY',
 }) {
-  const [subView, setSubView] = React.useState('month'); // 'month' | 'week' | 'schedule'
-  const [expandedDate, setExpandedDate] = React.useState(null);
-  const [selectedLeave, setSelectedLeave] = React.useState(null);
+  const [subView, setSubView] = useState('month'); // 'month' | 'week' | 'schedule'
+  const [expandedDate, setExpandedDate] = useState(null);
+  const [selectedLeave, setSelectedLeave] = useState(null);
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
@@ -138,26 +166,6 @@ export default function CalendarView({
     return resGrid;
   }, [firstDay, daysInMonth]);
 
-  // Helper functions for week view
-  const getStartOfWeek = (d) => {
-    const res = new Date(d);
-    const day = res.getDay();
-    res.setDate(res.getDate() - day);
-    res.setHours(0, 0, 0, 0);
-    return res;
-  };
-
-  const getWeekDays = (d) => {
-    const start = getStartOfWeek(d);
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(start);
-      day.setDate(start.getDate() + i);
-      days.push(day);
-    }
-    return days;
-  };
-
   const currentRows = useMemo(() => {
     if (subView === 'week') {
       return [getWeekDays(calDate)];
@@ -165,14 +173,6 @@ export default function CalendarView({
     // month view
     return grid.map(w => w.map(d => d ? new Date(year, month, d) : null));
   }, [subView, calDate, grid, year, month]);
-
-  const parseDate = (d) => {
-    if (!d) return null;
-    const p = new Date(d.replace(/-/g, '/'));
-    if (isNaN(p)) return null;
-    p.setHours(0, 0, 0, 0);
-    return p;
-  };
 
   const parsedTasks = useMemo(() => {
     return filteredTasks.map((t) => {
@@ -365,6 +365,22 @@ export default function CalendarView({
               </button>
             ))}
           </div>
+
+          {/* Leaves & Holidays Link */}
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.history.pushState({}, '', '/leaves');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                window.dispatchEvent(new Event('popstate'));
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200/60 hover:bg-slate-200 dark:bg-slate-700/60 dark:hover:bg-slate-700 text-[#111E38] dark:text-slate-200 transition-colors shrink-0 cursor-pointer"
+            title={tMsg('View team leaves and holidays', 'Lihat cuti tim dan hari libur')}
+          >
+            <IconHoliday className="w-3.5 h-3.5 text-rose-500" />
+            <span className="hidden sm:inline">{tMsg('Leaves & Holidays', 'Cuti & Libur')}</span>
+          </button>
         </div>
       </div>
 
@@ -786,12 +802,27 @@ export default function CalendarView({
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedLeave(null)}
-              className="w-full px-4 py-2.5 rounded-xl font-bold text-[#111E38] bg-[#FACC15] hover:brightness-95 transition-colors text-xs shadow-xs cursor-pointer"
-            >
-              {tMsg('Close', 'Tutup')}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => {
+                  setSelectedLeave(null);
+                  if (typeof window !== 'undefined') {
+                    window.history.pushState({}, '', '/leaves');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                    window.dispatchEvent(new Event('popstate'));
+                  }
+                }}
+                className="flex-1 px-3 py-2.5 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors text-xs cursor-pointer border border-slate-200 dark:border-slate-700"
+              >
+                {tMsg('Open Leaves Page', 'Buka Halaman Cuti')}
+              </button>
+              <button
+                onClick={() => setSelectedLeave(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl font-bold text-[#111E38] bg-[#FACC15] hover:brightness-95 transition-colors text-xs shadow-xs cursor-pointer"
+              >
+                {tMsg('Close', 'Tutup')}
+              </button>
+            </div>
           </div>
         </div>
       )}

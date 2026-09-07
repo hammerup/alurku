@@ -171,8 +171,8 @@ export default function Sidebar() {
     } else if (currentPathname.includes('/assigned-comments')) {
       defaultName = 'Comments & Mentions';
       defaultIcon = 'comment';
-    } else if (currentPathname.includes('/meetings-leaves')) {
-      defaultName = 'Team Leaves & Schedule';
+    } else if (currentPathname.includes('/leaves') || currentPathname.includes('/cuti') || currentPathname.includes('/meetings-leaves')) {
+      defaultName = 'Team Leaves & Holidays';
       defaultIcon = 'event_available';
     } else if (currentPathname.includes('/inbox')) {
       defaultName = 'Inbox Feed';
@@ -1116,26 +1116,27 @@ export default function Sidebar() {
                     )}
                   </button>
 
-                  {/* Meetings & Leaves */}
+                  {/* Leaves & Holidays */}
                   <button
                     onClick={() => {
                       if (navigateTo) {
-                        navigateTo('/meetings-leaves');
+                        navigateTo('/leaves');
                       } else if (typeof window !== 'undefined') {
-                        window.history.pushState({}, '', '/meetings-leaves');
+                        window.history.pushState({}, '', '/leaves');
                         window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                        window.dispatchEvent(new Event('popstate'));
                       }
                       if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }}
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all text-xs ${
-                      activePath === '/meetings-leaves' || activePath?.endsWith('/meetings-leaves') || activePath === '/calendar'
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg transition-all text-xs cursor-pointer ${
+                      activePath === '/leaves' || activePath?.endsWith('/leaves') || activePath === '/cuti' || activePath === '/meetings-leaves' || activePath?.endsWith('/meetings-leaves') || activePath === '/pertemuan-cuti'
                         ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
                         : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px]">event_upcoming</span>
-                      <span className="truncate">{tMsg('Meetings & Leaves', 'Pertemuan & Cuti')}</span>
+                      <span className="material-symbols-outlined text-[18px]">event_available</span>
+                      <span className="truncate">{tMsg('Leaves & Holidays', 'Cuti & Hari Libur')}</span>
                     </div>
                   </button>
                 </div>

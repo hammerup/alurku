@@ -693,8 +693,29 @@ function App() {
           }
         }
 
-        if (path === '/chat' || path.endsWith('/chat') || path === '/inbox' || path.endsWith('/inbox')) {
+        if (
+          path === '/chat' || path.endsWith('/chat') ||
+          path === '/inbox' || path.endsWith('/inbox') ||
+          path === '/leaves' || path.endsWith('/leaves') ||
+          path === '/cuti' || path.endsWith('/cuti') ||
+          path === '/meetings-leaves' || path.endsWith('/meetings-leaves') ||
+          path === '/pertemuan-cuti'
+        ) {
           if (selectedBoard) setSelectedBoard(null);
+          return;
+        }
+
+        if (path === '/calendar' || path.endsWith('/calendar')) {
+          if (!selectedBoard) {
+            setSelectedBoard({
+              id: 'global',
+              name: tMsg ? tMsg('All Projects', 'Semua Proyek') : 'All Projects',
+              owner_username: currentUser,
+              role: 'owner',
+              isVirtual: true,
+            });
+          }
+          setViewMode('calendar');
           return;
         }
 
@@ -1445,7 +1466,7 @@ function App() {
             <AssignedCommentsPage />
           ) : currentPath === '/inbox' || currentPath.endsWith('/inbox') || currentPath === '/kotak-masuk' || currentPath === '/inbox-replies' ? (
             <InboxPage />
-          ) : currentPath === '/meetings-leaves' || currentPath.endsWith('/meetings-leaves') || currentPath === '/pertemuan-cuti' || currentPath === '/calendar' ? (
+          ) : currentPath === '/leaves' || currentPath.endsWith('/leaves') || currentPath === '/cuti' || currentPath.endsWith('/cuti') || currentPath === '/meetings-leaves' || currentPath.endsWith('/meetings-leaves') || currentPath === '/pertemuan-cuti' ? (
             <MeetingsLeavesPage />
           ) : currentPath === '/my-tasks' || currentPath.endsWith('/my-tasks') || currentPath === '/tugas-saya' ? (
             <MyTasksPage />
@@ -1657,8 +1678,8 @@ function App() {
               </main>
             </div>
           )}
-          {/* Universal Footer for Logged In User (Hidden in app views like Chat, Kanban, Inbox) */}
-          {!(currentPath.endsWith('/chat') || (selectedBoard && viewMode === 'kanban') || currentPath.endsWith('/inbox') || currentPath.includes('/meetings-leaves')) && (
+          {/* Universal Footer for Logged In User (Hidden in app views like Chat, Kanban, Inbox, Leaves) */}
+          {!(currentPath.endsWith('/chat') || (selectedBoard && viewMode === 'kanban') || currentPath.endsWith('/inbox') || currentPath.includes('/leaves') || currentPath.includes('/cuti') || currentPath.includes('/meetings-leaves')) && (
             <footer className="flex flex-col sm:flex-row py-2.5 px-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black justify-between items-center gap-2 sm:gap-4 shrink-0 z-40 relative">
               <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest text-center sm:text-left">
                 © {new Date().getFullYear()} Alurku.

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import { useAppContext } from '../hooks/useAppContext';
 
@@ -26,6 +26,18 @@ export default function MeetingsLeavesPage() {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('all'); // 'all' | 'personal' | 'mass_leave' | 'public_holiday'
   const [isAddLeaveOpen, setIsAddLeaveOpen] = useState(false);
   const [leaveToDelete, setLeaveToDelete] = useState(null); // Delete confirmation modal state
+
+  // Close modals on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (leaveToDelete) setLeaveToDelete(null);
+        else if (isAddLeaveOpen) setIsAddLeaveOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [leaveToDelete, isAddLeaveOpen]);
 
   // Google Calendar Indonesian Holidays API state
   const [googleHolidays, setGoogleHolidays] = useState([]);
@@ -311,13 +323,13 @@ export default function MeetingsLeavesPage() {
               event_available
             </span>
             <h1 className="text-xl md:text-2xl font-black text-[#111E38] dark:text-white tracking-tight">
-              {tMsg('Meetings & Leave Management', 'Jadwal Pertemuan & Cuti Tim')}
+              {tMsg('Leaves & Public Holidays', 'Cuti & Hari Libur Tim')}
             </h1>
           </div>
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
             {tMsg(
-              'Monitor team availability, mass leaves, and national holidays in a centralized workspace.',
-              'Pantau ketersediaan anggota tim, cuti bersama, dan libur nasional secara terpusat.'
+              'Monitor team availability, personal leaves, mass leaves, and national holidays in a centralized calendar.',
+              'Pantau ketersediaan anggota tim, cuti pribadi, cuti bersama, dan libur nasional secara terpusat.'
             )}
           </p>
         </div>
@@ -439,7 +451,9 @@ export default function MeetingsLeavesPage() {
                   : 'text-neutral-500 hover:text-black dark:hover:text-white'
               }`}
             >
-              <span className="material-symbols-outlined text-[15px] leading-none">verified</span>
+              <span className={`material-symbols-outlined text-[15px] leading-none ${isFetchingGoogleHolidays ? 'animate-spin' : ''}`}>
+                {isFetchingGoogleHolidays ? 'sync' : 'verified'}
+              </span>
               <span>{tMsg('Public Holiday', 'Libur Nasional')}</span>
             </button>
             <button
@@ -569,7 +583,7 @@ export default function MeetingsLeavesPage() {
                     {dayTasks.map((t) => (
                       <div
                         key={`task-${t.id}`}
-                        onClick={() => context?.setSelectedTask && context.setSelectedTask(t)}
+                        onClick={() => setSelectedTask && setSelectedTask(t)}
                         className="p-1 rounded-lg text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 flex items-center gap-1 shadow-2xs hover:border-[#FACC15] cursor-pointer transition-all truncate"
                         title={`Deadline: ${t.project_name || t.name || t.title || 'Task'}`}
                       >
