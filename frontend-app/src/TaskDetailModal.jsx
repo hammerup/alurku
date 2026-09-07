@@ -238,9 +238,9 @@ export default function TaskDetailModal({
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
   const handleGenerateDesc = async () => {
     if (!editFormData.project_name) {
-      alert(
-        language === 'id' ? 'Silakan masukkan nama/judul tugas terlebih dahulu.' : 'Please enter a task name first.'
-      );
+      const msg =
+        language === 'id' ? 'Silakan masukkan nama/judul tugas terlebih dahulu.' : 'Please enter a task name first.';
+      if (showNotification) showNotification(msg, 'warning');
       return;
     }
     setIsGeneratingDesc(true);
@@ -262,7 +262,9 @@ export default function TaskDetailModal({
   const [isEstimatingEtc, setIsEstimatingEtc] = useState(false);
   const handleEstimateEtc = async () => {
     if (!editFormData.project_name) {
-      alert(language === 'id' ? 'Silakan masukkan judul tugas terlebih dahulu.' : 'Please enter a task name first.');
+      const msg =
+        language === 'id' ? 'Silakan masukkan judul tugas terlebih dahulu.' : 'Please enter a task name first.';
+      if (showNotification) showNotification(msg, 'warning');
       return;
     }
     setIsEstimatingEtc(true);

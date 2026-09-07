@@ -348,6 +348,7 @@ export default function AppModals() {
           handleManualFormClick={handleManualFormClick}
           selectedBoard={selectedBoard}
           boards={boards}
+          showNotification={showNotification}
         />
       )}
 

@@ -34,6 +34,7 @@ export default function TaskFormModal({
   selectedBoard,
   boards = [],
   userDirectory,
+  showNotification,
 }) {
   const [isClosing, close] = useCloseAnimation(() => setIsFormOpen(false));
   const tMsg = (en, id) => (language === 'id' ? id : en);
@@ -44,11 +45,27 @@ export default function TaskFormModal({
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGeneratingTask, setIsGeneratingTask] = useState(false);
 
+  // Custom in-modal alert & confirm dialog state
+  const [modalPopup, setModalPopup] = useState(null);
+
+  const showAlert = (message, title = null, type = 'warning') => {
+    setModalPopup({
+      title: title || (type === 'error' ? tMsg('Error', 'Terjadi Kesalahan') : tMsg('Attention', 'Perhatian')),
+      message,
+      type,
+    });
+    if (showNotification) {
+      showNotification(message, type);
+    }
+  };
+
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
   const handleGenerateDesc = async () => {
     if (!formData.project_name) {
-      alert(
-        language === 'id' ? 'Silakan masukkan nama/judul tugas terlebih dahulu.' : 'Please enter a task name first.'
+      showAlert(
+        language === 'id' ? 'Silakan masukkan nama/judul tugas terlebih dahulu.' : 'Please enter a task name first.',
+        tMsg('Task Title Required', 'Judul Tugas Diperlukan'),
+        'warning'
       );
       return;
     }
@@ -60,7 +77,11 @@ export default function TaskFormModal({
       setFormData({ ...formData, description: res.data.text });
     } catch (err) {
       console.error(err);
-      alert(language === 'id' ? 'Gagal membuat deskripsi dengan AI.' : 'Failed to generate description with AI.');
+      showAlert(
+        language === 'id' ? 'Gagal membuat deskripsi dengan AI.' : 'Failed to generate description with AI.',
+        tMsg('AI Generation Failed', 'Gagal Membuat Deskripsi AI'),
+        'error'
+      );
     } finally {
       setIsGeneratingDesc(false);
     }
@@ -148,6 +169,11 @@ Format:
       }
     } catch (err) {
       console.error(err);
+      showAlert(
+        language === 'id' ? 'Gagal menyusun tugas dengan Asisten Pintar.' : 'Failed to draft task with Smart Assistant.',
+        tMsg('AI Drafting Failed', 'Gagal Menyusun Tugas AI'),
+        'error'
+      );
     } finally {
       setIsGeneratingTask(false);
       setFormMode('manual');
@@ -157,7 +183,11 @@ Format:
   const [isEstimatingEtc, setIsEstimatingEtc] = useState(false);
   const handleEstimateEtc = async () => {
     if (!formData.project_name) {
-      alert(language === 'id' ? 'Silakan masukkan judul tugas terlebih dahulu.' : 'Please enter a task name first.');
+      showAlert(
+        language === 'id' ? 'Silakan masukkan judul tugas terlebih dahulu.' : 'Please enter a task name first.',
+        tMsg('Task Title Required', 'Judul Tugas Diperlukan'),
+        'warning'
+      );
       return;
     }
     setIsEstimatingEtc(true);
@@ -175,7 +205,11 @@ Format:
       }
     } catch (err) {
       console.error(err);
-      alert(language === 'id' ? 'Gagal mengestimasi waktu pengerjaan tugas.' : 'Failed to estimate task time.');
+      showAlert(
+        language === 'id' ? 'Gagal mengestimasi waktu pengerjaan tugas.' : 'Failed to estimate task time.',
+        tMsg('Estimation Failed', 'Gagal Estimasi Waktu'),
+        'error'
+      );
     } finally {
       setIsEstimatingEtc(false);
     }
@@ -212,13 +246,19 @@ Format:
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && !isMentioning) {
-        handleCancel();
+      if (e.key === 'Escape') {
+        if (modalPopup) {
+          e.preventDefault();
+          e.stopPropagation();
+          setModalPopup(null);
+        } else if (!isMentioning) {
+          handleCancel();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMentioning, handleCancel]);
+  }, [isMentioning, handleCancel, modalPopup]);
 
   const globalMentionOptions = selectedBoard?.is_private
     ? [currentUser]
@@ -848,6 +888,92 @@ Format:
               </button>
             </div>
           </form>
+        )}
+
+        {/* Custom In-Modal Alert / Confirm Dialog */}
+        {modalPopup && (
+          <div
+            className="fixed inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-70 p-4 transition-opacity duration-200 animate-fadeIn"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setModalPopup(null);
+            }}
+          >
+            <div
+              className="bg-white dark:bg-neutral-950 p-6 sm:p-8 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center mac-animate"
+              role="dialog"
+              aria-modal="true"
+            >
+              <div
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm border ${
+                  modalPopup.type === 'error'
+                    ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-500 border-rose-200 dark:border-rose-800/50'
+                    : modalPopup.type === 'info'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 border-indigo-200 dark:border-indigo-800/50'
+                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-500 border-amber-200 dark:border-amber-800/50'
+                }`}
+              >
+                {modalPopup.type === 'error' ? (
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 9l-6 6m0-6l6 6" />
+                  </svg>
+                ) : modalPopup.type === 'info' ? (
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <path strokeLinecap="round" d="M12 16v-4m0-4h.01" />
+                  </svg>
+                ) : (
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                )}
+              </div>
+
+              <h3 className="text-lg sm:text-xl font-black text-black dark:text-white mb-2 uppercase tracking-tight">
+                {modalPopup.title}
+              </h3>
+
+              <p className="text-neutral-600 dark:text-neutral-400 mb-6 text-xs sm:text-sm font-medium leading-relaxed">
+                {modalPopup.message}
+              </p>
+
+              <div className="flex justify-center gap-3">
+                {modalPopup.onConfirm ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        modalPopup.onCancel?.();
+                        setModalPopup(null);
+                      }}
+                      className="flex-1 px-4 py-3.5 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 uppercase tracking-widest text-[10px] sm:text-xs transition-colors cursor-pointer"
+                    >
+                      {modalPopup.cancelText || tMsg('Cancel', 'Batal')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        modalPopup.onConfirm();
+                        setModalPopup(null);
+                      }}
+                      className="flex-1 px-4 py-3.5 rounded-full font-bold text-white bg-black dark:bg-white dark:text-black hover:opacity-90 shadow-md uppercase tracking-widest text-[10px] sm:text-xs transition-all cursor-pointer hover:-translate-y-0.5"
+                    >
+                      {modalPopup.confirmText || tMsg('Confirm', 'Konfirmasi')}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setModalPopup(null)}
+                    className="w-full px-6 py-3.5 rounded-full font-bold text-white bg-black dark:bg-white dark:text-black hover:opacity-90 shadow-md uppercase tracking-widest text-[10px] sm:text-xs transition-all cursor-pointer hover:-translate-y-0.5"
+                    autoFocus
+                  >
+                    {modalPopup.confirmText || tMsg('Understood', 'Mengerti')}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
