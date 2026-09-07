@@ -396,6 +396,23 @@ export default function SmartAssistant({
   const optChangeProj = tMsg('Change Project', 'Ubah Proyek');
   const optChangeCat = tMsg('Change Category', 'Ubah Kategori');
 
+  // Purified AI error helper — strictly filters out vendor names and internal error codes
+  const sanitizeAiError = (err) => {
+    const rawMsg = err?.response?.data?.detail || err?.message || '';
+    if (
+      !rawMsg ||
+      /groq|gemini|gpt-oss|llama|openai|claude|cloudflare|geo block|access denied|status code 503|status code 500|network error|failed to resolve|unknown error/i.test(
+        rawMsg
+      )
+    ) {
+      return tMsg(
+        'There was a temporary hiccup connecting to the AI assistant. Try again in a moment? 😊',
+        'Koneksi asisten AI sedang mengalami sedikit kendala. Coba lagi sebentar lagi ya! 😊'
+      );
+    }
+    return rawMsg;
+  };
+
   // Randomized thinking phrases so Luruka doesn't feel like a stuck bot
   const thinkingPhrases = language === 'id'
     ? [
@@ -1281,8 +1298,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
               );
               setStep('end');
             } catch (err) {
-              // Fallback to Rule-Based if Gemini API is not configured
-              const errorDetail = err.response?.data?.detail || 'Gemini AI is currently unavailable';
+              // Seamless Smart Analysis Fallback (Zero debug leaks)
               addBotMessage(
                 `📊 **${workspaceName} ${lblQuickAnalysis}**\n\n` +
                   `• ${lblHealth}: **${projectHealth}%**\n` +
@@ -1292,11 +1308,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
                   `• ${lblCritical}: **${critical}**\n` +
                   `• ${lblBottleneck}: **${bottleneckTasks}**\n` +
                   `• ${lblSubtasks}: **${subtaskCompletionPct}%**\n\n` +
-                  `> *Note: ${errorDetail}. ${tMsg(
-                    'Displaying rule-based insight',
-                    'Menampilkan wawasan berbasis aturan'
-                  )}.*\n\n` +
-                  `${insight}`,
+                  `✨ **${tMsg('Smart System Insight', 'Wawasan Sistem Cerdas')}:**\n${insight}`,
                 [optStartOver, optClose]
               );
               setStep('end');
@@ -1919,17 +1931,7 @@ If it's a general question or conversation related to project/task management, o
           })
           .catch((err) => {
             setMessages((prev) => prev.filter((m) => thinkingPhrases.some((p) => m.text === p) ? false : true));
-            let rawMsg = err.response?.data?.detail || err.message || 'Unknown error';
-            // Sanitize provider mentions to hide proprietary backend engines
-            let errorMsg = rawMsg;
-            if (
-              /gemini|groq|gpt-oss|llama|openai|claude/i.test(rawMsg)
-            ) {
-              errorMsg = tMsg(
-                'There was a hiccup connecting to the AI service. Try again in a moment?',
-                'Koneksinya ada sedikit gangguan. Coba lagi sebentar lagi ya?'
-              );
-            }
+            const errorMsg = sanitizeAiError(err);
             addBotMessage(
               tMsg(
                 `Hmm, something went wrong on my end. 😅\n\n*${errorMsg}*\n\nNo worries though — here's what I can still help you with:`,
@@ -2187,7 +2189,7 @@ If it's a general question or conversation related to project/task management, o
                     m.text !== tMsg('Organizing meeting notes with AI... ⏳', 'Menyusun catatan rapat dengan AI... ⏳')
                 )
               );
-              const errorMsg = err.response?.data?.detail || err.message || 'Unknown error';
+              const errorMsg = sanitizeAiError(err);
               addBotMessage(tMsg(`⚠️ Failed to generate MoM: ${errorMsg}`, `⚠️ Gagal membuat MoM: ${errorMsg}`), [
                 optStartOver,
                 optClose,
@@ -2562,7 +2564,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
                   (m) => m.text !== tMsg('Drafting description with AI... ⏳', 'Membuat deskripsi dengan AI... ⏳')
                 )
               );
-              const errorMsg = err.response?.data?.detail || err.message || 'Unknown error';
+              const errorMsg = sanitizeAiError(err);
               addBotMessage(
                 tMsg(`⚠️ Failed to draft description: ${errorMsg}`, `⚠️ Gagal membuat draf deskripsi: ${errorMsg}`)
               );

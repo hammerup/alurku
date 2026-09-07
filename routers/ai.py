@@ -65,33 +65,31 @@ def generate_ai_text(
 
     def call_gemini():
         if not gemini_api_key:
-            raise Exception("Gemini API Key missing in .env")
+            raise Exception("Gemini API Key missing")
         gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
         client = genai.Client(api_key=gemini_api_key.strip())
         try:
             response = client.models.generate_content(
                 model=gemini_model, contents=final_prompt
             )
-            return {"text": response.text, "provider": f"Google Gemini ({gemini_model})"}
+            return {"text": response.text, "provider": "alurku AI"}
         except Exception as e:
             error_str = str(e)
             if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
-                raise Exception(
-                    "Gemini API limit reached. Please wait a moment."
-                )
+                raise Exception("Upstream AI rate limit reached.")
             # Try secondary model if primary model is unavailable
             try:
                 response = client.models.generate_content(
                     model="gemini-1.5-flash", contents=final_prompt
                 )
-                return {"text": response.text, "provider": "Google Gemini (gemini-1.5-flash)"}
+                return {"text": response.text, "provider": "alurku AI"}
             except Exception:
                 pass
             raise Exception(error_str)
 
     def call_groq():
         if not groq_api_key:
-            raise Exception("Groq API Key missing in .env")
+            raise Exception("Groq API Key missing")
         groq_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
         headers = {
             "Authorization": f"Bearer {groq_api_key.strip()}",
@@ -109,56 +107,97 @@ def generate_ai_text(
             timeout=15,
         )
         if response.status_code == 429:
-            raise Exception("Groq AI limit reached. Please wait a moment.")
+            raise Exception("Upstream AI rate limit reached.")
         if response.status_code == 403:
-            raise Exception("Groq API Access Denied (Cloudflare / Geo block).")
+            raise Exception("Upstream network or access policy restricted connection.")
         response.raise_for_status()
         return {
             "text": response.json()["choices"][0]["message"]["content"],
-            "provider": f"Groq ({groq_model})",
+            "provider": "alurku AI",
         }
 
-    # Strict User Selection (explicit provider in request always wins)
-    if effective_provider == "gemini":
-        try:
-            return call_gemini()
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Gemini Error: {str(e)}")
-    elif effective_provider in ["groq", "gpt-oss", "gpt_oss", "llama"]:
-        try:
-            return call_groq()
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Groq Error: {str(e)}")
+    # ── Resilient Dual-Engine Architecture with Seamless Auto-Failover ────────
+    import logging
+    ai_logger = logging.getLogger("uvicorn.error")
 
-    # Default Fallback Logic (Auto) — Groq dulu, jika gagal langsung fallback ke Gemini
-    if groq_api_key:
-        try:
-            return call_groq()
-        except Exception as e:
-            error_msgs.append(f"Groq: {str(e)}")
+    # If Groq is the preferred engine (by explicit choice or admin policy)
+    if effective_provider in ["groq", "gpt-oss", "gpt_oss", "llama"]:
+        if groq_api_key:
+            try:
+                return call_groq()
+            except Exception as e:
+                ai_logger.warning(f"[AI Dual-Engine] Primary engine (Groq) unavailable: {e}. Attempting seamless failover to Gemini...")
+                error_msgs.append(f"Groq: {str(e)}")
+        # Seamless failover to Gemini
+        if gemini_api_key:
+            try:
+                return call_gemini()
+            except Exception as e:
+                ai_logger.warning(f"[AI Dual-Engine] Failover engine (Gemini) also failed: {e}")
+                error_msgs.append(f"Gemini: {str(e)}")
 
-    if gemini_api_key:
-        try:
-            return call_gemini()
-        except Exception as e:
-            error_msgs.append(f"Gemini: {str(e)}")
+    # If Gemini is the preferred engine (by explicit choice or admin policy)
+    elif effective_provider == "gemini":
+        if gemini_api_key:
+            try:
+                return call_gemini()
+            except Exception as e:
+                ai_logger.warning(f"[AI Dual-Engine] Primary engine (Gemini) unavailable: {e}. Attempting seamless failover to Groq...")
+                error_msgs.append(f"Gemini: {str(e)}")
+        # Seamless failover to Groq
+        if groq_api_key:
+            try:
+                return call_groq()
+            except Exception as e:
+                ai_logger.warning(f"[AI Dual-Engine] Failover engine (Groq) also failed: {e}")
+                error_msgs.append(f"Groq: {str(e)}")
+
+    # Default Auto Logic: Check policy preference, then fallback
+    else:
+        policy_choice = policies.get("default_ai_engine", "auto")
+        if policy_choice == "groq":
+            if groq_api_key:
+                try:
+                    return call_groq()
+                except Exception as e:
+                    ai_logger.warning(f"[AI Dual-Engine] Groq failed: {e}. Failing over to Gemini...")
+                    error_msgs.append(f"Groq: {str(e)}")
+            if gemini_api_key:
+                try:
+                    return call_gemini()
+                except Exception as e:
+                    ai_logger.warning(f"[AI Dual-Engine] Gemini failed: {e}")
+                    error_msgs.append(f"Gemini: {str(e)}")
+        else:
+            # Default order: Groq then Gemini (or Gemini first if groq absent)
+            if groq_api_key:
+                try:
+                    return call_groq()
+                except Exception as e:
+                    ai_logger.warning(f"[AI Dual-Engine] Groq failed: {e}. Failing over to Gemini...")
+                    error_msgs.append(f"Groq: {str(e)}")
+            if gemini_api_key:
+                try:
+                    return call_gemini()
+                except Exception as e:
+                    ai_logger.warning(f"[AI Dual-Engine] Gemini failed: {e}")
+                    error_msgs.append(f"Gemini: {str(e)}")
+
+    # ── Final Error Handling (All Configured Engines Failed) ────────────────────
+    ai_logger.error(f"[AI Service Error] All AI generation attempts failed. Internal trace: {error_msgs}")
 
     if not gemini_api_key and not groq_api_key:
         raise HTTPException(
-            status_code=400,
-            detail="No AI configured. Please set GEMINI_API_KEY or GROQ_API_KEY in the .env file.",
+            status_code=503,
+            detail="Layanan asisten AI belum dikonfigurasi oleh administrator. / AI assistant service is not configured.",
         )
 
-    # Jika kedua AI gagal terhubung
-    combined_err = " | ".join(error_msgs) if error_msgs else "All AI models failed."
-    if any(k in combined_err for k in ["getaddrinfo failed", "NameResolutionError", "Max retries exceeded", "ConnectionError", "Failed to resolve"]):
-        clean_detail = "Koneksi internet atau server AI sedang mengalami masalah. Silakan periksa jaringan Anda dan coba beberapa saat lagi."
-    else:
-        clean_detail = f"AI generation failed. {combined_err}"
-
+    # Sanitize user-facing message: NEVER leak vendor names, tokens, or Cloudflare logs to clients
     raise HTTPException(
-        status_code=500, detail=clean_detail
+        status_code=503,
+        detail="Layanan asisten AI sedang mengalami sedikit kendala koneksi. Silakan coba beberapa saat lagi ya! / AI assistant service is temporarily unavailable. Please try again in a moment.",
     )
+
 
 @router.get("/api/ai/context")
 def get_ai_context(

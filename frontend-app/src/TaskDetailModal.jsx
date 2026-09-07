@@ -250,9 +250,11 @@ export default function TaskDetailModal({
       const res = await axios.post('/api/ai/generate', { prompt });
       setEditFormData({ ...editFormData, description: res.data.text });
     } catch (err) {
+      const rawDetail = err.response?.data?.detail;
       const errorMsg =
-        err.response?.data?.detail ||
-        (language === 'id' ? 'Gagal membuat deskripsi dengan AI.' : 'Failed to generate description with AI.');
+        rawDetail && !/groq|gemini|gpt-oss|llama|openai|claude|cloudflare/i.test(rawDetail)
+          ? rawDetail
+          : (language === 'id' ? 'Gagal membuat deskripsi dengan AI.' : 'Failed to generate description with AI.');
       if (showNotification) showNotification(errorMsg, 'error');
     } finally {
       setIsGeneratingDesc(false);
@@ -281,8 +283,11 @@ export default function TaskDetailModal({
       }
     } catch (err) {
       console.error(err);
+      const rawDetail = err.response?.data?.detail;
       const errorMsg =
-        err.response?.data?.detail || (language === 'id' ? 'Gagal mengestimasi ETC.' : 'Failed to estimate ETC.');
+        rawDetail && !/groq|gemini|gpt-oss|llama|openai|claude|cloudflare/i.test(rawDetail)
+          ? rawDetail
+          : (language === 'id' ? 'Gagal mengestimasi waktu tugas dengan AI.' : 'Failed to estimate task time with AI.');
       if (showNotification) showNotification(errorMsg, 'error');
     } finally {
       setIsEstimatingEtc(false);

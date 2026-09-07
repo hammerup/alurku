@@ -553,11 +553,13 @@ export default function AnalyticsView({
       setAiProvider(res.data.provider || 'AI');
     } catch (err) {
       const errorDetail = err.response?.data?.detail;
-      setAiInsight(
-        errorDetail
-          ? `⚠️ AI Error: ${errorDetail}`
-          : '⚠️ Failed to reach Gemini AI. Please ensure your Admin has configured the GEMINI_API_KEY in the server.'
-      );
+      const cleanMsg =
+        errorDetail && !/gemini|groq|gpt-oss|llama|openai|claude|cloudflare/i.test(errorDetail)
+          ? errorDetail
+          : (language === 'id'
+              ? 'Asisten AI sedang mengalami kendala koneksi sementara. Silakan coba beberapa saat lagi.'
+              : 'AI Assistant is temporarily experiencing connection issues. Please try again in a moment.');
+      setAiInsight(`⚠️ ${cleanMsg}`);
     } finally {
       setIsGeneratingAi(false);
     }
