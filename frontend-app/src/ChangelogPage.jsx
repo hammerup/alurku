@@ -11,6 +11,16 @@ export default function ChangelogPage({ language, setLanguage, isInsideApp = fal
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
+  // Vendor names filter to guarantee no internal provider names are ever exposed to users
+  const sanitizeVendorNames = (str) => {
+    if (!str || typeof str !== 'string') return str;
+    return str
+      .replace(/\bgroq\b/gi, 'AI')
+      .replace(/\bgemini\b/gi, 'AI')
+      .replace(/antara AI dan AI/gi, 'antar-mesin AI')
+      .replace(/between AI and AI/gi, 'between AI engines');
+  };
+
   // Fetch changelogs from database backend
   useEffect(() => {
     let isMounted = true;
@@ -26,7 +36,12 @@ export default function ChangelogPage({ language, setLanguage, isInsideApp = fal
         }
         const res = await axios.get('/api/changelogs', { params });
         if (isMounted) {
-          setChangelogs(res.data || []);
+          const sanitizedLogs = (res.data || []).map((log) => ({
+            ...log,
+            title: sanitizeVendorNames(log.title),
+            changes: Array.isArray(log.changes) ? log.changes.map(sanitizeVendorNames) : [],
+          }));
+          setChangelogs(sanitizedLogs);
         }
       } catch (err) {
         console.error('Failed to load changelogs from database', err);

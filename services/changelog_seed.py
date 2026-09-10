@@ -11,7 +11,7 @@ CHANGELOGS_SEED = [
             "Peringatan Tabrakan Cuti: Sistem otomatis mendeteksi dan memberi peringatan pada tugas aktif yang tanggal tenggatnya jatuh pada hari cuti anggota.",
             "Rekomendasi Rebalancing Beban Otomatis: Asisten menganalisis anggota tim yang kelebihan beban (overload) dan menyarankan pengalihan tugas ke rekan tim yang memiliki kapasitas longgar.",
             "Modal Pemeriksa Tugas Anggota: Memeriksa rincian tugas per anggota dengan filter status beban cepat dan tombol langsung untuk mendelegasikan tugas.",
-            "Arsitektur AI Dual-Engine Failover: Menerapkan pengalihan cerdas otomatis antara Groq dan Gemini dengan penyembunyian error vendor dari pengguna serta fallback lokal yang ramah.",
+            "Arsitektur AI Dual-Engine Failover: Menerapkan pengalihan cerdas otomatis antar-mesin AI dengan penyembunyian error teknis dari pengguna serta panduan fallback lokal yang ramah.",
             "Dialog Konfirmasi Kustom: Menghapus dialog alert/confirm browser standar pada formulir pembuatan tugas dan menggantinya dengan modal konfirmasi interaktif internal.",
             "Kepatuhan Brand System & Pembersihan Chat: Menghapus tag HTML mentah dari riwayat percakapan AI dan menstandardisasi seluruh ikon menjadi SVG inline modern tanpa emoji mentah."
         ],
@@ -20,7 +20,7 @@ CHANGELOGS_SEED = [
             "Leave Collision Alerts: The system automatically detects and flags active tasks whose deadlines collide with an assignee's scheduled time off.",
             "Smart Workload Rebalancing Advice: The assistant analyzes overloaded team members and provides instant delegation suggestions to colleagues with surplus capacity.",
             "Interactive Member Task Inspector: Drill down into individual workloads with quick status filter pills and direct task management shortcuts.",
-            "Dual-Engine AI Failover Architecture: Implemented seamless automatic fallback between Groq and Gemini with complete vendor error masking and friendly localized guidance.",
+            "Dual-Engine AI Failover Architecture: Implemented seamless automatic fallback between primary and secondary AI engines with complete error masking and friendly localized guidance.",
             "In-Modal Custom Alert Dialogs: Replaced primitive browser alert/confirm prompts in task modals with high-contrast, brand-compliant internal dialogs.",
             "Brand System & Chat History Cleanup: Eliminated naked HTML leakage in AI chat transcripts and standardized 100% inline SVG iconography with zero raw emojis."
         ],
