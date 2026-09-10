@@ -1,13 +1,11 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
 import { Avatar, IconPlus } from '../SharedUI';
-import { HighlightText } from '../Utils';
 
 export default function Sidebar() {
   const {
     navigateTo,
     currentPath,
-    setCurrentPath,
     currentUser,
     boards,
     selectedBoard,
@@ -16,52 +14,27 @@ export default function Sidebar() {
     setFavoriteBoards,
     notifications,
     dmConversations,
-    inboxChats,
     setIsFormOpen,
     setIsCreateBoardOpen,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
     language,
-    setIsSettingsOpen,
     setIsNotifOpen,
-    isNotifOpen,
     unreadCount,
-    setIsChatWorkspaceOpen,
     setIsProactiveAIOpen,
     viewMode,
     setViewMode,
-    globalSearchQuery,
-    setGlobalSearchQuery,
-    setIsGlobalSearchOpen,
-    globalSearchResults,
-    isGlobalSearchOpen,
-    isGlobalSearchClosing,
-    closeGlobalSearch,
-    handleGlobalSearchSelect,
     avatarsMap,
     accountStatus,
-    setIsLogoutConfirmOpen,
     setIsDocsOpen,
-    setIsExportModalOpen,
-    setExportMode,
-    handleReadNotification,
-    handleReadAllNotifications,
-    handleNotificationTaskClick,
     setIsInvitesModalOpen,
     showNotification,
-    formatDateMMM,
-    setIsLeaveModalOpen,
     setIsMyTicketsOpen,
-    setIsFeedbackOpen,
     setIsArchivedOpen,
     setIsSupportOpen,
-    setIsProjectChatOpen,
-    setDrawerTab,
     startTour,
-    isInstallable,
-    handleInstallClick,
+    setShowWelcomeTour,
     isSuperAdmin,
-    openAdminModal,
     setBoardToDelete,
     archiveBoard,
     workspaces,
@@ -73,8 +46,6 @@ export default function Sidebar() {
     setShowMyTasks,
     showOverdueOnly,
     setShowOverdueOnly,
-    showDueTodayOnly,
-    setShowDueTodayOnly,
     filterStatus,
     setFilterStatus,
     filterCategory,
@@ -109,7 +80,6 @@ export default function Sidebar() {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_sidebar_collapsed') === 'true';
     return false;
   });
-  const [isMyTasksTreeOpen, setIsMyTasksTreeOpen] = useState(true);
   const [isSpacesTreeOpen, setIsSpacesTreeOpen] = useState(true);
   const [isSavedViewsOpen, setIsSavedViewsOpen] = useState(true);
 
@@ -145,7 +115,9 @@ export default function Sidebar() {
       try {
         const saved = localStorage.getItem(`alurku_saved_views_${currentUser}`);
         if (saved) return JSON.parse(saved);
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
     return [
       { id: 'sv-assigned', nameEn: 'Assigned to Me', nameId: 'Ditugaskan ke Saya', icon: 'person_check', type: 'assigned', targetUrl: '/my-tasks' },
@@ -157,8 +129,8 @@ export default function Sidebar() {
     const currentPathname = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
     
     // Auto-suggest a descriptive default name based on what's active
-    let defaultName = '';
-    let defaultIcon = 'bookmark';
+    let defaultName;
+    let defaultIcon;
 
     if (selectedBoard && selectedBoard.id !== 'global') {
       defaultName = `${selectedBoard.name} (${viewMode || 'kanban'})`;
@@ -394,22 +366,6 @@ export default function Sidebar() {
     ).length;
   };
 
-  const unreadInboxChatsCount = useMemo(() => {
-    return (inboxChats || []).filter((chat) => {
-      if (chat.latest_sender === currentUser) return false;
-      if (chat.is_dm) return (chat.unread_count || 0) > 0;
-      if (chat.is_project_chat) {
-        const lastRead = localStorage.getItem(`alurku_last_read_board_${chat.board_id}_${currentUser}`);
-        if (!lastRead) return false; // Jangan fallback true tanpa interaksi
-        return chat.timestamp > lastRead;
-      } else {
-        const lastRead = localStorage.getItem(`alurku_last_read_task_${chat.task_id}_${currentUser}`);
-        if (!lastRead) return false;
-        return chat.timestamp > lastRead;
-      }
-    }).length;
-  }, [inboxChats, currentUser]);
-
   const totalUnreadChats = useMemo(() => {
     const unreadDms = (dmConversations || []).reduce((sum, convo) => sum + (convo.unread_count || 0), 0);
     // Count unread workspace chats by checking notifications that are linked to a board_id or related_task_id
@@ -421,11 +377,6 @@ export default function Sidebar() {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'recent';
     return 'recent';
   });
-
-  const handleSortChange = (mode) => {
-    setSortMode(mode);
-    localStorage.setItem('alurku_board_sort', mode);
-  };
 
   // Sorted Boards & Filtering
   const sortedBoards = useMemo(() => {
@@ -1483,28 +1434,54 @@ export default function Sidebar() {
                   <span className="text-xs truncate">{tMsg('Ask Luruka AI', 'Tanya Luruka AI')}</span>
                 </button>
 
-                <div className="space-y-0.5 pt-1">
+                <div className="space-y-1 pt-1">
                   <button
                     onClick={() => {
-                      startTour();
+                      if (setShowWelcomeTour) setShowWelcomeTour(true);
+                      else startTour();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[18px] text-emerald-500">flag</span>
-                    <span className="truncate">{tMsg('Onboarding Assistant', 'Asisten Onboarding')}</span>
+                    <span className="material-symbols-outlined text-[18px] text-emerald-500 shrink-0">explore</span>
+                    <span className="truncate">{tMsg('Onboarding & Flow Guide', 'Panduan Onboarding & Alur')}</span>
                   </button>
 
                   <button
                     onClick={() => {
-                      setViewMode('overview');
-                      setSelectedBoard(null);
+                      setSelectedBoard({
+                        id: 'global',
+                        name: tMsg ? tMsg('All Projects', 'Semua Proyek') : 'All Projects',
+                        owner_username: currentUser,
+                        role: 'owner',
+                        isVirtual: true,
+                      });
+                      setViewMode('analytics');
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
+                    className={`w-full flex items-start gap-2 px-2 py-2 rounded-lg text-xs transition-colors ${
+                      viewMode === 'analytics'
+                        ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
+                        : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
+                    }`}
                   >
-                    <span className="material-symbols-outlined text-[18px] text-indigo-500">insights</span>
-                    <span className="truncate">{tMsg('Workload Analytics Agent', 'Asisten Beban Kerja')}</span>
+                    <span className={`material-symbols-outlined text-[18px] shrink-0 mt-0.5 ${
+                      viewMode === 'analytics' ? 'text-inherit' : 'text-indigo-500 dark:text-indigo-400'
+                    }`}>
+                      analytics
+                    </span>
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="truncate font-semibold leading-tight">
+                        {tMsg('Workload & Burnout Assistant', 'Asisten Beban Kerja & Burnout')}
+                      </div>
+                      <div className={`text-[10px] truncate mt-0.5 ${
+                        viewMode === 'analytics'
+                          ? 'text-[#FACC15]/80 dark:text-[#111E38]/80'
+                          : 'text-slate-500 dark:text-slate-400'
+                      }`}>
+                        {tMsg('Capacity & Risk Index', 'Kapasitas & Risiko')}
+                      </div>
+                    </div>
                   </button>
                 </div>
               </div>

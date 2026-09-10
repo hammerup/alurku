@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { Avatar, SegmentedControl } from './SharedUI';
 
@@ -13,13 +13,13 @@ const SettingsSection = ({ title, description, children }) => (
 const TabButton = ({ id, icon, label, activeTab, setActiveTab }) => (
   <button
     onClick={() => setActiveTab(id)}
-    className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+    className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
       activeTab === id
-        ? 'bg-black text-white dark:bg-white dark:text-black shadow-md'
-        : 'text-neutral-500 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 hover:text-black dark:hover:text-white'
+        ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
+        : 'text-neutral-600 dark:text-neutral-400 hover:bg-[#FACC15]/15 hover:text-[#111E38] dark:hover:text-[#FACC15]'
     }`}
   >
-    <span className="text-lg w-6 text-center">{icon}</span>
+    <span className="w-5 h-5 shrink-0 flex items-center justify-center">{icon}</span>
     <span>{label}</span>
   </button>
 );
@@ -241,15 +241,24 @@ export default function SettingsPage({
     >
       <div className="max-w-6xl mx-auto px-6 py-8 md:py-16">
         <div className="mb-12 flex justify-between items-center mac-animate">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tighter flex items-center gap-3">
-            <span className="text-3xl md:text-4xl">⚙️</span> {tMsg('Settings', 'Pengaturan')}
+          <h2 className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-slate-100 tracking-tighter flex items-center gap-3">
+            <svg className="w-8 h-8 md:w-9 md:h-9 text-[#111E38] dark:text-[#FACC15] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>{tMsg('Settings', 'Pengaturan')}</span>
           </h2>
           <button
             onClick={triggerClose}
-            className="text-neutral-500 hover:text-indigo-500 dark:hover:text-indigo-400 font-bold flex items-center gap-2 transition-colors text-xs md:text-sm uppercase tracking-widest"
+            className="text-neutral-500 hover:text-[#111E38] dark:hover:text-[#FACC15] font-bold flex items-center gap-2 transition-colors text-xs md:text-sm uppercase tracking-widest cursor-pointer"
           >
-            <span className="hidden sm:inline">← {tMsg('Back to App', 'Kembali')}</span>
-            <span className="sm:hidden text-2xl">✖</span>
+            <svg className="w-4 h-4 hidden sm:inline-block shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="hidden sm:inline">{tMsg('Back to App', 'Kembali')}</span>
+            <svg className="w-5 h-5 sm:hidden shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -258,35 +267,55 @@ export default function SettingsPage({
           <div className="md:w-64 shrink-0 space-y-2">
             <TabButton
               id="profile"
-              icon="👤"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              }
               label={tMsg('Account Profile', 'Profil Akun')}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
             <TabButton
               id="appearance"
-              icon="🎨"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4 4.5 4.5 0 014.5-4.5H10v-3a3 3 0 116 0v3h2.5A4.5 4.5 0 0123 17a4 4 0 01-4 4H7zM12 3v9" />
+                </svg>
+              }
               label={tMsg('Appearance', 'Tampilan')}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
             <TabButton
               id="preferences"
-              icon="🛠️"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+              }
               label={tMsg('Preferences', 'Preferensi')}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
             <TabButton
               id="notifications"
-              icon="🔔"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              }
               label={tMsg('Notifications', 'Notifikasi')}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
             />
             <TabButton
               id="billing"
-              icon="💳"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              }
               label={tMsg('Plan & Usage', 'Paket & Penggunaan')}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -369,12 +398,16 @@ export default function SettingsPage({
                         className={InputClass}
                         required
                       />
-                      <p className="text-[9px] text-amber-600 dark:text-amber-500 font-bold uppercase tracking-widest mt-1.5 px-1">
-                        ⚠️{' '}
-                        {tMsg(
-                          'Changing email requires re-verification.',
-                          'Mengubah email memerlukan verifikasi ulang.'
-                        )}
+                      <p className="flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-500 font-bold uppercase tracking-wider mt-1.5 px-1">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span>
+                          {tMsg(
+                            'Changing email requires re-verification.',
+                            'Mengubah email memerlukan verifikasi ulang.'
+                          )}
+                        </span>
                       </p>
                     </div>
                   </SettingItem>
@@ -495,9 +528,12 @@ export default function SettingsPage({
                   <div className="flex justify-end mt-8">
                     <button
                       type="submit"
-                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                      className="px-6 py-2.5 bg-[#111E38] text-white hover:bg-[#1b2b4d] dark:bg-[#FACC15] dark:text-[#111E38] text-xs font-bold uppercase tracking-wider rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                     >
-                      💾 {tMsg('Save Profile Changes', 'Simpan Perubahan Profil')}
+                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{tMsg('Save Profile Changes', 'Simpan Perubahan Profil')}</span>
                     </button>
                   </div>
                 </form>
@@ -505,8 +541,10 @@ export default function SettingsPage({
                 {/* Danger Zone */}
                 <div className="mt-12 pt-8 border-t border-rose-200 dark:border-rose-900/40">
                   <h4 className="text-sm font-black text-rose-600 dark:text-rose-400 flex items-center gap-2 mb-1.5 uppercase tracking-wider">
-                    <span className="material-symbols-outlined text-base">warning</span>
-                    {tMsg('Danger Zone', 'Zona Bahaya')}
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>{tMsg('Danger Zone', 'Zona Bahaya')}</span>
                   </h4>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4 font-medium">
                     {tMsg(
@@ -519,8 +557,10 @@ export default function SettingsPage({
                     onClick={() => setIsDeleteAccountModalOpen(true)}
                     className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-800/60 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-sm">person_remove</span>
-                    {tMsg('Delete Account Permanently', 'Hapus Akun Secara Permanen')}
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
+                    </svg>
+                    <span>{tMsg('Delete Account Permanently', 'Hapus Akun Secara Permanen')}</span>
                   </button>
                 </div>
               </SettingsSection>
@@ -597,7 +637,12 @@ export default function SettingsPage({
                         }
                         title={bg.name}
                       >
-                        {!bg.value && <span className="text-lg">🚫</span>}
+                        {!bg.value && (
+                          <svg className="w-5 h-5 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" strokeWidth="2" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.5 5.5l13 13" />
+                          </svg>
+                        )}
                         {bg.value === 'gamer' && <span className="text-lg font-black text-[#66c0f4]">G</span>}
                         {bg.value === 'minimal' && <span className="text-lg font-black text-[#1a73e8]">M</span>}
                         {bg.value === 'sunset' && <span className="text-lg font-black text-white">S</span>}
@@ -608,8 +653,10 @@ export default function SettingsPage({
                         {bg.value === 'social' && <span className="text-lg font-black text-[#1877F2]">S</span>}
                         {bg.value === 'retail' && <span className="text-lg font-black text-[#FF9900]">R</span>}
                         {appTheme === bg.value && (
-                          <div className="absolute -top-2 -right-2 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-sm ring-2 ring-white dark:ring-[#15181e]">
-                            ✓
+                          <div className="absolute -top-2 -right-2 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] rounded-full w-5 h-5 flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#15181e]">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                            </svg>
                           </div>
                         )}
                       </button>
@@ -638,8 +685,10 @@ export default function SettingsPage({
                         title={bg.name}
                       >
                         {appTheme === bg.value && (
-                          <div className="absolute -top-2 -right-2 bg-indigo-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow-sm ring-2 ring-white dark:ring-[#15181e]">
-                            ✓
+                          <div className="absolute -top-2 -right-2 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] rounded-full w-5 h-5 flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#15181e]">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                            </svg>
                           </div>
                         )}
                       </button>
@@ -732,10 +781,15 @@ export default function SettingsPage({
                       }`}
                       title="None"
                     >
-                      <span className="text-[10px]">🚫</span>
+                      <svg className="w-4 h-4 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9" strokeWidth="2" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.5 5.5l13 13" />
+                      </svg>
                       {cardTheme === '' && (
-                        <div className="absolute -top-1.5 -right-1.5 bg-indigo-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow-sm ring-2 ring-white dark:ring-[#15181e]">
-                          ✓
+                        <div className="absolute -top-1.5 -right-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] rounded-full w-4 h-4 flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#15181e]">
+                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
                       )}
                     </button>
@@ -751,8 +805,10 @@ export default function SettingsPage({
                         title={bg.name}
                       >
                         {cardTheme === bg.value && (
-                          <div className="absolute -top-1.5 -right-1.5 bg-indigo-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-bold shadow-sm ring-2 ring-white dark:ring-[#15181e]">
-                            ✓
+                          <div className="absolute -top-1.5 -right-1.5 bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] rounded-full w-4 h-4 flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#15181e]">
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                            </svg>
                           </div>
                         )}
                       </button>
@@ -805,8 +861,8 @@ export default function SettingsPage({
                     style={
                       chatBg
                         ? chatBg.startsWith('data:image')
-                          ? { backgroundImage: `url(${chatBg})` }
-                          : { background: chatBg }
+                        ? { backgroundImage: `url(${chatBg})` }
+                        : { background: chatBg }
                         : {}
                     }
                   >
@@ -819,8 +875,11 @@ export default function SettingsPage({
                         'Hei, bagaimana menurutmu latar belakang ini?'
                       )}
                     </div>
-                    <div className="relative z-10 self-end bg-indigo-600 px-4 py-2.5 rounded-2xl rounded-tr-sm text-xs font-medium shadow-sm text-white max-w-[80%]">
-                      {tMsg('Looks highly professional! ✨', 'Terlihat sangat profesional! ✨')}
+                    <div className="relative z-10 self-end bg-indigo-600 px-4 py-2.5 rounded-2xl rounded-tr-sm text-xs font-medium shadow-sm text-white max-w-[80%] flex items-center gap-1.5">
+                      <span>{tMsg('Looks highly professional!', 'Terlihat sangat profesional!')}</span>
+                      <svg className="w-3.5 h-3.5 text-[#FACC15] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.286L13 21l-2.286-6.857L5 12l5.714-2.286L13 3z" />
+                      </svg>
                     </div>
                   </div>
                 </SettingItem>
@@ -842,8 +901,28 @@ export default function SettingsPage({
                 >
                   <SegmentedControl
                     options={[
-                      { label: '☀️ Light', value: 'light' },
-                      { label: '🌙 Dark', value: 'dark' },
+                      {
+                        label: (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <span>Light</span>
+                          </span>
+                        ),
+                        value: 'light',
+                      },
+                      {
+                        label: (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                            </svg>
+                            <span>Dark</span>
+                          </span>
+                        ),
+                        value: 'dark',
+                      },
                     ]}
                     value={isDarkMode ? 'dark' : 'light'}
                     onChange={(val) => setIsDarkMode(val === 'dark')}
@@ -859,8 +938,30 @@ export default function SettingsPage({
                 >
                   <SegmentedControl
                     options={[
-                      { label: '🇺🇸 EN', value: 'en' },
-                      { label: '🇮🇩 ID', value: 'id' },
+                      {
+                        label: (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                            </svg>
+                            <span>EN</span>
+                          </span>
+                        ),
+                        value: 'en',
+                      },
+                      {
+                        label: (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                            </svg>
+                            <span>ID</span>
+                          </span>
+                        ),
+                        value: 'id',
+                      },
                     ]}
                     value={language}
                     onChange={(val) => {
@@ -1100,37 +1201,48 @@ export default function SettingsPage({
                       type="button"
                       onClick={() =>
                         handlePreviewNotif(
-                          tMsg('This is a test info notification! ✨', 'Ini adalah notifikasi info pengujian! ✨'),
+                          tMsg('This is a test info notification!', 'Ini adalah notifikasi info pengujian!'),
                           'info'
                         )
                       }
-                      className="bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border border-blue-200 dark:border-blue-800/50"
+                      className="bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xs transition-all flex items-center gap-2 border border-blue-200 dark:border-blue-800/50 cursor-pointer"
                     >
-                      ℹ️ {tMsg('Preview Info', 'Pratinjau Info')}
+                      <svg className="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-4m0-4h.01" />
+                      </svg>
+                      <span>{tMsg('Preview Info', 'Pratinjau Info')}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() =>
                         handlePreviewNotif(
-                          tMsg('This is a test success notification! ✅', 'Ini adalah notifikasi sukses pengujian! ✅'),
+                          tMsg('This is a test success notification!', 'Ini adalah notifikasi sukses pengujian!'),
                           'success'
                         )
                       }
-                      className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border border-emerald-200 dark:border-emerald-800/50"
+                      className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xs transition-all flex items-center gap-2 border border-emerald-200 dark:border-emerald-800/50 cursor-pointer"
                     >
-                      ✅ {tMsg('Preview Success', 'Pratinjau Sukses')}
+                      <svg className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4" />
+                      </svg>
+                      <span>{tMsg('Preview Success', 'Pratinjau Sukses')}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() =>
                         handlePreviewNotif(
-                          tMsg('This is a test error notification! ⚠️', 'Ini adalah notifikasi error pengujian! ⚠️'),
+                          tMsg('This is a test error notification!', 'Ini adalah notifikasi error pengujian!'),
                           'error'
                         )
                       }
-                      className="bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center gap-2 border border-red-200 dark:border-red-800/50"
+                      className="bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:hover:bg-rose-900/50 dark:text-rose-400 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xs transition-all flex items-center gap-2 border border-rose-200 dark:border-rose-800/50 cursor-pointer"
                     >
-                      ⚠️ {tMsg('Preview Error', 'Pratinjau Error')}
+                      <svg className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>{tMsg('Preview Error', 'Pratinjau Error')}</span>
                     </button>
                   </div>
                 </SettingItem>
@@ -1167,9 +1279,12 @@ export default function SettingsPage({
                     onClick={() => {
                       showNotification(tMsg('Pro Tier subscription upgrades coming soon!', 'Peningkatan paket Pro segera hadir!'), 'info');
                     }}
-                    className="bg-[#FACC15] hover:bg-yellow-400 text-[#111E38] font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm shrink-0 cursor-pointer"
+                    className="bg-[#FACC15] hover:bg-yellow-400 text-[#111E38] font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm shrink-0 cursor-pointer flex items-center gap-2"
                   >
-                    🚀 {tMsg('Upgrade to Pro', 'Tingkatkan ke Pro')}
+                    <svg className="w-4 h-4 shrink-0 text-[#111E38]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.926 14.926 0 01-5.84 2.58m-.12-8.54a2 2 0 102.83 2.83M3 21l3.5-3.5" />
+                    </svg>
+                    <span>{tMsg('Upgrade to Pro', 'Tingkatkan ke Pro')}</span>
                   </button>
                 </div>
 
@@ -1226,11 +1341,13 @@ export default function SettingsPage({
 
       {/* Delete Account Permanent Confirmation Modal */}
       {isDeleteAccountModalOpen && (
-        <div className="fixed inset-0 bg-[#111E38]/50 dark:bg-black/80 backdrop-blur-xs flex items-center justify-center z-110 p-4 transition-opacity animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-[#111E38]/60 dark:bg-black/80 backdrop-blur-xs flex items-center justify-center z-110 p-4 transition-opacity animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#121B2D] p-6 md:p-7 border border-rose-200 dark:border-rose-900/50 shadow-2xl rounded-2xl w-full max-w-md">
             <div className="flex items-center gap-3 mb-3 text-rose-600 dark:text-rose-400">
-              <span className="material-symbols-outlined text-2xl">error</span>
-              <h3 className="text-lg font-black tracking-tight">
+              <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-black tracking-tight text-[#111E38] dark:text-white">
                 {tMsg('Confirm Permanent Account Deletion', 'Konfirmasi Hapus Akun Permanen')}
               </h3>
             </div>
@@ -1262,7 +1379,7 @@ export default function SettingsPage({
                   setIsDeleteAccountModalOpen(false);
                   setDeleteAccountPassword('');
                 }}
-                className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-[#111E38] dark:text-neutral-200 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 {tMsg('Cancel', 'Batal')}
               </button>
@@ -1276,7 +1393,9 @@ export default function SettingsPage({
                   <span>{tMsg('Deleting...', 'Menghapus...')}</span>
                 ) : (
                   <>
-                    <span className="material-symbols-outlined text-sm">delete_forever</span>
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                     <span>{tMsg('Permanently Delete', 'Hapus Permanen')}</span>
                   </>
                 )}
