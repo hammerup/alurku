@@ -651,8 +651,11 @@ from routers.workspaces import router as workspaces_router
 app.include_router(workspaces_router)
 from routers.articles import router as articles_router
 app.include_router(articles_router)
+from routers.changelog import router as changelog_router
+app.include_router(changelog_router)
 from routers.ws import router as ws_router
 app.include_router(ws_router)
+
 
 
 # REST endpoint to load initial activity logs for a workspace

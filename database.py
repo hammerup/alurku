@@ -229,6 +229,21 @@ class AIChatSession(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class Changelog(Base):
+    __tablename__ = "changelogs"
+    id = Column(Integer, primary_key=True, index=True)
+    version = Column(String(50), unique=True, index=True, nullable=False)
+    release_date = Column(String(50), nullable=False)
+    title_id = Column(String(255), nullable=False)
+    title_en = Column(String(255), nullable=False)
+    type = Column(String(50), default="feature")  # major, feature, improvement, fix, release
+    changes_id = Column(Text, nullable=False)  # JSON string array
+    changes_en = Column(Text, nullable=False)  # JSON string array
+    order_index = Column(Integer, default=0, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+
 def get_security_log(db, key: str, default_value=None):
     log = db.query(SecurityLog).filter(SecurityLog.key == key).first()
     if log and log.value:
@@ -527,8 +542,49 @@ def setup_db():
                 )
                 db.add(ws_member)
                 db.commit()
+
+        # Inisialisasi dan sinkronisasi catatan rilis (changelog)
+        seed_changelogs(db)
     finally:
         db.close()
+
+
+def seed_changelogs(db):
+    """
+    Menyemai riwayat catatan rilis (changelogs) dari riwayat 350 commit git
+    ke dalam tabel database agar persist dan tidak mudah terhapus.
+    """
+    try:
+        from services.changelog_seed import CHANGELOGS_SEED
+        for item in CHANGELOGS_SEED:
+            existing = db.query(Changelog).filter(Changelog.version == item["version"]).first()
+            ch_id_json = json.dumps(item["changes_id"], ensure_ascii=False)
+            ch_en_json = json.dumps(item["changes_en"], ensure_ascii=False)
+            if not existing:
+                ch = Changelog(
+                    version=item["version"],
+                    release_date=item["release_date"],
+                    type=item["type"],
+                    title_id=item["title_id"],
+                    title_en=item["title_en"],
+                    changes_id=ch_id_json,
+                    changes_en=ch_en_json,
+                    order_index=item.get("order_index", 0),
+                )
+                db.add(ch)
+            else:
+                existing.release_date = item["release_date"]
+                existing.type = item["type"]
+                existing.title_id = item["title_id"]
+                existing.title_en = item["title_en"]
+                existing.changes_id = ch_id_json
+                existing.changes_en = ch_en_json
+                existing.order_index = item.get("order_index", 0)
+        db.commit()
+    except Exception as e:
+        print("Warning: failed to seed changelogs:", e)
+        db.rollback()
+
 
 
 def get_leave_dates(db):

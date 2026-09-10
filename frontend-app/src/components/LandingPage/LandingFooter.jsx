@@ -1,4 +1,3 @@
-import React from 'react';
 
 const navLinks = {
   product: {
@@ -8,7 +7,9 @@ const navLinks = {
       { label: { id: 'Harga', en: 'Pricing' }, href: '/harga' },
       { label: { id: 'Panduan', en: 'Guide' }, href: '/panduan' },
       { label: { id: 'Dokumentasi', en: 'Documentation' }, href: '/dokumentasi' },
+      { label: { id: 'Catatan Rilis', en: 'Changelog' }, href: '/catatan-rilis' },
     ]
+
   },
   company: {
     title: { id: 'Perusahaan', en: 'Company' },

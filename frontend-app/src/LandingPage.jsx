@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
 import AuthForms from './AuthForms';
@@ -19,6 +19,8 @@ import LandingIntegrations from './components/LandingPage/LandingIntegrations';
 import LandingStats from './components/LandingPage/LandingStats';
 import LandingFAQ from './components/LandingPage/LandingFAQ';
 import LandingCTA from './components/LandingPage/LandingCTA';
+import ChangelogPage from './ChangelogPage';
+
 
 
 export default function LandingPage({
@@ -68,6 +70,8 @@ export default function LandingPage({
       case '/panduan': return 'guide';
       case '/tentang': return 'about';
       case '/dokumentasi': return 'documentation';
+      case '/catatan-rilis':
+      case '/changelog': return 'changelog';
       default: return 'home';
     }
   };
@@ -79,6 +83,7 @@ export default function LandingPage({
       case 'guide': return '/panduan';
       case 'about': return '/tentang';
       case 'documentation': return '/dokumentasi';
+      case 'changelog': return '/catatan-rilis';
       case 'article': return window.location.pathname;
       default: return '/';
     }
@@ -107,7 +112,7 @@ export default function LandingPage({
         setShowAuthForm(true);
         setIsLoginMode(true);
         setIsForgotMode(true);
-      } else if (['/', '/fitur', '/harga', '/panduan', '/tentang', '/dokumentasi'].includes(path) || path.startsWith('/artikel/')) {
+      } else if (['/', '/fitur', '/harga', '/panduan', '/tentang', '/dokumentasi', '/catatan-rilis', '/changelog'].includes(path) || path.startsWith('/artikel/')) {
         setShowAuthForm(false);
         setCurrentTab(getTabFromPath(path));
       } else {
@@ -117,6 +122,7 @@ export default function LandingPage({
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [setShowAuthForm, setIsLoginMode, setIsForgotMode]);
+
 
   // Sync URL path with authentication form modes (masuk, daftar, lupa-sandi)
   useEffect(() => {
@@ -145,8 +151,9 @@ export default function LandingPage({
 
   // Handle SEO & Crawler Compliance Standards (with GEO / LLM optimization)
   useEffect(() => {
-    let title = "alurku. — Kuasai Waktumu, Lancarkan Alurmu.";
-    let description = "alurku. adalah asisten cerdas yang mengubah tumpukan rencana kerjamu menjadi alur eksekusi yang rapi. Fokus pada hasil, biarkan AI kami yang mengatur jadwalnya.";
+    if (currentTab === 'changelog' && !showAuthForm) return;
+    let title;
+    let description;
     let pageUrl = window.location.origin + window.location.pathname;
     let schemaType = "WebPage";
 
@@ -393,7 +400,9 @@ export default function LandingPage({
           {currentTab === 'guide' && <LandingGuidePage language={language} />}
           {currentTab === 'about' && <LandingAboutPage language={language} />}
           {currentTab === 'documentation' && <LandingDocumentationPage language={language} />}
+          {currentTab === 'changelog' && <ChangelogPage language={language} setLanguage={setLanguage} isInsideApp={false} />}
           {currentTab === 'article' && <LandingArticlePage language={language} setCurrentTab={setCurrentTab} />}
+
 
 
           <LandingFooter

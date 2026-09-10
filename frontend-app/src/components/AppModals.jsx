@@ -23,7 +23,6 @@ import {
 } from '../Modals';
 import TaskFormModal from '../TaskFormModal';
 import TaskDetailModal from '../TaskDetailModal';
-import ChangelogModal from '../ChangelogModal';
 import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import DocumentationModal from '../DocumentationModal';
@@ -662,7 +661,15 @@ export default function AppModals() {
       {isPrivacyOpen && <PrivacyPolicyModal setIsPrivacyOpen={setIsPrivacyOpen} language={language} />}
       {isTermsOpen && <TermsOfServiceModal setIsTermsOpen={setIsTermsOpen} language={language} />}
       {isSpecsOpen && <SystemSpecsModal setIsSpecsOpen={setIsSpecsOpen} language={language} />}
-      {isChangelogOpen && <ChangelogModal setIsChangelogOpen={setIsChangelogOpen} language={language} />}
+      {isChangelogOpen && (
+        (() => {
+          setIsChangelogOpen(false);
+          window.history.pushState({}, '', '/catatan-rilis');
+          window.dispatchEvent(new CustomEvent('alurku-navigate'));
+          window.dispatchEvent(new PopStateEvent('popstate'));
+          return null;
+        })()
+      )}
 
       {showWelcomeTour && (
         <WelcomeTourModal

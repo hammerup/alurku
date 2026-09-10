@@ -28,7 +28,7 @@ import {
   MyTicketsModal,
   UnfinishedSubtasksModal,
 } from './Modals';
-import ChangelogModal from './ChangelogModal';
+import ChangelogPage from './ChangelogPage';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
 import AppThemes from './ThemeStyles';
@@ -699,7 +699,9 @@ function App() {
           path === '/leaves' || path.endsWith('/leaves') ||
           path === '/cuti' || path.endsWith('/cuti') ||
           path === '/meetings-leaves' || path.endsWith('/meetings-leaves') ||
-          path === '/pertemuan-cuti'
+          path === '/pertemuan-cuti' ||
+          path === '/catatan-rilis' || path.endsWith('/catatan-rilis') ||
+          path === '/changelog' || path.endsWith('/changelog')
         ) {
           if (selectedBoard) setSelectedBoard(null);
           return;
@@ -1470,6 +1472,8 @@ function App() {
             <MeetingsLeavesPage />
           ) : currentPath === '/my-tasks' || currentPath.endsWith('/my-tasks') || currentPath === '/tugas-saya' ? (
             <MyTasksPage />
+          ) : currentPath === '/catatan-rilis' || currentPath.endsWith('/catatan-rilis') || currentPath === '/changelog' || currentPath.endsWith('/changelog') ? (
+            <ChangelogPage language={language} setLanguage={setLanguage} isInsideApp={true} />
           ) : currentPath === '/dashboard' || currentPath.endsWith('/dashboard') || currentPath === '/dasbor' ? (
             <HomeDashboard />
           ) : !selectedBoard ? (
@@ -1694,10 +1698,14 @@ function App() {
                   Specs
                 </button>
                 <button
-                  onClick={() => setIsChangelogOpen(true)}
+                  onClick={() => {
+                    window.history.pushState({}, '', '/catatan-rilis');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
                   className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
                 >
-                  Changelog
+                  {language === 'id' ? 'Catatan Rilis' : 'Changelog'}
                 </button>
                 <button
                   onClick={() => setIsDocsOpen(true)}
