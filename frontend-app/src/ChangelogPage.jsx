@@ -225,21 +225,6 @@ export default function ChangelogPage({ language, setLanguage, isInsideApp = fal
               'Catatan lengkap dan transparan dari setiap fitur baru, peningkatan arsitektur, dan perbaikan sistem di alurku., disinkronkan langsung dari tonggak commit repositori kami.'
             )}
           </p>
-
-          {/* Quick Metrics */}
-          <div className="flex flex-wrap items-center gap-4 mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800/80 text-xs">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-              <span className="font-bold text-[#111E38] dark:text-[#FACC15]">{changelogs.length}</span>
-              <span className="text-neutral-500 dark:text-neutral-400">{tMsg('Versions Released', 'Versi Dirilis')}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-neutral-600 dark:text-neutral-300 font-medium">{tMsg('Production Ready', 'Status Produksi Stabil')}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-xs">
-              <span className="text-neutral-500 dark:text-neutral-400">{tMsg('Database Persisted', 'Tersimpan Permanen di DB')}</span>
-            </div>
-          </div>
         </div>
 
         {/* Filter and Search Bar */}
