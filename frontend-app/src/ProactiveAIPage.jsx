@@ -311,8 +311,11 @@ export default function ProactiveAIPage({
   const renderChatText = (text) => {
     if (!text) return '';
     
+    // Strip any raw HTML tags to prevent naked markup or unescaped HTML leakage
+    const stripped = text.replace(/<[^>]*>/g, '').trim();
+    
     // Escape HTML to prevent injection
-    let escaped = text
+    let escaped = stripped
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
@@ -1880,21 +1883,39 @@ USER REQUEST:
               {/* Case 2: Conversational Chat bubble stream */}
               {generatedTasks.length === 0 && (
                 <div className="flex-1 overflow-y-auto pr-1 space-y-4 min-h-0 custom-scrollbar pb-4">
-                  {chatHistory.map((chat) => (
-                    <div
-                      key={chat.id}
-                      className={`flex ${chat.sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
-                    >
+                  {chatHistory.map((chat) => {
+                    if (chat.sender === 'system') {
+                      const cleanSystemText = (chat.text || '')
+                        .replace(/<[^>]*>/g, '')
+                        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+                        .trim();
+                      return (
+                        <div key={chat.id} className="flex justify-center my-3 animate-slide-up">
+                          <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-semibold tracking-wide border border-neutral-200 dark:border-neutral-800 px-3 py-1 rounded-full bg-neutral-100/80 dark:bg-neutral-800/80 shadow-xs flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
+                            <span>{cleanSystemText}</span>
+                          </span>
+                        </div>
+                      );
+                    }
+
+                    return (
                       <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-                          chat.sender === 'user'
-                            ? 'bg-[#FACC15] text-[#111E38] font-bold rounded-tr-none'
-                            : isDarkMode
-                            ? 'bg-neutral-800/80 border border-white/5 text-white rounded-tl-none'
-                            : 'bg-white border border-neutral-200 text-[#111E38] rounded-tl-none'
-                        }`}
+                        key={chat.id}
+                        className={`flex ${chat.sender === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
                       >
-                        {chat.sender === 'user' ? chat.text : renderChatText(chat.text)}
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                            chat.sender === 'user'
+                              ? 'bg-[#FACC15] text-[#111E38] font-bold rounded-tr-none'
+                              : isDarkMode
+                              ? 'bg-neutral-800/80 border border-white/5 text-white rounded-tl-none'
+                              : 'bg-white border border-neutral-200 text-[#111E38] rounded-tl-none'
+                          }`}
+                        >
+                          {chat.sender === 'user' ? chat.text : renderChatText(chat.text)}
                         {chat.searchResults && chat.searchResults.length > 0 && (
                           <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-neutral-200/50 dark:border-neutral-700/50 w-full min-w-70">
                             {chat.searchResults.map((task) => (
@@ -1942,7 +1963,8 @@ USER REQUEST:
                         )}
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                   
                   {/* Bouncing Typing / Processing loader bubble inside Chat list */}
                   {isProcessing && (

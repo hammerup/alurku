@@ -309,22 +309,12 @@ export default function SmartAssistant({
   }, [messages]);
 
   useEffect(() => {
-    if (messages.length > 0 && selectedBoard?.id !== prevBoardRef.current) {
-      const newBoardName = !selectedBoard || selectedBoard.id === 'global' ? 'Global Workspace' : selectedBoard.name;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + Math.random(),
-          sender: 'system',
-          text: `<span class="text-[9px] text-neutral-500 font-bold uppercase tracking-widest border border-neutral-200 dark:border-neutral-800 px-3 py-1.5 rounded-full bg-white dark:bg-black shadow-sm flex items-center gap-1.5"><span>📂</span> ${
-            language === 'id' ? 'Beralih ke' : 'Switched to'
-          } ${escapeHtml(newBoardName)}</span>`,
-        },
-      ]);
+    if (selectedBoard?.id !== prevBoardRef.current) {
       prevBoardRef.current = selectedBoard?.id;
       setStep('idle');
     }
-  }, [selectedBoard, language]);
+  }, [selectedBoard]);
+
 
   const getLocalTimestamp = () => {
     const now = new Date();

@@ -225,12 +225,22 @@ export default function SmartAssistantChat({
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar relative z-10">
           {messages.map((msg, index, arr) => {
             if (msg.sender === 'system') {
+              const cleanText = (msg.text || '')
+                .replace(/<[^>]*>/g, '')
+                .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '')
+                .trim();
               return (
-                <div key={msg.id} className="flex justify-center my-4 chat-animate">
-                  <div dangerouslySetInnerHTML={{ __html: msg.text }} />
+                <div key={msg.id} className="flex justify-center my-3 chat-animate">
+                  <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-semibold tracking-wide border border-neutral-200 dark:border-neutral-800 px-3 py-1 rounded-full bg-neutral-100/80 dark:bg-neutral-800/80 shadow-xs flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <span>{cleanText}</span>
+                  </span>
                 </div>
               );
             }
+
 
             const isMe = msg.sender === 'user';
             const chatMsgData = {
