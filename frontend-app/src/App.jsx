@@ -1628,6 +1628,8 @@ function App() {
                           setSelectedTask={setSelectedTask}
                           currentUser={currentUser}
                           language={language}
+                          leaves={leaves}
+                          fetchLeaves={fetchLeaves}
                         />
                       </div>
                     )}

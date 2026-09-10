@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import { Avatar } from './SharedUI';
 
@@ -8,8 +8,13 @@ export default function AnalyticsView({
   avatarsMap,
   teamMembers,
   setSelectedTask,
-  language,
+  currentUser,
+  language = 'id',
+  leaves: initialLeaves = [],
+  fetchLeaves,
 }) {
+  const tMsg = (en, id) => (language === 'id' ? id : en);
+
   const getISODate = (date) => date.toISOString().split('T')[0];
   const today = new Date();
   const oneMonthAgo = new Date();
@@ -23,6 +28,48 @@ export default function AnalyticsView({
   const [aiInsight, setAiInsight] = useState('');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiProvider, setAiProvider] = useState('');
+
+  // Workload Analytics & Burnout Prevention State
+  const [fallbackLeaves, setFallbackLeaves] = useState([]);
+  const [workloadFilter, setWorkloadFilter] = useState('all'); // 'all' | 'overloaded' | 'near_capacity' | 'optimal' | 'available' | 'on_leave'
+  const [inspectingMember, setInspectingMember] = useState(null);
+
+  useEffect(() => {
+    const hasPropsLeaves =
+      (Array.isArray(initialLeaves) && initialLeaves.length > 0) ||
+      (initialLeaves?.leaves && Array.isArray(initialLeaves.leaves) && initialLeaves.leaves.length > 0);
+
+    if (!hasPropsLeaves) {
+      if (typeof fetchLeaves === 'function') {
+        fetchLeaves();
+      } else {
+        axios
+          .get('/api/leaves')
+          .then((res) => {
+            if (res.data?.leaves) setFallbackLeaves(res.data.leaves);
+          })
+          .catch(() => {});
+      }
+    }
+  }, [initialLeaves, fetchLeaves]);
+
+  const leavesList = useMemo(() => {
+    if (Array.isArray(initialLeaves) && initialLeaves.length > 0) return initialLeaves;
+    if (initialLeaves?.leaves && Array.isArray(initialLeaves.leaves) && initialLeaves.leaves.length > 0) {
+      return initialLeaves.leaves;
+    }
+    return fallbackLeaves;
+  }, [initialLeaves, fallbackLeaves]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && inspectingMember) {
+        setInspectingMember(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [inspectingMember]);
 
   const analyticsTasks = useMemo(() => {
     if (timeFilter === 'all') return filteredTasks;
@@ -208,43 +255,15 @@ export default function AnalyticsView({
   const getYPct = (val) => 85 - (val / maxTrendVal) * 70;
 
   // Smart Workload & Insight Logic (Empathy / Workload Support POV)
-  const memberDetailedStats = {};
-  // Buat lookup set yang case-insensitive untuk performa dan akurasi
-  // Gunakan `teamMembers` yang spesifik untuk proyek ini, bukan `avatarsMap` global
-  const currentMembersLookup = new Set((teamMembers || []).map((m) => m.toLowerCase()));
+  const memberDetailedStats = useMemo(() => {
+    const stats = {};
+    const currentMembersLookup = new Set((teamMembers || []).map((m) => m.toLowerCase()));
 
-  tasksWithLivePriority.forEach((t) => {
-    if (t.status === 'Rejected') return; // Abaikan tugas yang ditolak secara keseluruhan untuk analisis beban kerja
-
-    const involvedUsers = new Set();
-
-    if (t.owner_username) involvedUsers.add(t.owner_username);
-
-    if (t.requester) {
-      const matches = t.requester.match(/@([\w.-]+)/g);
-      if (matches) {
-        matches.forEach((m) => involvedUsers.add(m.substring(1)));
-      }
-    }
-
-    if (t.subtask_details) {
-      const lines = t.subtask_details.split('\n');
-      lines.forEach((line) => {
-        const match = line.match(/\(@([\w.-]+)\)$/);
-        if (match) involvedUsers.add(match[1]);
-      });
-    }
-
-    // DISTRIBUSI BEBAN KERJA: Membagi rata total ETC tugas ke semua orang yang terlibat
-    const validUsers = Array.from(involvedUsers).filter(
-      (p) => p && p.toLowerCase() !== 'unassigned' && currentMembersLookup.has(p.toLowerCase())
-    );
-    const divisor = validUsers.length > 0 ? validUsers.length : 1;
-    const splitEtc = (t.etc || 2) / divisor;
-
-    validUsers.forEach((person) => {
-      if (!memberDetailedStats[person]) {
-        memberDetailedStats[person] = {
+    // Inisialisasi seluruh anggota tim aktif agar yang berbeban 0 jam tetap terpantau kapasitas tersedianya
+    (teamMembers || []).forEach((member) => {
+      const clean = member.replace(/^@/, '').trim();
+      if (clean && !stats[clean]) {
+        stats[clean] = {
           total: 0,
           total_etc: 0,
           done: 0,
@@ -252,24 +271,296 @@ export default function AnalyticsView({
           active: 0,
           active_etc: 0,
           critical: 0,
+          tasks: [],
         };
       }
+    });
 
-      memberDetailedStats[person].total += 1;
-      memberDetailedStats[person].total_etc += splitEtc;
+    tasksWithLivePriority.forEach((t) => {
+      if (t.status === 'Rejected') return; // Abaikan tugas yang ditolak secara keseluruhan untuk analisis beban kerja
 
-      if (t.status === 'Done') {
-        memberDetailedStats[person].done += 1;
-        memberDetailedStats[person].done_etc += splitEtc;
-      } else {
-        if (t.status !== 'Pending') {
-          memberDetailedStats[person].active += 1;
-          memberDetailedStats[person].active_etc += splitEtc;
+      const involvedUsers = new Set();
+
+      if (t.owner_username) involvedUsers.add(t.owner_username);
+
+      if (t.requester) {
+        const matches = t.requester.match(/@([\w.-]+)/g);
+        if (matches) {
+          matches.forEach((m) => involvedUsers.add(m.substring(1)));
         }
-        if (t.priority_lvl === 'critical') memberDetailedStats[person].critical += 1;
+      }
+
+      if (t.subtask_details) {
+        const lines = t.subtask_details.split('\n');
+        lines.forEach((line) => {
+          const match = line.match(/\(@([\w.-]+)\)$/);
+          if (match) involvedUsers.add(match[1]);
+        });
+      }
+
+      // DISTRIBUSI BEBAN KERJA: Membagi rata total ETC tugas ke semua orang yang terlibat
+      const validUsers = Array.from(involvedUsers).filter(
+        (p) => p && p.toLowerCase() !== 'unassigned' && currentMembersLookup.has(p.toLowerCase())
+      );
+      const divisor = validUsers.length > 0 ? validUsers.length : 1;
+      const splitEtc = (t.etc || 2) / divisor;
+
+      validUsers.forEach((person) => {
+        if (!stats[person]) {
+          stats[person] = {
+            total: 0,
+            total_etc: 0,
+            done: 0,
+            done_etc: 0,
+            active: 0,
+            active_etc: 0,
+            critical: 0,
+            tasks: [],
+          };
+        }
+
+        stats[person].total += 1;
+        stats[person].total_etc += splitEtc;
+        stats[person].tasks.push({ ...t, splitEtc });
+
+        if (t.status === 'Done') {
+          stats[person].done += 1;
+          stats[person].done_etc += splitEtc;
+        } else {
+          if (t.status !== 'Pending') {
+            stats[person].active += 1;
+            stats[person].active_etc += splitEtc;
+          }
+          if (t.priority_lvl === 'critical') stats[person].critical += 1;
+        }
+      });
+    });
+
+    return stats;
+  }, [teamMembers, tasksWithLivePriority]);
+
+  // Dynamic Leave & Capacity Integration
+  const memberLeaveInfo = useMemo(() => {
+    const info = {};
+    const nowDt = new Date();
+    const todayYMD = nowDt.toISOString().split('T')[0];
+
+    // Hitung awal (Senin) dan akhir (Minggu) pekan ini
+    const curDay = nowDt.getDay();
+    const diffToMon = curDay === 0 ? -6 : 1 - curDay;
+    const monDt = new Date(nowDt);
+    monDt.setDate(nowDt.getDate() + diffToMon);
+    monDt.setHours(0, 0, 0, 0);
+
+    const sunDt = new Date(monDt);
+    sunDt.setDate(monDt.getDate() + 6);
+    sunDt.setHours(23, 59, 59, 999);
+
+    const monYMD = monDt.toISOString().split('T')[0];
+    const sunYMD = sunDt.toISOString().split('T')[0];
+
+    const allMemberKeys = new Set([
+      ...(teamMembers || []).map((m) => m.replace(/^@/, '').trim().toLowerCase()),
+      ...Object.keys(memberDetailedStats).map((m) => m.toLowerCase()),
+    ]);
+
+    allMemberKeys.forEach((memberLower) => {
+      const memberLeaves = (leavesList || []).filter((l) => {
+        const isMass = l.leave_type === 'mass_leave' || l.leave_type === 'public_holiday';
+        const isPersonal = l.leave_type === 'personal' && l.username && l.username.toLowerCase() === memberLower;
+        return isMass || isPersonal;
+      });
+
+      const onLeaveToday = memberLeaves.some((l) => l.leave_date === todayYMD);
+      const todayLeaveMatch = memberLeaves.find((l) => l.leave_date === todayYMD);
+
+      const thisWeekLeaveDates = new Set(
+        memberLeaves
+          .filter((l) => l.leave_date >= monYMD && l.leave_date <= sunYMD)
+          .map((l) => l.leave_date)
+      );
+      const leaveDaysThisWeek = thisWeekLeaveDates.size;
+      const leaveHoursDeducted = leaveDaysThisWeek * 8;
+      const effectiveCapacity = Math.max(0, 40 - leaveHoursDeducted);
+
+      info[memberLower] = {
+        memberLeaves,
+        onLeaveToday,
+        activeLeaveDescription: todayLeaveMatch?.description || (onLeaveToday ? 'Cuti' : null),
+        leaveDaysThisWeek,
+        leaveHoursDeducted,
+        effectiveCapacity,
+      };
+    });
+
+    return info;
+  }, [leavesList, teamMembers, memberDetailedStats]);
+
+  const memberWorkloadAnalysis = useMemo(() => {
+    const analysis = {};
+
+    Object.entries(memberDetailedStats).forEach(([person, stats]) => {
+      const pLower = person.toLowerCase();
+      const leave = memberLeaveInfo[pLower] || {
+        onLeaveToday: false,
+        activeLeaveDescription: null,
+        leaveDaysThisWeek: 0,
+        leaveHoursDeducted: 0,
+        effectiveCapacity: 40,
+        memberLeaves: [],
+      };
+
+      const activeLoad = Math.round((stats.total_etc - stats.done_etc) * 10) / 10;
+      const effectiveCap = leave.effectiveCapacity;
+
+      let utilizationPct;
+      if (effectiveCap > 0) {
+        utilizationPct = Math.round((activeLoad / effectiveCap) * 100);
+      } else if (activeLoad > 0) {
+        utilizationPct = 999;
+      } else {
+        utilizationPct = 0;
+      }
+
+      let healthStatus;
+      if (utilizationPct > 100 || (effectiveCap === 0 && activeLoad > 0)) {
+        healthStatus = 'overloaded';
+      } else if (utilizationPct >= 81) {
+        healthStatus = 'near_capacity';
+      } else if (utilizationPct >= 40) {
+        healthStatus = 'optimal';
+      } else {
+        healthStatus = 'available';
+      }
+
+      // Check task-leave collisions (active tasks due during scheduled leave)
+      const collisions = [];
+      (stats.tasks || []).forEach((t) => {
+        if (t.status !== 'Done' && t.status !== 'Rejected' && t.deadline) {
+          const taskDueDate = t.deadline.split(' ')[0];
+          const matchedLeave = leave.memberLeaves.find((l) => l.leave_date === taskDueDate);
+          if (matchedLeave) {
+            collisions.push({
+              taskId: t.id,
+              taskTitle: t.title,
+              deadline: taskDueDate,
+              leaveDate: matchedLeave.leave_date,
+              leaveDesc: matchedLeave.description || 'Cuti',
+            });
+          }
+        }
+      });
+
+      analysis[person] = {
+        person,
+        stats,
+        leave,
+        activeLoad,
+        effectiveCap,
+        utilizationPct,
+        healthStatus,
+        collisions,
+      };
+    });
+
+    return analysis;
+  }, [memberDetailedStats, memberLeaveInfo]);
+
+  const teamCapacityMetrics = useMemo(() => {
+    const entries = Object.values(memberWorkloadAnalysis);
+    if (entries.length === 0) {
+      return {
+        totalMembers: 0,
+        overloadedCount: 0,
+        nearCapacityCount: 0,
+        optimalCount: 0,
+        availableCount: 0,
+        onLeaveCount: 0,
+        totalActiveHours: 0,
+        totalEffectiveCapacity: 0,
+        overallUtilizationPct: 0,
+        burnoutRiskLevel: 'low',
+        collisions: [],
+        rebalancingAdvice: [],
+      };
+    }
+
+    let overloadedCount = 0;
+    let nearCapacityCount = 0;
+    let optimalCount = 0;
+    let availableCount = 0;
+    let onLeaveCount = 0;
+    let totalActiveHours = 0;
+    let totalEffectiveCapacity = 0;
+    const allCollisions = [];
+
+    entries.forEach((m) => {
+      totalActiveHours += m.activeLoad;
+      totalEffectiveCapacity += m.effectiveCap;
+      if (m.leave.onLeaveToday || m.leave.leaveDaysThisWeek > 0) onLeaveCount += 1;
+
+      if (m.healthStatus === 'overloaded') overloadedCount++;
+      else if (m.healthStatus === 'near_capacity') nearCapacityCount++;
+      else if (m.healthStatus === 'optimal') optimalCount++;
+      else availableCount++;
+
+      if (m.collisions.length > 0) {
+        m.collisions.forEach((c) => {
+          allCollisions.push({ ...c, member: m.person });
+        });
       }
     });
-  });
+
+    totalActiveHours = Math.round(totalActiveHours * 10) / 10;
+    const overallUtilizationPct =
+      totalEffectiveCapacity > 0 ? Math.round((totalActiveHours / totalEffectiveCapacity) * 100) : 0;
+
+    let burnoutRiskLevel = 'low';
+    if (overloadedCount >= 2 || entries.some((m) => m.utilizationPct >= 150)) {
+      burnoutRiskLevel = 'severe';
+    } else if (overloadedCount === 1 || nearCapacityCount >= 2) {
+      burnoutRiskLevel = 'moderate';
+    }
+
+    const rebalancingAdvice = [];
+    const overloadedList = entries.filter((m) => m.healthStatus === 'overloaded');
+    const availableList = entries
+      .filter((m) => m.healthStatus === 'available')
+      .sort((a, b) => a.activeLoad - b.activeLoad);
+
+    if (overloadedList.length > 0 && availableList.length > 0) {
+      overloadedList.forEach((ov) => {
+        const excessHours = Math.round((ov.activeLoad - ov.effectiveCap) * 10) / 10;
+        const target = availableList[0];
+        const availableSpace = Math.max(0, Math.round((target.effectiveCap * 0.8 - target.activeLoad) * 10) / 10);
+        if (target && excessHours > 0) {
+          rebalancingAdvice.push({
+            from: ov.person,
+            to: target.person,
+            excessHours,
+            availableSpace,
+            messageId: `Alihkan ~${excessHours} jam beban kerja dari @${ov.person} ke @${target.person} (memiliki sisa kapasitas ${availableSpace} jam).`,
+            messageEn: `Shift ~${excessHours}h of workload from @${ov.person} to @${target.person} (has ${availableSpace}h remaining capacity).`,
+          });
+        }
+      });
+    }
+
+    return {
+      totalMembers: entries.length,
+      overloadedCount,
+      nearCapacityCount,
+      optimalCount,
+      availableCount,
+      onLeaveCount,
+      totalActiveHours,
+      totalEffectiveCapacity,
+      overallUtilizationPct,
+      burnoutRiskLevel,
+      collisions: allCollisions,
+      rebalancingAdvice,
+    };
+  }, [memberWorkloadAnalysis]);
 
   let maxActiveEtc = 0;
   let maxCritical = 0;
@@ -1491,11 +1782,13 @@ export default function AnalyticsView({
         </div>
       </div>
 
-      {/* Visual Breakdown Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6 mt-6">
+      {/* Visual Breakdown Charts (Top 3) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-6">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Task by Status</h3>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+              {tMsg('Task by Status', 'Tugas Berdasarkan Status')}
+            </h3>
             <div className="relative group/tooltip flex items-center z-50">
               <span className="cursor-help text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 text-sm transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1509,7 +1802,10 @@ export default function AnalyticsView({
               </span>
               <div className="hidden sm:block absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 sm:w-64 p-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] rounded-xl shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-100 text-left pointer-events-none whitespace-normal border border-slate-700 dark:border-slate-200">
                 <p className="font-medium leading-relaxed">
-                  Shows the distribution of tasks across different workflow columns to track overall project progress.
+                  {tMsg(
+                    'Shows the distribution of tasks across different workflow columns to track overall project progress.',
+                    'Menampilkan distribusi tugas di berbagai kolom alur kerja untuk melacak progres keseluruhan proyek.'
+                  )}
                 </p>
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900 dark:border-b-white"></div>
               </div>
@@ -1549,7 +1845,9 @@ export default function AnalyticsView({
 
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-6">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Task by Category</h3>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+              {tMsg('Task by Category', 'Tugas Berdasarkan Kategori')}
+            </h3>
             <div className="relative group/tooltip flex items-center z-50">
               <span className="cursor-help text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 text-sm transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1563,7 +1861,10 @@ export default function AnalyticsView({
               </span>
               <div className="hidden sm:block absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 sm:w-64 p-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] rounded-xl shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-100 text-left pointer-events-none whitespace-normal border border-slate-700 dark:border-slate-200">
                 <p className="font-medium leading-relaxed">
-                  Breaks down tasks by category. Helps identify which type of work consumes the most resources.
+                  {tMsg(
+                    'Breaks down tasks by category. Helps identify which type of work consumes the most resources.',
+                    'Merinci tugas berdasarkan kategori. Membantu mengetahui jenis pekerjaan yang paling banyak menyita sumber daya.'
+                  )}
                 </p>
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900 dark:border-b-white"></div>
               </div>
@@ -1595,14 +1896,18 @@ export default function AnalyticsView({
                 );
               })}
             {tasksWithLivePriority.length === 0 && (
-              <p className="text-slate-400 dark:text-slate-500 text-sm italic">No data available.</p>
+              <p className="text-slate-400 dark:text-slate-500 text-sm italic">
+                {tMsg('No data available.', 'Tidak ada data tersedia.')}
+              </p>
             )}
           </div>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-6">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Active Task Priority</h3>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+              {tMsg('Active Task Priority', 'Prioritas Tugas Aktif')}
+            </h3>
             <div className="relative group/tooltip flex items-center z-50">
               <span className="cursor-help text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 text-sm transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1616,7 +1921,10 @@ export default function AnalyticsView({
               </span>
               <div className="hidden sm:block absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 sm:w-64 p-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] rounded-xl shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-100 text-left pointer-events-none whitespace-normal border border-slate-700 dark:border-slate-200">
                 <p className="font-medium leading-relaxed">
-                  Displays the urgency of active tasks. Critical tasks are due within 24h, Warning within 3 days.
+                  {tMsg(
+                    'Displays the urgency of active tasks. Critical tasks are due within 24h, Warning within 3 days.',
+                    'Menampilkan urgensi tugas aktif. Tugas kritis jatuh tempo dalam 24 jam, peringatan dalam 3 hari.'
+                  )}
                 </p>
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900 dark:border-b-white"></div>
               </div>
@@ -1632,15 +1940,33 @@ export default function AnalyticsView({
               });
 
               return [
-                { label: '🔴 Critical', count: prioCounts.critical, color: 'bg-red-500' },
-                { label: '🟡 Warning', count: prioCounts.warning, color: 'bg-amber-500' },
-                { label: '🟢 Normal', count: prioCounts.normal, color: 'bg-emerald-500' },
+                {
+                  label: tMsg('Critical', 'Kritis'),
+                  dotColor: 'bg-red-500',
+                  count: prioCounts.critical,
+                  color: 'bg-red-500',
+                },
+                {
+                  label: tMsg('Warning', 'Peringatan'),
+                  dotColor: 'bg-amber-500',
+                  count: prioCounts.warning,
+                  color: 'bg-amber-500',
+                },
+                {
+                  label: tMsg('Normal', 'Normal'),
+                  dotColor: 'bg-emerald-500',
+                  count: prioCounts.normal,
+                  color: 'bg-emerald-500',
+                },
               ].map((prio) => {
                 const pct = activeTasks.length > 0 ? (prio.count / activeTasks.length) * 100 : 0;
                 return (
                   <div key={prio.label}>
                     <div className="flex justify-between text-sm font-bold mb-2">
-                      <span className="text-slate-700 dark:text-slate-300">{prio.label}</span>
+                      <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                        <span className={`w-2 h-2 rounded-full ${prio.dotColor}`}></span>
+                        {prio.label}
+                      </span>
                       <span className="text-slate-500 dark:text-slate-400">
                         {prio.count} ({Math.round(pct)}%)
                       </span>
@@ -1656,131 +1982,697 @@ export default function AnalyticsView({
               });
             })()}
             {tasksWithLivePriority.filter((t) => t.status !== 'Done' && t.status !== 'Rejected').length === 0 && (
-              <p className="text-slate-400 dark:text-slate-500 text-sm italic">No active tasks available.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Team Workload</h3>
-              <div className="relative group/tooltip flex items-center z-50">
-                <span className="cursor-help text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 text-sm transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                  </svg>
-                </span>
-                <div className="hidden sm:block absolute top-full left-0 mt-3 w-72 p-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] rounded-xl shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all z-100 text-left pointer-events-none whitespace-normal border border-slate-700 dark:border-slate-200">
-                  <p className="font-medium leading-relaxed">
-                    Tracks each member's work volume. It flags them as overloaded (⚠️) if their CURRENT active backlog
-                    exceeds a 40-hour work week, or if their TOTAL assigned work in the selected period exceeds a
-                    160-hour monthly capacity.
-                  </p>
-                  <div className="absolute bottom-full left-4 border-4 border-transparent border-b-slate-900 dark:border-b-white"></div>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-[9px] font-bold text-slate-500">
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Done
-              </span>
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div> Active
-              </span>
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-amber-500"></div> Wait
-              </span>
-            </div>
-          </div>
-          <div className="space-y-5 max-h-64 overflow-y-auto pr-2">
-            {(() => {
-              return Object.entries(memberDetailedStats)
-                .sort((a, b) => {
-                  // Urutkan berdasarkan beban aktif terberat di atas untuk mencari bottleneck
-                  const activeA = a[1].total_etc - a[1].done_etc;
-                  const activeB = b[1].total_etc - b[1].done_etc;
-                  return activeB - activeA;
-                })
-                .map(([assignee, stats]) => {
-                  const donePct = (stats.done_etc / stats.total_etc) * 100;
-                  const activePct = (stats.active_etc / stats.total_etc) * 100;
-                  const pendingPct = ((stats.total_etc - stats.done_etc - stats.active_etc) / stats.total_etc) * 100;
-
-                  const activeLoad = stats.total_etc - stats.done_etc;
-                  const totalLoad = stats.total_etc;
-                  const isOverloaded = activeLoad > 40;
-                  const isTotalOverloaded = totalLoad > 160;
-                  return (
-                    <div key={assignee}>
-                      <div className="flex justify-between items-center text-sm font-bold mb-2">
-                        <div className="flex items-center gap-2">
-                          <Avatar
-                            name={assignee}
-                            url={avatarsMap[assignee.replace('@', '').trim()]}
-                            size="w-5 h-5"
-                            textClass="text-[8px]"
-                          />
-                          <span className="text-slate-700 dark:text-slate-300 truncate max-w-30" title={assignee}>
-                            {assignee}
-                          </span>
-                        </div>
-                        <div className="flex flex-col items-end leading-none">
-                          <span
-                            className={`font-bold ${
-                              isOverloaded ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'
-                            }`}
-                            title={`Current Active Backlog: ${Math.round(activeLoad * 10) / 10}h`}
-                          >
-                            {Math.round(activeLoad * 10) / 10}h{' '}
-                            <span className="text-[9px] opacity-70">
-                              Active {isOverloaded && '⚠️'}
-                              {' / week'}
-                            </span>
-                          </span>
-                          <span
-                            className={`text-[9px] font-bold mt-1 ${
-                              isTotalOverloaded ? 'text-red-500' : 'text-slate-400'
-                            }`}
-                            title={`Total load in this period: ${Math.round(totalLoad * 10) / 10}h`}
-                          >
-                            {Math.round(totalLoad * 10) / 10}h Total {isTotalOverloaded && '⚠️'}
-                            {' / month'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 flex overflow-hidden">
-                        <div
-                          className="bg-emerald-500 h-full transition-all duration-1000"
-                          style={{ width: `${donePct}%` }}
-                          title={`Done: ${stats.done_etc}h`}
-                        ></div>
-                        <div
-                          className="bg-blue-500 h-full transition-all duration-1000"
-                          style={{ width: `${activePct}%` }}
-                          title={`In Progress: ${stats.active_etc}h`}
-                        ></div>
-                        <div
-                          className="bg-amber-500 h-full transition-all duration-1000"
-                          style={{ width: `${pendingPct}%` }}
-                          title={`Pending/Others: ${stats.total_etc - stats.done_etc - stats.active_etc}h`}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                });
-            })()}
-            {tasksWithLivePriority.length === 0 && (
-              <p className="text-slate-400 dark:text-slate-500 text-sm italic">No data available.</p>
+              <p className="text-slate-400 dark:text-slate-500 text-sm italic">
+                {tMsg('No active tasks available.', 'Tidak ada tugas aktif tersedia.')}
+              </p>
             )}
           </div>
         </div>
       </div>
+
+      {/* BRAND BOOK PILLAR 2: Kerja Seimbang, Anti-Kewalahan (Workload Analytics & Burnout Prevention) */}
+      <div className="mt-8 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 sm:p-8">
+        {/* Section Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-700">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FACC15]/20 border border-[#FACC15]/40 text-[#111E38] dark:text-[#FACC15] text-xs font-bold uppercase tracking-wider mb-2">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
+                ></path>
+              </svg>
+              <span>{tMsg('Pillar 2 • Workload Intelligence', 'Pilar 2 • Analisis Beban Kerja')}</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-[#111E38] dark:text-white">
+              {tMsg('Workload Analytics & Burnout Prevention', 'Kerja Seimbang, Anti-Kewalahan')}
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1 max-w-3xl leading-relaxed">
+              {tMsg(
+                "Know your team's capacity limit. alurku. visualizes workload in real time to distribute tasks fairly, prevent burnout, and enable on-time rest.",
+                'Ketahui batas kapasitasmu dan timmu. alurku. memvisualisasikan beban kerja secara real time agar kamu bisa membagi tugas dengan adil, mencegah burnout, dan bisa istirahat tepat waktu.'
+              )}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Burnout Risk Badge */}
+            <div
+              className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border ${
+                teamCapacityMetrics.burnoutRiskLevel === 'severe'
+                  ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 animate-pulse'
+                  : teamCapacityMetrics.burnoutRiskLevel === 'moderate'
+                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+                  : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+              }`}
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {teamCapacityMetrics.burnoutRiskLevel === 'severe' || teamCapacityMetrics.burnoutRiskLevel === 'moderate' ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  ></path>
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                )}
+              </svg>
+              <div>
+                <span className="block text-[10px] uppercase tracking-wider opacity-80">
+                  {tMsg('Burnout Risk Index', 'Indeks Risiko Burnout')}
+                </span>
+                <span className="font-extrabold">
+                  {teamCapacityMetrics.burnoutRiskLevel === 'severe'
+                    ? tMsg('High Risk / Overloaded', 'Tinggi (Kelebihan Beban)')
+                    : teamCapacityMetrics.burnoutRiskLevel === 'moderate'
+                    ? tMsg('Moderate / Warning', 'Waspada (Mendekati Batas)')
+                    : tMsg('Low / Balanced', 'Sehat & Seimbang')}
+                </span>
+              </div>
+            </div>
+
+            {/* Total Team Utilization Pill */}
+            <div className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold">
+              <span className="block text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                {tMsg('Total Workload / Capacity', 'Total Beban / Kapasitas')}
+              </span>
+              <span>
+                {teamCapacityMetrics.totalActiveHours}h / {teamCapacityMetrics.totalEffectiveCapacity}h (
+                {teamCapacityMetrics.overallUtilizationPct}%)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Summary Stat Mini Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
+          <div className="p-4 rounded-xl bg-red-50/60 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/40">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-red-700 dark:text-red-400">
+                {tMsg('Overloaded Members', 'Kelebihan Beban')}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+            </div>
+            <div className="text-2xl font-black text-red-600 dark:text-red-400 mt-2">
+              {teamCapacityMetrics.overloadedCount}
+              <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">
+                {tMsg('people (>100%)', 'orang (>100%)')}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                {tMsg('Near Capacity', 'Mendekati Batas')}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+            </div>
+            <div className="text-2xl font-black text-amber-600 dark:text-amber-300 mt-2">
+              {teamCapacityMetrics.nearCapacityCount}
+              <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">
+                {tMsg('people (81-100%)', 'orang (81-100%)')}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                {tMsg('Optimal & Available', 'Optimal & Longgar')}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-300 mt-2">
+              {teamCapacityMetrics.optimalCount + teamCapacityMetrics.availableCount}
+              <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">
+                {tMsg('people (<=80%)', 'orang (<=80%)')}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200/60 dark:border-indigo-900/40">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                {tMsg('Leaves / Holidays', 'Cuti & Libur')}
+              </span>
+              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+            </div>
+            <div className="text-2xl font-black text-indigo-600 dark:text-indigo-300 mt-2">
+              {teamCapacityMetrics.onLeaveCount}
+              <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">
+                {tMsg('active this week', 'aktif pekan ini')}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Task-Leave Collisions Warning Banner */}
+        {teamCapacityMetrics.collisions.length > 0 && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                ></path>
+              </svg>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-red-900 dark:text-red-100">
+                  {tMsg('Leave Conflict Alert: Active Deadlines on Leave Dates', 'Peringatan Konflik Cuti: Tenggat Tugas Bertepatan dengan Hari Cuti')}
+                </h4>
+                <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                  {tMsg(
+                    'The following active tasks are scheduled with deadlines on dates when the assignee is on leave. Reschedule or reassign them to prevent project delays:',
+                    'Tugas aktif berikut memiliki batas waktu pada hari ketika anggota sedang cuti. Jadwalkan ulang atau alihkan tugas untuk mencegah penundaan proyek:'
+                  )}
+                </p>
+                <div className="mt-2.5 space-y-1.5">
+                  {teamCapacityMetrics.collisions.map((c, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-wrap items-center justify-between text-xs bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-red-200 dark:border-red-800/60"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800 dark:text-slate-100">@{c.member}</span>
+                        <span className="text-slate-400">•</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300 truncate max-w-xs">{c.taskTitle}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                        <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold text-[11px]">
+                          {c.deadline} ({c.leaveDesc})
+                        </span>
+                        <button
+                          onClick={() => setInspectingMember(c.member)}
+                          className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          {tMsg('Inspect', 'Periksa')}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Smart Rebalancing Recommendations */}
+        {teamCapacityMetrics.rebalancingAdvice.length > 0 && (
+          <div className="mb-6 p-4 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                ></path>
+              </svg>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-amber-950 dark:text-amber-100">
+                  {tMsg('AI Workload Rebalancing Advice', 'Saran Penyeimbangan Beban Kerja Otomatis')}
+                </h4>
+                <div className="mt-2 space-y-1.5">
+                  {teamCapacityMetrics.rebalancingAdvice.map((adv, idx) => (
+                    <div
+                      key={idx}
+                      className="flex flex-wrap items-center justify-between text-xs bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-amber-200/80 dark:border-amber-800/60"
+                    >
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        {tMsg(adv.messageEn, adv.messageId)}
+                      </span>
+                      <div className="flex items-center gap-2 mt-1 sm:mt-0">
+                        <button
+                          onClick={() => setInspectingMember(adv.from)}
+                          className="px-2.5 py-1 rounded-md bg-[#FACC15] hover:bg-yellow-400 text-[#111E38] font-bold text-[11px] transition-colors"
+                        >
+                          {tMsg('Inspect Tasks', 'Periksa Tugas')}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filter Pills */}
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1">
+            {tMsg('Filter View:', 'Filter Tampilan:')}
+          </span>
+          {[
+            { id: 'all', label: tMsg('All Members', 'Semua Anggota'), count: teamCapacityMetrics.totalMembers },
+            { id: 'overloaded', label: tMsg('Overloaded', 'Kelebihan Beban'), count: teamCapacityMetrics.overloadedCount },
+            { id: 'near_capacity', label: tMsg('Near Capacity', 'Mendekati Batas'), count: teamCapacityMetrics.nearCapacityCount },
+            { id: 'optimal', label: tMsg('Optimal', 'Optimal'), count: teamCapacityMetrics.optimalCount },
+            { id: 'available', label: tMsg('Available Bandwidth', 'Kapasitas Longgar'), count: teamCapacityMetrics.availableCount },
+            { id: 'on_leave', label: tMsg('On Leave', 'Sedang Cuti'), count: teamCapacityMetrics.onLeaveCount },
+          ].map((tab) => {
+            const isActive = workloadFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setWorkloadFilter(tab.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                    isActive
+                      ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-[#111E38]'
+                      : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Member Capacity Balancing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {Object.values(memberWorkloadAnalysis)
+            .filter((m) => {
+              if (workloadFilter === 'all') return true;
+              if (workloadFilter === 'overloaded') return m.healthStatus === 'overloaded';
+              if (workloadFilter === 'near_capacity') return m.healthStatus === 'near_capacity';
+              if (workloadFilter === 'optimal') return m.healthStatus === 'optimal';
+              if (workloadFilter === 'available') return m.healthStatus === 'available';
+              if (workloadFilter === 'on_leave') return m.leave.onLeaveToday || m.leave.leaveDaysThisWeek > 0;
+              return true;
+            })
+            .sort((a, b) => {
+              // Priority sorting: Overloaded first, then descending by utilization
+              if (a.healthStatus === 'overloaded' && b.healthStatus !== 'overloaded') return -1;
+              if (b.healthStatus === 'overloaded' && a.healthStatus !== 'overloaded') return 1;
+              return b.utilizationPct - a.utilizationPct;
+            })
+            .map((m) => {
+              const isOverloaded = m.healthStatus === 'overloaded';
+              const isNearCap = m.healthStatus === 'near_capacity';
+              const isOpt = m.healthStatus === 'optimal';
+
+              const barColor = isOverloaded
+                ? 'bg-red-500'
+                : isNearCap
+                ? 'bg-amber-500'
+                : isOpt
+                ? 'bg-emerald-500'
+                : 'bg-blue-400';
+
+              const badgeColor = isOverloaded
+                ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-800'
+                : isNearCap
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                : isOpt
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800';
+
+              const barWidth = Math.min(100, m.utilizationPct);
+
+              return (
+                <div
+                  key={m.person}
+                  className={`p-5 rounded-xl border transition-all ${
+                    isOverloaded
+                      ? 'bg-red-50/20 dark:bg-red-950/10 border-red-300 dark:border-red-900 shadow-sm'
+                      : 'bg-slate-50/50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
+                  }`}
+                >
+                  {/* Member Header */}
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar
+                        name={m.person}
+                        url={avatarsMap[m.person.replace('@', '').trim()]}
+                        size="w-9 h-9"
+                        textClass="text-xs font-bold"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-sm text-[#111E38] dark:text-white truncate max-w-35" title={m.person}>
+                            {m.person}
+                          </span>
+                          {currentUser && m.person.toLowerCase() === currentUser.toLowerCase() && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                              {tMsg('You', 'Kamu')}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                          {m.stats.total} {tMsg('tasks assigned', 'tugas teralokasi')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0 ${badgeColor}`}>
+                      {isOverloaded
+                        ? tMsg('Overloaded', 'Overload')
+                        : isNearCap
+                        ? tMsg('Near Capacity', 'Mendekati Batas')
+                        : isOpt
+                        ? tMsg('Optimal', 'Optimal')
+                        : tMsg('Available', 'Tersedia')}
+                    </span>
+                  </div>
+
+                  {/* Leave Banner if active */}
+                  {m.leave.onLeaveToday ? (
+                    <div className="mb-3 px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        ></path>
+                      </svg>
+                      <span className="truncate">
+                        {tMsg('On Leave Today:', 'Sedang Cuti Hari Ini:')} {m.leave.activeLeaveDescription || tMsg('Leave', 'Cuti')}
+                      </span>
+                    </div>
+                  ) : m.leave.leaveDaysThisWeek > 0 ? (
+                    <div className="mb-3 px-2.5 py-1.5 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/50 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        ></path>
+                      </svg>
+                      <span>
+                        {tMsg(
+                          `Leave ${m.leave.leaveDaysThisWeek}d this week (-${m.leave.leaveHoursDeducted}h)`,
+                          `Cuti ${m.leave.leaveDaysThisWeek} hari pekan ini (-${m.leave.leaveHoursDeducted} jam)`
+                        )}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  {/* Task-Leave Collision in card */}
+                  {m.collisions.length > 0 && (
+                    <div className="mb-3 px-2.5 py-1.5 rounded-lg bg-red-100/70 dark:bg-red-950/50 border border-red-200 text-[11px] font-bold text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                      </svg>
+                      <span>
+                        {tMsg(
+                          `${m.collisions.length} task(s) due during leave!`,
+                          `${m.collisions.length} tugas jatuh tempo saat cuti!`
+                        )}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Capacity Balance Meter */}
+                  <div className="space-y-1.5 my-3">
+                    <div className="flex justify-between items-baseline text-xs font-bold">
+                      <span className="text-slate-600 dark:text-slate-400">
+                        {tMsg('Capacity Load:', 'Beban Kapasitas:')}
+                      </span>
+                      <span className={isOverloaded ? 'text-red-600 dark:text-red-400 font-extrabold' : 'text-slate-800 dark:text-slate-200'}>
+                        {m.activeLoad}h / {m.effectiveCap}h{' '}
+                        <span className="text-[10px] font-normal opacity-80">({m.utilizationPct}%)</span>
+                      </span>
+                    </div>
+
+                    <div className="relative w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`${barColor} h-full transition-all duration-1000 rounded-full`}
+                        style={{ width: `${barWidth}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                      <span>0h</span>
+                      <span>{tMsg('Max 40h/wk', 'Maks 40j/mgg')}</span>
+                    </div>
+                  </div>
+
+                  {/* Mini breakdown tiles */}
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200 dark:border-slate-700/60 text-center">
+                    <div className="bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-slate-200/60 dark:border-slate-700/40">
+                      <span className="block text-[9px] uppercase font-bold text-slate-400">
+                        {tMsg('Done', 'Selesai')}
+                      </span>
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                        {m.stats.done} ({Math.round(m.stats.done_etc * 10) / 10}h)
+                      </span>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-slate-200/60 dark:border-slate-700/40">
+                      <span className="block text-[9px] uppercase font-bold text-slate-400">
+                        {tMsg('Active', 'Aktif')}
+                      </span>
+                      <span className="text-xs font-black text-blue-600 dark:text-blue-400">
+                        {m.stats.active} ({Math.round(m.stats.active_etc * 10) / 10}h)
+                      </span>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-slate-200/60 dark:border-slate-700/40">
+                      <span className="block text-[9px] uppercase font-bold text-slate-400">
+                        {tMsg('Critical', 'Kritis')}
+                      </span>
+                      <span className="text-xs font-black text-red-600 dark:text-red-400">
+                        {m.stats.critical}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Inspect CTA Button */}
+                  <button
+                    onClick={() => setInspectingMember(m.person)}
+                    className="w-full mt-3.5 py-2 px-3 rounded-lg border border-slate-300 dark:border-slate-600 hover:border-[#111E38] dark:hover:border-[#FACC15] bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-[#111E38] dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      ></path>
+                    </svg>
+                    <span>{tMsg('Inspect Tasks & Schedule', 'Periksa Tugas & Jadwal')}</span>
+                  </button>
+                </div>
+              );
+            })}
+        </div>
+
+        {Object.keys(memberWorkloadAnalysis).length === 0 && (
+          <div className="text-center py-10 text-slate-400 dark:text-slate-500 text-sm italic">
+            {tMsg('No team members or tasks recorded for workload analysis.', 'Belum ada anggota tim atau tugas yang tercatat untuk analisis beban kerja.')}
+          </div>
+        )}
+      </div>
+
+      {/* Task Inspector Modal / Drawer */}
+      {inspectingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  name={inspectingMember}
+                  url={avatarsMap[inspectingMember.replace('@', '').trim()]}
+                  size="w-11 h-11"
+                  textClass="text-sm font-bold"
+                />
+                <div>
+                  <h4 className="text-lg font-bold text-[#111E38] dark:text-white flex items-center gap-2">
+                    <span>@{inspectingMember}</span>
+                    {memberWorkloadAnalysis[inspectingMember]?.healthStatus === 'overloaded' && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300">
+                        {tMsg('Burnout Alert', 'Risiko Burnout')}
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {tMsg('Workload Load:', 'Beban Kapasitas:')}{' '}
+                    <span className="font-bold text-slate-700 dark:text-slate-200">
+                      {memberWorkloadAnalysis[inspectingMember]?.activeLoad || 0}h /{' '}
+                      {memberWorkloadAnalysis[inspectingMember]?.effectiveCap || 40}h (
+                      {memberWorkloadAnalysis[inspectingMember]?.utilizationPct || 0}%)
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setInspectingMember(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                title={tMsg('Close', 'Tutup')}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Task List Body */}
+            <div className="p-6 overflow-y-auto space-y-3.5 flex-1">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500 pb-1">
+                <span>{tMsg('Assigned Tasks', 'Daftar Tugas Terbuka')}</span>
+                <span>
+                  {(memberDetailedStats[inspectingMember]?.tasks || []).length} {tMsg('tasks', 'tugas')}
+                </span>
+              </div>
+
+              {(!memberDetailedStats[inspectingMember]?.tasks ||
+                memberDetailedStats[inspectingMember]?.tasks.length === 0) && (
+                <div className="text-center py-8 text-slate-400 text-sm italic">
+                  {tMsg('No tasks currently assigned to this member.', 'Tidak ada tugas yang teralokasi untuk anggota ini saat ini.')}
+                </div>
+              )}
+
+              {(memberDetailedStats[inspectingMember]?.tasks || []).map((task) => {
+                const isTaskDone = task.status === 'Done';
+                const isTaskCritical = task.priority_lvl === 'critical';
+                const isTaskWarning = task.priority_lvl === 'warning';
+
+                // Check if this task conflicts with member's leave
+                const memberLeaves = memberLeaveInfo[inspectingMember.toLowerCase()]?.memberLeaves || [];
+                const dueDate = task.deadline ? task.deadline.split(' ')[0] : null;
+                const leaveCollision = dueDate ? memberLeaves.find((l) => l.leave_date === dueDate) : null;
+
+                return (
+                  <div
+                    key={task.id}
+                    className={`p-4 rounded-xl border transition-all ${
+                      leaveCollision
+                        ? 'bg-red-50/40 dark:bg-red-950/20 border-red-200 dark:border-red-900'
+                        : isTaskDone
+                        ? 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800 opacity-60'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                              task.status === 'Done'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                : task.status === 'In Progress'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                                : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                            }`}
+                          >
+                            {task.status}
+                          </span>
+
+                          {isTaskCritical && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300">
+                              {tMsg('Critical Priority', 'Prioritas Kritis')}
+                            </span>
+                          )}
+
+                          {isTaskWarning && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                              {tMsg('Warning Priority', 'Peringatan')}
+                            </span>
+                          )}
+
+                          {leaveCollision && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500 text-white animate-pulse">
+                              {tMsg('Due on Leave!', 'Jatuh Tempo Saat Cuti!')}
+                            </span>
+                          )}
+                        </div>
+
+                        <h5 className="font-bold text-sm text-slate-800 dark:text-white truncate" title={task.project_name || task.title}>
+                          {task.project_name || task.title}
+                        </h5>
+
+                        <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          {task.deadline && (
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                              </svg>
+                              <span>{tMsg('Deadline:', 'Tenggat:')} {task.deadline}</span>
+                            </span>
+                          )}
+
+                          <span className="flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>ETC: {task.splitEtc ? Math.round(task.splitEtc * 10) / 10 : (task.etc || 2)}h</span>
+                          </span>
+
+                          {task.category && (
+                            <span className="text-slate-400">• {task.category}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (setSelectedTask) setSelectedTask(task);
+                          setInspectingMember(null);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] font-bold text-xs hover:opacity-90 transition-all shrink-0 flex items-center gap-1"
+                      >
+                        <span>{tMsg('Open', 'Buka')}</span>
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-end bg-slate-50 dark:bg-slate-900/50">
+              <button
+                onClick={() => setInspectingMember(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors"
+              >
+                {tMsg('Close', 'Tutup')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

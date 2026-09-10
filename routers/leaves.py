@@ -8,7 +8,7 @@ import os
 import urllib.parse
 import requests
 
-from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage
+from database import get_db, User, Request, Subtask, Board, BoardMember, LeaveDay, LeaveRecord, Comment, Notification, DirectMessage, Workspace, WorkspaceMember
 from schemas import *
 from dependencies import *
 from utils import *
@@ -96,7 +96,7 @@ def get_leaves(
         BoardMember.member_username == current_user, BoardMember.status == "accepted"
     )
 
-    # Kumpulkan username seluruh rekan satu tim Anda
+    # Kumpulkan username seluruh rekan satu tim Anda dari Boards
     team_members = (
         db.query(BoardMember.member_username)
         .filter(
@@ -115,6 +115,21 @@ def get_leaves(
 
     team_usernames = set([m[0] for m in team_members] + [o[0] for o in owners])
     team_usernames.add(current_user)
+
+    # Kumpulkan juga rekan satu ruang kerja (Workspace Members) agar cuti rekan selalu tersinkronisasi
+    try:
+        owned_ws = db.query(Workspace.id).filter(Workspace.owner_username == current_user)
+        member_ws = db.query(WorkspaceMember.workspace_id).filter(WorkspaceMember.username == current_user)
+        all_ws_ids = set([w[0] for w in owned_ws.all()] + [w[0] for w in member_ws.all()])
+        if all_ws_ids:
+            ws_members = db.query(WorkspaceMember.username).filter(WorkspaceMember.workspace_id.in_(all_ws_ids)).all()
+            ws_owners = db.query(Workspace.owner_username).filter(Workspace.id.in_(all_ws_ids)).all()
+            for (u,) in ws_members:
+                if u: team_usernames.add(u)
+            for (u,) in ws_owners:
+                if u: team_usernames.add(u)
+    except Exception as e:
+        print(f"Workspace leaves lookup error: {e}")
 
     # Ambil Hari Libur Nasional, Cuti Bersama, dan Cuti Personal milik Anda & tim Anda
     leaves = (
@@ -158,6 +173,56 @@ def get_leaves(
     return {
         "leaves": db_leaves
     }
+
+
+@router.get("/api/leaves/workload-summary")
+def get_workload_leaves_summary(
+    current_user: str = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """
+    Returns unified team leaves and capacity deductions for Workload Analytics & Burnout Prevention.
+    """
+    leaves_data = get_leaves(current_user=current_user, db=db)
+    all_leaves = leaves_data.get("leaves", [])
+
+    now = datetime.now()
+    today_str = now.strftime("%Y-%m-%d")
+    week_start = now - timedelta(days=now.weekday())
+    week_end = week_start + timedelta(days=6)
+    week_start_str = week_start.strftime("%Y-%m-%d")
+    week_end_str = week_end.strftime("%Y-%m-%d")
+
+    active_leaves_today = []
+    weekly_leave_days = {}
+
+    for l in all_leaves:
+        ld = l.get("leave_date")
+        uname = l.get("username")
+        ltype = l.get("leave_type")
+
+        if ld == today_str:
+            active_leaves_today.append({
+                "username": uname,
+                "description": l.get("description"),
+                "leave_type": ltype,
+                "leave_date": ld
+            })
+
+        if ld and week_start_str <= ld <= week_end_str:
+            if ltype in ["mass_leave", "public_holiday"]:
+                weekly_leave_days["__all__"] = weekly_leave_days.get("__all__", 0) + 1
+            elif uname:
+                weekly_leave_days[uname] = weekly_leave_days.get(uname, 0) + 1
+
+    return {
+        "leaves": all_leaves,
+        "today": today_str,
+        "week_start": week_start_str,
+        "week_end": week_end_str,
+        "active_leaves_today": active_leaves_today,
+        "weekly_leave_days": weekly_leave_days,
+    }
+
 
 
 @router.post("/api/leaves")
