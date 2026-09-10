@@ -27,7 +27,6 @@ import PrivacyPolicyModal from '../PrivacyPolicyModal';
 import TermsOfServiceModal from '../TermsOfServiceModal';
 import DocumentationModal from '../DocumentationModal';
 
-import SystemSpecsModal from '../SystemSpecsModal';
 import MoMNotepadModal from './SmartAssistant/MoMNotepadModal';
 import ArchivedProjectsModal from './ArchivedProjectsModal';
 
@@ -229,8 +228,6 @@ export default function AppModals() {
     setIsPrivacyOpen,
     isTermsOpen,
     setIsTermsOpen,
-    isSpecsOpen,
-    setIsSpecsOpen,
     isChangelogOpen,
     setIsChangelogOpen,
     startTour,
@@ -660,7 +657,6 @@ export default function AppModals() {
 
       {isPrivacyOpen && <PrivacyPolicyModal setIsPrivacyOpen={setIsPrivacyOpen} language={language} />}
       {isTermsOpen && <TermsOfServiceModal setIsTermsOpen={setIsTermsOpen} language={language} />}
-      {isSpecsOpen && <SystemSpecsModal setIsSpecsOpen={setIsSpecsOpen} language={language} />}
       {isChangelogOpen && (
         (() => {
           setIsChangelogOpen(false);

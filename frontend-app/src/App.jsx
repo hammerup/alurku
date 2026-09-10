@@ -44,7 +44,6 @@ import MeetingsLeavesPage from './components/MeetingsLeavesPage';
 import MyTasksPage from './components/MyTasksPage';
 import PersonalDashboardPage from './components/PersonalDashboardPage';
 import HeaderNavigation from './components/Layout/HeaderNavigation';
-import SystemSpecsModal from './SystemSpecsModal';
 import LandingPage from './LandingPage';
 import { useAppContext } from './hooks/useAppContext';
 import AppModals from './components/AppModals';
@@ -345,8 +344,6 @@ function App() {
     setIsPrivacyOpen,
     isTermsOpen,
     setIsTermsOpen,
-    isSpecsOpen,
-    setIsSpecsOpen,
     isChangelogOpen,
     setIsChangelogOpen,
     isSubmitting,
@@ -1691,12 +1688,6 @@ function App() {
                 © {new Date().getFullYear()} Alurku.
               </p>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-                <button
-                  onClick={() => setIsSpecsOpen(true)}
-                  className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest transition-colors"
-                >
-                  Specs
-                </button>
                 <button
                   onClick={() => {
                     window.history.pushState({}, '', '/catatan-rilis');
