@@ -205,3 +205,16 @@ class ContentModerationActionModel(BaseModel):
     content_type: str
     reason: Optional[str] = None
 
+
+class TaskAttachmentResponse(BaseModel):
+    id: int
+    task_id: int
+    filename: str
+    file_size: int
+    content_type: Optional[str] = None
+    uploader_username: str
+    created_at: Optional[str] = None
+    download_url: Optional[str] = None
+    preview_url: Optional[str] = None
+
+

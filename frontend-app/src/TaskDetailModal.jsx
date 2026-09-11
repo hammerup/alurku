@@ -11,6 +11,7 @@ import TaskDetailSubtasks from './components/TaskDetail/TaskDetailSubtasks';
 import TaskDetailActivity from './components/TaskDetail/TaskDetailActivity';
 import TaskDetailComments from './components/TaskDetail/TaskDetailComments';
 import TaskDetailCommentForm from './components/TaskDetail/TaskDetailCommentForm';
+import TaskDetailAttachments from './components/TaskDetail/TaskDetailAttachments';
 import StartMeetingModal from './components/StartMeetingModal';
 export default function TaskDetailModal({
   tasks,
@@ -102,6 +103,73 @@ export default function TaskDetailModal({
   const [isGeneratingNudge, setIsGeneratingNudge] = useState(false);
   const [isNudgeConfirmOpen, setIsNudgeConfirmOpen] = useState(false);
   const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
+
+  // Attachments State & Handlers
+  const [attachments, setAttachments] = useState([]);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
+  const [attachmentUploadProgress, setAttachmentUploadProgress] = useState(0);
+
+  const fetchAttachments = React.useCallback(async () => {
+    if (!selectedTask?.id || isPreviewMode) return;
+    try {
+      const res = await axios.get(`/api/tasks/${selectedTask.id}/attachments`);
+      setAttachments(res.data.attachments || []);
+    } catch (err) {
+      console.error('Failed to load attachments:', err);
+    }
+  }, [selectedTask?.id, isPreviewMode]);
+
+  React.useEffect(() => {
+    fetchAttachments();
+  }, [fetchAttachments]);
+
+  const handleUploadAttachment = async (files) => {
+    if (!files || files.length === 0 || !selectedTask?.id) return;
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+
+    setIsUploadingAttachment(true);
+    setAttachmentUploadProgress(0);
+
+    try {
+      const res = await axios.post(`/api/tasks/${selectedTask.id}/attachments`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setAttachmentUploadProgress(percent);
+          }
+        },
+      });
+
+      if (showNotification) {
+        showNotification(res.data.message || tMsg('File(s) uploaded successfully', 'File berhasil diunggah'), 'success');
+      }
+      fetchAttachments();
+    } catch (err) {
+      const msg = err.response?.data?.detail || tMsg('Failed to upload attachment', 'Gagal mengunggah lampiran');
+      if (showNotification) showNotification(msg, 'error');
+    } finally {
+      setIsUploadingAttachment(false);
+      setAttachmentUploadProgress(0);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId) => {
+    if (!selectedTask?.id || !attachmentId) return;
+    try {
+      const res = await axios.delete(`/api/tasks/${selectedTask.id}/attachments/${attachmentId}`);
+      if (showNotification) {
+        showNotification(res.data.message || tMsg('Attachment deleted', 'Lampiran dihapus'), 'success');
+      }
+      setAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
+    } catch (err) {
+      const msg = err.response?.data?.detail || tMsg('Failed to delete attachment', 'Gagal menghapus lampiran');
+      if (showNotification) showNotification(msg, 'error');
+    }
+  };
 
   const assignedUsers = [];
   if (selectedTask?.requester) {
@@ -1372,6 +1440,20 @@ export default function TaskDetailModal({
                       </div>
                     )}
                   </div>
+
+                  <TaskDetailAttachments
+                    tMsg={tMsg}
+                    selectedTask={selectedTask}
+                    attachments={attachments}
+                    isUploading={isUploadingAttachment}
+                    uploadProgress={attachmentUploadProgress}
+                    onUpload={handleUploadAttachment}
+                    onDelete={handleDeleteAttachment}
+                    currentUser={currentUser}
+                    isTaskAdmin={isTaskAdmin}
+                    accountStatus={accountStatus}
+                    isPreviewMode={isPreviewMode}
+                  />
 
                    <TaskDetailSubtasks
                     tMsg={tMsg}

@@ -11,3 +11,4 @@ apscheduler
 alembic
 websockets
 pytz
+python-multipart

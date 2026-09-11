@@ -72,6 +72,7 @@ class Request(Base):
 
     # Relationships
     workspace = relationship("Workspace", back_populates="requests")
+    attachments = relationship("TaskAttachment", back_populates="task", cascade="all, delete-orphan")
 
 
 class LeaveDay(Base):
@@ -241,6 +242,22 @@ class Changelog(Base):
     changes_en = Column(Text, nullable=False)  # JSON string array
     order_index = Column(Integer, default=0, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class TaskAttachment(Base):
+    __tablename__ = "task_attachments"
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("requests.id", ondelete="CASCADE"), index=True, nullable=False)
+    filename = Column(String(255), nullable=False)
+    stored_path = Column(String(500), nullable=False)
+    storage_backend = Column(String(20), default="local")  # 'local' or 'r2'
+    file_size = Column(Integer, nullable=False, default=0)
+    content_type = Column(String(100), nullable=True)
+    uploader_username = Column(String(50), index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    task = relationship("Request", back_populates="attachments")
 
 
 

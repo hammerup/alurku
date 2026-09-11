@@ -54,3 +54,6 @@ how e68f24b
 .agent/session-aliases.json
 .agent/**/*.log
 .agent/temp/
+
+# User Uploaded Files (Persistent Volume)
+uploads/

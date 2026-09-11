@@ -49,6 +49,7 @@ from database import (
     DirectMessage,
     SessionLocal,
     Article,
+    TaskAttachment,
 )
 from utils import calculate_priority, create_notification, parse_raw_date, get_assignees
 from fastapi.encoders import ENCODERS_BY_TYPE

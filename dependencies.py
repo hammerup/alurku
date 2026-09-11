@@ -19,6 +19,7 @@ if not SECRET_KEY:
 
 ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="api/login", auto_error=False)
 
 def get_password_hash(password: str) -> str:
     # Batasi 71 karakter dan hash langsung menggunakan bcrypt (tanpa passlib)
@@ -67,3 +68,45 @@ def get_current_user(
         raise HTTPException(
             status_code=401, detail="Invalid authentication credentials"
         )
+
+
+from typing import Optional
+from fastapi import Query
+
+def get_current_user_flexible(
+    header_token: Optional[str] = Depends(oauth2_scheme_optional),
+    token: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Allows authentication via standard Authorization: Bearer <token> header,
+    or via ?token=<token> query parameter (ideal for <img>, <a> download/preview in browser).
+    """
+    effective_token = header_token or token
+    if not effective_token:
+        raise HTTPException(
+            status_code=401, detail="Not authenticated"
+        )
+
+    try:
+        payload = jwt.decode(effective_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(
+                status_code=401, detail="Invalid authentication credentials"
+            )
+
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="User account no longer exists")
+        if user.account_status == "pending_deletion":
+            raise HTTPException(
+                status_code=403, detail="Account is disabled and scheduled for deletion"
+            )
+
+        return username
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=401, detail="Invalid authentication credentials"
+        )
+
