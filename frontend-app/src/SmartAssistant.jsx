@@ -434,8 +434,8 @@ export default function SmartAssistant({
       localStorage.removeItem('alurku_ai_offer_docs');
       addBotMessage(
         tMsg(
-          `Done! ✅ Semua tugas dari To-do List kamu sudah berhasil aku buat!\n\nMau aku tunjukkin cara kelola semuanya lewat **Tur Workspace**? Atau kamu lebih suka eksplorasi sendiri dulu?`,
-          `Done! ✅ Semua tugas dari To-do List kamu sudah berhasil aku buat!\n\nMau aku tunjukkin cara kelola semuanya lewat **Tur Workspace**? Atau kamu lebih suka eksplorasi sendiri dulu?`
+          `Done! ✅ Semua tugas kamu sudah berhasil dibuat!\n\nMau aku tunjukkan cara mengelolanya lewat **Tur Workspace**? Atau kamu lebih suka eksplorasi sendiri dulu?`,
+          `Done! ✅ Semua tugas kamu sudah berhasil dibuat!\n\nMau aku tunjukkan cara mengelolanya lewat **Tur Workspace**? Atau kamu lebih suka eksplorasi sendiri dulu?`
         ),
         [optTour, optExplore]
       );

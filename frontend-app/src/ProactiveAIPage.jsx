@@ -1414,17 +1414,11 @@ USER REQUEST:
   };
 
   const finishAndClose = () => {
-    if (targetBoard && inboxTasks.length > 0) {
-      setSelectedBoard(targetBoard);
-      if (setViewMode) setViewMode('list');
-      if (fetchTasks) fetchTasks();
-    }
-    localStorage.setItem('alurku_ai_offer_docs', 'true');
+    destRef.current = '/my-tasks';
+    if (setSelectedBoard) setSelectedBoard(null);
+    if (fetchTasks) fetchTasks();
+    localStorage.removeItem('alurku_ai_offer_docs');
     close();
-    setTimeout(() => {
-      if (setIsProjectChatOpen) setIsProjectChatOpen(true);
-      if (setDrawerTab) setDrawerTab('assistant');
-    }, 350);
   };
 
   const insertMention = (username) => {
@@ -2465,7 +2459,7 @@ USER REQUEST:
                 {isFinishing ? <LoadingSpinner /> : null}
                 {isFinishing
                   ? tMsg('Saving...', 'Menyimpan...')
-                  : tMsg('Finish & Go to Project', 'Selesai & Buka Proyek')}
+                  : tMsg('Finish & View My Tasks', 'Selesai & Buka Tugas Saya')}
               </button>
             </div>
           </div>
