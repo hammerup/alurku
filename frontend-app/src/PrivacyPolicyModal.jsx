@@ -139,8 +139,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
                 <li>
                   <strong className="text-black dark:text-white">Third-Party LLM Processors:</strong>{' '}
                   {tMsg(
-                    'Task contexts and prompts are sent to our authorized AI infrastructure partners (Google Gemini API and Groq Inc. for GPT-OSS 120B) strictly for natural language generation. (See Section 5).',
-                    'Konteks tugas dan prompt dikirim ke mitra infrastruktur AI resmi kami (Google Gemini API dan Groq Inc. untuk GPT-OSS 120B) secara ketat untuk pembuatan bahasa alami. (Lihat Bagian 5).'
+                    'Task contexts and prompts are processed via authorized enterprise AI model providers strictly to perform natural language generation, task planning, and summarization. (See Section 5).',
+                    'Konteks tugas dan prompt diproses melalui penyedia model AI enterprise resmi secara ketat untuk kebutuhan pembuatan bahasa alami, perencanaan tugas, dan perangkuman. (Lihat Bagian 5).'
                   )}
                 </li>
               </ul>
@@ -180,8 +180,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Our Smart Assistant relies on advanced language models (Google Gemini and GPT-OSS 120B via Groq) to process conversational queries and extract meeting notes. We guarantee the following enterprise privacy protections:',
-                  'Asisten Pintar kami mengandalkan model bahasa lanjutan (Google Gemini dan GPT-OSS 120B via Groq) untuk memproses kueri percakapan dan mengekstrak catatan rapat. Kami menjamin perlindungan privasi perusahaan berikut:'
+                  'Our Smart Assistant relies on industry-leading enterprise language models to process conversational queries, plan workflows, and extract meeting notes. We guarantee the following enterprise privacy protections:',
+                  'Asisten Pintar kami mengandalkan model bahasa enterprise terkemuka untuk memproses kueri percakapan, merencanakan alur kerja, dan mengekstrak catatan rapat. Kami menjamin perlindungan privasi perusahaan berikut:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
@@ -257,8 +257,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Alurku is deployed on modern cloud infrastructure (including Vercel, Render, and Neon PostgreSQL). As such, your data may be transferred to, and maintained on, computers located outside of your state, province, or country where the data protection laws may differ. By submitting your information, you agree to this transfer, storing, and processing.',
-                  'Alurku disebarkan di infrastruktur cloud modern (termasuk Vercel, Render, dan Neon PostgreSQL). Dengan demikian, data Anda dapat ditransfer ke, dan dipelihara di, komputer yang berlokasi di luar negara atau provinsi Anda di mana undang-undang perlindungan data mungkin berbeda. Dengan mengirimkan informasi Anda, Anda menyetujui transfer dan penyimpanan ini.'
+                  'Alurku is deployed on modern virtual private servers (VPS) and dedicated cloud hosting infrastructure. Depending on the hosting region and authorized partners, your data may be processed and stored on secure servers located within or outside your jurisdiction. By utilizing the Platform, you agree to this necessary operational transfer and storage, subject to our Zero-Trust encryption protocols.',
+                  'Alurku disebarkan di infrastruktur server privat virtual (VPS) modern dan hosting cloud berdedikasi. Bergantung pada wilayah hosting dan mitra resmi, data Anda dapat diproses dan disimpan di server aman yang berlokasi di dalam maupun di luar yurisdiksi Anda. Dengan menggunakan Platform, Anda menyetujui transfer dan penyimpanan operasional yang diperlukan ini, tunduk pada protokol enkripsi Zero-Trust kami.'
                 )}
               </p>
             </div>

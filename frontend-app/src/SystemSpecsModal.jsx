@@ -34,16 +34,20 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 flex-1 items-start">
           {/* Kiri: Tabel Spesifikasi Utama */}
           <div className="flex-1 w-full min-w-0 flex flex-col">
-            <div className="mb-8 p-5 sm:p-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl flex gap-4 items-start shrink-0">
-              <div className="text-2xl sm:text-3xl mt-0.5">⚠️</div>
+            <div className="mb-8 p-5 sm:p-6 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex gap-4 items-start shrink-0">
+              <div className="text-2xl sm:text-3xl mt-0.5">
+                <svg className="w-7 h-7 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                </svg>
+              </div>
               <div>
-                <h3 className="font-bold text-amber-800 dark:text-amber-300 text-xs sm:text-sm uppercase tracking-widest mb-1.5">
-                  {tMsg('Infrastructure Notice (Free Tier)', 'Pemberitahuan Infrastruktur (Tier Gratis)')}
+                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm uppercase tracking-widest mb-1.5">
+                  {tMsg('Production Hosting Infrastructure', 'Infrastruktur Hosting Produksi')}
                 </h3>
-                <p className="text-amber-700 dark:text-amber-400 text-xs sm:text-sm font-medium leading-relaxed">
+                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed">
                   {tMsg(
-                    "This workspace is currently hosted on Free Tier infrastructure (Vercel, Render, Neon DB). You may experience a 15-50 second 'cold start' delay when launching the app if no one has accessed it in the last 15 minutes. Please be patient while the server wakes up.",
-                    "Ruang kerja ini saat ini di-hosting pada infrastruktur Tier Gratis (Vercel, Render, Neon DB). Anda mungkin mengalami penundaan 'cold start' 15-50 detik saat membuka aplikasi jika tidak ada yang mengaksesnya dalam 15 menit terakhir. Harap bersabar sementara server dihidupkan kembali."
+                    'This application runs on dedicated Virtual Private Server (VPS) infrastructure with containerized Docker architecture, guaranteeing fast response times and high availability without cold-start interruptions.',
+                    'Aplikasi ini berjalan di infrastruktur Virtual Private Server (VPS) berdedikasi dengan arsitektur Docker terkontainerisasi, menjamin waktu respons cepat dan ketersediaan tinggi tanpa hambatan cold start.'
                   )}
                 </p>
               </div>
@@ -762,10 +766,10 @@ export default function SystemSpecsModal({ setIsSpecsOpen, language }) {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <span className="text-xs font-bold px-2.5 py-1 bg-black text-white dark:bg-white dark:text-black rounded-md border border-black dark:border-white shadow-sm">
-                      Vercel
+                      Linux VPS
                     </span>
-                    <span className="text-xs font-bold px-2.5 py-1 bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 rounded-md border border-purple-200 dark:border-purple-800/50 shadow-sm">
-                      Render
+                    <span className="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-md border border-blue-200 dark:border-blue-800/50 shadow-sm">
+                      Docker Compose
                     </span>
                   </div>
                 </div>

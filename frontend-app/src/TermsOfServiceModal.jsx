@@ -133,8 +133,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'The Platform integrates advanced Large Language Models (including Google Gemini and GPT-OSS 120B) to automate workflows. AI-generated content—including but not limited to task drafts, meeting summaries, and code snippets—is provided strictly on an "AS IS" and "AS AVAILABLE" basis. You acknowledge that AI may occasionally produce inaccurate, biased, or incomplete information ("Hallucinations"). You must independently verify all AI outputs before utilizing them in production workflows. Alurku assumes zero liability for business damages resulting from reliance on AI-generated content.',
-                  'Platform ini mengintegrasikan Model Bahasa Besar tingkat lanjut (termasuk Google Gemini dan GPT-OSS 120B) untuk mengotomatiskan alur kerja. Konten yang dihasilkan AI disediakan secara ketat "SEBAGAIMANA ADANYA" dan "SEBAGAIMANA TERSEDIA". Anda mengakui bahwa AI sesekali dapat menghasilkan informasi yang tidak akurat, bias, atau tidak lengkap ("Halusinasi"). Anda harus memverifikasi secara independen semua keluaran AI sebelum menggunakannya. Alurku tidak memikul tanggung jawab apa pun atas kerugian bisnis yang diakibatkan oleh ketergantungan pada konten AI.'
+                  'The Platform integrates advanced enterprise Large Language Models to automate workflows and assist with task estimation. AI-generated content—including but not limited to task drafts, meeting summaries, and planning suggestions—is provided strictly on an "AS IS" and "AS AVAILABLE" basis. You acknowledge that AI may occasionally produce inaccurate, biased, or incomplete information ("Hallucinations"). You must independently verify all AI outputs before utilizing them in production workflows. Alurku assumes zero liability for business damages resulting from reliance on AI-generated content.',
+                  'Platform ini mengintegrasikan Model Bahasa Besar (LLM) tingkat lanjut untuk mengotomatiskan alur kerja dan membantu estimasi tugas. Konten yang dihasilkan AI—termasuk namun tidak terbatas pada draf tugas, ringkasan rapat, dan saran perencanaan—disediakan secara ketat "SEBAGAIMANA ADANYA" dan "SEBAGAIMANA TERSEDIA". Anda mengakui bahwa AI sesekali dapat menghasilkan informasi yang tidak akurat, bias, atau tidak lengkap ("Halusinasi"). Anda harus memverifikasi secara independen semua keluaran AI sebelum menggunakannya. Alurku tidak memikul tanggung jawab apa pun atas kerugian bisnis yang diakibatkan oleh ketergantungan pada konten AI.'
                 )}
               </p>
             </div>
@@ -142,25 +142,14 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
             {/* Section 7 */}
             <div className="mb-10">
               <h3 className="text-xl font-black uppercase tracking-wider mb-4 border-l-4 border-indigo-500 pl-4">
-                7. {tMsg('Service Level Agreement (SLA) & Free Tier', 'SLA & Infrastruktur Tier Gratis')}
+                7. {tMsg('Service Level Agreement (SLA) & Infrastructure Availability', 'SLA & Ketersediaan Infrastruktur')}
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Alurku is currently deployed utilizing Free Tier cloud infrastructure (including Vercel, Render, and Neon DB). Consequently, we explicitly do not provide a guaranteed 99.9% or 99.99% uptime Service Level Agreement (SLA). The Platform is subject to scheduled maintenance, unscheduled crashes, and third-party provider outages.',
-                  'Alurku saat ini disebarkan menggunakan infrastruktur cloud Tier Gratis. Akibatnya, kami secara eksplisit tidak memberikan Jaminan Tingkat Layanan (SLA) waktu aktif (uptime) 99,9% atau 99,99%. Platform ini tunduk pada pemeliharaan terjadwal, kerusakan tidak terjadwal, dan pemadaman penyedia pihak ketiga.'
+                  'Alurku runs on dedicated Virtual Private Server (VPS) and containerized cloud hosting architecture designed for continuous availability. While we strive for 99.9% operational availability, the Platform is provided without warranties of uninterrupted service and may undergo scheduled maintenance or brief emergency patching. Commercial uptime guarantees are available exclusively to enterprise agreements.',
+                  'Alurku berjalan pada infrastruktur Virtual Private Server (VPS) berdedikasi dan arsitektur cloud terkontainerisasi yang dirancang untuk ketersediaan berkelanjutan. Meskipun kami berupaya mencapai ketersediaan operasional 99,9%, Layanan disediakan tanpa jaminan bebas gangguan mutlak dan dapat sewaktu-waktu menjalani pemeliharaan terjadwal atau pembaruan darurat. Jaminan uptime komersial tersedia secara eksklusif dalam perjanjian paket enterprise.'
                 )}
               </p>
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-4 rounded-xl mt-4">
-                <p className="text-sm text-amber-800 dark:text-amber-300 font-bold mb-1">
-                  {tMsg('Cold Start Phenomenon', 'Fenomena Cold Start')}
-                </p>
-                <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
-                  {tMsg(
-                    'You acknowledge and accept that the backend computing instances will automatically "sleep" after 15 minutes of network inactivity. Waking the server may result in a 15 to 50-second delay (known as a Cold Start) during initial authentication or data retrieval.',
-                    'Anda mengetahui dan menerima bahwa instans komputasi backend akan otomatis "tidur" setelah 15 menit tanpa aktivitas jaringan. Membangunkan server dapat mengakibatkan penundaan 15 hingga 50 detik (dikenal sebagai Cold Start) selama otentikasi awal.'
-                  )}
-                </p>
-              </div>
             </div>
 
             {/* Section 8 */}
