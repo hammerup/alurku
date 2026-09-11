@@ -10,6 +10,7 @@ export default function MainToolbar() {
     selectedBoard,
     setSelectedBoard,
     setIsProactiveAIOpen,
+    activeWorkspace,
     viewMode,
     showLiveClock,
     showLiveClockDate,
@@ -143,6 +144,7 @@ export default function MainToolbar() {
                 timeline: 'Timeline',
                 calendar: 'Calendar',
               };
+              const isProOnly = (v === 'timeline' || v === 'analytics') && (activeWorkspace?.tier || 'free') === 'free';
               const isActive = viewMode === v;
               return (
                 <button
@@ -162,6 +164,11 @@ export default function MainToolbar() {
                     {icons[v]}
                   </span>
                   <span>{labels[v]}</span>
+                  {isProOnly && (
+                    <span className="text-[8px] font-black uppercase tracking-wider bg-[#FACC15] text-[#111E38] px-1 py-0.2 rounded-xs ml-0.5 shadow-2xs">
+                      PRO
+                    </span>
+                  )}
                 </button>
               );
             })}

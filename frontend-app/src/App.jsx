@@ -59,6 +59,8 @@ import MainToolbar from './components/Layout/MainToolbar';
 import HomeDashboard from './components/HomeDashboard';
 import SearchResults from './components/SearchResults';
 import WorkspaceOverview from './components/WorkspaceOverview';
+import ProFeatureGate from './components/ProFeatureGate';
+import UpgradeModal from './components/UpgradeModal';
 
 import './api/axiosSetup';
 
@@ -480,6 +482,7 @@ function App() {
   } = useAppContext();
 
   const [activeDragType, setActiveDragType] = useState(null);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
@@ -1620,41 +1623,57 @@ function App() {
                     )}
 
                     {viewMode === 'analytics' && (
-                      <div className="instagram-solid-cards contents">
-                        <AnalyticsView
-                          filteredTasks={filteredTasks}
-                          columns={columns}
-                          avatarsMap={avatarsMap}
-                          teamMembers={teamMembers}
-                          setSelectedTask={setSelectedTask}
-                          currentUser={currentUser}
+                      (activeWorkspace?.tier || 'free') === 'free' ? (
+                        <ProFeatureGate
+                          feature="analytics"
                           language={language}
-                          leaves={leaves}
-                          fetchLeaves={fetchLeaves}
+                          onUpgradeClick={() => setIsUpgradeModalOpen(true)}
                         />
-                      </div>
+                      ) : (
+                        <div className="instagram-solid-cards contents">
+                          <AnalyticsView
+                            filteredTasks={filteredTasks}
+                            columns={columns}
+                            avatarsMap={avatarsMap}
+                            teamMembers={teamMembers}
+                            setSelectedTask={setSelectedTask}
+                            currentUser={currentUser}
+                            language={language}
+                            leaves={leaves}
+                            fetchLeaves={fetchLeaves}
+                          />
+                        </div>
+                      )
                     )}
 
                     {viewMode === 'timeline' && (
-                      <TimelineView
-                        filteredTasks={filteredTasks}
-                        leaves={leaves}
-                        currentUser={currentUser}
-                        isUserAssigned={isUserAssigned}
-                        timelineDrag={timelineDrag}
-                        setTimelineDrag={setTimelineDrag}
-                        setSelectedTask={setSelectedTask}
-                        accountStatus={accountStatus}
-                        DAY_WIDTH={DAY_WIDTH}
-                        selectedBoard={selectedBoard}
-                        isSuperAdmin={isSuperAdmin}
-                        groupBy={groupBy}
-                        hoveredTimelineRow={hoveredTimelineRow}
-                        setHoveredTimelineRow={setHoveredTimelineRow}
-                        isTrashHovered={isTrashHovered}
-                        isDarkMode={isDarkMode}
-                        language={language}
-                      />
+                      (activeWorkspace?.tier || 'free') === 'free' ? (
+                        <ProFeatureGate
+                          feature="timeline"
+                          language={language}
+                          onUpgradeClick={() => setIsUpgradeModalOpen(true)}
+                        />
+                      ) : (
+                        <TimelineView
+                          filteredTasks={filteredTasks}
+                          leaves={leaves}
+                          currentUser={currentUser}
+                          isUserAssigned={isUserAssigned}
+                          timelineDrag={timelineDrag}
+                          setTimelineDrag={setTimelineDrag}
+                          setSelectedTask={setSelectedTask}
+                          accountStatus={accountStatus}
+                          DAY_WIDTH={DAY_WIDTH}
+                          selectedBoard={selectedBoard}
+                          isSuperAdmin={isSuperAdmin}
+                          groupBy={groupBy}
+                          hoveredTimelineRow={hoveredTimelineRow}
+                          setHoveredTimelineRow={setHoveredTimelineRow}
+                          isTrashHovered={isTrashHovered}
+                          isDarkMode={isDarkMode}
+                          language={language}
+                        />
+                      )
                     )}
 
                     {viewMode === 'calendar' && (
@@ -2441,6 +2460,22 @@ function App() {
           setBrowserNotifEnabled={setBrowserNotifEnabled}
           showNotification={showNotification}
           tMsg={tMsg}
+        />
+      )}
+
+      {/* Upgrade Modal Triggered from Gated Features */}
+      {isUpgradeModalOpen && (
+        <UpgradeModal
+          isOpen={isUpgradeModalOpen}
+          onClose={() => setIsUpgradeModalOpen(false)}
+          activeWorkspace={activeWorkspace}
+          language={language}
+          showNotification={showNotification}
+          onUpgradeSuccess={(data) => {
+            if (activeWorkspace) {
+              switchWorkspace({ ...activeWorkspace, tier: data.tier });
+            }
+          }}
         />
       )}
     </DragDropContext>

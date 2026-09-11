@@ -23,6 +23,9 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - SECRET_KEY=${SECRET_KEY}
+      - MAYAR_BASE_URL=${MAYAR_BASE_URL:-https://api.mayar.id/hl/v1}
+      - MAYAR_API_KEY=${MAYAR_API_KEY}
+      - MAYAR_WEBHOOK_TOKEN=${MAYAR_WEBHOOK_TOKEN}
     volumes:
       - ./uploads:/app/uploads
     depends_on:
