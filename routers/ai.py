@@ -15,6 +15,7 @@ from routers.workspaces import get_active_workspace_id
 from schemas import *
 from dependencies import *
 from utils import *
+from services.tier_service import enforce_can_use_ai, increment_user_ai_usage_month
 
 router = APIRouter()
 
@@ -30,6 +31,26 @@ def generate_ai_text(
             detail="Please wait a moment before generating another AI response.",
         )
     set_security_log(db, f"ai_generate:{current_user}", now_time)
+
+    # ── Tier Quota Enforcement ────────────────────────────────────────────────
+    # Resolve active workspace tier for user to determine AI quota
+    user_workspaces = (
+        db.query(Workspace)
+        .join(WorkspaceMember, Workspace.id == WorkspaceMember.workspace_id)
+        .filter(WorkspaceMember.username == current_user)
+        .all()
+    )
+    # Give user the highest tier benefits among workspaces they are a member of
+    effective_tier = "free"
+    for ws in user_workspaces:
+        ws_tier = getattr(ws, "tier", "free") or "free"
+        if ws_tier == "business":
+            effective_tier = "business"
+            break
+        elif ws_tier == "pro":
+            effective_tier = "pro"
+
+    enforce_can_use_ai(db, current_user, effective_tier)
 
     # ── Org Policy Enforcement ─────────────────────────────────────────────────
     policies = get_system_policies(db)
@@ -120,18 +141,25 @@ def generate_ai_text(
     import logging
     ai_logger = logging.getLogger("uvicorn.error")
 
+    def finalize_ai_success(result: dict) -> dict:
+        try:
+            increment_user_ai_usage_month(db, current_user)
+        except Exception as ex:
+            ai_logger.warning(f"Could not increment AI usage: {ex}")
+        return result
+
     # If Groq is the preferred engine (by explicit choice or admin policy)
     if effective_provider in ["groq", "gpt-oss", "gpt_oss", "llama"]:
         if groq_api_key:
             try:
-                return call_groq()
+                return finalize_ai_success(call_groq())
             except Exception as e:
                 ai_logger.warning(f"[AI Dual-Engine] Primary engine (Groq) unavailable: {e}. Attempting seamless failover to Gemini...")
                 error_msgs.append(f"Groq: {str(e)}")
         # Seamless failover to Gemini
         if gemini_api_key:
             try:
-                return call_gemini()
+                return finalize_ai_success(call_gemini())
             except Exception as e:
                 ai_logger.warning(f"[AI Dual-Engine] Failover engine (Gemini) also failed: {e}")
                 error_msgs.append(f"Gemini: {str(e)}")
@@ -140,14 +168,14 @@ def generate_ai_text(
     elif effective_provider == "gemini":
         if gemini_api_key:
             try:
-                return call_gemini()
+                return finalize_ai_success(call_gemini())
             except Exception as e:
                 ai_logger.warning(f"[AI Dual-Engine] Primary engine (Gemini) unavailable: {e}. Attempting seamless failover to Groq...")
                 error_msgs.append(f"Gemini: {str(e)}")
         # Seamless failover to Groq
         if groq_api_key:
             try:
-                return call_groq()
+                return finalize_ai_success(call_groq())
             except Exception as e:
                 ai_logger.warning(f"[AI Dual-Engine] Failover engine (Groq) also failed: {e}")
                 error_msgs.append(f"Groq: {str(e)}")
@@ -158,13 +186,13 @@ def generate_ai_text(
         if policy_choice == "groq":
             if groq_api_key:
                 try:
-                    return call_groq()
+                    return finalize_ai_success(call_groq())
                 except Exception as e:
                     ai_logger.warning(f"[AI Dual-Engine] Groq failed: {e}. Failing over to Gemini...")
                     error_msgs.append(f"Groq: {str(e)}")
             if gemini_api_key:
                 try:
-                    return call_gemini()
+                    return finalize_ai_success(call_gemini())
                 except Exception as e:
                     ai_logger.warning(f"[AI Dual-Engine] Gemini failed: {e}")
                     error_msgs.append(f"Gemini: {str(e)}")
@@ -172,13 +200,13 @@ def generate_ai_text(
             # Default order: Groq then Gemini (or Gemini first if groq absent)
             if groq_api_key:
                 try:
-                    return call_groq()
+                    return finalize_ai_success(call_groq())
                 except Exception as e:
                     ai_logger.warning(f"[AI Dual-Engine] Groq failed: {e}. Failing over to Gemini...")
                     error_msgs.append(f"Groq: {str(e)}")
             if gemini_api_key:
                 try:
-                    return call_gemini()
+                    return finalize_ai_success(call_gemini())
                 except Exception as e:
                     ai_logger.warning(f"[AI Dual-Engine] Gemini failed: {e}")
                     error_msgs.append(f"Gemini: {str(e)}")

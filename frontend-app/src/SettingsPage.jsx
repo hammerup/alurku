@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Avatar, SegmentedControl } from './SharedUI';
+import { useAppContext } from './hooks/useAppContext';
+import UpgradeModal from './components/UpgradeModal';
 
 const SettingsSection = ({ title, description, children }) => (
   <div className="animate-in fade-in duration-300">
@@ -88,12 +90,37 @@ export default function SettingsPage({
   setBrowserNotifEnabled,
   showNotification,
 }) {
+  const { activeWorkspace, switchWorkspace, workspaces } = useAppContext();
   const [isClosing, setIsClosing] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
+
+  // Plan & Usage State
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [usageData, setUsageData] = useState(null);
+  const [isLoadingUsage, setIsLoadingUsage] = useState(false);
+
+  const fetchUsageData = async () => {
+    if (!activeWorkspace?.id) return;
+    setIsLoadingUsage(true);
+    try {
+      const resp = await axios.get(`/api/workspaces/${activeWorkspace.id}/usage`);
+      setUsageData(resp.data);
+    } catch (err) {
+      console.error('Failed to load workspace usage data:', err);
+    } finally {
+      setIsLoadingUsage(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'billing') {
+      fetchUsageData();
+    }
+  }, [activeTab, activeWorkspace?.id]);
 
   // Danger Zone: Delete Account states
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
@@ -1265,71 +1292,112 @@ export default function SettingsPage({
                       {tMsg('Current Active Plan', 'Paket Aktif Saat Ini')}
                     </span>
                     <h4 className="text-2xl font-black text-white flex items-center gap-2">
-                      Free Community Tier
+                      {usageData?.tier_name || (activeWorkspace?.tier === 'pro' ? 'Pro (Agile Team)' : activeWorkspace?.tier === 'business' ? 'Business (Scale)' : 'Gratis (Starter)')}
                       <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">
-                        Active
+                        {tMsg('Active', 'Aktif')}
                       </span>
                     </h4>
                     <p className="text-xs text-neutral-300 font-medium mt-1">
-                      {tMsg('Includes unlimited tasks, 5GB cloud storage, and 500 monthly Luruka AI prompts.', 'Termasuk tugas tak terbatas, penyimpanan 5GB, dan 500 kuota AI Luruka bulanan.')}
+                      {activeWorkspace?.tier === 'pro'
+                        ? tMsg('Enjoy unlimited projects, 15 GB storage, and 1,500 monthly Luruka AI prompts.', 'Nikmati proyek tanpa batas, penyimpanan 15 GB, dan 1.500 prompt Luruka AI.')
+                        : activeWorkspace?.tier === 'business'
+                        ? tMsg('Enterprise features unlocked with 100 GB storage and 5,000 monthly AI prompts.', 'Fitur enterprise aktif dengan penyimpanan 100 GB dan 5.000 prompt AI bulanan.')
+                        : tMsg('Starter plan: up to 3 projects, 3 members, 500 MB storage, and 50 AI prompts.', 'Paket pemula: maks 3 proyek, 3 anggota, penyimpanan 500 MB, dan 50 prompt AI.')}
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      showNotification(tMsg('Pro Tier subscription upgrades coming soon!', 'Peningkatan paket Pro segera hadir!'), 'info');
-                    }}
+                    onClick={() => setIsUpgradeModalOpen(true)}
                     className="bg-[#FACC15] hover:bg-yellow-400 text-[#111E38] font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm shrink-0 cursor-pointer flex items-center gap-2"
                   >
                     <svg className="w-4 h-4 shrink-0 text-[#111E38]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.926 14.926 0 01-5.84 2.58m-.12-8.54a2 2 0 102.83 2.83M3 21l3.5-3.5" />
                     </svg>
-                    <span>{tMsg('Upgrade to Pro', 'Tingkatkan ke Pro')}</span>
+                    <span>{tMsg('Manage Plan / Upgrade', 'Kelola Paket / Upgrade')}</span>
                   </button>
                 </div>
 
-                {/* Storage & Usage Metrics */}
+                {/* Real-time Usage Metrics */}
                 <SettingItem
-                  title={tMsg('Database Storage', 'Penyimpanan Database')}
-                  description={tMsg('Allocated SQL database space for task cards, comments, and project histories.', 'Alokasi ruang database SQL untuk kartu tugas, komentar, dan riwayat proyek.')}
+                  title={tMsg('Active Projects', 'Proyek Aktif')}
+                  description={tMsg('Number of active Kanban boards in this workspace.', 'Jumlah papan proyek aktif di ruang kerja ini.')}
                 >
                   <div className="w-full md:w-72">
                     <div className="flex justify-between text-xs mb-1 font-bold">
-                      <span className="text-neutral-500 dark:text-neutral-400">18.4 MB / 512.0 MB</span>
-                      <span className="text-[#111E38] dark:text-[#FACC15]">3.6%</span>
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {usageData ? `${usageData.projects.used} / ${usageData.projects.is_unlimited ? '∞' : usageData.projects.max}` : '...'} {tMsg('projects', 'proyek')}
+                      </span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">
+                        {usageData?.projects.is_unlimited ? tMsg('Unlimited', 'Tanpa Batas') : `${Math.round(((usageData?.projects.used || 0) / (usageData?.projects.max || 1)) * 100)}%`}
+                      </span>
                     </div>
                     <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                      <div className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full" style={{ width: '3.6%' }}></div>
+                      <div
+                        className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full transition-all"
+                        style={{ width: usageData?.projects.is_unlimited ? '25%' : `${Math.min(100, Math.round(((usageData?.projects.used || 0) / (usageData?.projects.max || 1)) * 100))}%` }}
+                      ></div>
                     </div>
                   </div>
                 </SettingItem>
 
                 <SettingItem
-                  title={tMsg('Cloud File Storage (S3)', 'Penyimpanan Berkas (Cloud S3)')}
-                  description={tMsg('Storage space for task attachments, image uploads, and documents.', 'Ruang penyimpanan untuk lampiran tugas, unggahan gambar, dan dokumen.')}
+                  title={tMsg('Team Members', 'Anggota Tim')}
+                  description={tMsg('Active collaborators joined in this workspace.', 'Kolaborator aktif yang bergabung dalam ruang kerja ini.')}
                 >
                   <div className="w-full md:w-72">
                     <div className="flex justify-between text-xs mb-1 font-bold">
-                      <span className="text-neutral-500 dark:text-neutral-400">245.8 MB / 5.0 GB</span>
-                      <span className="text-[#111E38] dark:text-[#FACC15]">4.9%</span>
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {usageData ? `${usageData.members.used} / ${usageData.members.is_unlimited ? '∞' : usageData.members.max}` : '...'} {tMsg('members', 'anggota')}
+                      </span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">
+                        {usageData?.members.is_unlimited ? tMsg('Unlimited', 'Tanpa Batas') : `${Math.round(((usageData?.members.used || 0) / (usageData?.members.max || 1)) * 100)}%`}
+                      </span>
                     </div>
                     <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                      <div className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full" style={{ width: '4.9%' }}></div>
+                      <div
+                        className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full transition-all"
+                        style={{ width: usageData?.members.is_unlimited ? '25%' : `${Math.min(100, Math.round(((usageData?.members.used || 0) / (usageData?.members.max || 1)) * 100))}%` }}
+                      ></div>
                     </div>
                   </div>
                 </SettingItem>
 
                 <SettingItem
-                  title={tMsg('Luruka AI Prompt Quota', 'Kuota Permintaan Luruka AI')}
+                  title={tMsg('File Attachments Storage', 'Penyimpanan Berkas Lampiran')}
+                  description={tMsg('Storage consumed by task attachments, PDF documents, and images.', 'Kapasitas yang digunakan oleh berkas lampiran tugas, dokumen PDF, dan gambar.')}
+                >
+                  <div className="w-full md:w-72">
+                    <div className="flex justify-between text-xs mb-1 font-bold">
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {usageData ? `${usageData.storage.used_mb} MB / ${usageData.storage.max_mb} MB` : '...'}
+                      </span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">{usageData?.storage.percentage || 0}%</span>
+                    </div>
+                    <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(100, usageData?.storage.percentage || 0)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </SettingItem>
+
+                <SettingItem
+                  title={tMsg('Luruka AI Monthly Quota', 'Kuota Bulanan Luruka AI')}
                   description={tMsg('Monthly prompt quota for AI workload summaries, task planning, and smart assistant.', 'Kuota permintaan bulanan untuk ringkasan AI, perencanaan tugas, dan asisten cerdas.')}
                 >
                   <div className="w-full md:w-72">
                     <div className="flex justify-between text-xs mb-1 font-bold">
-                      <span className="text-neutral-500 dark:text-neutral-400">142 / 500 prompts</span>
-                      <span className="text-[#111E38] dark:text-[#FACC15]">28.4%</span>
+                      <span className="text-neutral-500 dark:text-neutral-400">
+                        {usageData ? `${usageData.ai_requests.used} / ${usageData.ai_requests.max}` : '...'} {tMsg('prompts', 'permintaan')}
+                      </span>
+                      <span className="text-[#111E38] dark:text-[#FACC15]">{usageData?.ai_requests.percentage || 0}%</span>
                     </div>
                     <div className="w-full bg-neutral-150 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                      <div className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full" style={{ width: '28.4%' }}></div>
+                      <div
+                        className="bg-[#111E38] dark:bg-[#FACC15] h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(100, usageData?.ai_requests.percentage || 0)}%` }}
+                      ></div>
                     </div>
                   </div>
                 </SettingItem>
@@ -1403,6 +1471,23 @@ export default function SettingsPage({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Upgrade & Subscription Modal */}
+      {isUpgradeModalOpen && (
+        <UpgradeModal
+          isOpen={isUpgradeModalOpen}
+          onClose={() => setIsUpgradeModalOpen(false)}
+          activeWorkspace={activeWorkspace}
+          language={language}
+          showNotification={showNotification}
+          onUpgradeSuccess={(data) => {
+            fetchUsageData();
+            if (activeWorkspace) {
+              switchWorkspace({ ...activeWorkspace, tier: data.tier });
+            }
+          }}
+        />
       )}
     </div>
   );

@@ -72,8 +72,17 @@ def test_workspace_lifecycle_and_tenant_isolation():
     assert ws_list_a[0]["owner_username"] == user_a["username"]
     default_ws_id = ws_list_a[0]["id"]
 
-    # 4. Create a new custom Workspace from A
+    # 4. In Free tier, max_workspaces_owned is 1. Test that creating a 2nd workspace is blocked by tier limit
     custom_ws_name = f"Alurku Team Workspace {rand_id}"
+    resp_blocked = client.post("/api/workspaces", json={"name": custom_ws_name}, headers=headers_a)
+    assert resp_blocked.status_code == 403
+    assert "Batas Paket Tercapai" in resp_blocked.json()["detail"]
+
+    # Upgrade default workspace to 'pro' so user can create up to 3 workspaces
+    resp_up = client.put(f"/api/workspaces/{default_ws_id}/tier", json={"tier": "pro"}, headers=headers_a)
+    assert resp_up.status_code == 200
+
+    # Now creating a 2nd workspace should succeed
     resp_create = client.post("/api/workspaces", json={"name": custom_ws_name}, headers=headers_a)
     assert resp_create.status_code == 200
     custom_ws_id = resp_create.json()["workspace"]["id"]

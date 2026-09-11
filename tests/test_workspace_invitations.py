@@ -62,7 +62,10 @@ def test_complete_workspace_invitation_flow():
         create_res = client.post("/api/workspaces", json={"name": ws_name}, headers=headers["owner"])
         assert create_res.status_code == 200, f"Create workspace failed: {create_res.text}"
         ws_id = create_res.json()["workspace"]["id"]
-        print(f" [PASS] 2. Workspace created successfully (ID={ws_id}, Name='{ws_name}')")
+        # Upgrade workspace to 'pro' to allow inviting 3+ team members (Free tier limit is 3 total members)
+        up_res = client.put(f"/api/workspaces/{ws_id}/tier", json={"tier": "pro"}, headers=headers["owner"])
+        assert up_res.status_code == 200
+        print(f" [PASS] 2. Workspace created & upgraded to Pro successfully (ID={ws_id}, Name='{ws_name}')")
 
         # 3. Owner Invites Member by Username
         invite_member_res = client.post(

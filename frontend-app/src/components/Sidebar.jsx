@@ -1,6 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useAppContext } from '../hooks/useAppContext';
 import { Avatar, IconPlus } from '../SharedUI';
+import UpgradeModal from './UpgradeModal';
 
 export default function Sidebar() {
   const {
@@ -88,6 +89,7 @@ export default function Sidebar() {
   const [activeBoardMenuId, setActiveBoardMenuId] = useState(null);
   const [newWsName, setNewWsName] = useState('');
   const [isCreatingWs, setIsCreatingWs] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   // Drag & Drop reorder state
   const [draggedBoardId, setDraggedBoardId] = useState(null);
@@ -870,9 +872,27 @@ export default function Sidebar() {
                 onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
                 className="w-full flex items-center justify-between gap-1.5 p-1 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50 rounded-xl transition-all text-left"
               >
-                <span className="font-extrabold text-xs text-[#111E38] dark:text-white truncate flex-1">
-                  {activeWorkspace?.name || 'Workspace'}
-                </span>
+                <div className="flex items-center gap-1.5 truncate flex-1">
+                  <span className="font-extrabold text-xs text-[#111E38] dark:text-white truncate">
+                    {activeWorkspace?.name || 'Workspace'}
+                  </span>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsUpgradeModalOpen(true);
+                    }}
+                    title={tMsg('Click to upgrade / manage subscription', 'Klik untuk upgrade / kelola langganan')}
+                    className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md cursor-pointer shrink-0 transition-transform hover:scale-105 ${
+                      activeWorkspace?.tier === 'pro'
+                        ? 'bg-[#FACC15] text-[#111E38] shadow-2xs font-extrabold'
+                        : activeWorkspace?.tier === 'business'
+                        ? 'bg-purple-600 text-white font-extrabold'
+                        : 'bg-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
+                    }`}
+                  >
+                    {activeWorkspace?.tier ? activeWorkspace.tier.toUpperCase() : 'FREE'}
+                  </span>
+                </div>
                 <span className="material-symbols-outlined text-[16px] text-neutral-400 shrink-0">
                   expand_more
                 </span>
@@ -903,34 +923,45 @@ export default function Sidebar() {
                     ))}
                   </div>
 
-                  <div className="border-t border-neutral-100 dark:border-neutral-800 mt-1.5 pt-1.5">
-                    {isCreatingWs ? (
-                      <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5 p-1">
-                        <input
-                          type="text"
-                          placeholder={tMsg('Workspace Name', 'Nama Workspace')}
-                          value={newWsName}
-                          onChange={(e) => setNewWsName(e.target.value)}
-                          className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs rounded-lg px-2.5 py-1 outline-none text-black dark:text-white"
-                          autoFocus
-                        />
+                    <div className="border-t border-neutral-100 dark:border-neutral-800 mt-1.5 pt-1.5 space-y-0.5">
+                      {isCreatingWs ? (
+                        <form onSubmit={handleCreateWsSubmit} className="flex gap-1.5 p-1">
+                          <input
+                            type="text"
+                            placeholder={tMsg('Workspace Name', 'Nama Workspace')}
+                            value={newWsName}
+                            onChange={(e) => setNewWsName(e.target.value)}
+                            className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-xs rounded-lg px-2.5 py-1 outline-none text-black dark:text-white"
+                            autoFocus
+                          />
+                          <button
+                            type="submit"
+                            className="bg-[#FACC15] text-[#111E38] text-xs px-2.5 py-1 rounded-lg font-bold"
+                          >
+                            +
+                          </button>
+                        </form>
+                      ) : (
                         <button
-                          type="submit"
-                          className="bg-[#FACC15] text-[#111E38] text-xs px-2.5 py-1 rounded-lg font-bold"
+                          onClick={() => setIsCreatingWs(true)}
+                          className="w-full text-left px-2.5 py-1.5 text-xs text-indigo-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
                         >
-                          +
+                          <IconPlus className="w-3.5 h-3.5" />
+                          {tMsg('Create Workspace', 'Buat Workspace Baru')}
                         </button>
-                      </form>
-                    ) : (
+                      )}
+
                       <button
-                        onClick={() => setIsCreatingWs(true)}
-                        className="w-full text-left px-2.5 py-1.5 text-xs text-indigo-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
+                        onClick={() => {
+                          setIsWorkspaceMenuOpen(false);
+                          setIsUpgradeModalOpen(true);
+                        }}
+                        className="w-full text-left px-2.5 py-1.5 text-xs text-amber-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
                       >
-                        <IconPlus className="w-3.5 h-3.5" />
-                        {tMsg('Create Workspace', 'Buat Workspace Baru')}
+                        <span className="material-symbols-outlined text-[16px]">stars</span>
+                        {tMsg('Upgrade Plan / Quota', 'Tingkatkan Paket / Kuota')}
                       </button>
-                    )}
-                  </div>
+                    </div>
                 </div>
               )}
             </div>
@@ -1800,6 +1831,22 @@ export default function Sidebar() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Workspace Upgrade / Monetization Modal */}
+      {isUpgradeModalOpen && (
+        <UpgradeModal
+          isOpen={isUpgradeModalOpen}
+          onClose={() => setIsUpgradeModalOpen(false)}
+          activeWorkspace={activeWorkspace}
+          language={language}
+          showNotification={showNotification}
+          onUpgradeSuccess={(data) => {
+            if (activeWorkspace) {
+              switchWorkspace({ ...activeWorkspace, tier: data.tier });
+            }
+          }}
+        />
       )}
     </>
   );

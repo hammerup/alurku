@@ -12,6 +12,7 @@ from dependencies import *
 from utils import *
 from routers.ai import generate_ai_text
 from routers.workspaces import get_active_workspace_id
+from services.tier_service import enforce_can_upload_storage
 
 router = APIRouter()
 
@@ -1525,6 +1526,11 @@ async def upload_task_attachments(
         raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer tidak dapat mengunggah file.")
     if not is_board_writer(db, task.board_id, current_user):
         raise HTTPException(status_code=403, detail="Anda belum bergabung dengan proyek ini.")
+
+    # Enforce workspace tier storage limit (pre-check total size of batch)
+    incoming_total_bytes = sum(getattr(f, "size", 0) or 0 for f in files)
+    if task.workspace_id:
+        enforce_can_upload_storage(db, task.workspace_id, incoming_total_bytes)
 
     uploaded_records = []
     uploaded_names = []

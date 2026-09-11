@@ -11,6 +11,7 @@ from schemas import *
 from dependencies import *
 from utils import *
 from routers.workspaces import get_active_workspace_id, get_write_active_workspace_id
+from services.tier_service import enforce_can_create_project
 
 router = APIRouter()
 
@@ -329,6 +330,11 @@ def create_board(
         raise HTTPException(
             status_code=400, detail="Project name must be between 1 and 100 characters."
         )
+
+    # Enforce tier package active projects limit (exclude personal tasks list)
+    is_personal_todo = payload.name.lower().strip() in ["to-do list", "personal tasks", "tugas pribadi"] or payload.is_private == 1
+    if not is_personal_todo:
+        enforce_can_create_project(db, workspace_id)
 
     # Cek apakah project dengan nama yang sama sudah pernah dibuat oleh user ini di workspace ini
     existing_board = (

@@ -27,6 +27,7 @@ class Workspace(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     owner_username = Column(String(50), ForeignKey("users.username", ondelete="CASCADE"), index=True)
+    tier = Column(String(20), default="free")  # 'free', 'pro', 'business'
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -309,6 +310,14 @@ def setup_db():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
+        # Auto-migration: ensure tier column exists in workspaces table
+        try:
+            db.execute(text("ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS tier VARCHAR(20) DEFAULT 'free'"))
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            print(f"[DB Migration] workspaces.tier migration note: {e}")
+
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             salt = bcrypt.gensalt()

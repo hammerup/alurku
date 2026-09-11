@@ -7,6 +7,12 @@ from pydantic import BaseModel
 from database import get_db, User, Workspace, WorkspaceMember
 from schemas import WorkspaceCreateModel, WorkspaceInviteModel
 from dependencies import get_current_user
+from services.tier_service import (
+    enforce_can_create_workspace,
+    enforce_can_invite_member,
+    get_workspace_usage_summary,
+    get_tier_config,
+)
 
 
 class WorkspaceRoleUpdateModel(BaseModel):
@@ -93,10 +99,12 @@ def list_workspaces(current_user: str = Depends(get_current_user), db: Session =
     for ws in workspaces:
         # Get member count for CRM tracking
         member_count = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == ws.id).count()
+        tier = getattr(ws, "tier", "free") or "free"
         result.append({
             "id": ws.id,
             "name": ws.name,
             "owner_username": ws.owner_username,
+            "tier": tier,
             "created_at": ws.created_at.strftime("%Y-%m-%d %H:%M:%S") if ws.created_at else None,
             "member_count": member_count
         })
@@ -111,13 +119,18 @@ def create_workspace(
 ):
     """
     Membuat workspace baru dan mendaftarkan pembuat sebagai Admin.
+    Menegakkan batas kuota kepemilikan workspace sesuai tier akun.
     """
     if not payload.name.strip():
         raise HTTPException(status_code=400, detail="Workspace name cannot be empty")
+
+    # Enforce maximum owned workspaces
+    enforce_can_create_workspace(db, current_user)
         
     new_ws = Workspace(
         name=payload.name.strip(),
-        owner_username=current_user
+        owner_username=current_user,
+        tier="free"
     )
     db.add(new_ws)
     db.flush()
@@ -136,6 +149,7 @@ def create_workspace(
             "id": new_ws.id,
             "name": new_ws.name,
             "owner_username": new_ws.owner_username,
+            "tier": new_ws.tier,
             "created_at": new_ws.created_at.strftime("%Y-%m-%d %H:%M:%S")
         }
     }
@@ -169,6 +183,9 @@ def invite_to_workspace(
     ).first()
     if not is_owner and not admin_check and not is_sa:
         raise HTTPException(status_code=403, detail="Hanya Admin Workspace, Pemilik, atau System Administrator yang dapat mengundang anggota baru.")
+
+    # 2b. Enforce tier package member limit before adding/inviting
+    enforce_can_invite_member(db, workspace)
 
     raw_target = payload.username_or_email.strip()
     if not raw_target:
@@ -525,6 +542,86 @@ def delete_workspace(
     db.commit()
     
     return {"message": f"Workspace '{ws_name}' berhasil dihapus secara permanen."}
+
+
+@router.get("/{workspace_id}/usage")
+def get_workspace_usage(
+    workspace_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mengambil ringkasan penggunaan kapasitas (members, projects, storage, AI prompts)
+    dan limitasi paket untuk workspace yang diminta.
+    """
+    membership = (
+        db.query(WorkspaceMember)
+        .filter(WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.username == current_user)
+        .first()
+    )
+    from utils import is_user_superadmin
+    if not membership and not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Akses ditolak ke telemetri workspace ini.")
+
+    return get_workspace_usage_summary(db, workspace_id, current_user)
+
+
+class WorkspaceTierUpdateModel(BaseModel):
+    tier: str  # 'free', 'pro', 'business'
+
+
+@router.put("/{workspace_id}/tier")
+def update_workspace_tier(
+    workspace_id: int,
+    payload: WorkspaceTierUpdateModel,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mengubah paket langganan (tier) workspace. Hanya Owner workspace atau Superadmin yang diizinkan.
+    Mendukung aktivasi instant sandbox upgrade ke Pro atau Business.
+    """
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace tidak ditemukan.")
+
+    from utils import is_user_superadmin
+    is_owner = (workspace.owner_username == current_user)
+    is_sa = is_user_superadmin(db, current_user)
+
+    if not is_owner and not is_sa:
+        raise HTTPException(status_code=403, detail="Hanya Pemilik Workspace atau Admin yang dapat mengubah paket langganan.")
+
+    target_tier = payload.tier.lower().strip()
+    if target_tier not in ["free", "pro", "business"]:
+        raise HTTPException(status_code=400, detail="Paket tier tidak valid. Pilih: 'free', 'pro', atau 'business'.")
+
+    workspace.tier = target_tier
+    db.commit()
+    db.refresh(workspace)
+
+    cfg = get_tier_config(target_tier)
+
+    # Activity log
+    try:
+        from utils import log_and_broadcast_activity
+        log_and_broadcast_activity(
+            db,
+            workspace_id,
+            current_user,
+            "workspace_tier_updated",
+            cfg["tier_name"],
+            {"tier": target_tier}
+        )
+    except Exception:
+        pass
+
+    return {
+        "message": f"Paket workspace berhasil diubah ke {cfg['tier_name']}.",
+        "workspace_id": workspace.id,
+        "tier": workspace.tier,
+        "tier_name": cfg["tier_name"]
+    }
 
 
 
