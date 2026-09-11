@@ -34,7 +34,6 @@ export function useModals() {
   });
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
-  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('alurku_changelog_open') === 'true';
     return false;
@@ -75,7 +74,6 @@ export function useModals() {
     isChatWorkspaceOpen, setIsChatWorkspaceOpen,
     isPrivacyOpen, setIsPrivacyOpen,
     isTermsOpen, setIsTermsOpen,
-    isSpecsOpen, setIsSpecsOpen,
     isChangelogOpen, setIsChangelogOpen,
     isAssistantOpen, setIsAssistantOpen,
     isProactiveAIOpen, setIsProactiveAIOpen,
