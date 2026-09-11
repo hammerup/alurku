@@ -40,7 +40,10 @@ export default function LandingIntegrations({ language }) {
           className="w-full md:w-1/2"
         >
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FACC15]/10 border border-[#FACC15]/30 rounded-full text-xs font-bold text-[#EAB308] uppercase tracking-wider mb-4">
-            <span>✨</span> {isId ? 'Rencana Integrasi (Segera Hadir)' : 'Integrations Coming Soon'}
+            <svg className="w-3.5 h-3.5 text-[#EAB308]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <span>{isId ? 'Rencana Integrasi (Segera Hadir)' : 'Integrations Coming Soon'}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#111E38] mb-6 leading-tight">
             {title}

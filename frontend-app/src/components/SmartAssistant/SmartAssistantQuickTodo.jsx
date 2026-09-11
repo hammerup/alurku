@@ -48,10 +48,16 @@ export default function SmartAssistantQuickTodo({
           }}
           className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest flex items-center gap-1 transition-colors w-16"
         >
-          ◀ {tMsg('Menu', 'Menu')}
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          {tMsg('Menu', 'Menu')}
         </button>
         <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 flex-1 justify-center">
-          ⚡ {tMsg('Quick To-Do', 'To-Do Cepat')}
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+          </svg>
+          {tMsg('Quick To-Do', 'To-Do Cepat')}
         </span>
         <button
           onClick={() => {
@@ -73,7 +79,11 @@ export default function SmartAssistantQuickTodo({
       <div className="flex-1 overflow-y-auto p-5 custom-scrollbar flex flex-col justify-start bg-neutral-50/50 dark:bg-neutral-950 relative">
         {quickTasks.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40 mac-animate">
-            <span className="text-6xl mb-4">📝</span>
+            <div className="w-16 h-16 rounded-2xl bg-neutral-200/50 dark:bg-neutral-800/50 flex items-center justify-center mb-4 text-neutral-400">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
             <p className="text-sm font-bold text-neutral-500">
               {tMsg('Type below to add tasks', 'Ketik di bawah untuk menambah tugas')}
             </p>
@@ -93,7 +103,9 @@ export default function SmartAssistantQuickTodo({
                     onClick={() => setQuickTasks((prev) => prev.filter((x) => x.id !== t.id))}
                     className="text-neutral-400 hover:text-red-500 bg-neutral-100 dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-lg transition-colors shrink-0"
                   >
-                    ✖
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 </div>
               ))}
@@ -121,7 +133,13 @@ export default function SmartAssistantQuickTodo({
                   disabled={isSavingQuickTasks}
                   className="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-emerald-700 transition-colors uppercase tracking-widest text-[10px] flex items-center justify-center gap-1.5"
                 >
-                  {isSavingQuickTasks ? <LoadingSpinner /> : '🚀'}
+                  {isSavingQuickTasks ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                    </svg>
+                  )}
                   {isSavingQuickTasks
                     ? tMsg('Saving...', 'Menyimpan...')
                     : tMsg(`Save ${quickTasks.length} Tasks to`, `Simpan ${quickTasks.length} Tugas ke`)}

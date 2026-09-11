@@ -117,7 +117,9 @@ export default function StartMeetingModal({
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
-            <span className="text-sm">⚡</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+            </svg>
             <span>{tMsg('1-Click Instant Room', 'Ruang Instan 1-Klik')}</span>
           </button>
           <button
@@ -129,7 +131,9 @@ export default function StartMeetingModal({
                 : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
             }`}
           >
-            <span className="text-sm">🎥</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
             <span>{tMsg('Google Meet', 'Google Meet')}</span>
           </button>
         </div>
@@ -139,7 +143,9 @@ export default function StartMeetingModal({
           <div className="space-y-4 animate-fadeIn">
             <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
               <div className="font-bold text-[#111E38] dark:text-[#FACC15] flex items-center gap-1.5 mb-1">
-                <span>✨</span>
+                <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21L14.907 13.913M9.813 15.904L14.5 11.5M9.813 15.904L5 11.5M14.907 13.913L18 9L12.093 11.087M14.907 13.913L12.5 7.5" />
+                </svg>
                 <span>{tMsg('Automatic Shared Room', 'Otomatis Masuk Ruangan yang Sama')}</span>
               </div>
               <p className="text-[11px] text-neutral-600 dark:text-neutral-400">

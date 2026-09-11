@@ -158,7 +158,7 @@ export default function SmartAssistantChat({
               {!activeSessionId && <option value="">{tMsg('Current Chat', 'Sesi Aktif')}</option>}
               {chatSessions.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.is_pinned ? '📌 ' : ''}{s.title || 'Chat Session'}
+                  {s.is_pinned ? '[PIN] ' : ''}{s.title || 'Chat Session'}
                 </option>
               ))}
             </select>

@@ -504,8 +504,12 @@ If no action items found, return []. JSON Schema:
 
         {/* Header */}
         <div className="border-b border-neutral-100 dark:border-neutral-800 px-4 py-3 sm:p-5 flex justify-between items-center bg-neutral-50/50 dark:bg-neutral-900/50 shrink-0">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <span className="text-xl sm:text-2xl shrink-0">📝</span>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/30">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
             <div className="min-w-0">
               <h2 className="text-sm sm:text-base font-black text-black dark:text-white tracking-tight truncate">
                 Notepad Rapat & MoM
@@ -519,24 +523,44 @@ If no action items found, return []. JSON Schema:
             {activeTab === 'editor' && (
               <button
                 onClick={() => setSidebarOpen(prev => !prev)}
-                className="md:hidden px-2.5 py-1.5 text-[10px] font-black text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-all"
+                className="md:hidden px-2.5 py-1.5 text-[10px] font-black text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-all flex items-center gap-1"
               >
-                {sidebarOpen ? '✕ Detail' : '⚙ Detail'}
+                {sidebarOpen ? (
+                  <>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Detail</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span>Detail</span>
+                  </>
+                )}
               </button>
             )}
             {activeTab === 'review' && (
               <button
                 onClick={() => setActiveTab('editor')}
-                className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-black text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-all"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-black text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-all flex items-center gap-1"
               >
-                ← Notepad
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Notepad</span>
               </button>
             )}
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white transition-all text-sm font-bold shrink-0"
             >
-              ✕
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
@@ -610,8 +634,11 @@ If no action items found, return []. JSON Schema:
 
                 {/* Clear */}
                 <button onClick={() => setShowConfirmClear(true)}
-                  className="w-full py-2.5 border border-red-200 text-red-500 hover:bg-red-50 dark:border-red-900/30 dark:hover:bg-red-950/20 rounded-xl text-xs font-black tracking-wider transition-colors">
-                  🗑 Hapus Semua Catatan
+                  className="w-full py-2.5 border border-red-200 text-red-500 hover:bg-red-50 dark:border-red-900/30 dark:hover:bg-red-950/20 rounded-xl text-xs font-black tracking-wider transition-colors flex items-center justify-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Hapus Semua Catatan</span>
                 </button>
               </div>
 
@@ -705,9 +732,19 @@ If no action items found, return []. JSON Schema:
                     {isProcessing ? (
                       <><span className="w-4 h-4 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" /> AI sedang memproses...</>
                     ) : generatedMoM ? (
-                      <><span>🔄</span> Buat Ulang dengan AI</>
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12" />
+                        </svg>
+                        <span>Buat Ulang dengan AI</span>
+                      </>
                     ) : (
-                      <><span>✨</span> Proses Catatan dengan AI</>
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                        <span>Proses Catatan dengan AI</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -726,8 +763,11 @@ If no action items found, return []. JSON Schema:
                     <h3 className="text-[10px] sm:text-xs font-black text-slate-800 dark:text-slate-200  tracking-widest truncate">Tinjau MoM yang Dibuat</h3>
                   </div>
                   <button onClick={handleCopyMoM}
-                    className="shrink-0 text-[10px] sm:text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 sm:px-3 py-1.5 rounded-xl border border-indigo-200/50 hover:bg-indigo-100 transition-colors flex items-center gap-1">
-                    📋 Salin
+                    className="shrink-0 text-[10px] sm:text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 sm:px-3 py-1.5 rounded-xl border border-indigo-200/50 hover:bg-indigo-100 transition-colors flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Salin</span>
                   </button>
                 </div>
                 <div id="rendered-mom-content"
@@ -760,11 +800,20 @@ If no action items found, return []. JSON Schema:
                           onChange={e => { const u = [...extractedTasks]; u[idx].project_name = e.target.value; setExtractedTasks(u); }}
                           className="bg-transparent border-none p-0 focus:outline-none text-xs font-bold text-black dark:text-white w-full" />
                         <div className="flex flex-wrap gap-1.5 mt-1.5">
-                          <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-1.5 py-0.5 rounded font-black border border-neutral-200 dark:border-neutral-700">
-                            👤 {task.requester}
+                          <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-1.5 py-0.5 rounded font-black border border-neutral-200 dark:border-neutral-700 inline-flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span>{task.requester}</span>
                           </span>
-                          <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-1.5 py-0.5 rounded font-black border border-neutral-200 dark:border-neutral-700">
-                            📅 {task.deadline}
+                          <span className="text-[9px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 px-1.5 py-0.5 rounded font-black border border-neutral-200 dark:border-neutral-700 inline-flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                              <line x1="16" y1="2" x2="16" y2="6" />
+                              <line x1="8" y1="2" x2="8" y2="6" />
+                              <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            <span>{task.deadline}</span>
                           </span>
                         </div>
                       </div>
@@ -784,8 +833,15 @@ If no action items found, return []. JSON Schema:
                       </select>
                     </div>
                     <button onClick={handleBulkCreateTasks} disabled={isCreatingTasks}
-                      className="w-full bg-black dark:bg-white text-white dark:text-black font-black py-3 sm:py-3.5 rounded-2xl hover:scale-[1.02] transition-transform shadow-xl disabled:opacity-50 text-xs  tracking-wider">
-                      {isCreatingTasks ? 'Membuat Tugas... ⏳' : 'Buat Tugas Terpilih'}
+                      className="w-full bg-black dark:bg-white text-white dark:text-black font-black py-3 sm:py-3.5 rounded-2xl hover:scale-[1.02] transition-transform shadow-xl disabled:opacity-50 text-xs  tracking-wider flex items-center justify-center gap-1.5">
+                      {isCreatingTasks ? (
+                        <>
+                          <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          <span>Membuat Tugas...</span>
+                        </>
+                      ) : (
+                        <span>Buat Tugas Terpilih</span>
+                      )}
                     </button>
                   </div>
                 )}
@@ -801,8 +857,10 @@ If no action items found, return []. JSON Schema:
       {showConfirmClear && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm flex items-center justify-center z-250 p-4">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl p-6 max-w-sm w-full text-center">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4">
-              ⚠️
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-950/40 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
             </div>
             <h3 className="text-base font-black text-black dark:text-white mb-2">Hapus Notepad</h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 font-semibold mb-6 leading-relaxed">

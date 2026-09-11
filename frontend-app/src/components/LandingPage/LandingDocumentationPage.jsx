@@ -951,7 +951,9 @@ export default function LandingDocumentationPage({ language }) {
               </svg>
             </button>
             <h2 className="text-base md:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <span className="text-indigo-600">📖</span>{' '}
+              <svg className="w-5 h-5 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
               <span className="sm:inline">{tMsg('Help Center', 'Pusat Bantuan')}</span>
             </h2>
           </div>
@@ -959,7 +961,11 @@ export default function LandingDocumentationPage({ language }) {
         </div>
 
         <div className="flex items-center gap-4 flex-1 justify-center w-full md:max-w-lg mx-auto relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
           <input
             type="text"
             placeholder={tMsgStr('Search documentation...', 'Cari dokumentasi...')}
@@ -1014,7 +1020,9 @@ export default function LandingDocumentationPage({ language }) {
                 onClick={() => setIsMobileNavOpen(false)}
                 className="w-8 h-8 flex items-center justify-center bg-slate-200 dark:bg-slate-800 rounded-full text-slate-900 dark:text-white font-bold"
               >
-                ✖
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">

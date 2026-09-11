@@ -918,7 +918,11 @@ export default function Sidebar() {
                         }`}
                       >
                         <span className="truncate">{ws.name}</span>
-                        {ws.id === activeWorkspace?.id && <span>✓</span>}
+                        {ws.id === activeWorkspace?.id && (
+                          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
                       </button>
                     ))}
                   </div>

@@ -41,10 +41,16 @@ export default function SmartAssistantPlanner({
           }}
           className="text-[10px] font-bold text-neutral-500 hover:text-black dark:hover:text-white uppercase tracking-widest flex items-center gap-1 transition-colors w-16"
         >
-          ◀ {tMsg('Menu', 'Menu')}
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          {tMsg('Menu', 'Menu')}
         </button>
         <span className="text-[10px] font-black uppercase tracking-widest text-purple-600 dark:text-purple-400 flex items-center gap-1.5 flex-1 justify-center">
-          🚀 {tMsg('AI Task Planner', 'Perencana Tugas AI')}
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+          </svg>
+          {tMsg('AI Task Planner', 'Perencana Tugas AI')}
         </span>
         <button
           onClick={() => {
@@ -68,8 +74,10 @@ export default function SmartAssistantPlanner({
             plannedTasks.length > 0 || isPlanning ? 'mt-0 mb-6' : 'my-auto'
           }`}
         >
-          <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-500 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner">
-            🧠
+          <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21L14.907 13.913M9.813 15.904L14.5 11.5M9.813 15.904L5 11.5M14.907 13.913L18 9L12.093 11.087M14.907 13.913L12.5 7.5" />
+            </svg>
           </div>
           {plannedTasks.length === 0 && !isPlanning && (
             <>
@@ -116,7 +124,9 @@ export default function SmartAssistantPlanner({
                   className="bg-purple-600 hover:bg-purple-700 text-white font-bold w-[52px] h-[52px] rounded-2xl shadow-md transition-all flex items-center justify-center shrink-0 disabled:opacity-50 hover:-translate-y-0.5"
                   title={tMsg('Generate Plan', 'Buat Rencana')}
                 >
-                  ✨
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
                 </button>
               ) : (
                 <button
@@ -124,7 +134,13 @@ export default function SmartAssistantPlanner({
                   disabled={!plannerPrompt.trim() || isPlanning}
                   className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-xs disabled:opacity-50 hover:-translate-y-0.5"
                 >
-                  {isPlanning ? <LoadingSpinner /> : '✨'}
+                  {isPlanning ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                  )}
                   {isPlanning ? tMsg('Planning...', 'Merencanakan...') : tMsg('Generate Plan', 'Buat Rencana')}
                 </button>
               )}
@@ -165,7 +181,7 @@ export default function SmartAssistantPlanner({
                   .filter((b) => b.id !== 'global')
                   .map((b) => (
                     <option key={b.id} value={b.id}>
-                      📁 {b.name}
+                      {b.name}
                     </option>
                   ))}
               </select>
@@ -222,7 +238,7 @@ export default function SmartAssistantPlanner({
                           .filter((b) => b.id !== 'global')
                           .map((b) => (
                             <option key={b.id} value={b.id}>
-                              📁 {b.name}
+                              {b.name}
                             </option>
                           ))}
                       </select>
@@ -232,8 +248,11 @@ export default function SmartAssistantPlanner({
                       <span className="text-[9px] font-bold bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-indigo-700 dark:text-indigo-400 uppercase tracking-wider truncate max-w-[100px]">
                         {t.requester}
                       </span>
-                      <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                        ⏳ {t.etc}h
+                      <span className="text-[9px] font-bold bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded text-amber-700 dark:text-amber-400 uppercase tracking-wider inline-flex items-center gap-1">
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {t.etc}h
                       </span>
                       <span
                         className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider shadow-sm ${
@@ -244,16 +263,25 @@ export default function SmartAssistantPlanner({
                             : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                         }`}
                       >
-                        {t.impact === 'High' ? '🔥 High' : t.impact === 'Low' ? '🧊 Low' : '⚡ Med'}
+                        {t.impact === 'High' ? 'High' : t.impact === 'Low' ? 'Low' : 'Med'}
                       </span>
                       {t.deadline && (
-                        <span className="text-[9px] font-bold bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded text-rose-700 dark:text-rose-400 uppercase tracking-wider">
-                          📅 {formatDateMMM ? formatDateMMM(t.deadline) : t.deadline}
+                        <span className="text-[9px] font-bold bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded text-rose-700 dark:text-rose-400 uppercase tracking-wider inline-flex items-center gap-1">
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                          {formatDateMMM ? formatDateMMM(t.deadline) : t.deadline}
                         </span>
                       )}
                       {t.auto_nudge && (
-                        <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded text-purple-700 dark:text-purple-400 uppercase tracking-wider">
-                          🔔 Auto Nudge ON
+                        <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded text-purple-700 dark:text-purple-400 uppercase tracking-wider inline-flex items-center gap-1">
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                          </svg>
+                          Nudge ON
                         </span>
                       )}
                     </div>
@@ -276,7 +304,13 @@ export default function SmartAssistantPlanner({
             disabled={isSavingPlanned || !plannedTasks.some((t) => t.selected)}
             className="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-purple-700 transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
           >
-            {isSavingPlanned ? <LoadingSpinner /> : '🚀'}
+            {isSavingPlanned ? (
+              <LoadingSpinner />
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.58-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+              </svg>
+            )}
             {isSavingPlanned
               ? tMsg('Saving...', 'Menyimpan...')
               : tMsg(

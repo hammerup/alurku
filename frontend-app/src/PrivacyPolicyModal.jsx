@@ -25,7 +25,10 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
             onClick={close}
             className="bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm text-black dark:text-white px-6 py-3.5 rounded-full font-bold uppercase tracking-widest text-xs transition-colors flex items-center gap-2 w-full md:w-auto justify-center"
           >
-            <span>✖</span> {tMsg('Close Document', 'Tutup Dokumen')}
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span>{tMsg('Close Document', 'Tutup Dokumen')}</span>
           </button>
         </div>
 
@@ -263,12 +266,12 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
             {/* Section 9 */}
             <div className="mb-10">
               <h3 className="text-xl font-black uppercase tracking-wider mb-4 border-l-4 border-indigo-500 pl-4">
-                9. {tMsg('Your Privacy Rights (GDPR & PDP)', 'Hak Privasi Anda (GDPR & PDP)')}
+                9. {tMsg('Your Privacy Rights (UU PDP No. 27/2022 & GDPR)', 'Hak Privasi Anda (UU PDP No. 27/2022 & GDPR)')}
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'In strict accordance with global data protection laws (including the Indonesian Personal Data Protection Act / UU PDP and GDPR principles), you possess the fundamental right to access, rectify, or request the erasure ("Right to be Forgotten") of your personal data. You can initiate a full data export (CSV) directly from the Account Menu interface. To permanently execute an account deletion, please submit an offboarding request to your System Administrator.',
-                  'Sesuai dengan undang-undang perlindungan data global (termasuk UU Perlindungan Data Pribadi / UU PDP Indonesia), Anda memiliki hak mendasar untuk mengakses, memperbaiki, atau meminta penghapusan ("Hak untuk Dilupakan") data pribadi Anda. Anda dapat memulai ekspor data secara penuh (CSV) langsung dari antarmuka Menu Akun. Untuk menghapus akun secara permanen, silakan kirimkan permintaan ke Administrator Sistem Anda.'
+                  'In strict compliance with the Indonesian Personal Data Protection Act (Undang-Undang Republik Indonesia No. 27 Tahun 2022 tentang Pelindungan Data Pribadi / UU PDP) and GDPR standards, you retain comprehensive rights as a personal data subject. These include: (a) the right to obtain information regarding identity clarity and legal basis of data processing, (b) the right to access and obtain a copy of your personal data, (c) the right to rectify errors or inaccuracies, (d) the right to request deletion or destruction ("Right to be Forgotten"), (e) the right to withdraw consent at any time, (f) the right to object to automated decision-making processing, and (g) the right to data portability. You may export your workspace data directly via Account Settings (CSV/JSON), or submit an official data privacy inquiry or erasure request to our Data Protection team at privacy@alurku.com.',
+                  'Sesuai dengan Undang-Undang Republik Indonesia No. 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP) dan standar GDPR, Anda memegang hak penuh sebagai subjek data pribadi. Hak ini mencakup: (a) hak untuk memperoleh informasi kejelasan identitas dan dasar hukum pemrosesan data, (b) hak untuk mengakses dan memperoleh salinan data pribadi Anda, (c) hak untuk memperbaiki kesalahan atau ketidakakuratan, (d) hak untuk menuntut penghapusan atau pemusnahan data ("Hak untuk Dilupakan"), (e) hak untuk menarik kembali persetujuan kapan saja, (f) hak untuk menolak pemrosesan otomatis, dan (g) hak portabilitas data. Anda dapat mengekspor data ruang kerja langsung melalui Menu Pengaturan Akun (CSV/JSON), atau mengajukan permohonan privasi dan penghapusan data resmi ke tim Perlindungan Data kami melalui email privacy@alurku.com.'
                 )}
               </p>
             </div>

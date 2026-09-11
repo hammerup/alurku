@@ -94,7 +94,11 @@ export default function LandingHeader({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700 hover:border-slate-500 text-xs font-bold transition-all text-slate-300 hover:text-white bg-slate-800/40"
             title={language === 'id' ? 'Ubah ke Bahasa Inggris' : 'Switch to Indonesian'}
           >
-            <span>🌐</span>
+            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
             <span className="uppercase">{language || 'id'}</span>
           </button>
 
@@ -181,7 +185,11 @@ export default function LandingHeader({
               onClick={() => setLanguage(language === 'id' ? 'en' : 'id')}
               className="flex items-center gap-1.5 text-sm font-bold text-slate-300 hover:text-white text-left"
             >
-              <span>🌐</span>
+              <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
               <span>{language === 'id' ? 'Bahasa: Indonesia (Ubah)' : 'Language: English (Change)'}</span>
             </button>
 
