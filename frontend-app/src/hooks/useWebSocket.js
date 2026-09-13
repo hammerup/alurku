@@ -54,7 +54,14 @@ export function useWebSocket(workspaceId, token, currentUser) {
 
       // Build WebSocket URL
       let wsBase;
-      const apiUrl = import.meta.env.VITE_API_URL || '';
+      let apiUrl = import.meta.env.VITE_API_URL || '';
+      if (
+        typeof window !== 'undefined' &&
+        apiUrl.includes('localhost') &&
+        !['localhost', '127.0.0.1'].includes(window.location.hostname)
+      ) {
+        apiUrl = '';
+      }
       if (apiUrl) {
         if (apiUrl.startsWith('https://')) {
           wsBase = apiUrl.replace('https://', 'wss://').replace(/\/api$/, '').replace(/\/api\/$/, '');

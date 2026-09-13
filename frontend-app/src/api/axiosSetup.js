@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
+const rawApiUrl = import.meta.env.VITE_API_URL || '';
+const isRemoteAccess =
+  typeof window !== 'undefined' &&
+  !['localhost', '127.0.0.1'].includes(window.location.hostname);
+axios.defaults.baseURL = (isRemoteAccess && rawApiUrl.includes('localhost')) ? '' : rawApiUrl;
 
 // Setup Axios Interceptor untuk JWT Token
 axios.interceptors.request.clear();
