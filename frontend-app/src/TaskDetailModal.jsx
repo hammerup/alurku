@@ -196,11 +196,11 @@ export default function TaskDetailModal({
     setIsNudgeConfirmOpen(false);
     setIsGeneratingNudge(true);
 
-    const promptText = `Please act as the Smart Assistant. Write a short, friendly, and professional follow-up message (1-2 sentences) to check the progress of the task "${
+    const promptText = `Please act as Luruka. Write a short, friendly, and professional follow-up message (1-2 sentences) without using raw emojis to check the progress of the task "${
       selectedTask.project_name
     }". Address it to the assignee(s): ${uniqueAssignees.join(
       ', '
-    )}. Explicitly mention that @${currentUser} requested this check-in/update. Please respond in the same language as the task title.`;
+    )}. Explicitly mention that @${currentUser} requested this check-in/update. Do NOT use raw emojis. Please respond in the same language as the task title.`;
 
     try {
       // Menggunakan endpoint ai-reply agar diposting sebagai "Smart Assistant"
@@ -1338,26 +1338,42 @@ export default function TaskDetailModal({
                             let cardClass =
                               'bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:border-indigo-300 dark:hover:border-indigo-700';
                             let iconClass = 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400';
-                            let icon = '🔗';
+                            let icon = (
+                              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                              </svg>
+                            );
                             let title = 'External Attachment';
 
                             if (isDrive) {
                               cardClass =
                                 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800/50 hover:border-blue-300 dark:hover:border-blue-700';
                               iconClass = 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400';
-                              icon = '📂';
+                              icon = (
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                                </svg>
+                              );
                               title = 'Google Workspace Asset';
                             } else if (isFigma) {
                               cardClass =
                                 'bg-pink-50/50 dark:bg-pink-900/10 border-pink-100 dark:border-pink-800/50 hover:border-pink-300 dark:hover:border-pink-700';
                               iconClass = 'bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400';
-                              icon = '🎨';
+                              icon = (
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+                                </svg>
+                              );
                               title = 'Figma Design Asset';
                             } else if (isOneDrive) {
                               cardClass =
                                 'bg-cyan-50/50 dark:bg-cyan-900/10 border-cyan-100 dark:border-cyan-800/50 hover:border-cyan-300 dark:hover:border-cyan-700';
                               iconClass = 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400';
-                              icon = '☁️';
+                              icon = (
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.245 4.5 4.5 0 00-8.59-1.996A5.25 5.25 0 002.25 15z" />
+                                </svg>
+                              );
                               title = 'Microsoft OneDrive Asset';
                             }
 
@@ -1370,7 +1386,7 @@ export default function TaskDetailModal({
                                   className={`flex-1 min-w-0 flex items-center gap-4 p-3 md:p-4 rounded-2xl border shadow-sm hover:shadow-md transition-all group ${cardClass}`}
                                 >
                                   <div
-                                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl shrink-0 group-hover:scale-110 transition-transform ${iconClass}`}
+                                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform ${iconClass}`}
                                   >
                                     {icon}
                                   </div>
@@ -1532,7 +1548,11 @@ export default function TaskDetailModal({
             {isPreviewMode ? (
               <div className="flex-1 flex items-center justify-center relative z-20">
                 <div className="z-10 text-center p-6 sm:p-8 bg-white/80 dark:bg-black/80 backdrop-blur-md m-4 sm:m-6 rounded-3xl border border-neutral-200 dark:border-neutral-800 shadow-xl">
-                  <div className="text-5xl mb-6 drop-shadow-md">💬</div>
+                  <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] flex items-center justify-center shadow-md">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.84-.962 4.024 4.024 0 00.32-1.39A8.064 8.064 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                    </svg>
+                  </div>
                   <h3 className="text-xl font-black text-black dark:text-white uppercase tracking-tight mb-3">
                     {currentUser
                       ? tMsg('Private Workspace', 'Ruang Kerja Terkunci')
@@ -1664,13 +1684,17 @@ export default function TaskDetailModal({
 
                 {activeTab === 'comments' && isTaskChatSearchOpen && (
                   <div className="relative w-full border-b border-neutral-100 dark:border-neutral-800/50 bg-neutral-50/50 dark:bg-neutral-900/50 p-2 mac-animate shrink-0 z-20">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 text-xs">🔍</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                      </svg>
+                    </span>
                     <input
                       type="text"
                       placeholder={tMsg('Search comments...', 'Cari komentar...')}
                       value={taskChatSearchQuery}
                       onChange={(e) => setTaskChatSearchQuery(e.target.value)}
-                      className="w-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-8 pr-4 py-2 text-xs font-medium text-black dark:text-white outline-none focus:border-indigo-500 transition-colors shadow-inner"
+                      className="w-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-black dark:text-white outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] transition-colors shadow-inner"
                       autoFocus
                     />
                     {taskChatSearchQuery && (
@@ -1692,9 +1716,9 @@ export default function TaskDetailModal({
                                   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                   el.classList.add(
                                     'ring-2',
-                                    'ring-indigo-500',
-                                    'bg-indigo-50',
-                                    'dark:bg-indigo-900/30',
+                                    'ring-[#FACC15]',
+                                    'bg-[#FACC15]/15',
+                                    'dark:bg-[#FACC15]/20',
                                     'rounded-2xl',
                                     'scale-[1.02]',
                                     'z-50'
@@ -1702,9 +1726,9 @@ export default function TaskDetailModal({
                                   setTimeout(() => {
                                     el.classList.remove(
                                       'ring-2',
-                                      'ring-indigo-500',
-                                      'bg-indigo-50',
-                                      'dark:bg-indigo-900/30',
+                                      'ring-[#FACC15]',
+                                      'bg-[#FACC15]/15',
+                                      'dark:bg-[#FACC15]/20',
                                       'rounded-2xl',
                                       'scale-[1.02]',
                                       'z-50'
@@ -1824,8 +1848,10 @@ export default function TaskDetailModal({
         {linkToRemove && (
           <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-70 p-4 transition-opacity duration-200 opacity-100">
             <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center mac-animate">
-              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm">
-                ⚠️
+              <div className="w-20 h-20 bg-rose-50 dark:bg-rose-900/30 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
               </div>
               <h3 className="text-2xl font-black text-black dark:text-white mb-4 uppercase tracking-tighter">
                 {tMsg('Remove Link?', 'Hapus Tautan?')}
@@ -1857,8 +1883,10 @@ export default function TaskDetailModal({
         {isNudgeConfirmOpen && (
           <div className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md flex items-center justify-center z-70 p-4 transition-opacity duration-200 opacity-100">
             <div className="bg-white dark:bg-neutral-950 p-6 sm:p-10 w-full max-w-sm border border-neutral-200 dark:border-neutral-800 shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center mac-animate">
-              <div className="w-20 h-20 bg-amber-50 dark:bg-amber-900/30 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm border border-amber-200 dark:border-amber-800/50">
-                🔔
+              <div className="w-20 h-20 bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-[#FACC15]/40">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                </svg>
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-black dark:text-white mb-4 uppercase tracking-tighter">
                 {tMsg('Send Smart Nudge?', 'Kirim Pantauan Cerdas?')}

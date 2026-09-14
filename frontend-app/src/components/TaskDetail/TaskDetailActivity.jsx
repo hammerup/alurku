@@ -78,7 +78,9 @@ export default function TaskDetailActivity({ activityLogs = [], tMsg, formatDate
     return (
       <div className="py-12 px-4 flex flex-col items-center justify-center text-center">
         <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-400 mb-3 border border-neutral-200/60 dark:border-neutral-700/60">
-          <span className="material-symbols-outlined text-[24px]">history</span>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
         <p className="text-xs font-bold text-neutral-500 dark:text-neutral-400">
           {tMsg('No activities recorded yet.', 'Belum ada aktivitas terekam.')}
@@ -108,7 +110,9 @@ export default function TaskDetailActivity({ activityLogs = [], tMsg, formatDate
                 {renderRichText(msg)}
               </div>
               <div className="flex items-center gap-1.5 mt-1.5 text-[9px] font-bold text-neutral-400 dark:text-neutral-500">
-                <span className="material-symbols-outlined text-[11px]">schedule</span>
+                <svg className="w-3 h-3 text-neutral-400 dark:text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 <span>{formatDateMMM(a.timestamp)}</span>
               </div>
             </div>

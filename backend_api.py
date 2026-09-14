@@ -576,20 +576,20 @@ def run_auto_nudge():
             mention_str = " ".join([f"@{m}" for m in targets])
 
             if days_diff > 0:
-                msg = f"🔔 **Auto Nudge:** {mention_str}\nThis task is due in **{days_diff} day(s)**. Please ensure everything is on track!"
+                msg = f"**Auto Nudge:** {mention_str}\nThis task is due in **{days_diff} day(s)**. Please ensure everything is on track!"
             elif days_diff == 0:
-                msg = f"🚨 **Auto Nudge:** {mention_str}\nThis task is due **TODAY**. Please complete it as soon as possible."
+                msg = f"**[URGENT] Auto Nudge:** {mention_str}\nThis task is due **TODAY**. Please complete it as soon as possible."
             else:
-                msg = f"🔴 **Auto Nudge:** {mention_str}\nThis task is **OVERDUE** by {abs(days_diff)} day(s). Immediate action is required!"
+                msg = f"**[OVERDUE] Auto Nudge:** {mention_str}\nThis task is **OVERDUE** by {abs(days_diff)} day(s). Immediate action is required!"
 
             # Anti-spam: cek apakah sudah ada nudge hari ini
             tomorrow_naive = today_naive + timedelta(days=1)
             last_nudge = db.query(Comment).filter(
                 Comment.request_id == task.id,
-                Comment.username == "Smart Assistant 🤖",
+                Comment.username.in_(["Smart Assistant 🤖", "Luruka"]),
                 Comment.timestamp >= today_naive,
                 Comment.timestamp < tomorrow_naive,
-                Comment.text.like("%**Auto Nudge:**%")
+                Comment.text.like("%Auto Nudge:%")
             ).first()
             
             if last_nudge:
@@ -600,7 +600,7 @@ def run_auto_nudge():
             now_full = now_wib.strftime("%Y-%m-%d %H:%M:%S")
             new_comment = Comment(
                 request_id=task.id,
-                username="Smart Assistant 🤖",
+                username="Luruka",
                 text=msg,
                 timestamp=now_full
             )

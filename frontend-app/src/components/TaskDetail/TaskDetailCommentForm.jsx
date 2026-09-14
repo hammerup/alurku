@@ -30,12 +30,12 @@ export default function TaskDetailCommentForm({
       {isInvolved ? (
         <>
           {replyingTo && (
-            <div className="mb-3 flex items-start justify-between bg-indigo-50/50 dark:bg-indigo-900/20 rounded-xl p-2.5 border border-indigo-100 dark:border-indigo-800/50">
-              <div className="min-w-0 flex-1 border-l-2 border-indigo-400 pl-2">
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 block mb-0.5">
+            <div className="mb-3 flex items-start justify-between bg-[#FACC15]/10 dark:bg-[#FACC15]/10 rounded-xl p-2.5 border border-[#FACC15]/30 dark:border-[#FACC15]/30">
+              <div className="min-w-0 flex-1 border-l-2 border-[#111E38] dark:border-[#FACC15] pl-2">
+                <span className="text-[10px] font-bold text-[#111E38] dark:text-[#FACC15] block mb-0.5">
                   {tMsg('Replying to', 'Membalas')} @{replyingTo.username}
                 </span>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate pr-4">
+                <p className="text-xs text-neutral-600 dark:text-neutral-300 truncate pr-4">
                   {replyingTo.text.replace(/^> .*?\n/gm, '').replace(/<[^>]*>?/gm, '')}
                 </p>
               </div>
@@ -58,18 +58,18 @@ export default function TaskDetailCommentForm({
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     el.classList.add(
                       'ring-2',
-                      'ring-indigo-500',
-                      'bg-indigo-50',
-                      'dark:bg-indigo-900/30',
+                      'ring-[#FACC15]',
+                      'bg-[#FACC15]/15',
+                      'dark:bg-[#FACC15]/20',
                       'scale-[1.02]',
                       'z-50'
                     );
                     setTimeout(() => {
                       el.classList.remove(
                         'ring-2',
-                        'ring-indigo-500',
-                        'bg-indigo-50',
-                        'dark:bg-indigo-900/30',
+                        'ring-[#FACC15]',
+                        'bg-[#FACC15]/15',
+                        'dark:bg-[#FACC15]/20',
                         'scale-[1.02]',
                         'z-50'
                       );
@@ -86,7 +86,7 @@ export default function TaskDetailCommentForm({
                   setDismissedTaskMentions((prev) => [...prev, taskLatestMentionId, ...allMentionIds]);
                   setTaskLatestMentionId(null);
                 }}
-                className="w-10 h-10 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center font-black text-lg hover:scale-110 transition-transform"
+                className="w-10 h-10 bg-[#FACC15] text-[#111E38] hover:bg-[#EAB308] border border-[#111E38]/15 rounded-full shadow-xl flex items-center justify-center font-black text-lg hover:scale-110 transition-transform cursor-pointer"
                 title="Jump to mention"
               >
                 @
@@ -99,7 +99,7 @@ export default function TaskDetailCommentForm({
                   commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                   setShowTaskScrollBottom(false);
                 }}
-                className="w-10 h-10 bg-indigo-600 text-white rounded-full shadow-xl flex items-center justify-center font-black hover:scale-110 transition-transform"
+                className="w-10 h-10 bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] rounded-full shadow-xl flex items-center justify-center font-black hover:scale-110 transition-transform cursor-pointer"
                 title="Scroll to bottom"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +121,7 @@ export default function TaskDetailCommentForm({
               onChange={(e) => handleCommentChange(e.target.value)}
               disabled={accountStatus === 'suspended'}
               placeholder={tMsg('Write a comment... (@AI to ask)', 'Tulis komentar... (@AI untuk tanya)')}
-              className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none text-sm font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-30"
+              className="flex-1 py-3 px-4 bg-neutral-100 dark:bg-neutral-900 border border-transparent text-black dark:text-white rounded-xl focus:bg-white dark:focus:bg-black focus:border-[#FACC15] focus:ring-2 focus:ring-[#FACC15]/30 outline-none text-sm font-medium placeholder-neutral-400 transition-colors disabled:opacity-50 resize-none max-h-30"
               style={{ minHeight: '44px' }}
               rows="1"
               onInput={(e) => {
@@ -228,10 +228,10 @@ export default function TaskDetailCommentForm({
             <button
               type="submit"
               disabled={accountStatus === 'suspended' || !newComment.trim()}
-              className="bg-indigo-600 text-white hover:bg-indigo-700 w-12 h-12 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:bg-neutral-300 dark:disabled:bg-neutral-800 shrink-0"
+              className="bg-[#FACC15] text-[#111E38] hover:bg-[#EAB308] font-bold w-12 h-12 rounded-xl flex items-center justify-center transition-colors disabled:opacity-50 disabled:bg-neutral-200 dark:disabled:bg-neutral-800 disabled:text-neutral-400 shrink-0 shadow-xs cursor-pointer"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>
             </button>
           </form>

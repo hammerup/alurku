@@ -3,6 +3,85 @@ import axios from 'axios';
 import { HighlightText } from '../../Utils';
 import { Avatar } from '../../SharedUI';
 
+// Modern inline SVG icons conforming to alurku. Brand Book & Flat Design
+const IconChat = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.84-.962 4.024 4.024 0 00.32-1.39A8.064 8.064 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+  </svg>
+);
+
+const IconSearch = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+);
+
+const IconClose = ({ className = 'w-3 h-3' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const IconFolder = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+  </svg>
+);
+
+const IconTask = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const IconMessageSquare = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.502 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v5.518z" />
+  </svg>
+);
+
+const IconUser = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+  </svg>
+);
+
+const IconBell = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+  </svg>
+);
+
+const IconUnfoldMore = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+  </svg>
+);
+
+const IconUnfoldLess = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9L12 5.25 15.75 9m-7.5 6L12 18.75 15.75 15" />
+  </svg>
+);
+
+const IconInboxEmpty = ({ className = 'w-5 h-5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.03v-6.78a2.25 2.25 0 012.25-2.25h15a2.25 2.25 0 012.25 2.25v6.78m-19.5 0A2.25 2.25 0 004.5 15.75h15a2.25 2.25 0 002.25-2.22m-19.5 0v3.72a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25v-3.72" />
+  </svg>
+);
+
+const IconPlus = ({ className = 'w-3 h-3' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+  </svg>
+);
+
+const IconTrash = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+  </svg>
+);
+
 export default function ChatSidebar({
   activeChat,
   setActiveChat,
@@ -90,24 +169,24 @@ export default function ChatSidebar({
       {/* Search & Filters */}
       <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
         <h3 className="font-black text-base text-[#111E38] dark:text-white mb-3 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#FACC15] text-lg">chat</span>
+          <IconChat className="w-5 h-5 text-[#FACC15] shrink-0" />
           <span>{tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}</span>
         </h3>
         <div className="relative mb-3">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none">search</span>
+          <IconSearch className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
           <input
             type="text"
             placeholder={tMsg('Search workspace...', 'Cari ruang kerja...')}
             value={boardSearchQuery}
             onChange={(e) => setBoardSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-8 py-1.5 bg-neutral-100 dark:bg-neutral-800 border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-neutral-900 rounded-lg text-xs font-medium transition-all outline-none"
+            className="w-full pl-8 pr-8 py-1.5 bg-neutral-100 dark:bg-neutral-800 border-transparent focus:border-[#FACC15] focus:bg-white dark:focus:bg-neutral-900 rounded-lg text-xs font-medium transition-all outline-none"
           />
           {boardSearchQuery && (
             <button
               onClick={() => setBoardSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white p-1 font-bold text-xs flex items-center justify-center"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black dark:hover:text-white p-1 font-bold text-xs flex items-center justify-center transition-colors"
             >
-              <span className="material-symbols-outlined text-xs">close</span>
+              <IconClose className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -158,7 +237,10 @@ export default function ChatSidebar({
                 {matchingBoards.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest px-2 mb-1 flex items-center justify-between">
-                      <span>📁 {tMsg('Projects', 'Proyek')}</span>
+                      <span className="flex items-center gap-1.5">
+                        <IconFolder className="w-3 h-3 text-neutral-400" />
+                        <span>{tMsg('Projects', 'Proyek')}</span>
+                      </span>
                       <span className="bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded text-[8px]">{matchingBoards.length}</span>
                     </div>
                     {matchingBoards.map(b => (
@@ -170,7 +252,7 @@ export default function ChatSidebar({
                         }}
                         className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
                       >
-                        <span className="text-neutral-400">🏢</span>
+                        <IconFolder className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                         <span className="truncate flex-1">
                           <HighlightText text={b.name} query={boardSearchQuery} />
                         </span>
@@ -183,7 +265,10 @@ export default function ChatSidebar({
                 {matchingTasks.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest px-2 mb-1 flex items-center justify-between">
-                      <span>📋 {tMsg('Tasks', 'Tugas')}</span>
+                      <span className="flex items-center gap-1.5">
+                        <IconTask className="w-3 h-3 text-neutral-400" />
+                        <span>{tMsg('Tasks', 'Tugas')}</span>
+                      </span>
                       <span className="bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded text-[8px]">{matchingTasks.length}</span>
                     </div>
                     {matchingTasks.map(t => (
@@ -195,7 +280,7 @@ export default function ChatSidebar({
                         }}
                         className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
                       >
-                        <span className="text-neutral-400">📋</span>
+                        <IconTask className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                         <span className="truncate flex-1">
                           <HighlightText text={t.project_name} query={boardSearchQuery} />
                         </span>
@@ -208,7 +293,10 @@ export default function ChatSidebar({
                 {matchingChats.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest px-2 mb-1 flex items-center justify-between">
-                      <span>💬 {tMsg('Chats', 'Obrolan')}</span>
+                      <span className="flex items-center gap-1.5">
+                        <IconMessageSquare className="w-3 h-3 text-neutral-400" />
+                        <span>{tMsg('Chats', 'Obrolan')}</span>
+                      </span>
                       <span className="bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded text-[8px]">{matchingChats.length}</span>
                     </div>
                     {matchingChats.map(c => {
@@ -239,7 +327,7 @@ export default function ChatSidebar({
                           className="w-full text-left p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex flex-col gap-0.5 border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700"
                         >
                           <div className="flex justify-between items-center w-full">
-                            <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-37.5">
+                            <span className="text-[9px] font-bold text-[#111E38] dark:text-[#FACC15] truncate max-w-37.5">
                               @<HighlightText text={c.latest_sender} query={boardSearchQuery} /> &middot; <HighlightText text={displayName} query={boardSearchQuery} />
                             </span>
                             <span className="text-[8px] bg-neutral-100 dark:bg-neutral-800 px-1 rounded text-neutral-400 font-medium">
@@ -259,7 +347,10 @@ export default function ChatSidebar({
                 {matchingUsers.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest px-2 mb-1 flex items-center justify-between">
-                      <span>👤 {tMsg('Users', 'Pengguna')}</span>
+                      <span className="flex items-center gap-1.5">
+                        <IconUser className="w-3 h-3 text-neutral-400" />
+                        <span>{tMsg('Users', 'Pengguna')}</span>
+                      </span>
                       <span className="bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded text-[8px]">{matchingUsers.length}</span>
                     </div>
                     {matchingUsers.map(u => (
@@ -269,13 +360,13 @@ export default function ChatSidebar({
                           handleNewDmSelect(u);
                           setBoardSearchQuery('');
                         }}
-                        className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                        className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
                       >
                         <Avatar name={u.username} url={avatarsMap[u.username]} size="w-4 h-4" />
-                        <span className="truncate flex-1">
+                        <span className="truncate flex-1 font-bold">
                           @<HighlightText text={u.username} query={boardSearchQuery} />
                         </span>
-                        <span className="text-[8px] bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded text-indigo-500 font-bold shrink-0 font-sans">
+                        <span className="text-[8px] bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] px-1.5 py-0.5 rounded font-bold shrink-0 font-sans">
                           Message
                         </span>
                       </button>
@@ -284,8 +375,9 @@ export default function ChatSidebar({
                 )}
 
                 {!hasAnyResult && (
-                  <div className="p-4 text-center text-xs font-bold text-neutral-500">
-                    📭 {tMsg('No search results found.', 'Tidak ada hasil pencarian.')}
+                  <div className="p-4 text-center text-xs font-bold text-neutral-400 dark:text-neutral-500 flex flex-col items-center gap-1.5">
+                    <IconInboxEmpty className="w-6 h-6 text-neutral-400" />
+                    <span>{tMsg('No search results found.', 'Tidak ada hasil pencarian.')}</span>
                   </div>
                 )}
 
@@ -297,26 +389,26 @@ export default function ChatSidebar({
           <div className="flex gap-2">
             <button
               onClick={() => setShowMyTasksFilter(!showMyTasksFilter)}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 showMyTasksFilter
                   ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
                   : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
               }`}
               title={tMsg('My Tasks', 'Tugas Saya')}
             >
-              <span className="material-symbols-outlined text-sm">person</span>
+              <IconUser className="w-3.5 h-3.5 shrink-0" />
               <span>{tMsg('My Tasks', 'Tugas Saya')}</span>
             </button>
             <button
               onClick={() => setShowUnreadFilter(!showUnreadFilter)}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 showUnreadFilter
                   ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
                   : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
               }`}
               title={tMsg('Unread', 'Belum Dibaca')}
             >
-              <span className="material-symbols-outlined text-sm">notifications</span>
+              <IconBell className="w-3.5 h-3.5 shrink-0" />
               <span>{tMsg('Unread', 'Belum Dibaca')}</span>
             </button>
           </div>
@@ -330,17 +422,17 @@ export default function ChatSidebar({
           <div className="flex gap-2">
             <button
               onClick={handleExpandAll}
-              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black p-0.5"
+              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black p-0.5 flex items-center justify-center cursor-pointer"
               title={tMsg('Expand All', 'Buka Semua')}
             >
-              <span className="material-symbols-outlined text-sm">unfold_more</span>
+              <IconUnfoldMore className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleCollapseAll}
-              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black p-0.5"
+              className="hover:text-black dark:hover:text-white transition-colors text-xs font-black p-0.5 flex items-center justify-center cursor-pointer"
               title={tMsg('Collapse All', 'Tutup Semua')}
             >
-              <span className="material-symbols-outlined text-sm">unfold_less</span>
+              <IconUnfoldLess className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -355,7 +447,7 @@ export default function ChatSidebar({
               <div key={`tree-board-${board.id}`} className="mb-1 border-b border-neutral-100 dark:border-neutral-800/50 pb-1 last:border-0">
                 <button
                   onClick={() => toggleBoard(board.id)}
-                  className="w-full text-left flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors group"
+                  className="w-full text-left flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors group cursor-pointer"
                 >
                   <div className="flex items-center gap-2 overflow-hidden flex-1 text-left">
                     <span className="w-4 h-4 flex items-center justify-center text-neutral-400 group-hover:text-black dark:group-hover:text-white shrink-0 transition-colors">
@@ -370,7 +462,7 @@ export default function ChatSidebar({
                     </span>
                   </div>
                   {unreadBoardTotal > 0 && (
-                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-sm shrink-0 animate-pulse ml-2">
+                    <span className="bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm shrink-0 animate-pulse ml-2">
                       {unreadBoardTotal}
                     </span>
                   )}
@@ -387,14 +479,14 @@ export default function ChatSidebar({
                       return (
                         <button
                           onClick={() => setActiveChat({ type: 'project', id: board.id, name: `${board.name} (General)`, board_id: board.id })}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between ${
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                             activeChat?.type === 'project' && activeChat?.id === board.id
                               ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                           }`}
                         >
                           <span className="truncate flex-1 flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-xs text-indigo-500">forum</span>
+                            <IconMessageSquare className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                             <span>General Chat</span>
                           </span>
                           {unreadProj > 0 && (
@@ -424,14 +516,14 @@ export default function ChatSidebar({
                         <button
                           key={`tree-task-${t.id}`}
                           onClick={() => setActiveChat({ type: 'task', id: t.id, name: t.project_name, board_id: board.id, is_involved: t.is_involved })}
-                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
                             activeChat?.type === 'task' && activeChat?.id === t.id
                               ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
                               : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                           }`}
                         >
                           <span className="truncate flex-1 flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-xs text-amber-500">task</span>
+                            <IconTask className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                             <span>{t.project_name}</span>
                           </span>
                           {unreadTask > 0 && (
@@ -452,12 +544,16 @@ export default function ChatSidebar({
       {/* Direct Messages Section */}
       <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 shrink-0">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xs font-bold text-neutral-500">Direct Messages</h3>
+          <h3 className="text-xs font-bold text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+            <IconUser className="w-3.5 h-3.5 text-neutral-400" />
+            <span>{tMsg('Direct Messages', 'Pesan Langsung')}</span>
+          </h3>
           <button
             onClick={() => setIsNewDmOpen(!isNewDmOpen)}
-            className="text-xs font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-indigo-500 hover:text-white px-2 py-0.5 rounded transition-colors"
+            className="text-xs font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-[#111E38] hover:text-[#FACC15] dark:hover:bg-[#FACC15] dark:hover:text-[#111E38] px-2 py-0.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
           >
-            + New
+            <IconPlus className="w-2.5 h-2.5" />
+            <span>{tMsg('New', 'Baru')}</span>
           </button>
         </div>
         {isNewDmOpen && (
@@ -465,7 +561,7 @@ export default function ChatSidebar({
             <input
               type="text"
               autoFocus
-              placeholder="Search user..."
+              placeholder={tMsg('Search user...', 'Cari pengguna...')}
               value={newDmSearch}
               onChange={(e) => { setNewDmSearch(e.target.value); }}
               onKeyDown={(e) => {
@@ -511,9 +607,9 @@ export default function ChatSidebar({
             <div key={`dm-sidebar-${dm.partner}`} className="flex items-center group">
               <button
                 onClick={() => setActiveChat({ type: 'dm', id: dm.partner, name: dm.partner, partner: dm.partner })}
-                className={`flex-1 text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 ${
+                className={`flex-1 text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                   activeChat?.type === 'dm' && activeChat?.id === dm.partner
-                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                    ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                 }`}
               >
@@ -532,10 +628,10 @@ export default function ChatSidebar({
               </button>
               <button
                 onClick={() => setDmConvToDelete(dm.partner)}
-                className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-500 p-1 transition-opacity"
-                title="Delete conversation"
+                className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-rose-500 p-1 transition-opacity cursor-pointer flex items-center justify-center"
+                title={tMsg('Delete conversation', 'Hapus percakapan')}
               >
-                ✖
+                <IconClose className="w-3 h-3" />
               </button>
             </div>
           ))}

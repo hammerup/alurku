@@ -3,6 +3,304 @@ import { useAppContext } from '../hooks/useAppContext';
 import { Avatar, IconPlus } from '../SharedUI';
 import UpgradeModal from './UpgradeModal';
 
+// Modern inline SVG icons conforming to alurku. Brand Book & Flat Design
+const IconHome = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+  </svg>
+);
+
+const IconTasks = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const IconFolderCopy = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 8.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v8.25A2.25 2.25 0 006 16.5h2.25m8.25-8.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-7.5A2.25 2.25 0 018.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 00-2.25 2.25v6" />
+  </svg>
+);
+
+const IconDashboard = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+  </svg>
+);
+
+const IconHelp = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+  </svg>
+);
+
+const IconPersonAdd = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-1.5a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.6-7.812-1.7a.75.75 0 01-.437-.695z" />
+  </svg>
+);
+
+const IconUpgrade = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+  </svg>
+);
+
+const IconChevronLeft = ({ className = 'w-4 h-4', style }) => (
+  <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+  </svg>
+);
+
+const IconChevronDown = ({ className = 'w-4 h-4', style }) => (
+  <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+  </svg>
+);
+
+const IconStar = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+  </svg>
+);
+
+const IconStarOutline = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+  </svg>
+);
+
+const IconMoreVert = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <circle cx="12" cy="5" r="1.5" />
+    <circle cx="12" cy="12" r="1.5" />
+    <circle cx="12" cy="19" r="1.5" />
+  </svg>
+);
+
+const IconArchive = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+  </svg>
+);
+
+const IconTrash = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+  </svg>
+);
+
+const IconChatBubble = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.84-.962 4.024 4.024 0 00.32-1.39A8.064 8.064 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+  </svg>
+);
+
+const IconInbox = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.375V19.5A2.25 2.25 0 004.5 21.75h15a2.25 2.25 0 002.25-2.25v-5.625M3.75 6.75h16.5M3.75 10.5h16.5" />
+  </svg>
+);
+
+const IconCalendar = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+  </svg>
+);
+
+const IconPersonCheck = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632zm13.999-5.368l2.25 2.25 4.5-4.5" />
+  </svg>
+);
+
+const IconWarning = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+  </svg>
+);
+
+const IconLayers = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75L2.25 12l9.75 5.25 9.75-5.25-4.179-2.25m-11.321 4.5L2.25 16.5l9.75 5.25 9.75-5.25-4.179-2.25M12 3.75L2.25 9 12 14.25 21.75 9 12 3.75z" />
+  </svg>
+);
+
+const IconDoc = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+  </svg>
+);
+
+const IconExplore = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14.828 9.172l-1.414 4.243-4.242 1.414 1.414-4.243 4.242-1.414z" />
+  </svg>
+);
+
+const IconTicket = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
+  </svg>
+);
+
+const IconBookmark = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+  </svg>
+);
+
+const IconBookmarkAdd = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5v6m3-3H9" />
+  </svg>
+);
+
+const IconClose = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const IconCheckCircle = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const IconSave = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+  </svg>
+);
+
+const IconKanban = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 4.5v15m7.5-15v10.5m7.5-10.5v6" />
+  </svg>
+);
+
+const IconList = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+  </svg>
+);
+
+const IconTimeline = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+  </svg>
+);
+
+const IconFlag = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.779V4.875l-3.114.779a9 9 0 01-6.086-.71l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+  </svg>
+);
+
+const IconBolt = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+  </svg>
+);
+
+const IconAnalytics = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+  </svg>
+);
+
+const IconSparkles = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+  </svg>
+);
+
+const IconDragHandle = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <circle cx="9" cy="6" r="1.5" />
+    <circle cx="15" cy="6" r="1.5" />
+    <circle cx="9" cy="12" r="1.5" />
+    <circle cx="15" cy="12" r="1.5" />
+    <circle cx="9" cy="18" r="1.5" />
+    <circle cx="15" cy="18" r="1.5" />
+  </svg>
+);
+
+const renderDynamicIcon = (iconName, className = 'w-4 h-4') => {
+  switch (iconName) {
+    case 'bookmark':
+    case 'bookmark_add':
+      return <IconBookmark className={className} />;
+    case 'view_kanban':
+      return <IconKanban className={className} />;
+    case 'view_list':
+      return <IconList className={className} />;
+    case 'timeline':
+      return <IconTimeline className={className} />;
+    case 'calendar_month':
+    case 'today':
+    case 'date_range':
+    case 'event_available':
+      return <IconCalendar className={className} />;
+    case 'task_alt':
+    case 'check_circle':
+    case 'add_task':
+      return <IconTasks className={className} />;
+    case 'flag':
+      return <IconFlag className={className} />;
+    case 'star':
+    case 'star_border':
+    case 'star_half':
+      return <IconStar className={className} />;
+    case 'bolt':
+      return <IconBolt className={className} />;
+    case 'folder':
+    case 'folder_special':
+    case 'folder_copy':
+    case 'create_new_folder':
+      return <IconFolderCopy className={className} />;
+    case 'insights':
+    case 'analytics':
+      return <IconAnalytics className={className} />;
+    case 'inbox':
+      return <IconInbox className={className} />;
+    case 'person_check':
+      return <IconPersonCheck className={className} />;
+    case 'person_add':
+      return <IconPersonAdd className={className} />;
+    case 'warning':
+      return <IconWarning className={className} />;
+    case 'home':
+      return <IconHome className={className} />;
+    case 'dashboard':
+      return <IconDashboard className={className} />;
+    case 'confirmation_number':
+      return <IconTicket className={className} />;
+    case 'help':
+      return <IconHelp className={className} />;
+    case 'description':
+      return <IconDoc className={className} />;
+    case 'explore':
+      return <IconExplore className={className} />;
+    case 'chat':
+      return <IconChatBubble className={className} />;
+    case 'inventory_2':
+      return <IconArchive className={className} />;
+    case 'delete':
+      return <IconTrash className={className} />;
+    case 'save':
+      return <IconSave className={className} />;
+    case 'stars':
+    case 'upgrade':
+      return <IconSparkles className={className} />;
+    default:
+      return <IconBookmark className={className} />;
+  }
+};
+
 export default function Sidebar() {
   const {
     navigateTo,
@@ -504,10 +802,10 @@ export default function Sidebar() {
 
         {/* Drag handle */}
         <span
-          className="material-symbols-outlined text-[13px] text-neutral-400 dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0 -ml-1 mr-0.5 select-none"
+          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0 -ml-1 mr-0.5 select-none flex items-center justify-center text-neutral-400 dark:text-neutral-500"
           title={tMsg('Drag to reorder', 'Geser untuk menata ulang')}
         >
-          drag_indicator
+          <IconDragHandle className="w-3.5 h-3.5" />
         </span>
 
         {/* Left: Initials Icon + Sub-badge for Private/Lock */}
@@ -549,12 +847,8 @@ export default function Sidebar() {
             isMenuOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 group-hover:opacity-0 group-hover:pointer-events-none'
           }`}>
             {isPinned && (
-              <span
-                className="material-symbols-outlined text-[14px] text-[#FACC15] shrink-0"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-                title={tMsg('Pinned Project', 'Proyek Disematkan')}
-              >
-                star
+              <span title={tMsg('Pinned Project', 'Proyek Disematkan')} className="flex items-center justify-center text-[#FACC15] shrink-0">
+                <IconStar className="w-3.5 h-3.5" />
               </span>
             )}
             {unreadChats > 0 && (
@@ -599,11 +893,11 @@ export default function Sidebar() {
                 }
               }}
               className={`p-1 rounded-md transition-colors hover:bg-black/5 dark:hover:bg-white/10 ${
-                isPinned ? 'text-amber-400' : 'text-neutral-400 hover:text-amber-400'
+                isPinned ? 'text-[#FACC15]' : 'text-neutral-400 hover:text-amber-400'
               }`}
               title={isPinned ? tMsg('Unpin Project', 'Lepas Sematan') : tMsg('Pin Project', 'Sematkan')}
             >
-              <span className="material-symbols-outlined text-[15px]">{isPinned ? 'star' : 'star_border'}</span>
+              {isPinned ? <IconStar className="w-3.5 h-3.5" /> : <IconStarOutline className="w-3.5 h-3.5" />}
             </button>
 
             <div className="relative">
@@ -618,7 +912,7 @@ export default function Sidebar() {
                 className="p-1 rounded-md text-neutral-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 title={tMsg('Project Options', 'Opsi Proyek')}
               >
-                <span className="material-symbols-outlined text-[15px]">more_vert</span>
+                <IconMoreVert className="w-3.5 h-3.5" />
               </button>
 
               {activeBoardMenuId === `${isFavoriteSection ? 'fav' : 'all'}-${board.id}` && (
@@ -644,7 +938,7 @@ export default function Sidebar() {
                       }}
                       className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium"
                     >
-                      <span className="material-symbols-outlined text-sm">{isPinned ? 'star_half' : 'star'}</span>
+                      <IconStar className="w-3.5 h-3.5 text-[#FACC15]" />
                       {isPinned ? tMsg('Unpin from Top', 'Lepas Sematan') : tMsg('Pin to Top', 'Sematkan ke Atas')}
                     </button>
                     {(isSuperAdmin || board.owner_username === currentUser) && (
@@ -658,7 +952,7 @@ export default function Sidebar() {
                           }}
                           className="w-full text-left px-3 py-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium"
                         >
-                          <span className="material-symbols-outlined text-sm">inventory_2</span>
+                          <IconArchive className="w-3.5 h-3.5" />
                           {tMsg('Archive Project', 'Arsipkan Proyek')}
                         </button>
                         <button
@@ -670,7 +964,7 @@ export default function Sidebar() {
                           }}
                           className="w-full text-left px-3 py-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <IconTrash className="w-3.5 h-3.5 text-rose-500" />
                           {tMsg('Delete Project', 'Hapus Proyek')}
                         </button>
                       </>
@@ -728,15 +1022,20 @@ export default function Sidebar() {
           {/* 1. Home */}
           <button
             onClick={() => handleRailTabChange('home')}
-            className={`w-9 h-9 flex flex-col items-center justify-center rounded-xl transition-all ${
+            className={`w-9 h-9 flex flex-col items-center justify-center rounded-xl transition-all relative ${
               activeRailTab === 'home'
                 ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] font-bold shadow-xs'
                 : 'text-slate-600 dark:text-neutral-400 hover:bg-neutral-300/60 dark:hover:bg-neutral-800/60'
             }`}
             title={tMsg('Home (G+H)', 'Beranda (G+H)')}
           >
-            <span className="material-symbols-outlined text-[20px]">home</span>
+            <IconHome className="w-5 h-5" />
             <span className="text-[9px] font-semibold leading-none mt-0.5">Home</span>
+            {(totalUnreadChats > 0 || unreadCount > 0) && (
+              <span className="absolute -top-1 -right-1 min-w-3.5 h-3.5 px-0.5 bg-[#FACC15] text-[#111E38] text-[8px] font-black rounded-full flex items-center justify-center leading-none shadow-xs">
+                {(totalUnreadChats + unreadCount) > 9 ? '9+' : (totalUnreadChats + unreadCount)}
+              </span>
+            )}
           </button>
 
           {/* 2. My Tasks */}
@@ -749,7 +1048,7 @@ export default function Sidebar() {
             }`}
             title={tMsg('My Tasks (G+P)', 'Tugas Saya (G+P)')}
           >
-            <span className="material-symbols-outlined text-[20px]">task_alt</span>
+            <IconTasks className="w-5 h-5" />
             <span className="text-[9px] font-semibold leading-none mt-0.5">Tasks</span>
             {overdueCount > 0 && (
               <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center leading-none">
@@ -768,7 +1067,7 @@ export default function Sidebar() {
             }`}
             title={tMsg('Spaces / Projects (G+A)', 'Proyek / Spaces (G+A)')}
           >
-            <span className="material-symbols-outlined text-[20px]">folder_copy</span>
+            <IconFolderCopy className="w-5 h-5" />
             <span className="text-[9px] font-semibold leading-none mt-0.5">Spaces</span>
           </button>
 
@@ -798,7 +1097,7 @@ export default function Sidebar() {
             }`}
             title={tMsg('Dashboards', 'Dasbor')}
           >
-            <span className="material-symbols-outlined text-[20px]">dashboard</span>
+            <IconDashboard className="w-5 h-5" />
             <span className="text-[9px] font-semibold leading-none mt-0.5">Board</span>
           </button>
 
@@ -812,7 +1111,7 @@ export default function Sidebar() {
             }`}
             title={tMsg('Support', 'Dukungan')}
           >
-            <span className="material-symbols-outlined text-[20px]">help</span>
+            <IconHelp className="w-5 h-5" />
             <span className="text-[9px] font-semibold leading-none mt-0.5">Help</span>
           </button>
 
@@ -824,7 +1123,7 @@ export default function Sidebar() {
               className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-black dark:hover:text-white hover:bg-neutral-300/60 dark:hover:bg-neutral-800 transition-colors"
               title={tMsg('Invite Members', 'Undang Anggota')}
             >
-              <span className="material-symbols-outlined text-[18px]">person_add</span>
+              <IconPersonAdd className="w-4.5 h-4.5" />
             </button>
 
             {/* Upgrade */}
@@ -836,7 +1135,7 @@ export default function Sidebar() {
               className="w-8 h-8 flex items-center justify-center rounded-xl text-amber-500 hover:bg-amber-500/15 transition-colors"
               title={tMsg('Upgrade Plan', 'Upgrade Paket')}
             >
-              <span className="material-symbols-outlined text-[18px]">upgrade</span>
+              <IconUpgrade className="w-4.5 h-4.5" />
             </button>
 
             {/* EXPLICIT EXPAND / COLLAPSE BUTTON WITH SMOOTH ROTATION */}
@@ -845,12 +1144,10 @@ export default function Sidebar() {
               className="w-8 h-8 flex items-center justify-center rounded-xl bg-neutral-300/60 dark:bg-neutral-800/80 text-slate-700 dark:text-neutral-200 hover:bg-neutral-400/60 dark:hover:bg-neutral-700 transition-all shadow-2xs mt-1"
               title={isCollapsed ? tMsg('Expand Panel (Ctrl+B)', 'Buka Panel Sidebar (Ctrl+B)') : tMsg('Collapse Panel (Ctrl+B)', 'Tutup Panel Sidebar (Ctrl+B)')}
             >
-              <span
-                className="material-symbols-outlined text-[18px] transition-transform duration-300"
+              <IconChevronLeft
+                className="w-4.5 h-4.5 transition-transform duration-300"
                 style={{ transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
-              >
-                chevron_left
-              </span>
+              />
             </button>
           </div>
         </aside>
@@ -893,9 +1190,7 @@ export default function Sidebar() {
                     {activeWorkspace?.tier ? activeWorkspace.tier.toUpperCase() : 'FREE'}
                   </span>
                 </div>
-                <span className="material-symbols-outlined text-[16px] text-neutral-400 shrink-0">
-                  expand_more
-                </span>
+                  <IconChevronDown className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
               </button>
 
               {isWorkspaceMenuOpen && (
@@ -962,7 +1257,7 @@ export default function Sidebar() {
                         }}
                         className="w-full text-left px-2.5 py-1.5 text-xs text-amber-600 dark:text-[#FACC15] hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5"
                       >
-                        <span className="material-symbols-outlined text-[16px]">stars</span>
+                        <IconSparkles className="w-4 h-4 text-amber-500 shrink-0" />
                         {tMsg('Upgrade Plan / Quota', 'Tingkatkan Paket / Kuota')}
                       </button>
                     </div>
@@ -985,9 +1280,11 @@ export default function Sidebar() {
               }`}
               title={tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}
             >
-              <span className="material-symbols-outlined text-[18px]">chat</span>
+              <IconChatBubble className="w-4.5 h-4.5" />
               {totalUnreadChats > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FACC15] ring-2 ring-[#FAFAFA] dark:ring-[#121B2D]"></span>
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#FACC15] text-[#111E38] text-[9px] font-black flex items-center justify-center leading-none shadow-xs border border-white dark:border-[#121B2D]">
+                  {totalUnreadChats > 9 ? '9+' : totalUnreadChats}
+                </span>
               )}
             </button>
           </div>
@@ -1007,7 +1304,7 @@ export default function Sidebar() {
               >
                 <IconPlus className="w-3 h-3 text-[#111E38] shrink-0" />
                 <span className="text-[#111E38] group-hover:text-[#111E38] font-black">{tMsg('Create', 'Buat')}</span>
-                <span className="material-symbols-outlined text-[12px] text-[#111E38] opacity-80">expand_more</span>
+                <IconChevronDown className="w-3 h-3 text-[#111E38] opacity-80 shrink-0" />
               </button>
 
               {isCreateMenuOpen && (
@@ -1022,7 +1319,7 @@ export default function Sidebar() {
                       }}
                       className="w-full text-left px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium"
                     >
-                      <span className="material-symbols-outlined text-sm text-indigo-500">add_task</span>
+                      <IconTasks className="w-4 h-4 text-indigo-500 shrink-0" />
                       <span>{tMsg('New Task', 'Tugas Baru')}</span>
                     </button>
                     <button
@@ -1033,7 +1330,7 @@ export default function Sidebar() {
                       }}
                       className="w-full text-left px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium border-t border-neutral-100 dark:border-neutral-800"
                     >
-                      <span className="material-symbols-outlined text-sm text-amber-500">create_new_folder</span>
+                      <IconFolderCopy className="w-4 h-4 text-amber-500 shrink-0" />
                       <span>{tMsg('New Project', 'Proyek Baru')}</span>
                     </button>
                   </div>
@@ -1064,7 +1361,7 @@ export default function Sidebar() {
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px] text-indigo-500 dark:text-[#FACC15]">chat</span>
+                      <IconChatBubble className="w-4 h-4 text-indigo-500 dark:text-[#FACC15] shrink-0" />
                       <span className="truncate">{tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}</span>
                     </div>
                     {totalUnreadChats > 0 && (
@@ -1092,7 +1389,7 @@ export default function Sidebar() {
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px]">inbox</span>
+                      <IconInbox className="w-4 h-4 shrink-0" />
                       <span className="truncate">{tMsg('Inbox & Notifications', 'Kotak Masuk & Notifikasi')}</span>
                     </div>
                     {unreadCount > 0 && (
@@ -1121,7 +1418,7 @@ export default function Sidebar() {
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[18px]">event_available</span>
+                      <IconCalendar className="w-4 h-4 shrink-0" />
                       <span className="truncate">{tMsg('Leaves & Holidays', 'Cuti & Hari Libur')}</span>
                     </div>
                   </button>
@@ -1165,7 +1462,7 @@ export default function Sidebar() {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px]">person_check</span>
+                        <IconPersonCheck className="w-4 h-4 shrink-0" />
                         <span className="truncate">{tMsg('Assigned to me', 'Ditugaskan ke saya')}</span>
                       </div>
                       {assignedToMeCount > 0 && (
@@ -1188,7 +1485,7 @@ export default function Sidebar() {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px] text-amber-500">today</span>
+                        <IconCalendar className="w-4 h-4 text-amber-500 shrink-0" />
                         <span className="truncate">{tMsg('Due Today', 'Tenggat Hari Ini')}</span>
                       </div>
                       {dueTodayCount > 0 && (
@@ -1213,7 +1510,7 @@ export default function Sidebar() {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px] text-indigo-500">date_range</span>
+                        <IconCalendar className="w-4 h-4 text-indigo-500 shrink-0" />
                         <span className="truncate">{tMsg('This Week', 'Minggu Ini')}</span>
                       </div>
                       {dueThisWeekCount > 0 && (
@@ -1236,7 +1533,7 @@ export default function Sidebar() {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px] text-rose-500">warning</span>
+                        <IconWarning className="w-4 h-4 text-rose-500 shrink-0" />
                         <span className="truncate">{tMsg('Overdue', 'Terlambat')}</span>
                       </div>
                       {overdueCount > 0 && (
@@ -1261,7 +1558,7 @@ export default function Sidebar() {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="material-symbols-outlined text-[18px] text-emerald-500">task_alt</span>
+                        <IconTasks className="w-4 h-4 text-emerald-500 shrink-0" />
                         <span className="truncate">{tMsg('Completed', 'Selesai')}</span>
                       </div>
                     </button>
@@ -1295,7 +1592,7 @@ export default function Sidebar() {
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="material-symbols-outlined text-[18px] text-amber-500">folder_special</span>
+                          <IconFolderCopy className="w-4 h-4 text-amber-500 shrink-0" />
                           <span className="truncate">{tMsg('Personal Tasks', 'Tugas Pribadi')}</span>
                         </div>
                         {getBoardTaskCount(todoListBoard.id) > 0 && (
@@ -1312,7 +1609,7 @@ export default function Sidebar() {
                         }}
                         className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 italic"
                       >
-                        <span className="material-symbols-outlined text-[18px]">add_circle_outline</span>
+                        <IconPlus className="w-3.5 h-3.5 shrink-0" />
                         <span className="truncate">{tMsg('+ Create Personal Board', '+ Buat Board Pribadi')}</span>
                       </button>
                     )}
@@ -1352,7 +1649,7 @@ export default function Sidebar() {
                   {selectedBoard?.id === 'global' && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#111E38] dark:bg-[#FACC15] rounded-r-full"></div>
                   )}
-                  <span className="material-symbols-outlined text-[18px]">layers</span>
+                  <IconLayers className="w-4 h-4 shrink-0" />
                   <span className="text-xs truncate font-semibold">{tMsg('All Projects', 'Semua Proyek')}</span>
                 </button>
 
@@ -1377,12 +1674,11 @@ export default function Sidebar() {
                     >
                       {tMsg('Projects', 'Daftar Proyek')} ({displayBoards.length})
                     </span>
-                    <span
-                      onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}
-                      className="material-symbols-outlined text-[14px] text-neutral-400 cursor-pointer transition-transform duration-200"
-                      style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    >
-                      expand_more
+                    <span onClick={() => setIsSpacesTreeOpen(!isSpacesTreeOpen)}>
+                      <IconChevronDown
+                        className="w-3.5 h-3.5 text-neutral-400 cursor-pointer transition-transform duration-200"
+                        style={{ transform: isSpacesTreeOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                      />
                     </span>
                   </div>
 
@@ -1392,7 +1688,7 @@ export default function Sidebar() {
                       {favorites.length > 0 && (
                         <div className="mb-2 pb-1.5 border-b border-neutral-200/50 dark:border-neutral-800/60">
                           <div className="flex items-center gap-1 px-2 py-0.5 text-[9px] font-extrabold text-amber-500 dark:text-[#FACC15] uppercase tracking-wider">
-                            <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                            <IconStar className="w-3 h-3 text-[#FACC15] shrink-0" />
                             <span>{tMsg('Pinned', 'Disematkan')}</span>
                             <span className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 ml-auto">({favorites.length})</span>
                           </div>
@@ -1425,7 +1721,7 @@ export default function Sidebar() {
                         }}
                         className="w-full flex items-center gap-1.5 px-2 py-1 rounded-md text-xs transition-colors hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
                       >
-                        <span className="material-symbols-outlined text-[15px] text-sky-500">description</span>
+                        <IconDoc className="w-4 h-4 text-sky-500 shrink-0" />
                         <span className="truncate">{tMsg('Team Docs', 'Dokumentasi Tim')}</span>
                       </button>
                     </div>
@@ -1440,7 +1736,7 @@ export default function Sidebar() {
                   }}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-500 dark:text-slate-400 font-medium text-xs"
                 >
-                  <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+                  <IconArchive className="w-4 h-4 shrink-0" />
                   <span className="truncate">{tMsg('Archived Projects', 'Proyek Diarsipkan')}</span>
                 </button>
               </div>
@@ -1478,7 +1774,7 @@ export default function Sidebar() {
                     }}
                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[18px] text-emerald-500 shrink-0">explore</span>
+                    <IconExplore className="w-4 h-4 text-emerald-500 shrink-0" />
                     <span className="truncate">{tMsg('Onboarding & Flow Guide', 'Panduan Onboarding & Alur')}</span>
                   </button>
 
@@ -1500,11 +1796,9 @@ export default function Sidebar() {
                         : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                     }`}
                   >
-                    <span className={`material-symbols-outlined text-[18px] shrink-0 mt-0.5 ${
-                      viewMode === 'analytics' ? 'text-inherit' : 'text-indigo-500 dark:text-indigo-400'
-                    }`}>
-                      analytics
-                    </span>
+                    <IconAnalytics className={`w-4.5 h-4.5 shrink-0 mt-0.5 ${
+                      viewMode === 'analytics' ? 'text-inherit' : 'text-indigo-500 dark:text-[#FACC15]'
+                    }`} />
                     <div className="flex-1 min-w-0 text-left">
                       <div className="truncate font-semibold leading-tight">
                         {tMsg('Workload & Burnout Assistant', 'Asisten Beban Kerja & Burnout')}
@@ -1538,7 +1832,7 @@ export default function Sidebar() {
                       : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">home</span>
+                  <IconHome className="w-4 h-4 shrink-0" />
                   <span className="truncate">{tMsg('Personal Dashboard', 'Dasbor Utama')}</span>
                 </button>
 
@@ -1555,7 +1849,7 @@ export default function Sidebar() {
                   }}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
                 >
-                  <span className="material-symbols-outlined text-[18px]">dashboard</span>
+                  <IconDashboard className="w-4 h-4 shrink-0" />
                   <span className="truncate">{tMsg('Workspace Overview', 'Ringkasan Ruang Kerja')}</span>
                 </button>
               </div>
@@ -1571,7 +1865,7 @@ export default function Sidebar() {
                   }}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
                 >
-                  <span className="material-symbols-outlined text-[18px]">confirmation_number</span>
+                  <IconTicket className="w-4 h-4 shrink-0" />
                   <span className="truncate">{tMsg('My Tickets', 'Tiket Bantuan Saya')}</span>
                 </button>
 
@@ -1582,7 +1876,7 @@ export default function Sidebar() {
                   }}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-neutral-200/50 dark:hover:bg-neutral-800/60 text-slate-700 dark:text-slate-300 font-medium"
                 >
-                  <span className="material-symbols-outlined text-[18px]">help</span>
+                  <IconHelp className="w-4 h-4 shrink-0" />
                   <span className="truncate">{tMsg('Help & Support', 'Bantuan & Support')}</span>
                 </button>
               </div>
@@ -1597,12 +1891,10 @@ export default function Sidebar() {
                     className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider cursor-pointer flex items-center gap-1"
                   >
                     {tMsg('Saved Views', 'Filter Tersimpan')}
-                    <span
-                      className="material-symbols-outlined text-[12px] text-neutral-400 transition-transform duration-200"
+                    <IconChevronDown
+                      className="w-3 h-3 text-neutral-400 transition-transform duration-200"
                       style={{ transform: isSavedViewsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                    >
-                      expand_more
-                    </span>
+                    />
                   </span>
                   <button
                     onClick={handleOpenSaveModal}
@@ -1668,7 +1960,7 @@ export default function Sidebar() {
                             className="flex items-center gap-2 min-w-0 flex-1 text-left cursor-pointer"
                             title={tMsg(`Filter: ${sv.nameEn}`, `Filter: ${sv.nameId}`)}
                           >
-                            <span className="material-symbols-outlined text-[15px] text-indigo-500 dark:text-[#FACC15] shrink-0">{sv.icon}</span>
+                            {renderDynamicIcon(sv.icon, "w-3.5 h-3.5 text-indigo-500 dark:text-[#FACC15] shrink-0")}
                             <span className="truncate">{language === 'id' ? sv.nameId : sv.nameEn}</span>
                           </button>
 
@@ -1678,7 +1970,7 @@ export default function Sidebar() {
                               className="text-neutral-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0"
                               title={tMsg('Delete saved view', 'Hapus filter tersimpan')}
                             >
-                              <span className="material-symbols-outlined text-[14px]">delete</span>
+                              <IconTrash className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </div>
@@ -1719,7 +2011,7 @@ export default function Sidebar() {
             <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-[#FACC15]/15 text-[#111E38] dark:text-[#FACC15] flex items-center justify-center font-bold">
-                  <span className="material-symbols-outlined text-[20px]">bookmark_add</span>
+                  <IconBookmarkAdd className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-[#111E38] dark:text-white">
@@ -1737,7 +2029,7 @@ export default function Sidebar() {
                 }}
                 className="text-neutral-400 hover:text-slate-700 dark:hover:text-white transition-colors p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <IconClose className="w-5 h-5" />
               </button>
             </div>
 
@@ -1789,7 +2081,7 @@ export default function Sidebar() {
                           : 'border-neutral-200 dark:border-neutral-800 text-slate-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                      {renderDynamicIcon(item.icon, "w-4.5 h-4.5")}
                     </button>
                   ))}
                 </div>
@@ -1799,7 +2091,7 @@ export default function Sidebar() {
               {pendingSnapshot && (
                 <div className="p-2.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/80 dark:border-neutral-700/60 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
                   <div className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[14px] text-emerald-500">check_circle</span>
+                    <IconCheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                     <span>{tMsg('Captured Settings', 'Pengaturan yang Direkam')}:</span>
                   </div>
                   <div className="text-[10px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-2 gap-y-0.5">
@@ -1828,7 +2120,7 @@ export default function Sidebar() {
                   type="submit"
                   className="px-4 py-2 text-xs font-bold bg-[#FACC15] text-[#111E38] hover:bg-[#EAB308] rounded-lg transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                 >
-                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  <IconSave className="w-4 h-4" />
                   <span>{tMsg('Save View', 'Simpan Tampilan')}</span>
                 </button>
               </div>

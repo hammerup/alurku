@@ -210,7 +210,11 @@ export default function AssignedCommentsPage() {
           <div className="p-3 border-b border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/40 space-y-2.5">
             {/* Search Input */}
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">search</span>
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </span>
               <input
                 type="text"
                 value={searchQuery}
@@ -259,7 +263,11 @@ export default function AssignedCommentsPage() {
           <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-neutral-100 dark:divide-neutral-800/60">
             {filteredThreads.length === 0 ? (
               <div className="p-8 text-center text-neutral-400 text-xs flex flex-col items-center justify-center h-full">
-                <span className="material-symbols-outlined text-4xl text-neutral-300 dark:text-neutral-700 mb-2">forum</span>
+                <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-400 mb-3 border border-neutral-200/60 dark:border-neutral-700/60">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                  </svg>
+                </div>
                 <p className="font-bold text-neutral-500 dark:text-neutral-400">
                   {tMsg('No comment threads found', 'Tidak ada utas komentar ditemukan')}
                 </p>
@@ -435,7 +443,11 @@ export default function AssignedCommentsPage() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-neutral-400 text-center">
-              <span className="material-symbols-outlined text-5xl text-neutral-300 dark:text-neutral-700 mb-2">forum</span>
+              <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center text-neutral-400 mb-3 border border-neutral-200/60 dark:border-neutral-700/60">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+                </svg>
+              </div>
               <p className="text-sm font-bold text-neutral-600 dark:text-neutral-300">
                 {tMsg('Select a comment thread from the left', 'Pilih utas komentar dari daftar di sebelah kiri')}
               </p>
