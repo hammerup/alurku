@@ -2220,12 +2220,13 @@ export default function useAppLogic() {
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     if (unreadCount > 0) {
       document.title = `(${unreadCount}) alurku.`;
     } else {
       document.title = 'alurku. | Task & Project Management';
     }
-  }, [unreadCount]);
+  }, [unreadCount, isAuthenticated]);
 
   const handleReadNotification = (id) => {
     axios.put(`/api/notifications/${id}/read`).then(fetchNotifications).catch(console.error);

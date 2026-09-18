@@ -49,4 +49,18 @@ test.describe('Smoke E2E Test Suite - alurku.', () => {
     await expect(page.locator('h1')).toContainText(/Obrolan Tim|Workspace Chat/i);
     await expect(page).toHaveTitle(/Obrolan Tim|Workspace Chat.*alurku\./i);
   });
+
+  test('6. About Us (/tentang) Credibility, Word Count & Zero Personal Photo', async ({ page }) => {
+    await page.goto(BASE_URL + '/tentang');
+    await expect(page.locator('h1')).toContainText(/Building Sustainable Workspaces|Membangun Ruang Kerja/i);
+    await expect(page).toHaveTitle(/Tentang Kami|About Us.*alurku\./i);
+
+    // Verify founder photo is strictly absent
+    const founderImg = page.locator('img[src*="eka"]');
+    await expect(founderImg).toHaveCount(0);
+
+    // Verify key institutional sections
+    await expect(page.locator('body')).toContainText(/Real-Time Capacity Guard|Sistem Proteksi Kapasitas/i);
+    await expect(page.locator('body')).toContainText(/Zero-Retention AI Privacy|Privasi AI Tanpa Retensi/i);
+  });
 });
