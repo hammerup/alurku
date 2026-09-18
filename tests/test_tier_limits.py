@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 from fastapi.testclient import TestClient
 import sys
 import os
@@ -130,3 +130,51 @@ def test_free_tier_limits_and_upgrade_flow():
     # User with 50 AI requests can now use AI because Pro has 1,500 quota
     enforce_can_use_ai(db, username, "pro")
     db.close()
+
+
+def test_workspace_creation_limits_per_tier():
+    username, token = setup_test_user()
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. User starts with 1 auto-created Free workspace
+    resp_ws = client.get("/api/workspaces", headers=headers)
+    assert resp_ws.status_code == 200
+    workspaces = resp_ws.json()
+    assert len(workspaces) == 1
+    ws_1 = workspaces[0]
+    assert ws_1["tier"] == "free"
+
+    # 2. Attempting to create 2nd workspace under Free tier MUST fail with 403
+    resp_ws_2_fail = client.post("/api/workspaces", json={"name": "Workspace 2 - Should Fail"}, headers=headers)
+    assert resp_ws_2_fail.status_code == 403
+    assert "Batas Paket Tercapai" in resp_ws_2_fail.json()["detail"]
+    assert "hanya mengizinkan maksimal 1 Workspace" in resp_ws_2_fail.json()["detail"]
+
+    # 3. Upgrade primary workspace to Pro
+    resp_upgrade = client.put(f"/api/workspaces/{ws_1['id']}/tier", json={"tier": "pro"}, headers=headers)
+    assert resp_upgrade.status_code == 200
+    assert resp_upgrade.json()["tier"] == "pro"
+
+    # 4. Under Pro tier, creating 2nd and 3rd workspace MUST succeed
+    resp_ws_2 = client.post("/api/workspaces", json={"name": "Workspace 2 - Pro Allowed"}, headers=headers)
+    assert resp_ws_2.status_code == 200
+    ws_2_id = resp_ws_2.json()["workspace"]["id"]
+
+    resp_ws_3 = client.post("/api/workspaces", json={"name": "Workspace 3 - Pro Allowed"}, headers=headers)
+    assert resp_ws_3.status_code == 200
+    ws_3_id = resp_ws_3.json()["workspace"]["id"]
+
+    # 5. Attempting to create 4th workspace under Pro tier MUST fail with 403
+    resp_ws_4_fail = client.post("/api/workspaces", json={"name": "Workspace 4 - Should Fail"}, headers=headers)
+    assert resp_ws_4_fail.status_code == 403
+    assert "Batas Paket Tercapai" in resp_ws_4_fail.json()["detail"]
+    assert "hanya mengizinkan maksimal 3 Workspace" in resp_ws_4_fail.json()["detail"]
+
+    # 6. Upgrade to Business tier (unlimited workspaces)
+    resp_upgrade_biz = client.put(f"/api/workspaces/{ws_1['id']}/tier", json={"tier": "business"}, headers=headers)
+    assert resp_upgrade_biz.status_code == 200
+
+    # 7. Creating 4th workspace under Business tier MUST succeed
+    resp_ws_4 = client.post("/api/workspaces", json={"name": "Workspace 4 - Business Allowed"}, headers=headers)
+    assert resp_ws_4.status_code == 200
+    assert resp_ws_4.json()["workspace"]["name"] == "Workspace 4 - Business Allowed"

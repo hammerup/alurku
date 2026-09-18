@@ -61,6 +61,7 @@ import SearchResults from './components/SearchResults';
 import WorkspaceOverview from './components/WorkspaceOverview';
 import ProFeatureGate from './components/ProFeatureGate';
 import UpgradeModal from './components/UpgradeModal';
+import CommandBarModal from './components/CommandBarModal';
 
 import './api/axiosSetup';
 
@@ -483,6 +484,18 @@ function App() {
 
   const [activeDragType, setActiveDragType] = useState(null);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
+
+  React.useEffect(() => {
+    const handleGlobalCmdK = (e) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setIsCommandBarOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalCmdK);
+    return () => window.removeEventListener('keydown', handleGlobalCmdK);
+  }, []);
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
@@ -1335,6 +1348,7 @@ function App() {
           setLanguage={setLanguage}
           currentUser={currentUser}
           avatarsMap={avatarsMap}
+          onOpenCommandBar={() => setIsCommandBarOpen(true)}
           onLogoClick={() => {
             setSelectedBoard(null);
             setIsProactiveAIOpen(false);
@@ -2480,6 +2494,53 @@ function App() {
           }}
         />
       )}
+
+      {/* Command Bar Modal (Cmd/Ctrl + K) */}
+      <CommandBarModal
+        isOpen={isCommandBarOpen}
+        onClose={() => setIsCommandBarOpen(false)}
+        language={language}
+        isDarkMode={isDarkMode}
+        currentUser={currentUser}
+        boards={boards}
+        selectedBoard={selectedBoard}
+        onSelectBoard={(b) => {
+          setSelectedBoard(b);
+          setIsCommandBarOpen(false);
+        }}
+        teamMembers={teamMembers}
+        onTaskCreated={() => {
+          if (fetchTasks) fetchTasks();
+        }}
+        onOpenUpgradeModal={() => setIsUpgradeModalOpen(true)}
+        onOpenCreateProject={() => {
+          if (handleOpenAddBoard) handleOpenAddBoard();
+        }}
+        onToggleTheme={() => {
+          setIsDarkMode((prev) => !prev);
+        }}
+        onToggleLanguage={() => {
+          setLanguage((prev) => (prev === 'id' ? 'en' : 'id'));
+        }}
+        onNavigateTab={(tab) => {
+          if (tab === 'kanban') {
+            setViewMode('kanban');
+          } else if (tab === 'timeline') {
+            setViewMode('timeline');
+          } else if (tab === 'analytics') {
+            setViewMode('analytics');
+          } else if (tab === 'calendar') {
+            setViewMode('calendar');
+          } else if (tab === 'chat') {
+            setIsChatWorkspaceOpen(true);
+          }
+          setIsCommandBarOpen(false);
+        }}
+        onTriggerAI={(prompt) => {
+          setIsAssistantOpen(true);
+        }}
+        showNotification={showNotification}
+      />
     </DragDropContext>
   );
 }

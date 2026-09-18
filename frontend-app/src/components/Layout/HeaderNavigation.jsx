@@ -28,6 +28,7 @@ export default function HeaderNavigation({
   currentUser,
   avatarsMap = {},
   onLogoClick,
+  onOpenCommandBar,
 }) {
   const { 
     setIsMobileMenuOpen, 
@@ -96,9 +97,11 @@ export default function HeaderNavigation({
     };
 
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
-        if (searchInputRef.current) {
+        if (onOpenCommandBar) {
+          onOpenCommandBar();
+        } else if (searchInputRef.current) {
           searchInputRef.current.focus();
         }
       }
@@ -278,7 +281,11 @@ export default function HeaderNavigation({
             className="w-full bg-transparent text-black dark:text-white text-xs outline-none py-1 placeholder-neutral-400"
           />
           {!globalSearchQuery && (
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-800 text-neutral-400 select-none border border-neutral-300/40 dark:border-neutral-700/50">
+            <kbd
+              onClick={onOpenCommandBar}
+              className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-800 text-neutral-400 select-none border border-neutral-300/40 dark:border-neutral-700/50 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+              title="Command Bar (Cmd/Ctrl + K)"
+            >
               ⌘K
             </kbd>
           )}
