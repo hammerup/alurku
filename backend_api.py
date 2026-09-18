@@ -638,6 +638,8 @@ from routers.boards import router as boards_router
 app.include_router(boards_router)
 from routers.tasks import router as tasks_router
 app.include_router(tasks_router)
+from routers.attachments import router as attachments_router
+app.include_router(attachments_router)
 from routers.admin import router as admin_router
 app.include_router(admin_router)
 from routers.users import router as users_router

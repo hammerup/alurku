@@ -242,15 +242,29 @@ def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTa
 @router.post("/api/login")
 def login(credentials: LoginModel, db: Session = Depends(get_db)):
     now_time = time.time()
+    # Cari user berdasarkan username ATAU email
+    user = db.query(User).filter(
+        (User.username == credentials.username) | (User.email == credentials.username)
+    ).first()
+
+    # Tentukan identifier untuk security lockout (gunakan user.username jika ditemukan, atau input credentials.username)
+    security_identifier = user.username if user else credentials.username
+
     # Pengecekan status Lockout
-    login_state = get_security_log(db, f"login_attempts:{credentials.username}", {"count": 0, "lockout_time": 0})
-    if login_state["lockout_time"] > now_time:
+    login_state = get_security_log(db, f"login_attempts:{security_identifier}", {"count": 0, "lockout_time": 0})
+    if login_state.get("lockout_time", 0) > now_time:
+        remaining_seconds = int(login_state["lockout_time"] - now_time)
+        remaining_minutes = max(1, (remaining_seconds + 59) // 60)
         raise HTTPException(
             status_code=429,
-            detail="Too many failed attempts. Account locked for 15 minutes.",
+            detail={
+                "message": f"Too many failed attempts. Account locked for {remaining_minutes} minute{'s' if remaining_minutes > 1 else ''}.",
+                "lockout": True,
+                "remaining_seconds": remaining_seconds,
+                "remaining_minutes": remaining_minutes,
+            },
         )
 
-    user = db.query(User).filter(User.username == credentials.username).first()
     if user:
         if verify_password(credentials.password, user.password):
             evaluate_user_lifecycle(db, user)
@@ -266,7 +280,10 @@ def login(credentials: LoginModel, db: Session = Depends(get_db)):
                 )
 
             # Bersihkan log kegagalan jika login berhasil
-            set_security_log(db, f"login_attempts:{credentials.username}", {"count": 0, "lockout_time": 0})
+            set_security_log(db, f"login_attempts:{security_identifier}", {"count": 0, "lockout_time": 0})
+            if security_identifier != credentials.username:
+                set_security_log(db, f"login_attempts:{credentials.username}", {"count": 0, "lockout_time": 0})
+
             # Gunakan session_duration_days dari org policy
             policies = get_system_policies(db)
             session_days = max(1, min(int(policies.get("session_duration_days", 30)), 365))
@@ -277,17 +294,32 @@ def login(credentials: LoginModel, db: Session = Depends(get_db)):
             return {"message": "Login successful", "token": access_token}
 
     # Tambahkan rekam jejak kegagalan login
-    login_state["count"] += 1
-    if login_state["count"] >= 5:
-        login_state["lockout_time"] = now_time + 900  # Kunci selama 15 menit
-        set_security_log(db, f"login_attempts:{credentials.username}", login_state)
+    current_count = login_state.get("count", 0) + 1
+    login_state["count"] = current_count
+    if current_count >= 5:
+        lockout_duration = 900  # Kunci selama 15 menit
+        login_state["lockout_time"] = now_time + lockout_duration
+        set_security_log(db, f"login_attempts:{security_identifier}", login_state)
         raise HTTPException(
             status_code=429,
-            detail="Too many failed attempts. Account locked for 15 minutes.",
+            detail={
+                "message": "Too many failed attempts. Account locked for 15 minutes.",
+                "lockout": True,
+                "remaining_seconds": lockout_duration,
+                "remaining_minutes": 15,
+            },
         )
 
-    set_security_log(db, f"login_attempts:{credentials.username}", login_state)
-    raise HTTPException(status_code=401, detail="Invalid username or password")
+    remaining_attempts = max(0, 5 - current_count)
+    set_security_log(db, f"login_attempts:{security_identifier}", login_state)
+    raise HTTPException(
+        status_code=401,
+        detail={
+            "message": "Invalid username or password",
+            "remaining_attempts": remaining_attempts,
+            "max_attempts": 5,
+        },
+    )
 
 
 @router.post("/api/google-login")
@@ -432,6 +464,8 @@ def reset_password(payload: dict, db: Session = Depends(get_db)):
         )
 
     user.password = get_password_hash(new_password)
+    # Bersihkan status lockout setelah berhasil reset password
+    set_security_log(db, f"login_attempts:{user.username}", {"count": 0, "lockout_time": 0})
     db.commit()
     return {"message": "Password successfully reset"}
 

@@ -97,6 +97,20 @@ export default function HeaderNavigation({
     };
 
     const handleKeyDown = (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      const isEditable = document.activeElement?.isContentEditable;
+
+      // 1. Slash key (/) focuses search input when user is not typing in a text field
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && activeTag !== 'input' && activeTag !== 'textarea' && !isEditable) {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.select();
+        }
+        return;
+      }
+
+      // 2. Cmd/Ctrl + K triggers Command Bar Quick-Add
       if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
         if (onOpenCommandBar) {
@@ -281,13 +295,22 @@ export default function HeaderNavigation({
             className="w-full bg-transparent text-black dark:text-white text-xs outline-none py-1 placeholder-neutral-400"
           />
           {!globalSearchQuery && (
-            <kbd
-              onClick={onOpenCommandBar}
-              className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/60 dark:bg-neutral-800 text-neutral-400 select-none border border-neutral-300/40 dark:border-neutral-700/50 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
-              title="Command Bar (Cmd/Ctrl + K)"
-            >
-              ⌘K
-            </kbd>
+            <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+              <kbd
+                onClick={() => searchInputRef.current?.focus()}
+                className="inline-flex items-center justify-center min-w-[20px] text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 select-none border border-neutral-300/60 dark:border-neutral-700/60 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+                title={tMsg('Press / to Search', 'Tekan / untuk Mencari')}
+              >
+                /
+              </kbd>
+              <kbd
+                onClick={onOpenCommandBar}
+                className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 select-none border border-neutral-300/60 dark:border-neutral-700/60 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+                title={tMsg('Command Bar (Cmd/Ctrl + K)', 'Command Bar (Cmd/Ctrl + K)')}
+              >
+                ⌘K
+              </kbd>
+            </div>
           )}
         </div>
         {globalSearchQuery && (

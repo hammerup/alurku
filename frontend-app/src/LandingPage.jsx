@@ -54,6 +54,9 @@ export default function LandingPage({
   handleForgotPassword,
   handleResetPassword,
   loginWithGoogle,
+  loginError,
+  setLoginError,
+  lockoutRemaining,
   isInstallable,
   handleInstallClick,
   language,
@@ -64,6 +67,7 @@ export default function LandingPage({
   const [isSupportAlertOpen, setIsSupportAlertOpen] = useState(false);
   const getTabFromPath = (path) => {
     if (path.startsWith('/artikel')) return 'article';
+    if (path.startsWith('/dokumentasi')) return 'documentation';
     switch (path) {
       case '/fitur': return 'features';
       case '/harga': return 'pricing';
@@ -82,7 +86,7 @@ export default function LandingPage({
       case 'pricing': return '/harga';
       case 'guide': return '/panduan';
       case 'about': return '/tentang';
-      case 'documentation': return '/dokumentasi';
+      case 'documentation': return window.location.pathname.startsWith('/dokumentasi') ? window.location.pathname : '/dokumentasi';
       case 'changelog': return '/catatan-rilis';
       case 'article': return window.location.pathname;
       default: return '/';
@@ -112,7 +116,7 @@ export default function LandingPage({
         setShowAuthForm(true);
         setIsLoginMode(true);
         setIsForgotMode(true);
-      } else if (['/', '/fitur', '/harga', '/panduan', '/tentang', '/dokumentasi', '/catatan-rilis', '/changelog'].includes(path) || path.startsWith('/artikel/')) {
+      } else if (['/', '/fitur', '/harga', '/panduan', '/tentang', '/dokumentasi', '/catatan-rilis', '/changelog'].includes(path) || path.startsWith('/artikel/') || path.startsWith('/dokumentasi')) {
         setShowAuthForm(false);
         setCurrentTab(getTabFromPath(path));
       } else {
@@ -495,6 +499,9 @@ export default function LandingPage({
             handleForgotPassword={handleForgotPassword}
             handleResetPassword={handleResetPassword}
             loginWithGoogle={loginWithGoogle}
+            loginError={loginError}
+            setLoginError={setLoginError}
+            lockoutRemaining={lockoutRemaining}
             setIsPrivacyOpen={setIsPrivacyOpen}
             setIsTermsOpen={setIsTermsOpen}
             setShowAuthForm={setShowAuthForm}

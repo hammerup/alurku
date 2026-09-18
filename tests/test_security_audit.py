@@ -43,19 +43,30 @@ def test_xss_in_registration_username():
 
 def test_brute_force_login_protection():
     """AUDIT: Memastikan sistem mengunci akun setelah 5 percobaan gagal (Brute-Force & Credential Stuffing)"""
-    # Lakukan 5x percobaan gagal
-    for _ in range(5):
-        client.post(
-            "/api/login", json={"username": "admin", "password": "wrongpassword"}
-        )
+    from database import SessionLocal, set_security_log
 
-    # Percobaan ke-6 harusnya menghasilkan 429 (Too Many Requests), bukan 401 (Unauthorized)
-    response = client.post(
-        "/api/login", json={"username": "admin", "password": "wrongpassword"}
-    )
-    assert (
-        response.status_code == 429
-    ), "Celah: Rate Limiter pada Login tidak berfungsi. Rentan di-bruteforce!"
+    test_target = "audit_target_user"
+    try:
+        # Lakukan 5x percobaan gagal
+        for _ in range(5):
+            client.post(
+                "/api/login", json={"username": test_target, "password": "wrongpassword"}
+            )
+
+        # Percobaan ke-6 harusnya menghasilkan 429 (Too Many Requests), bukan 401 (Unauthorized)
+        response = client.post(
+            "/api/login", json={"username": test_target, "password": "wrongpassword"}
+        )
+        assert (
+            response.status_code == 429
+        ), "Celah: Rate Limiter pada Login tidak berfungsi. Rentan di-bruteforce!"
+        data = response.json()
+        assert "Too many failed attempts" in str(data)
+    finally:
+        db = SessionLocal()
+        set_security_log(db, f"login_attempts:{test_target}", {"count": 0, "lockout_time": 0})
+        set_security_log(db, "login_attempts:admin", {"count": 0, "lockout_time": 0})
+        db.close()
 
 
 def test_email_bombing_protection():

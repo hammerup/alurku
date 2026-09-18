@@ -1,6 +1,52 @@
 # Changelog seed dataset
 CHANGELOGS_SEED = [
     {
+        "version": "v2.7.0",
+        "release_date": "2026-09-18",
+        "type": "major",
+        "title_id": "Pusat Bantuan Terpadu, Panduan Pengguna & Kenyamanan Akses Akun",
+        "title_en": "Unified Help Center, Guided Onboarding & Seamless Account Access",
+        "changes_id": [
+            "Pusat Bantuan & Panduan Terpadu: Akses dokumentasi lengkap dan tutorial resmi alurku. langsung dari aplikasi dengan pencarian cerdas dwibahasa (/dokumentasi).",
+            "Panduan Pengguna Interaktif (Onboarding Checklist): Checklist interaktif 5 langkah di dasbor utama untuk memandu anggota tim baru memahami alur kerja dengan cepat.",
+            "Akses Akun Lebih Ramah & Transparan: Tampilan peringatan sisa percobaan kata sandi yang jelas serta indikator hitung mundur otomatis untuk kenyamanan keamanan Anda.",
+            "Pemulihan Akun Instan: Kemudahan langsung masuk ke akun secara aman setelah Anda berhasil memperbarui kata sandi melalui email pemulihan.",
+            "Peningkatan Keandalan & Responsivitas Antarmuka: Optimalisasi navigasi dan alur perpindahan halaman agar pengalaman kerja harian Anda semakin lancar dan stabil."
+        ],
+        "changes_en": [
+            "Unified Help Center & Knowledge Base: Explore comprehensive feature guides and official documentation right within the app, powered by fast bilingual search (/dokumentasi).",
+            "Interactive Onboarding Checklist: A 5-step interactive tour on the main dashboard helping new team members master key workflows in minutes.",
+            "User-Centric Sign-in Experience: Clear attempt indicators and an automatic countdown timer designed to help you regain account access without frustration.",
+            "Instant Account Recovery: Automatically regain immediate access to your workspace as soon as you update your password via your recovery email.",
+            "Interface Speed & Stability Enhancements: Under-the-hood optimizations ensuring smoother transitions, faster page loads, and reliable navigation across all devices."
+        ],
+        "order_index": 24
+    },
+    {
+        "version": "v2.6.0",
+        "release_date": "2026-09-15",
+        "type": "feature",
+        "title_id": "Command Bar Cerdas, Paket Kolaborasi Fleksibel & Lampiran Berkas Tugas",
+        "title_en": "Smart Command Bar, Flexible Team Packaging & Task Attachments",
+        "changes_id": [
+            "Command Bar Cerdas (Cmd/Ctrl + K): Buat tugas baru secara instan cukup dengan mengetik bahasa sehari-hari - sistem mengenali tenggat, tingkat prioritas, dan penerima tugas otomatis.",
+            "Paket Kolaborasi Fleksibel Berbasis Anggota: Penyesuaian paket harga per anggota yang transparan untuk memudahkan tim Anda berkembang sesuai kebutuhan.",
+            "Akses Pratinjau Fitur Pro: Pengguna paket Standar kini dapat melihat pratinjau edukatif kemampuan Lini Masa (Gantt) dan Analitik Beban Kerja sebelum melakukan upgrade.",
+            "Lampiran Berkas pada Tugas: Dukungan unggah berkas (dokumen, gambar, dan aset proyek) langsung ke dalam kartu tugas dengan fitur seret-dan-lepas (drag-and-drop).",
+            "Pembaruan Desain Ikon Modern & Bersih: Tampilan visual antarmuka diperbarui dengan ikon flat design yang konsisten, tajam, dan nyaman di mata.",
+            "Perlindungan Privasi & Keamanan Data Tingkat Lanjut: Kebijakan privasi dan standar tata kelola diperbarui untuk menjamin keamanan informasi kerja dan data privasi organisasi Anda."
+        ],
+        "changes_en": [
+            "Smart Command Bar (Cmd/Ctrl + K): Create tasks effortlessly using natural phrases - automatically detecting due dates, priority levels, and member assignments.",
+            "Flexible Seat-Based Collaboration: Transparent per-member pricing plans making it effortless to scale your workspace as your organization grows.",
+            "Pro Feature Previews: Standard workspace members can now explore interactive previews of Timeline (Gantt) and Workload Analytics before upgrading.",
+            "Task Attachments & Asset Uploads: Easily attach documents, images, and work deliverables directly into task cards with simple drag-and-drop actions.",
+            "Crisp & Modern Visual Design: Upgraded system-wide iconography with clean, modern Flat Design vectors for improved clarity and aesthetic comfort.",
+            "Enhanced Data Protection & Privacy: Updated data governance and privacy policies ensuring enterprise-grade protection for your company workflows."
+        ],
+        "order_index": 23
+    },
+    {
         "version": "v2.5.0",
         "release_date": "2026-09-10",
         "type": "major",

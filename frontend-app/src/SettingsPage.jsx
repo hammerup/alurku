@@ -182,7 +182,7 @@ export default function SettingsPage({
         if (permission === 'granted') {
           setBrowserNotifEnabled(true);
           localStorage.setItem('alurku_browser_notif', 'true');
-          new Notification('Alurku', {
+          new Notification('alurku.', {
             body: tMsg('Desktop notifications enabled!', 'Notifikasi desktop diaktifkan!'),
           });
         } else {
@@ -203,7 +203,7 @@ export default function SettingsPage({
   const handlePreviewNotif = (msg, type) => {
     showNotification(msg, type);
     if (browserNotifEnabled && 'Notification' in window && Notification.permission === 'granted') {
-      new Notification('Alurku', { body: msg });
+      new Notification('alurku.', { body: msg });
     }
   };
 
@@ -1422,7 +1422,7 @@ export default function SettingsPage({
             <p className="text-xs text-neutral-600 dark:text-neutral-300 mb-4 leading-relaxed font-medium">
               {tMsg(
                 'Please enter your account password to confirm deletion. Once confirmed, all your private tasks, personal records, and notifications will be wiped immediately.',
-                'Harap masukkan kata sandi akun Anda untuk mengonfirmasi penghapusan. Setelah dikonfirmasi, seluruh tugas privat, data pribadi, dan notifikasi Anda akan dihapus seketika.'
+                'Masukkan kata sandi akun Anda untuk konfirmasi penghapusan. Seluruh tugas privat, data pribadi, dan notifikasi akan dihapus permanen.'
               )}
             </p>
 

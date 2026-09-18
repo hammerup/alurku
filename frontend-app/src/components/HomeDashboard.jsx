@@ -332,7 +332,7 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
       console.error("AI Summary Error", error);
       const fallbackMsg = tMsg(
         'AI Summary is currently unavailable. Please focus on your priority tasks for today.',
-        'Ringkasan AI saat ini tidak tersedia. Silakan fokus pada tugas prioritas Anda hari ini.'
+        'Ringkasan AI saat ini belum tersedia. Yuk tetap fokus pada tugas prioritasmu hari ini!'
       );
       setAiSummary(fallbackMsg);
     } finally {

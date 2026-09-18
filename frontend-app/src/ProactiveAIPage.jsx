@@ -274,7 +274,7 @@ export default function ProactiveAIPage({
     str += `IMPORTANT RULES FOR ANSWERING:\n`;
     str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
-    str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
+    str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di alurku.". alurku. is the app name, while "${wsName}" is the user's active workspace name.\n`;
     str += `4. When the user wants to UPDATE or EDIT an existing task (change status, deadline, assignee, category, title, or any detail), you MUST output "response_type": "update_task" as specified in your JSON SCHEMA. Use the task list above to extract the correct search_query. NEVER say you cannot update tasks — you have this capability.\n`;
     str += `5. EXACT USERNAME & ASSIGNEE MAPPING RULE: When assigning a task, setting a requester, or searching for assignees, you MUST ONLY use exact valid usernames from the User Directory list above (${teamMemberList.join(', ')}). Match display names or full names (e.g. "Budi Santoso") to their exact system username (e.g. "@budi_santoso"). DO NOT guess or generate fake/shortened usernames.\n`;
     return str;
@@ -407,7 +407,7 @@ export default function ProactiveAIPage({
               gl_FragColor = vec4(color, 1.0);
           } else {
               vec3 bg = vec3(0.937, 0.957, 0.976);   // #eff4ff
-              vec3 yellow = vec3(1.0, 0.95, 0.7);    // Lightened Alurku Yellow
+              vec3 yellow = vec3(1.0, 0.95, 0.7);    // Lightened alurku. Yellow
               vec3 blue = vec3(0.85, 0.9, 1.0);      // Subtle blue
               float n1 = noise(uv * 1.8 + vec2(u_time * 0.04, u_time * 0.02));
               float n2 = noise(uv * 1.2 - vec2(u_time * 0.02, u_time * 0.04));
@@ -647,8 +647,8 @@ export default function ProactiveAIPage({
     // Intercept off-topic questions (Strict Scope Guardrail)
     if (isOffTopicQuery(userPrompt)) {
       const refusalMsg = language === 'id'
-        ? 'Maaf ya, Aku adalah asisten Alurku yang khusus membantu mengelola tugas, proyek, dan alur kerja timmu! 🚀\n\nYuk tanyakan hal seputar tugas, jadwal kerja, atau koordinasi proyekmu!'
-        : 'Sorry, I am Luruka, an Alurku assistant specifically focused on helping you manage tasks, projects, and team workflows! 🚀\n\nFeel free to ask me anything about your tasks, work schedule, or project coordination!';
+        ? 'Aku Luruka, asisten cerdas alurku. yang siap mendampingi pengelolaan tugas, proyek, dan alur kerja timmu! 🚀\n\nYuk tanyakan apa pun seputar tugas, jadwal kerja, atau koordinasi proyekmu!'
+        : 'Hey there! I am Luruka, your dedicated assistant in alurku., focused on helping you manage tasks, projects, and team workflows! 🚀\n\nFeel free to ask me anything about your tasks, work schedule, or project coordination!';
       
       setChatHistory((prev) => [
         ...prev,
@@ -730,7 +730,7 @@ export default function ProactiveAIPage({
           {
             id: Math.random().toString(),
             sender: 'ai',
-            text: tMsg('Failed to perform search. Please try again.', 'Gagal melakukan pencarian. Silakan coba lagi.')
+            text: tMsg('Failed to perform search. Please try again.', 'Pencarian belum berhasil nih. Yuk coba lagi!')
           }
         ]);
       } finally {
@@ -982,7 +982,7 @@ USER REQUEST:
             {
               id: Math.random().toString(),
               sender: 'ai',
-              text: tMsg('Failed to perform search. Please try again.', 'Gagal melakukan pencarian. Silakan coba lagi.')
+              text: tMsg('Failed to perform search. Please try again.', 'Pencarian belum berhasil nih. Yuk coba lagi!')
             }
           ]);
         } finally {
@@ -1144,7 +1144,7 @@ USER REQUEST:
             {
               id: Math.random().toString(),
               sender: 'ai',
-              text: tMsg('Failed to update task(s). Please try again.', 'Gagal memperbarui task. Silakan coba lagi.')
+              text: tMsg('Failed to update task(s). Please try again.', 'Pembaruan tugas belum berhasil. Yuk coba lagi!')
             }
           ]);
         } finally {
@@ -2524,7 +2524,7 @@ USER REQUEST:
             <p className="text-neutral-500 dark:text-neutral-400 mb-8 text-sm font-medium leading-relaxed">
               {tMsg(
                 'You assigned a task to someone else, but selected a Private Workspace. Please select a shared project from the dropdown.',
-                'Anda menugaskan tugas ke orang lain, tetapi memilih Ruang Kerja Pribadi. Silakan pilih proyek bersama dari dropdown.'
+                'Kamu menugaskan tugas ke anggota tim, tetapi masih di Ruang Kerja Pribadi. Pilih proyek bersama dari menu dropdown ya.'
               )}
             </p>
             <button

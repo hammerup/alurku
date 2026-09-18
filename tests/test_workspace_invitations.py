@@ -297,20 +297,32 @@ def test_complete_workspace_invitation_flow():
         print(" [PASS] 18. Member self-leave OK (Immediately loses workspace access)")
 
         # 19. Superadmin Override Privileges
+        # 19. Superadmin Override Privileges
         # Superadmin can invite even without prior membership
-        admin_user = db.query(User).filter(User.username == "admin").first()
-        if admin_user:
-            admin_login = client.post("/api/login", json={"username": "admin", "password": "admin123"})
-            if admin_login.status_code == 200:
-                sa_token = admin_login.json()["token"]
-                sa_headers = {"Authorization": f"Bearer {sa_token}"}
-                sa_invite_res = client.post(
-                    f"/api/workspaces/{ws_id}/invite",
-                    json={"username_or_email": users_spec["outsider"]["username"], "role": "member"},
-                    headers=sa_headers
-                )
-                assert sa_invite_res.status_code == 200
-                print(" [PASS] 19. Superadmin global invite privilege verified")
+        sa_uname = f"sa_override_{rand_suffix}"
+        sa_user = User(
+            username=sa_uname,
+            email=f"{sa_uname}@alurku.app",
+            full_name="Super Admin Tester",
+            password=get_password_hash("Password123!"),
+            is_verified=1,
+            account_status="active",
+            is_superadmin=1
+        )
+        db.add(sa_user)
+        db.commit()
+
+        sa_login = client.post("/api/login", json={"username": sa_uname, "password": "Password123!"})
+        assert sa_login.status_code == 200
+        sa_token = sa_login.json()["token"]
+        sa_headers = {"Authorization": f"Bearer {sa_token}"}
+        sa_invite_res = client.post(
+            f"/api/workspaces/{ws_id}/invite",
+            json={"username_or_email": users_spec["outsider"]["username"], "role": "member"},
+            headers=sa_headers
+        )
+        assert sa_invite_res.status_code == 200
+        print(" [PASS] 19. Superadmin global invite privilege verified")
 
         print("=" * 60)
         print(" ALL 19 WORKSPACE INVITATION TEST CASES PASSED (100% SUCCESS)")

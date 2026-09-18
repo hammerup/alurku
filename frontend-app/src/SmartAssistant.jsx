@@ -234,7 +234,7 @@ export default function SmartAssistant({
     str += `IMPORTANT RULES FOR ANSWERING:\n`;
     str += `1. When the user asks "berapa tugas aku", "berapa task overdue", or about task counts, quote the exact numbers above: Active Tasks = ${activeCount}, Due Today = ${dueTodayCount}, Overdue = ${overdueCount}.\n`;
     str += `2. If asked "Proyek apa saja yang ada?", list ONLY the project names above (${projectList.join(', ')}). NEVER mention placeholder projects like Alpha, Beta, Gamma.\n`;
-    str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di Alurku". Alurku is the app name, while "${wsName}" is the user's active workspace name.\n`;
+    str += `3. When answering about team members or workspace info, explicitly refer to the workspace by its exact name "${wsName}" (e.g. "di workspace ${wsName}"), NEVER say generically "di alurku.". alurku. is the app name, while "${wsName}" is the user's active workspace name.\n`;
     str += `4. When the user wants to UPDATE or EDIT an existing task (change status, deadline, assignee, category, title, or any detail), you MUST return the structured JSON action {\"action\": \"update_task\", ...} as specified in your instructions. Use the task list above to extract the correct search_query. NEVER say you cannot update tasks — you have this capability.\n`;
     str += `5. EXACT USERNAME & ASSIGNEE MAPPING RULE: When assigning a task, setting a requester, or searching for assignees, you MUST ONLY use exact valid usernames from the User Directory list above (${teamMemberList.join(', ')}). Match display names or full names (e.g. "Budi Santoso") to their exact system username (e.g. "@budi_santoso"). DO NOT guess or generate fake/shortened usernames.\n`;
     return str;
@@ -563,8 +563,8 @@ export default function SmartAssistant({
         .catch(() => {
           addBotMessage(
             tMsg(
-              'Gagal melakukan pencarian. Silakan coba beberapa saat lagi ya.',
-              'Gagal melakukan pencarian. Silakan coba beberapa saat lagi ya.'
+              "Could not perform search right now. Let's try again in a moment!",
+              'Pencarian belum berhasil nih. Yuk coba sebentar lagi!'
             ),
             [optStartOver, optClose]
           );
@@ -777,7 +777,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
                 addBotMessage(
                   tMsg(
                     "I couldn't find any actionable tasks in the notes.",
-                    'Saya tidak menemukan tugas yang bisa ditindaklanjuti di catatan tersebut.'
+                    'Aku belum nemu tugas yang bisa langsung dieksekusi dari catatan tersebut nih.'
                   ),
                   [optStartOver, optClose]
                 );
@@ -790,7 +790,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
 
               let summaryHtml = tMsg(
                 `I found **${extractedTasks.length} tasks**. Should I create them in **${targetBoardName}**?\n\n`,
-                `Saya menemukan **${extractedTasks.length} tugas**. Haruskah saya membuatnya di **${targetBoardName}**?\n\n`
+                `Aku nemuin **${extractedTasks.length} tugas** yang siap dibuat di **${targetBoardName}**. Mau aku buatkan sekarang?\n\n`
               );
 
               extractedTasks.forEach((t, i) => {
@@ -847,7 +847,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           addBotMessage(
             tMsg(
               `I couldn't find a project named "${data}". Please try again or select from the options.`,
-              `Saya tidak dapat menemukan proyek bernama "${data}". Silakan coba lagi atau pilih opsi yang ada.`
+              `Aku belum nemu proyek bernama "${data}" nih. Yuk coba cek lagi atau pilih opsi berikut:`
             ),
             boardOptions
           );
@@ -860,7 +860,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           addBotMessage(
             tMsg(
               'Project name cannot be empty. Please provide a valid name.',
-              'Nama proyek tidak boleh kosong. Silakan berikan nama yang valid.'
+              'Nama proyek tidak boleh kosong ya. Yuk tulis nama proyeknya dulu.'
             )
           );
           return;
@@ -1002,7 +1002,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
           addBotMessage(
             tMsg(
               `I'm here to help! 🎧 Please describe your IT issue or bug below, and I'll create a Support Ticket for you.`,
-              `Saya siap membantu! 🎧 Silakan jelaskan masalah IT atau bug Anda di bawah ini, dan saya akan membuatkan Tiket Dukungan untuk Anda.`
+              `Sini aku bantu! 🎧 Ceritakan kendala atau kendala teknis yang kamu alami di bawah, nanti aku bantu buatkan Tiket Dukungan untuk tim IT.`
             )
           );
           return;
@@ -1267,7 +1267,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
                 bottleneckTasks,
                 topPerformers: topMembers,
               };
-              const prompt = `You are a conversational Project Manager AI for Alurku. Analyze these workspace stats: ${JSON.stringify(
+              const prompt = `You are a conversational Project Manager AI for alurku.. Analyze these workspace stats: ${JSON.stringify(
                 statsForAI
               )}. Write a 3 sentence professional and insightful summary directly addressing the user "@${currentUser}". You can use markdown bold. Include emojis. Please respond strictly in ${
                 language === 'id' ? 'Indonesian' : 'English'
@@ -1331,7 +1331,7 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
         }
         if (['more options', 'options', 'option', 'opsi lainnya', 'opsi'].includes(textLower)) {
           addBotMessage(
-            tMsg(`Here are some things I can do for you:`, `Berikut beberapa hal yang bisa saya lakukan:`),
+            tMsg(`Here are some things I can do for you:`, `Berikut beberapa hal yang bisa aku bantu:`),
             [optCreate, optAnalysis, optMeeting, optSearch, optTeam, optTimeOff, optDocs, optFeedback, optTicket]
           );
           return;
@@ -1407,8 +1407,8 @@ ${Array.isArray(taskData.raw_notes) ? taskData.raw_notes.join('\n\n') : taskData
 
         if (isOffTopicQuery(data)) {
           const refusalMsg = language === 'id'
-            ? 'Maaf ya, Aku adalah asisten Alurku yang khusus membantu mengelola tugas, proyek, dan alur kerja timmu! 🚀\n\nYuk tanyakan hal seputar tugas, jadwal kerja, atau koordinasi proyekmu!'
-            : 'Sorry, I am Luruka, an Alurku assistant specifically focused on helping you manage tasks, projects, and team workflows! 🚀\n\nFeel free to ask me anything about your tasks, work schedule, or project coordination!';
+            ? 'Aku Luruka, asisten cerdas alurku. yang siap mendampingi pengelolaan tugas, proyek, dan alur kerja timmu! 🚀\n\nYuk tanyakan apa pun seputar tugas, jadwal kerja, atau koordinasi proyekmu!'
+            : 'Hey there! I am Luruka, your dedicated assistant in alurku., focused on helping you manage tasks, projects, and team workflows! 🚀\n\nFeel free to ask me anything about your tasks, work schedule, or project coordination!';
           addBotMessage(refusalMsg);
           return;
         }
@@ -1600,7 +1600,7 @@ If it's a general question or conversation related to project/task management, o
                     addBotMessage(
                       tMsg(
                         `⚠️ The deadline for the task cannot be earlier than today. Please provide a valid deadline.`,
-                        `⚠️ Tenggat waktu untuk tugas tidak boleh lebih awal dari hari ini. Silakan berikan tenggat waktu yang valid.`
+                        `⚠️ Tenggat waktu tugas tidak boleh mendahului hari ini ya. Yuk tentukan tenggat waktu yang sesuai.`
                       ),
                       null,
                       true
@@ -1638,7 +1638,7 @@ If it's a general question or conversation related to project/task management, o
                   addBotMessage(
                     tMsg(
                       `I've extracted your leave details:\n\n• **Start:** ${parsed.start_date}\n• **End:** ${parsed.end_date}\n• **Reason:** ${parsed.description}\n\nShould I submit this leave request?`,
-                      `Saya telah mengekstrak detail cuti Anda:\n\n• **Mulai:** ${parsed.start_date}\n• **Selesai:** ${parsed.end_date}\n• **Alasan:** ${parsed.description}\n\nHaruskah saya mengirimkan permintaan cuti ini?`
+                      `Aku sudah catat detail cutimu:\n\n• **Mulai:** ${parsed.start_date}\n• **Selesai:** ${parsed.end_date}\n• **Alasan:** ${parsed.description}\n\nMau aku kirimkan pengajuan cuti ini sekarang?`
                     ),
                     [tMsg('Yes, Submit', 'Ya, Kirim'), optCancel]
                   );
@@ -1649,7 +1649,7 @@ If it's a general question or conversation related to project/task management, o
                   addBotMessage(
                     tMsg(
                       `I've prepared your ticket:\n\n• **Type:** ${parsed.type}\n• **Details:** ${parsed.description}\n\nShould I submit this ticket to the Admins?`,
-                      `Saya telah menyiapkan tiket Anda:\n\n• **Tipe:** ${parsed.type}\n• **Detail:** ${parsed.description}\n\nHaruskah saya mengirimkan tiket ini ke Admin?`
+                      `Aku sudah siapkan tiket laporanmu:\n\n• **Tipe:** ${parsed.type}\n• **Detail:** ${parsed.description}\n\nMau aku teruskan tiket ini ke tim Admin?`
                     ),
                     [tMsg('Yes, Submit', 'Ya, Kirim'), optCancel]
                   );
@@ -2116,7 +2116,7 @@ If it's a general question or conversation related to project/task management, o
         addBotMessage(
           tMsg(
             'Great! You can use this chat as your **live notepad** during the meeting. Just type your notes and send them as we go. I will analyze them and offer helpful follow-up suggestions above the chat box to ensure no detail is missed!\n\nWhen you are done, click the **Process Notes** button floating below.',
-            'Bagus! Anda bisa menggunakan obrolan ini sebagai **buku catatan langsung** selama rapat. Ketik catatan Anda dan kirim. Saya akan menganalisisnya dan menawarkan saran lanjutan di atas kotak chat agar tidak ada detail yang terlewat!\n\nJika sudah selesai, klik tombol **Proses Catatan** yang mengambang di bawah.'
+            'Siap! Kamu bisa pakai ruang obrolan ini sebagai **buku catatan langsung** saat rapat berlangsung. Ketik catatanmu dan kirim. Aku akan bantu menganalisis serta memberi saran tindak lanjut di atas kotak chat agar tidak ada poin yang terlewat!\n\nKalau sudah selesai, klik tombol **Proses Catatan** di bawah ya.'
           )
         );
         return;
@@ -2139,7 +2139,7 @@ If it's a general question or conversation related to project/task management, o
             addBotMessage(
               tMsg(
                 'Your notes are empty. Please type something first!',
-                'Catatan Anda kosong. Silakan ketik sesuatu terlebih dahulu!'
+                'Catatanmu masih kosong nih. Yuk tulis atau ketik poin rapatnya dulu!'
               ),
               [tMsg('Process Notes', 'Proses Catatan'), optCancel]
             );
@@ -2248,7 +2248,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `I couldn't find a project named "${data}". Please try again or select from the options.`,
-              `Saya tidak dapat menemukan proyek bernama "${data}". Silakan coba lagi atau pilih opsi yang ada.`
+              `Aku belum nemu proyek bernama "${data}" nih. Yuk coba cek lagi atau pilih salah satu proyek berikut:`
             ),
             (boards || []).map((b) => b.name).slice(0, 5)
           );
@@ -2267,14 +2267,14 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `Selected **${foundBoard.name}**. Who would you like to invite? Please provide their username or email (comma separated).`,
-              `Memilih **${foundBoard.name}**. Siapa yang ingin Anda undang? Berikan nama pengguna atau email mereka (dipisahkan koma).`
+              `Siap, proyek **${foundBoard.name}** dipilih! Siapa yang mau kamu undang? Masukkan username atau alamat emailnya (pisahkan dengan koma ya).`
             )
           );
         } else {
           addBotMessage(
             tMsg(
               `I couldn't find a project named "${data}". Please try again or select from the options.`,
-              `Saya tidak dapat menemukan proyek bernama "${data}". Silakan coba lagi atau pilih opsi yang ada.`
+              `Aku belum nemu proyek bernama "${data}" nih. Yuk coba cek lagi atau pilih salah satu proyek berikut:`
             ),
             (boards || []).map((b) => b.name).slice(0, 5)
           );
@@ -2294,9 +2294,9 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
 
             let summary =
               language === 'id'
-                ? `Saya akan membuat tugas ini di proyek **${finalData.board_name}** dengan kategori **${
-                    finalData.category || 'Other'
-                  }**.\n\nApakah ini sudah benar, atau Anda ingin mengubahnya?`
+                ? `Aku bakal buat tugas ini di proyek **${finalData.board_name}** dengan kategori **${
+                    finalData.category || 'Lainnya'
+                  }**.\n\nSudah pas atau ada yang mau diubah?`
                 : `I will create this task in project **${finalData.board_name}** under category **${
                     finalData.category || 'Other'
                   }**.\n\nIs this correct, or do you want to change it?`;
@@ -2308,7 +2308,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 `Selected **${foundBoard.name}**. What is the title of this task or request?`,
-                `Memilih **${foundBoard.name}**. Apa judul tugas ini?`
+                `Proyek **${foundBoard.name}** dipilih! Apa judul tugas yang mau dibuat?`
               )
             );
           }
@@ -2316,7 +2316,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `I couldn't find a project named "${data}". Please try again or select from the options.`,
-              `Saya tidak dapat menemukan proyek bernama "${data}". Silakan coba lagi atau pilih opsi yang ada.`
+              `Aku belum nemu proyek bernama "${data}" nih. Yuk coba cek lagi atau pilih salah satu proyek berikut:`
             ),
             (boards || []).map((b) => b.name).slice(0, 5)
           );
@@ -2330,7 +2330,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         addBotMessage(
           tMsg(
             `Awesome! Who is the requester or main assignee?\n\n*💡 Tip: Type @username to assign a team member, or type a regular name (without @) if someone else requested this.*`,
-            `Hebat! Siapa peminta atau pekerja utama tugas ini?\n\n*💡 Tips: Ketik @username untuk menugaskan anggota tim, atau ketik nama biasa (tanpa @) jika orang lain yang meminta.*`
+            `Mantap! Siapa peminta atau penanggung jawab utama tugas ini?\n\n*💡 Tips: Ketik @username untuk menugaskan anggota tim, atau tulis nama biasa jika diajukan orang lain.*`
           )
         );
       } else if (currentStep === 'ask_requester') {
@@ -2347,9 +2347,9 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
                 `Hmm, I couldn't find these team members: **${invalidMentions.join(
                   ', '
                 )}** in this project.\n\nPlease ensure the @username is correct, or just type a regular name without '@'.`,
-                `Hmm, saya tidak menemukan anggota tim ini: **${invalidMentions.join(
+                `Hmm, aku belum nemu anggota tim ini di proyek: **${invalidMentions.join(
                   ', '
-                )}** di proyek ini.\n\nPastikan @username-nya benar, atau ketik nama biasa tanpa '@'.`
+                )}**.\n\nYuk pastikan @username-nya sudah sesuai, atau tulis nama biasa tanpa '@'.`
               )
             );
             return; // Hentikan proses, paksa user mengulang jawaban
@@ -2390,7 +2390,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               'Category name cannot be empty. Please provide a valid name.',
-              'Nama kategori tidak boleh kosong. Silakan berikan nama yang valid.'
+              'Nama kategori tidak boleh kosong ya. Yuk tulis nama kategorinya.'
             )
           );
           return;
@@ -2403,7 +2403,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `Updated! I will create this task in project **${targetBoardName}** under category **${data.trim()}**.\n\nProceed?`,
-              `Diperbarui! Saya akan membuat tugas ini di proyek **${targetBoardName}** dengan kategori **${data.trim()}**.\n\nLanjutkan?`
+              `Sip, diperbarui! Tugas ini akan dibuat di proyek **${targetBoardName}** dengan kategori **${data.trim()}**.\n\nLanjut sekarang?`
             ),
             [optProceed, optChangeProj, optChangeCat, optCancel]
           );
@@ -2426,7 +2426,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `⚠️ The deadline cannot be earlier than today. Please provide a valid deadline.`,
-              `⚠️ Tenggat waktu tidak boleh lebih awal dari hari ini. Silakan berikan tenggat waktu yang valid.`
+              `⚠️ Tenggat waktu tidak boleh mendahului hari ini ya. Yuk tentukan tenggat waktu yang sesuai.`
             ),
             null,
             true
@@ -2443,7 +2443,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         addBotMessage(
           tMsg(
             `I will create this task in project **${targetBoardName}** under category **${targetCategory}**.\n\nIs this correct, or do you want to change it?`,
-            `Saya akan membuat tugas ini di proyek **${targetBoardName}** dengan kategori **${targetCategory}**.\n\nApakah ini sudah benar, atau Anda ingin mengubahnya?`
+            `Tugas ini akan dibuat di proyek **${targetBoardName}** dengan kategori **${targetCategory}**.\n\nSudah pas atau ada yang mau diubah?`
           ),
           [optProceed, optChangeProj, optChangeCat, optCancel]
         );
@@ -2455,7 +2455,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 `Everything is ready. Should I create this task now?`,
-                `Semuanya sudah siap. Haruskah saya membuat tugas ini sekarang?`
+                `Semua detail sudah siap! Mau aku buatkan tugas ini sekarang?`
               ),
               [optConfirmYes, optCancel]
             );
@@ -2464,7 +2464,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 `Would you like me to automatically draft a professional task description based on your title using AI?`,
-                `Apakah Anda ingin saya membuat draf deskripsi tugas profesional secara otomatis menggunakan AI?`
+                `Mau aku buatkan draf deskripsi tugas otomatis yang rapi dan terstruktur?`
               ),
               [optDraftYes, optDraftNo]
             );
@@ -2502,7 +2502,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         addBotMessage(
           tMsg(
             `Updated! I will create this task in project **${targetBoardName}** under category **${data}**.\n\nProceed?`,
-            `Diperbarui! Saya akan membuat tugas ini di proyek **${targetBoardName}** dengan kategori **${data}**.\n\nLanjutkan?`
+            `Sip, diperbarui! Tugas ini akan dibuat di proyek **${targetBoardName}** dengan kategori **${data}**.\n\nLanjut sekarang?`
           ),
           [optProceed, optChangeProj, optChangeCat, optCancel]
         );
@@ -2519,7 +2519,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           const summary =
             tMsg(
               `Perfect. Here is the summary of your task:\n\n`,
-              `Sempurna. Berikut adalah ringkasan tugas Anda:\n\n`
+              `Keren! Ini ringkasan tugasmu:\n\n`
             ) +
             `• **${tMsg('Project', 'Proyek')}:** ${finalData.board_name || selectedBoard?.name || 'Unknown'}\n` +
             `• **${tMsg('Title', 'Judul')}:** ${finalData.project_name}\n` +
@@ -2529,7 +2529,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             `• **${tMsg('Description', 'Deskripsi')}:**\n> ${
               descText === 'Created via Smart Assistant 🤖' ? 'Standard' : descText.replace(/\n/g, '\n> ')
             }\n\n` +
-            tMsg(`Should I create this task now?`, `Apakah saya harus membuat tugas ini sekarang?`);
+            tMsg(`Should I create this task now?`, `Mau aku buatkan tugas ini sekarang?`);
 
           addBotMessage(summary, [optConfirmYes, optCancel]);
         };
@@ -2569,7 +2569,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               'Task creation cancelled. Let me know if you need anything else!',
-              'Pembuatan tugas dibatalkan. Beri tahu saya jika Anda butuh yang lain!'
+              'Pembuatan tugas dibatalkan ya. Beri tahu aku kalau kamu butuh bantuan lain!'
             ),
             [optStartOver, optClose]
           );
@@ -2578,10 +2578,10 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
       } else if (currentStep === 'ask_leave_action') {
         if (data === tMsg('Add Leave', 'Tambah Cuti') || data === 'Add Leave' || data === 'Tambah Cuti') {
           setStep('ask_leave_start');
-          addBotMessage(tMsg('When will your leave start?', 'Kapan cuti Anda akan dimulai?'), null, true);
+          addBotMessage(tMsg('When will your leave start?', 'Kapan cutimu akan dimulai?'), null, true);
         } else {
           addBotMessage(
-            tMsg(`Opening the Time Off & Holidays panel for you...`, `Membuka panel Cuti & Libur untuk Anda...`)
+            tMsg(`Opening the Time Off & Holidays panel for you...`, `Membuka panel Cuti & Libur untukmu...`)
           );
           setTimeout(() => {
             setIsLeaveModalOpen(true);
@@ -2608,7 +2608,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               '⚠️ The end date cannot be earlier than the start date. Please provide a valid end date.',
-              '⚠️ Tanggal selesai tidak boleh lebih awal dari tanggal mulai. Silakan masukkan tanggal selesai yang valid.'
+              '⚠️ Tanggal selesai tidak boleh mendahului tanggal mulai ya. Yuk periksa kembali tanggalnya.'
             ),
             null,
             true
@@ -2628,13 +2628,13 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         addBotMessage(
           tMsg(
             `Here is the summary of your leave:\n\n• **Start:** ${finalData.start_date}\n• **End:** ${finalData.end_date}\n• **Reason:** ${finalData.description}\n\nShould I submit this leave request?`,
-            `Berikut adalah ringkasan cuti Anda:\n\n• **Mulai:** ${finalData.start_date}\n• **Selesai:** ${finalData.end_date}\n• **Alasan:** ${finalData.description}\n\nHaruskah saya mengirimkan permintaan cuti ini?`
+            `Ini ringkasan pengajuan cutimu:\n\n• **Mulai:** ${finalData.start_date}\n• **Selesai:** ${finalData.end_date}\n• **Alasan:** ${finalData.description}\n\nMau aku kirimkan pengajuan cuti ini sekarang?`
           ),
           [tMsg('Yes, Submit', 'Ya, Kirim'), optCancel]
         );
       } else if (currentStep === 'confirm_leave') {
         if (data === tMsg('Yes, Submit', 'Ya, Kirim') || data === 'Yes, Submit' || data === 'Ya, Kirim') {
-          addBotMessage(tMsg('Submitting your leave request... ⏳', 'Mengirimkan permintaan cuti Anda... ⏳'));
+          addBotMessage(tMsg('Submitting your leave request... ⏳', 'Mengirimkan pengajuan cutimu... ⏳'));
           axios
             .post('/api/leaves', {
               start_date: taskData.start_date,
@@ -2650,7 +2650,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
               addBotMessage(
                 tMsg(
                   'Done! 🌴 Your leave has been recorded and project schedules will adjust accordingly.',
-                  'Selesai! 🌴 Cuti Anda telah dicatat dan jadwal proyek akan disesuaikan.'
+                  'Selesai! 🌴 Jadwal cutimu sudah dicatat dan linimasa proyek otomatis disesuaikan ya.'
                 ),
                 [optStartOver, optClose]
               );
@@ -2659,7 +2659,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             .catch((err) => {
               setMessages((prev) => prev.filter((m) => !m.text.includes('⏳')));
               addBotMessage(
-                tMsg('Oops, failed to add leave. Please try again.', 'Ups, gagal menambahkan cuti. Silakan coba lagi.'),
+                tMsg("Oops, could not record leave right now. Let's try again!", 'Ups, pengajuan cuti belum berhasil tersimpan. Yuk coba sebentar lagi!'),
                 [optStartOver, optClose]
               );
               setStep('end');
@@ -2670,7 +2670,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         }
       } else if (currentStep === 'confirm_ticket') {
         if (data === tMsg('Yes, Submit', 'Ya, Kirim') || data === 'Yes, Submit' || data === 'Ya, Kirim') {
-          addBotMessage(tMsg('Submitting your ticket... ⏳', 'Mengirimkan tiket Anda... ⏳'));
+          addBotMessage(tMsg('Submitting your ticket... ⏳', 'Mengirimkan tiket laporanmu... ⏳'));
           const prefix = taskData.type === 'Support' ? '[SUPPORT TICKET] ' : '';
           axios
             .post('/api/feedback', { text: prefix + taskData.description })
@@ -2680,7 +2680,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
               addBotMessage(
                 tMsg(
                   `Done! 🎫 Your ticket has been submitted. You can track it in the 'My Tickets' panel.`,
-                  `Selesai! 🎫 Tiket Anda telah dikirim. Anda dapat melacaknya di panel 'Tiket Saya'.`
+                  `Selesai! 🎫 Tiket laporanmu sudah terkirim ke tim Admin. Kamu bisa memantau statusnya di menu 'Tiket Saya' ya.`
                 ),
                 [optStartOver, optClose]
               );
@@ -2690,8 +2690,8 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
               setMessages((prev) => prev.filter((m) => !m.text.includes('⏳')));
               addBotMessage(
                 tMsg(
-                  'Oops, failed to submit ticket. Please try again.',
-                  'Ups, gagal mengirim tiket. Silakan coba lagi.'
+                  "Oops, could not send ticket right now. Let's try again!",
+                  'Ups, tiket belum berhasil terkirim. Yuk coba sebentar lagi!'
                 ),
                 [optStartOver, optClose]
               );
@@ -2729,7 +2729,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 "I didn't understand the numbers. Please type valid task numbers (e.g., 1, 3) or click Cancel.",
-                'Saya tidak mengerti angkanya. Silakan ketik nomor tugas yang valid (misal: 1, 3) atau klik Batal.'
+                'Aku belum bisa mengenali pilihan nomornya nih. Coba ketik nomor tugasnya (misal: 1, 3) atau klik Batal ya.'
               ),
               [optConfirmBulkYes, optCancel]
             );
@@ -2813,7 +2813,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `I couldn't find any task matching **"${data}"**.`,
-              `Saya tidak dapat menemukan tugas yang cocok dengan **"${data}"**.`
+              `Aku belum nemu tugas yang cocok dengan **"${data}"** nih.`
             ),
             [optStartOver, optClose]
           );
@@ -2822,7 +2822,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           addBotMessage(
             tMsg(
               `I found multiple tasks matching **"${data}"**. Please be more specific (e.g. provide the exact Task ID).`,
-              `Saya menemukan beberapa tugas yang cocok dengan **"${data}"**. Harap lebih spesifik (misal: berikan ID Tugas yang tepat).`
+              `Aku nemuin beberapa tugas yang cocok dengan **"${data}"**. Coba sebutkan ID Tugasnya secara spesifik ya!`
             ),
             [optStartOver, optClose]
           );
@@ -2843,7 +2843,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 `Opening delete confirmation for **#${t.id}: ${t.project_name}**. Please confirm on the popup. ⚠️`,
-                `Membuka konfirmasi hapus untuk **#${t.id}: ${t.project_name}**. Silakan konfirmasi di popup. ⚠️`
+                `Membuka konfirmasi hapus untuk **#${t.id}: ${t.project_name}**. Konfirmasi lewat jendela popup ya. ⚠️`
               )
             );
           }
@@ -2851,14 +2851,14 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
           setStep('end');
         }
       } else if (currentStep === 'ask_feedback') {
-        addBotMessage(tMsg('Submitting your feedback... ⏳', 'Mengirimkan masukan Anda... ⏳'));
+        addBotMessage(tMsg('Submitting your feedback... ⏳', 'Mengirimkan masukanmu... ⏳'));
         axios
           .post('/api/feedback', { text: data })
           .then((res) => {
             addBotMessage(
               tMsg(
                 "Thank you! Your feedback has been successfully placed in the Admin's queue. 💡",
-                'Terima kasih! Masukan Anda telah berhasil masuk ke antrean Admin. 💡'
+                'Terima kasih! Masukanmu sudah berhasil masuk ke antrean tim Admin ya. 💡'
               ),
               [optStartOver, optClose]
             );
@@ -2868,21 +2868,21 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 'Oops, failed to submit feedback. Please try again later.',
-                'Ups, gagal mengirim masukan. Silakan coba lagi nanti.'
+                'Ups, masukanmu belum berhasil terkirim. Yuk coba beberapa saat lagi ya.'
               ),
               [optStartOver, optClose]
             );
             setStep('end');
           });
       } else if (currentStep === 'ask_support') {
-        addBotMessage(tMsg('Submitting your support ticket... ⏳', 'Mengirimkan tiket dukungan Anda... ⏳'));
+        addBotMessage(tMsg('Submitting your support ticket... ⏳', 'Mengirimkan tiket dukunganmu... ⏳'));
         axios
           .post('/api/feedback', { text: `[SUPPORT TICKET] ${data}` })
           .then((res) => {
             addBotMessage(
               tMsg(
                 'Thank you! Your support ticket has been sent to the IT team. 🎧',
-                'Terima kasih! Tiket dukungan Anda telah dikirim ke tim IT. 🎧'
+                'Terima kasih! Tiket dukunganmu sudah diteruskan ke tim IT ya. 🎧'
               ),
               [optStartOver, optClose]
             );
@@ -2892,7 +2892,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 'Oops, failed to submit ticket. Please try again later.',
-                'Ups, gagal mengirim tiket. Silakan coba lagi nanti.'
+                'Ups, tiket dukungan belum berhasil terkirim. Yuk coba beberapa saat lagi ya.'
               ),
               [optStartOver, optClose]
             );
@@ -2902,7 +2902,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         let baseContext = '';
         if (data === 'Workspace')
           baseContext =
-            "Workspace & Projects: Alurku is organized into isolated project workspaces. Users can create new projects or invite team members via the Team menu. It's a secure environment.";
+            "Workspace & Projects: alurku. is organized into isolated project workspaces. Users can create new projects or invite team members via the Team menu. It's a secure environment.";
         else if (data === 'Tasks')
           baseContext =
             "Tasks: Tasks are the core unit of work. Click 'New Request' to start. Users can use markdown for rich text, add sub-tasks (checklists), and set deadlines.";
@@ -2932,7 +2932,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             "Tickets: Users can submit System Feedback or Contact Support via the Account menu. These auto-generate a ticket ID (e.g. TKT-0001) which can be tracked in the 'My Tickets' panel.";
         else if (data === 'Security')
           baseContext =
-            'Security: Alurku is built on a Zero-Trust Architecture. It protects against OWASP Top 10 vulnerabilities (XSS, DoS, IDOR, BOLA) and has passed 12 automated penetration tests. Users can view the full details in the System Specs menu.';
+            'Security & Privacy: alurku. menjaga kerahasiaan data ruang kerja Anda dengan enkripsi tingkat enterprise, isolasi data mandiri, serta pencadangan berkala untuk memastikan kenyamanan kolaborasi tim.';
         else baseContext = `The user is asking about: ${data}.`;
 
         setTaskData((prev) => ({ ...prev, doc_topic: data, doc_context: baseContext }));
@@ -2940,7 +2940,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         addBotMessage(
           tMsg(
             'Would you like the explanation in English or Indonesian?',
-            'Apakah Anda ingin penjelasannya dalam bahasa Inggris atau Indonesia?'
+            'Kamu mau penjelasannya dalam bahasa Indonesia atau Inggris?'
           ),
           ['English', 'Indonesia']
         );
@@ -2950,7 +2950,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
 
         addBotMessage(tMsg('Reading the documentation... ⏳', 'Membaca dokumentasi... ⏳'));
 
-        const prompt = `You are the official Smart Assistant for Alurku. The user asked for documentation about "${taskData.doc_topic}". \nHere is the core context about this feature: "${taskData.doc_context}"\nPlease provide a very simple, brief, and beginner-friendly explanation (maximum 2-3 short sentences). Make it easy for a layperson to understand. Use an analogy if helpful. Respond strictly in ${targetLang}.`;
+        const prompt = `You are the official Smart Assistant for alurku.. The user asked for documentation about "${taskData.doc_topic}". \nHere is the core context about this feature: "${taskData.doc_context}"\nPlease provide a very simple, brief, and beginner-friendly explanation (maximum 2-3 short sentences). Make it easy for a layperson to understand. Use an analogy if helpful. Respond strictly in ${targetLang}.`;
 
         axios
           .post('/api/ai/generate', { prompt, provider: selectedModel })
@@ -2962,7 +2962,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
               reply +
                 tMsg(
                   '\n\nWould you like a more detailed explanation?',
-                  '\n\nApakah Anda ingin penjelasan yang lebih detail?'
+                  '\n\nMau penjelasan yang lebih detail?'
                 ),
               [
                 tMsg('Detailed Version', 'Versi Detail'),
@@ -2978,8 +2978,8 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
             addBotMessage(
               tMsg(
                 '⚠️ Failed to load documentation from AI. Please try again.',
-                '⚠️ Gagal memuat dokumentasi dari AI. Silakan coba lagi.'
-              ) + tMsg('\n\nWould you like to read another topic?', '\n\nIngin membaca topik lain?'),
+                '⚠️ Dokumentasi belum berhasil dimuat. Yuk coba lagi!'
+              ) + tMsg('\n\nWould you like to read another topic?', '\n\nMau membaca topik lain?'),
               [tMsg('Read Another', 'Baca Topik Lain'), tMsg('Full Docs', 'Dokumen Lengkap'), optClose]
             );
             setStep('doc_continue');
@@ -2994,7 +2994,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
 
         if (isDetailed) {
           addBotMessage(tMsg('Generating detailed explanation... ⏳', 'Membuat penjelasan detail... ⏳'));
-          const prompt = `You are the official Smart Assistant for Alurku. The user wants a HIGHLY DETAILED explanation about "${
+          const prompt = `You are the official Smart Assistant for alurku.. The user wants a HIGHLY DETAILED explanation about "${
             taskData.doc_topic
           }". \nHere is the core context: "${
             taskData.doc_context
@@ -3008,7 +3008,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
               setMessages((prev) => prev.filter((m) => !m.text.includes('⏳')));
               const reply = res.data.text.trim();
               addBotMessage(
-                reply + tMsg('\n\nWhat would you like to do next?', '\n\nApa yang ingin Anda lakukan selanjutnya?'),
+                reply + tMsg('\n\nWhat would you like to do next?', '\n\nAda lagi yang mau kamu ketahui?'),
                 [tMsg('Read Another', 'Baca Topik Lain'), tMsg('Full Docs', 'Dokumen Lengkap'), optClose]
               );
             })
@@ -3016,13 +3016,13 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
               setMessages((prev) => prev.filter((m) => !m.text.includes('⏳')));
               addBotMessage(
                 tMsg('⚠️ Failed to load detailed documentation.', '⚠️ Gagal memuat dokumentasi detail.') +
-                  tMsg('\n\nWould you like to read another topic?', '\n\nIngin membaca topik lain?'),
+                  tMsg('\n\nWould you like to read another topic?', '\n\nMau membaca topik lain?'),
                 [tMsg('Read Another', 'Baca Topik Lain'), tMsg('Full Docs', 'Dokumen Lengkap'), optClose]
               );
             });
         } else if (isAnother) {
           setStep('ask_doc');
-          addBotMessage(tMsg(`Which topic would you like to learn about?`, `Topik apa yang ingin Anda pelajari?`), [
+          addBotMessage(tMsg(`Which topic would you like to learn about?`, `Topik apa yang ingin kamu pelajari?`), [
             'Workspace',
             'Tasks',
             'Views',
@@ -3063,7 +3063,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
       addBotMessage(
         tMsg(
           "Oops, I lost track of which project this belongs to. Let's start over.",
-          'Ups, saya kehilangan jejak proyek ini. Mari kita mulai ulang.'
+          'Ups, proyek tujuannya terlewat nih. Yuk kita mulai dari awal!'
         ),
         [optStartOver, optClose]
       );
@@ -3078,7 +3078,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         addBotMessage(
           tMsg(
             'Done! 🎉 The task has been successfully added to your board.',
-            'Selesai! 🎉 Tugas telah berhasil ditambahkan ke papan Anda.'
+            'Selesai! 🎉 Tugas berhasil ditambahkan ke papan proyekmu.'
           ),
           [tMsg('Create Another', 'Buat Lagi'), optClose]
         );
@@ -3088,8 +3088,8 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
         const errorMsg =
           err.response?.data?.detail ||
           tMsg(
-            'Oops, something went wrong while creating the task. Please try again.',
-            'Ups, terjadi kesalahan saat membuat tugas. Silakan coba lagi.'
+            "Oops, something went wrong while creating the task. Let's try again.",
+            'Ups, pembuatan tugas belum berhasil. Yuk coba lagi!'
           );
         addBotMessage(errorMsg, [optStartOver, optClose]);
         setStep('end');
@@ -3110,7 +3110,7 @@ Respond strictly in the EXACT SAME LANGUAGE and tone (including slang/informal w
   const handleSaveQuickTasks = async () => {
     const targetId = selectedBoard && selectedBoard.id !== 'global' ? selectedBoard.id : quickTargetBoardId;
     if (!targetId) {
-      showNotification(tMsg('Please select a project first.', 'Silakan pilih proyek terlebih dahulu.'), 'error');
+      showNotification(tMsg('Please select a project first.', 'Pilih proyek tujuan terlebih dahulu ya.'), 'error');
       return;
     }
 
@@ -3246,7 +3246,7 @@ USER REQUEST:
     } catch (err) {
       console.error(err);
       showNotification(
-        tMsg('Failed to process request. Please try again.', 'Gagal memproses permintaan. Silakan coba lagi.'),
+        tMsg("Unable to process request right now. Let's try again.", 'Permintaan belum berhasil diproses. Yuk coba lagi.'),
         'error'
       );
     } finally {
@@ -3259,7 +3259,7 @@ USER REQUEST:
     if (selected.length === 0) return;
 
     if (!plannerTargetBoardId) {
-      showNotification(tMsg('Please select a target project.', 'Silakan pilih proyek tujuan.'), 'error');
+      showNotification(tMsg('Please select a target project.', 'Pilih proyek tujuan terlebih dahulu ya.'), 'error');
       return;
     }
 

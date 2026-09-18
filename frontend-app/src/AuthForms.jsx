@@ -30,6 +30,9 @@ export default function AuthForms({
   handleForgotPassword,
   handleResetPassword,
   loginWithGoogle,
+  loginError,
+  setLoginError,
+  lockoutRemaining,
   setIsPrivacyOpen,
   setIsTermsOpen,
   setShowAuthForm,
@@ -225,7 +228,7 @@ export default function AuthForms({
               ) : isForgotMode ? (
                 tMsg("Enter your registered email to receive a recovery link.", "Masukkan email terdaftar untuk menerima tautan pemulihan.")
               ) : isLoginMode ? (
-                tMsg("Please enter your account details to access the dashboard.", "Silakan masukkan detail akun Anda untuk mengakses dashboard.")
+                tMsg("Enter your account details to access your workspace.", "Masukkan detail akun Anda untuk mengakses ruang kerja.")
               ) : !policies.allow_public_signup ? (
                 tMsg("Registration is restricted to invited workspace members.", "Pendaftaran dibatasi khusus anggota workspace yang diundang.")
               ) : (
@@ -424,12 +427,67 @@ export default function AuthForms({
                 </label>
               </div>
 
+              {/* LOCKOUT & ATTEMPTS FEEDBACK BANNER */}
+              {lockoutRemaining > 0 ? (
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-700 dark:text-red-300 text-xs space-y-2 animate-shake">
+                  <div className="flex items-center gap-2 font-bold text-sm text-red-800 dark:text-red-200">
+                    <span className="material-symbols-outlined text-[20px] text-red-600 dark:text-red-400">lock_clock</span>
+                    <span>{tMsg("Account Temporarily Locked", "Akun Terkunci Sementara")}</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    {tMsg(
+                      `Too many incorrect login attempts. For security reasons, please wait before trying again:`,
+                      `Terlalu banyak percobaan masuk yang salah. Demi keamanan akun, tunggu beberapa saat sebelum mencoba lagi:`
+                    )}
+                  </p>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="font-mono text-base font-black text-red-700 dark:text-red-300">
+                      {Math.floor(lockoutRemaining / 60)}m {String(lockoutRemaining % 60).padStart(2, '0')}s
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotMode(true)}
+                      className="text-xs font-bold underline hover:text-red-900 dark:hover:text-white transition-colors"
+                    >
+                      {tMsg("Forgot Password?", "Lupa Kata Sandi?")}
+                    </button>
+                  </div>
+                </div>
+              ) : loginError?.type === 'wrong_password' ? (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-200 text-xs space-y-1.5 animate-fade-in">
+                  <div className="flex items-center gap-2 font-bold">
+                    <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400">warning</span>
+                    <span>{tMsg("Incorrect Password", "Kata Sandi Salah")}</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    {tMsg(
+                      `You have ${loginError.remainingAttempts} attempt(s) remaining before your account is locked for 15 minutes.`,
+                      `Anda memiliki sisa ${loginError.remainingAttempts} kali percobaan sebelum akun dikunci selama 15 menit.`
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotMode(true)}
+                    className="text-xs font-bold text-sky-600 dark:text-sky-400 underline hover:text-sky-800 dark:hover:text-sky-300 block pt-0.5"
+                  >
+                    {tMsg("Reset your password now", "Atur ulang kata sandi sekarang")}
+                  </button>
+                </div>
+              ) : null}
+
               <button
                 type="submit"
-                className="w-full py-4 bg-[#FACC15] hover:bg-[#EAB308] text-[#111E38] font-bold rounded-lg transition-colors border border-transparent shadow-md flex items-center justify-center gap-2"
+                disabled={lockoutRemaining > 0}
+                className="w-full py-4 bg-[#FACC15] hover:bg-[#EAB308] disabled:opacity-50 disabled:cursor-not-allowed text-[#111E38] font-bold rounded-lg transition-colors border border-transparent shadow-md flex items-center justify-center gap-2"
               >
-                <span>{tMsg("Sign In Now", "Masuk Sekarang")}</span>
-                <span className="material-symbols-outlined text-[20px]">login</span>
+                <span>
+                  {lockoutRemaining > 0
+                    ? tMsg(`Locked (${Math.floor(lockoutRemaining / 60)}m ${String(lockoutRemaining % 60).padStart(2, '0')}s)`, `Terkunci (${Math.floor(lockoutRemaining / 60)}m ${String(lockoutRemaining % 60).padStart(2, '0')}s)`)
+                    : tMsg("Sign In Now", "Masuk Sekarang")}
+                </span>
+                <span className="material-symbols-outlined text-[20px]">
+                  {lockoutRemaining > 0 ? 'lock' : 'login'}
+                </span>
               </button>
 
               <div className="relative my-8">
@@ -473,7 +531,7 @@ export default function AuthForms({
                   <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm mx-auto">
                     {tMsg(
                       "Self-registration is currently restricted by the organization administrator. If you have an invitation, please use the link sent to your email or sign in directly.",
-                      "Pendaftaran mandiri saat ini sedang dinonaktifkan oleh administrator. Jika Anda memiliki undangan, silakan gunakan tautan yang dikirimkan ke email Anda atau langsung masuk."
+                      "Pendaftaran mandiri saat ini dinonaktifkan oleh administrator. Jika kamu memiliki undangan, gunakan tautan yang dikirimkan ke emailmu atau langsung masuk ke akun."
                     )}
                   </p>
                 </div>

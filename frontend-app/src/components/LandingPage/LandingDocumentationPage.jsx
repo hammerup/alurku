@@ -2,6 +2,28 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useCloseAnimation, HighlightText } from '../../Utils';
 import { useSEO } from '../../hooks/useSEO';
+import {
+  Compass,
+  Layers,
+  CheckSquare,
+  Command,
+  LayoutGrid,
+  BarChart3,
+  MessageSquare,
+  Bell,
+  Sparkles,
+  CalendarDays,
+  Paperclip,
+  Sliders,
+  CreditCard,
+  ShieldCheck,
+  FileText,
+  Clock,
+  Bookmark,
+  ThumbsUp,
+  ThumbsDown,
+  CheckCircle2,
+} from 'lucide-react';
 
 // Helper untuk menghasilkan cuplikan pencarian (snippet)
 const generateSnippet = (text, query) => {
@@ -19,9 +41,23 @@ const generateSnippet = (text, query) => {
   return snippet;
 };
 
-// Helper untuk merender konten dengan Highlight tanpa merusak tag HTML (strong)
+// Helper untuk merender konten dengan Highlight tanpa merusak tag HTML (code, pre, strong)
 const renderContent = (content, query) => {
-  let html = content.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-white font-bold">$1</strong>');
+  if (!content) return { __html: '' };
+  let html = content;
+
+  // 1. Convert fenced code blocks ```lang\ncode\n``` to <pre><code>
+  html = html.replace(/```([a-zA-Z0-9_-]*)\n?([\s\S]*?)```/g, (_m, _lang, code) => {
+    return `<pre><code>${code.trim()}</code></pre>`;
+  });
+
+  // 2. Convert inline backticks `code` to <code>
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // 3. Convert markdown bold **text** to strong
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-white font-bold">$1</strong>');
+
+  // 4. Highlight keywords if search query provided
   if (query) {
     const keywords = query
       .trim()
@@ -32,7 +68,7 @@ const renderContent = (content, query) => {
       const regex = new RegExp(`(${keywords.join('|')})(?![^<]*>)`, 'gi');
       html = html.replace(
         regex,
-        '<mark class="bg-yellow-200 dark:bg-yellow-900/60 text-yellow-900 dark:text-yellow-100 rounded-sm px-1">$1</mark>'
+        '<mark class="bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-100 rounded-sm px-1">$1</mark>'
       );
     }
   }
@@ -52,11 +88,11 @@ const getDocData = (tMsg, isSuperAdmin) => {
       ),
       sections: [
         {
-          id: 'what-is-tracker',
-          title: tMsg('What is Alurku?', 'Apa itu Alurku?'),
+          id: 'what-is-alurku',
+          title: tMsg('What is alurku.?', 'Apa itu alurku.?'),
           content: tMsg(
-            "<strong>Alurku</strong> is an advanced, AI-powered project management and team collaboration platform designed to streamline your daily workflows. It serves as the central hub for your team to plan, track, and execute projects with precision.<br /><br />More than just a to-do list, the app offers a dynamic suite of features including real-time Kanban boards, interactive Gantt timelines, comprehensive workload analytics, and automated recurring tasks. With built-in AI assistants to estimate time, generate reports, and proactively plan your day, Alurku empowers professionals to eliminate bottlenecks, balance team workloads, and deliver outstanding results on time.",
-            "<strong>Alurku</strong> adalah platform manajemen proyek dan kolaborasi tim canggih berbasis AI yang dirancang untuk menyederhanakan alur kerja harian Anda. Aplikasi ini berfungsi sebagai pusat kendali utama bagi tim Anda untuk merencanakan, melacak, dan mengeksekusi proyek dengan presisi.<br /><br />Lebih dari sekadar daftar tugas, aplikasi ini menawarkan serangkaian fitur dinamis termasuk papan Kanban <em>real-time</em>, lini masa Gantt interaktif, analitik beban kerja komprehensif, dan otomatisasi tugas berulang. Dilengkapi dengan asisten AI bawaan untuk mengestimasi waktu, membuat laporan, dan merencanakan hari Anda secara proaktif, Alurku memberdayakan para profesional untuk menghilangkan hambatan, menyeimbangkan beban kerja tim, dan memberikan hasil pekerjaan yang luar biasa tepat pada waktunya."
+            "<strong>alurku.</strong> is an intelligent workflow and team productivity platform designed to turn your work plans into smooth, measurable, and stress-free execution. Unlike conventional cluttered tools causing work sprawl, alurku. adopts an eye-friendly, high-contrast modern design philosophy.<br /><br />Powered by <strong>Luruka</strong>—your personal AI workspace partner—the platform proactively forecasts task durations, breaks down complex initiatives into actionable milestones, notes meeting decisions, and monitors team capacity so projects finish on time without burnout.",
+            "<strong>alurku.</strong> adalah platform manajemen alur kerja dan produktivitas tim yang dirancang untuk mengubah tumpukan rencana kerjamu menjadi alur eksekusi yang rapi, terukur, dan bebas stres. Berbeda dari aplikasi manajemen tugas konvensional yang rumit dan melelahkan (<em>work sprawl</em>), alurku. mengusung filosofi <strong>desain bersih yang menenangkan mata</strong> dengan kontras tinggi dan alur navigasi yang intuitif.<br /><br />Didukung oleh <strong>Luruka</strong>—asisten cerdas yang bertindak sebagai partner kerja pribadimu—alurku. secara proaktif membantu mengestimasi durasi pekerjaan, memecah proyek besar menjadi langkah-langkah terarah, mencatat hasil rapat, hingga memantau kapasitas tim agar seluruh pekerjaan selesai tepat waktu tanpa risiko kejenuhan."
           ),
         },
       ],
@@ -67,16 +103,16 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Get Started', 'Mulai'),
       title: tMsg('Workspace & Projects', 'Ruang Kerja & Proyek'),
       desc: tMsg(
-        'Alurku is structured into Workspaces, Projects, and Tasks. Learn the difference between these concepts and how to organize your team workflow effectively.',
-        'Alurku disusun berdasarkan hirarki Ruang Kerja (Workspace), Proyek, dan Tugas. Pelajari perbedaan konsep ini untuk mengelola alur kerja tim Anda secara efektif.'
+        'alurku. is structured into Workspaces, Projects, and Tasks. Learn the difference between these concepts and how to organize your team workflow effectively.',
+        'alurku. disusun berdasarkan hirarki Ruang Kerja (Workspace), Proyek, dan Tugas. Pelajari perbedaan konsep ini untuk mengelola alur kerja tim Anda secara efektif.'
       ),
       sections: [
         {
           id: 'hierarchy',
           title: tMsg('Understanding Workspaces, Projects, and Tasks', 'Memahami Ruang Kerja, Proyek, dan Tugas'),
           content: tMsg(
-            "To keep your workflow organized, Alurku uses a three-tier hierarchy:<br /><br />1. **Workspace (Ruang Kerja)**: The highest organizational tier. A Workspace represents an entire organization or business department (e.g., 'Marketing Dept' or 'Personal'). Settings, billing, and team members are managed globally at the Workspace level. Workspaces are completely isolated from each other.<br />2. **Project (Proyek)**: Individual project boards within a Workspace (e.g., 'Website Redesign' or 'Q4 Campaign'). Each Project contains its own Kanban board, Gantt timeline, calendar, and team chat. Team members must be invited to a project to access its board.<br />3. **Task (Tugas)**: The smallest actionable work unit within a Project (e.g., 'Design homepage layout'). Tasks belong to a Project and can have subtasks, assignees, deadlines, and a comments feed.",
-            "Untuk menjaga alur kerja Anda tetap teratur, Alurku menggunakan hirarki tiga tingkat:<br /><br />1. **Workspace (Ruang Kerja)**: Tingkat organisasi tertinggi. Ruang Kerja mewakili seluruh organisasi atau departemen bisnis (misalnya, 'Dep. Pemasaran' atau 'Pribadi'). Pengaturan, tagihan, dan keanggotaan dikelola secara global di tingkat Ruang Kerja. Setiap Ruang Kerja terisolasi secara total satu sama lain.<br />2. **Project (Proyek)**: Papan proyek individu di dalam Ruang Kerja (misalnya, 'Desain Ulang Website' atau 'Kampanye Q4'). Setiap Proyek memiliki papan Kanban, lini masa Gantt, kalender, dan obrolan timnya sendiri. Anggota tim harus diundang ke proyek untuk dapat mengakses papannya.<br />3. **Task (Tugas)**: Unit kerja terkecil yang dapat ditindaklanjuti di dalam Proyek (misalnya, 'Desain tata letak beranda'). Tugas beraliansi dengan sebuah Proyek dan dapat memiliki sub-tugas, penanggung jawab, tenggat waktu, serta kolom komentar."
+            "To keep your workflow organized, alurku. uses a three-tier hierarchy:<br /><br />1. **Workspace (Ruang Kerja)**: The highest organizational tier. A Workspace represents an entire organization or business department (e.g., 'Marketing Dept' or 'Personal'). Settings, billing, and team members are managed globally at the Workspace level. Workspaces are completely isolated from each other.<br />2. **Project (Proyek)**: Individual project boards within a Workspace (e.g., 'Website Redesign' or 'Q4 Campaign'). Each Project contains its own Kanban board, Gantt timeline, calendar, and team chat. Team members must be invited to a project to access its board.<br />3. **Task (Tugas)**: The smallest actionable work unit within a Project (e.g., 'Design homepage layout'). Tasks belong to a Project and can have subtasks, assignees, deadlines, and a comments feed.",
+            "Untuk menjaga alur kerja Anda tetap teratur, alurku. menggunakan hirarki tiga tingkat:<br /><br />1. **Workspace (Ruang Kerja)**: Tingkat organisasi tertinggi. Ruang Kerja mewakili seluruh organisasi atau departemen bisnis (misalnya, 'Dep. Pemasaran' atau 'Pribadi'). Pengaturan, tagihan, dan keanggotaan dikelola secara global di tingkat Ruang Kerja. Setiap Ruang Kerja terisolasi secara total satu sama lain.<br />2. **Project (Proyek)**: Papan proyek individu di dalam Ruang Kerja (misalnya, 'Desain Ulang Website' atau 'Kampanye Q4'). Setiap Proyek memiliki papan Kanban, lini masa Gantt, kalender, dan obrolan timnya sendiri. Anggota tim harus diundang ke proyek untuk dapat mengakses papannya.<br />3. **Task (Tugas)**: Unit kerja terkecil yang dapat ditindaklanjuti di dalam Proyek (misalnya, 'Desain tata letak beranda'). Tugas beraliansi dengan sebuah Proyek dan dapat memiliki sub-tugas, penanggung jawab, tenggat waktu, serta kolom komentar."
           ),
         },
         {
@@ -131,8 +167,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
           id: 'keyboard-shortcuts',
           title: tMsg('Keyboard Shortcuts Navigation', 'Pintasan Keyboard & Navigasi Cepat'),
           content: tMsg(
-            "Alurku supports high-speed keyboard shortcuts for power users to navigate the app without touching the mouse:<br /><br />• **Cmd/Ctrl + B**: Toggle Sidebar expansion / collapse (Dual-Dock Rail).<br />• **G then H**: Jump instantly to Personal Dashboard (Home).<br />• **G then P**: Jump instantly to Personal Tasks (Tugas Pribadi).<br />• **G then A**: Jump instantly to All Projects (Master View).<br />• **G then I**: Open Inbox & Notifications modal.",
-            "Alurku mendukung pintasan keyboard kecepatan tinggi untuk navigasi cepat tanpa perlu menyentuh tetikus:<br /><br />• **Cmd/Ctrl + B**: Melipat atau membuka Bilah Sisi (Dual-Dock Rail).<br />• **G lalu H**: Berpindah secara instan ke Dasbor Utama (Beranda).<br />• **G lalu P**: Berpindah secara instan ke Tugas Pribadi.<br />• **G lalu A**: Berpindah secara instan ke Semua Proyek (Tampilan Utama).<br />• **G lalu I**: Membuka modal Inbox & Notifikasi."
+            "alurku. supports high-speed keyboard shortcuts for power users to navigate the app without touching the mouse:<br /><br />• **/**: Focus Global Search instantly.<br />• **Cmd/Ctrl + K**: Open Command Bar Quick-Add & Action Hub.<br />• **Cmd/Ctrl + B**: Toggle Sidebar expansion / collapse (Dual-Dock Rail).<br />• **G then H**: Jump instantly to Personal Dashboard (Home).<br />• **G then P**: Jump instantly to Personal Tasks (Tugas Pribadi).<br />• **G then A**: Jump instantly to All Projects (Master View).<br />• **G then I**: Open Inbox & Notifications modal.<br />• **Esc**: Close active modal or cancel.",
+            "alurku. mendukung pintasan keyboard kecepatan tinggi untuk navigasi cepat tanpa perlu menyentuh mouse:<br /><br />• **/**: Fokus instan ke Kolom Pencarian Global.<br />• **Cmd/Ctrl + K**: Buka Command Bar Quick-Add & Pusat Aksi Cepat.<br />• **Cmd/Ctrl + B**: Melipat atau membuka Bilah Sisi (Dual-Dock Rail).<br />• **G lalu H**: Berpindah secara instan ke Dasbor Utama (Beranda).<br />• **G lalu P**: Berpindah secara instan ke Tugas Pribadi (Scratchpad).<br />• **G lalu A**: Berpindah secara instan ke Semua Proyek (Papan Global).<br />• **G lalu I**: Membuka modal Inbox & Notifikasi.<br />• **Esc**: Menutup modal aktif atau membatalkan aksi."
           ),
         },
       ],
@@ -327,8 +363,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
           id: 'ai-summary',
           title: tMsg('Executive AI Summary', 'Ringkasan Eksekutif AI'),
           content: tMsg(
-            "Click the 'Generate Insight' button to have Google Gemini or GPT-OSS 120B read your dashboard stats and provide a professional, natural language summary of your project health and bottlenecks.",
-            "Klik tombol 'Buat Wawasan' untuk meminta Google Gemini atau GPT-OSS 120B membaca statistik dasbor Anda dan memberikan ringkasan bahasa alami yang profesional."
+            "Click the 'Generate Insight' button to have alurku AI analyze your dashboard stats and provide a professional, natural language summary of your project health and bottlenecks.",
+            "Klik tombol 'Buat Wawasan' untuk meminta alurku AI menganalisis statistik dasbor Anda dan memberikan ringkasan bahasa alami yang profesional mengenai kesehatan proyek dan hambatan kerja."
           ),
         },
         {
@@ -443,8 +479,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Time & Deadlines', 'Waktu & Tenggat Waktu'),
       title: tMsg('The Deadline Engine', 'Mesin Tenggat Waktu'),
       desc: tMsg(
-        'One of Alurku’s most powerful features is its ability to act as a virtual project manager that understands human availability.',
-        'Salah satu fitur paling kuat adalah kemampuannya untuk bertindak sebagai manajer proyek virtual yang memahami ketersediaan manusia.'
+        'One of alurku.’s most powerful features is its ability to act as a virtual project manager that understands human availability.',
+        'Salah satu fitur paling kuat dari alurku. adalah kemampuannya untuk bertindak sebagai manajer proyek virtual yang memahami ketersediaan manusia.'
       ),
       sections: [
         {
@@ -563,8 +599,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Team & AI', 'Tim & AI'),
       title: tMsg('Smart Assistant', 'Asisten Pintar AI'),
       desc: tMsg(
-        'Accelerate your workflow by using the Smart Assistant, powered by Google Gemini or GPT-OSS 120B. Click the floating ✨ button to start a conversation.',
-        'Percepat alur kerja Anda dengan menggunakan Asisten Pintar yang didukung oleh Google Gemini atau GPT-OSS 120B.'
+        'Accelerate your workflow by using the alurku. Smart Assistant. Click the floating ✨ button to start a conversation.',
+        'Percepat alur kerja Anda dengan menggunakan Asisten Pintar alurku. Klik tombol ✨ mengambang untuk memulai percakapan.'
       ),
       sections: [
         {
@@ -595,8 +631,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
           id: 'proactive-onboarding',
           title: tMsg('Proactive AI Onboarding', 'Onboarding AI Proaktif'),
           content: tMsg(
-            'After completing the welcome tour, or anytime you click the Alurku logo at the top left of your screen, a full-screen Proactive AI will greet you. It helps you instantly build your first "To-do List" project and break down your broad goals into actionable tasks.',
-            'Setelah menyelesaikan tur selamat datang, atau kapan pun Anda mengeklik logo Alurku di kiri atas layar, AI Proaktif layar penuh akan menyapa Anda. Ini membantu Anda langsung membangun proyek "To-do List" pertama Anda dan memecah tujuan besar menjadi tugas-tugas.'
+            'After completing the welcome tour, or anytime you click the alurku. logo at the top left of your screen, a full-screen Proactive AI will greet you. It helps you instantly build your first "To-do List" project and break down your broad goals into actionable tasks.',
+            'Setelah menyelesaikan tur selamat datang, atau kapan pun Anda mengeklik logo alurku. di kiri atas layar, AI Proaktif layar penuh akan menyapa Anda. Ini membantu Anda langsung membangun proyek "To-do List" pertama Anda dan memecah tujuan besar menjadi tugas-tugas.'
           ),
         },
         {
@@ -657,10 +693,10 @@ const getDocData = (tMsg, isSuperAdmin) => {
         },
         {
           id: 'ai-fallback',
-          title: tMsg('AI Auto-Fallback System', 'Sistem Cadangan AI Otomatis'),
+          title: tMsg('High-Availability Dual Engine', 'Arsitektur AI Berkeandalan Tinggi'),
           content: tMsg(
-            'The Smart Assistant is powered by a dual-engine architecture. If the primary AI (Google Gemini) is busy or reaches its API limit, the system instantly and silently routes your request to a secondary AI (GPT-OSS 120B) so your workflow is never interrupted.',
-            'Asisten Pintar didukung oleh arsitektur mesin ganda. Jika AI utama (Google Gemini) sibuk atau mencapai batas API-nya, sistem akan secara instan merutekan permintaan Anda ke AI cadangan (GPT-OSS 120B) sehingga alur kerja Anda tidak pernah terputus.'
+            'The Smart Assistant is powered by a high-availability dual-engine architecture. If the primary intelligence engine experiences congestion, the system silently and seamlessly routes your request to a redundant secondary engine so your workflow is never interrupted.',
+            'Asisten Pintar didukung oleh arsitektur mesin ganda berkeandalan tinggi. Jika mesin kecerdasan utama mengalami lonjakan beban, sistem secara instan dan mulus merutekan permintaan Anda ke mesin cadangan redundan sehingga alur kerja Anda tidak pernah terputus.'
           ),
         },
       ],
@@ -723,8 +759,8 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('Your Account', 'Akun Anda'),
       title: tMsg('Support & Tickets', 'Dukungan & Tiket'),
       desc: tMsg(
-        'If you encounter an issue or have a brilliant idea to improve Alurku, you can submit a ticket directly to the system administrators.',
-        'Jika Anda menemui masalah atau memiliki ide brilian, Anda dapat mengirimkan tiket langsung ke administrator sistem.'
+        'If you encounter an issue or have a brilliant idea to improve alurku., you can submit a ticket directly to the system administrators.',
+        'Jika Anda menemui masalah atau memiliki ide brilian untuk meningkatkan alurku., Anda dapat mengirimkan tiket langsung ke administrator sistem.'
       ),
       sections: [
         {
@@ -751,24 +787,24 @@ const getDocData = (tMsg, isSuperAdmin) => {
       group: tMsg('System & Security', 'Sistem & Keamanan'),
       title: tMsg('Security & Compliance', 'Keamanan & Kepatuhan'),
       desc: tMsg(
-        'Alurku is built on a Zero-Trust Architecture, rigorously tested to ensure your corporate data remains completely secure and isolated.',
-        'Tracker dibangun pada Arsitektur Zero-Trust, diuji dengan ketat untuk memastikan data perusahaan Anda tetap aman dan terisolasi sepenuhnya.'
+        'alurku. is built on enterprise security standards, safeguarding your corporate assets with full multi-tenant isolation and strict privacy compliance.',
+        'alurku. dibangun dengan standar keamanan enterprise, melindungi aset perusahaan Anda dengan isolasi multitenant penuh dan kepatuhan privasi yang ketat.'
       ),
       sections: [
         {
-          id: 'owasp',
-          title: tMsg('OWASP Top 10 Protected', 'Terlindungi OWASP Top 10'),
+          id: 'data-protection',
+          title: tMsg('Enterprise Data Protection & Encryption', 'Perlindungan Data & Enkripsi Enterprise'),
           content: tMsg(
-            'The platform includes deep protections against XSS, CSWSH, Database Bloat, Brute-Force, and IDOR/BOLA attacks.',
-            'Platform ini mencakup perlindungan mendalam terhadap serangan XSS, CSWSH, Pembengkakan Database, Brute-Force, dan IDOR/BOLA.'
+            'All data transmissions are encrypted using industry-standard TLS 1.3 in transit and AES-256 at rest. Comprehensive multi-tenant boundaries ensure that your workspace data is strictly accessible only by authorized team members.',
+            'Seluruh pengiriman data dienkripsi dengan standar industri TLS 1.3 saat transit dan AES-256 saat tersimpan. Batasan multitenant komprehensif menjamin bahwa data ruang kerja Anda hanya dapat diakses oleh anggota tim yang memiliki izin.'
           ),
         },
         {
-          id: 'specs',
-          title: tMsg('System Specs & Details', 'Spesifikasi Sistem'),
+          id: 'pdp-compliance',
+          title: tMsg('Indonesian PDP Law Compliance & Zero AI Retention', 'Kepatuhan UU PDP & Privasi AI Tanpa Retensi'),
           content: tMsg(
-            "For a complete breakdown of the 12 Automated Penetration Tests passed and infrastructure limits, please open the 'System Specs' menu from the application footer.",
-            "Untuk rincian lengkap dari 12 Uji Penetrasi Otomatis yang terlewati dan batas infrastruktur, silakan buka menu 'Spesifikasi Sistem' dari footer aplikasi."
+            'alurku. strictly complies with the Indonesian Personal Data Protection Law (UU PDP No. 27/2022). Furthermore, interactions and task data processed by Luruka are protected under a strict zero-retention policy—your data is never used to train public models or shared with external parties.',
+            'alurku. sepenuhnya mematuhi Undang-Undang Perlindungan Data Pribadi (UU PDP No. 27 Tahun 2022). Selain itu, interaksi dan data tugas yang diproses bersama Luruka dilindungi kebijakan tanpa retensi—data bisnis Anda tidak pernah digunakan untuk melatih model publik atau dibagikan ke pihak luar.'
           ),
         },
       ],
@@ -817,35 +853,56 @@ const getDocData = (tMsg, isSuperAdmin) => {
   return data;
 };
 
+const renderDocIcon = (id, className = "w-4 h-4") => {
+  switch (id) {
+    case 'overview':
+      return <Compass className={className} />;
+    case 'workspace':
+      return <Layers className={className} />;
+    case 'my-tasks':
+      return <CheckSquare className={className} />;
+    case 'command-bar':
+      return <Command className={className} />;
+    case 'views-workflow':
+      return <LayoutGrid className={className} />;
+    case 'workload-analytics':
+      return <BarChart3 className={className} />;
+    case 'workspace-chat':
+      return <MessageSquare className={className} />;
+    case 'inbox-comments':
+      return <Bell className={className} />;
+    case 'ai-planning':
+      return <Sparkles className={className} />;
+    case 'leaves-absensi':
+      return <CalendarDays className={className} />;
+    case 'attachments':
+      return <Paperclip className={className} />;
+    case 'settings-privacy':
+      return <Sliders className={className} />;
+    case 'pricing-tiers':
+      return <CreditCard className={className} />;
+    case 'security-governance':
+      return <ShieldCheck className={className} />;
+    default:
+      return <FileText className={className} />;
+  }
+};
+
+const getEstimatedReadingTime = (page) => {
+  if (!page || !page.sections) return '3 menit';
+  const totalWords = page.sections.reduce((acc, s) => acc + (s.content ? s.content.split(/\s+/).length : 0), 0);
+  const minutes = Math.max(2, Math.ceil(totalWords / 150));
+  return `${minutes} menit baca`;
+};
+
 export default function LandingDocumentationPage({ language }) {
   const tMsgStr = (en, id) => (language === 'id' ? id : en);
   const tMsg = (en, id) => tMsgStr(en, id); // Teks murni untuk data
 
-  useSEO({
-    title: tMsg('Technical Documentation & White Paper', 'Dokumentasi Teknis & White Paper'),
-    description: tMsg(
-      'Explore the alurku. Platform White Paper. Understand our workspaces hierarchy, automated AI tasks breakdown, workload analytics, and security specs.',
-      'Pelajari White Paper Platform alurku. Pahami hirarki workspace, pemecahan tugas otomatis AI, analitik beban kerja, dan spesifikasi keamanan.'
-    ),
-    path: '/dokumentasi',
-    schemaData: {
-      "@context": "https://schema.org",
-      "@type": "TechArticle",
-      "headline": tMsg("Platform White Paper", "White Paper Platform"),
-      "description": tMsg("Comprehensive technical documentation for alurku.", "Dokumentasi teknis komprehensif untuk alurku."),
-      "publisher": {
-        "@type": "Organization",
-        "name": "alurku."
-      }
-    }
-  });
-
   const [dbDocs, setDbDocs] = useState([]);
-  const [isDocsLoading, setIsDocsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    setIsDocsLoading(true);
     axios
       .get(`/api/docs?lang=${language}`)
       .then((res) => {
@@ -855,9 +912,6 @@ export default function LandingDocumentationPage({ language }) {
       })
       .catch((err) => {
         console.warn('Fallback to local docs data:', err);
-      })
-      .finally(() => {
-        if (isMounted) setIsDocsLoading(false);
       });
     return () => {
       isMounted = false;
@@ -871,10 +925,67 @@ export default function LandingDocumentationPage({ language }) {
 
   const [activePageId, setActivePageId] = useState(() => {
     if (typeof window !== 'undefined') {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts[0] === 'dokumentasi' && pathParts[1]) {
+        return pathParts[1];
+      }
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get('topic') || 'overview';
     }
     return 'overview';
+  });
+
+  const activePage = docData.find((p) => p.id === activePageId) || docData[0] || {};
+
+  // Sinkronisasi permalink URL dua arah
+  const handleSelectPage = (pageId) => {
+    setActivePageId(pageId);
+    setHighlightQuery('');
+    setIsMobileNavOpen(false);
+    if (typeof window !== 'undefined') {
+      const targetPath = `/dokumentasi/${pageId}`;
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ topic: pageId }, '', targetPath);
+      }
+    }
+    document.getElementById('doc-content-area')?.scrollTo(0, 0);
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts[0] === 'dokumentasi') {
+        const topic = pathParts[1] || 'overview';
+        setActivePageId(topic);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // SEO & GEO Dinamis Berdasarkan Halaman yang Sedang Dibuka
+  useSEO({
+    title: activePage?.title
+      ? `${activePage.title} — Dokumentasi alurku.`
+      : tMsg('Technical Documentation & Knowledge Base', 'Dokumentasi Teknis & Basis Pengetahuan'),
+    description: activePage?.desc || tMsg(
+      'Explore the alurku. Platform Knowledge Base. Understand our workspaces hierarchy, automated AI tasks breakdown, workload analytics, and security specs.',
+      'Pelajari Basis Pengetahuan Platform alurku. Pahami hierarki workspace, pemecahan tugas otomatis AI, analitik beban kerja, dan spesifikasi keamanan.'
+    ),
+    path: `/dokumentasi${activePage?.id ? `/${activePage.id}` : ''}`,
+    schemaData: {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": activePage?.title || tMsg("Platform Knowledge Base", "Basis Pengetahuan Platform"),
+      "description": activePage?.desc || tMsg("Comprehensive technical documentation for alurku.", "Dokumentasi teknis komprehensif untuk alurku."),
+      "articleSection": activePage?.group || "Features",
+      "inLanguage": language === 'id' ? 'id-ID' : 'en-US',
+      "url": typeof window !== 'undefined' ? `${window.location.origin}/dokumentasi/${activePage?.id || 'overview'}` : `https://alurku.com/dokumentasi/${activePage?.id || 'overview'}`,
+      "publisher": {
+        "@type": "Organization",
+        "name": "alurku."
+      }
+    }
   });
   const [activeSecId, setActiveSecId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -883,39 +994,33 @@ export default function LandingDocumentationPage({ language }) {
   const [feedbackState, setFeedbackState] = useState({}); // { 'overview': 'yes' }
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  const activePage = docData.find((p) => p.id === activePageId) || docData[0];
-
-  const handleFeedbackSubmit = (isHelpful) => {
-    setFeedbackState({ ...feedbackState, [activePageId]: isHelpful ? 'yes' : 'no' });
-    // Mengirim hasil ke tiket Admin secara diam-diam (silent background request)
-    axios
-      .post('/api/feedback', {
-        text: `[DOCS FEEDBACK] Page: "${activePage.title}" | Helpful: ${isHelpful ? 'Yes' : 'No'}`,
-      })
-      .catch(() => { }); // Kita biarkan catch kosong agar tidak mengganggu UI user jika gagal
+  const handleFeedbackSubmit = (helpful) => {
+    setFeedbackState((prev) => ({ ...prev, [activePageId]: helpful ? 'yes' : 'no' }));
+    alert(tMsg('Thank you for your feedback!', 'Terima kasih atas masukan Anda!'));
   };
 
   const scrollToSection = (secId) => {
+    setActiveSecId(secId);
     const el = document.getElementById(`sec-${secId}`);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setActiveSecId(secId);
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Update hash in URL
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `/dokumentasi/${activePageId}#sec-${secId}`);
+      }
     }
   };
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-
-    if (!query) {
+    setHighlightQuery(query);
+    if (!query.trim()) {
       setSearchResults([]);
       return;
     }
-
-    const lowerQ = query.toLowerCase();
-    const keywords = lowerQ.split(/\s+/).filter(Boolean);
+    const keywords = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
     const results = [];
-
     docData.forEach((page) => {
       page.sections.forEach((sec) => {
         const combinedText = [page.title, page.desc, sec.title, sec.content].join(' ').toLowerCase();
@@ -935,14 +1040,14 @@ export default function LandingDocumentationPage({ language }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      let current = activePage.sections[0]?.id;
-      for (let sec of activePage.sections) {
-        const el = document.getElementById(`sec-${sec.id}`);
-        if (el) {
-          // Compare with window scroll position + offset
-          if (el.getBoundingClientRect().top <= 150) {
-            current = sec.id;
+      let current = activePage.sections?.[0]?.id;
+      if (activePage.sections) {
+        for (let sec of activePage.sections) {
+          const el = document.getElementById(`sec-${sec.id}`);
+          if (el) {
+            if (el.getBoundingClientRect().top <= 150) {
+              current = sec.id;
+            }
           }
         }
       }
@@ -950,7 +1055,6 @@ export default function LandingDocumentationPage({ language }) {
     };
 
     window.addEventListener('scroll', handleScroll);
-    // trigger once on mount
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [activePage]);
@@ -1009,12 +1113,13 @@ export default function LandingDocumentationPage({ language }) {
                   onClick={() => {
                     setSearchQuery('');
                     setHighlightQuery(searchQuery);
-                    setActivePageId(res.pageId);
+                    handleSelectPage(res.pageId);
                     setTimeout(() => scrollToSection(res.secId), 100);
                   }}
                   className="p-4 border-b border-slate-100 dark:border-slate-800 last:border-0 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <p className="text-xs font-bold text-sky-600 dark:text-sky-400 mb-1">
+                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1 flex items-center gap-1.5">
+                    <span className="shrink-0">{renderDocIcon(res.pageId, "w-3.5 h-3.5")}</span>
                     <HighlightText text={res.pageTitle} query={searchQuery} />{' '}
                     <span className="text-slate-400 font-normal mx-1">/</span>{' '}
                     <HighlightText text={res.secTitle} query={searchQuery} />
@@ -1041,8 +1146,9 @@ export default function LandingDocumentationPage({ language }) {
           ></div>
           <div className="relative w-4/5 max-w-sm bg-white dark:bg-[#111318] h-full shadow-2xl flex flex-col mac-slide-in">
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900 shrink-0">
-              <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider text-sm">
-                {tMsg('Navigation', 'Navigasi')}
+              <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider text-sm flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>{tMsg('Knowledge Base', 'Basis Pengetahuan')}</span>
               </span>
               <button
                 onClick={() => setIsMobileNavOpen(false)}
@@ -1063,18 +1169,14 @@ export default function LandingDocumentationPage({ language }) {
                     {pages.map((p) => (
                       <button
                         key={`mob-${p.id}`}
-                        onClick={() => {
-                          setActivePageId(p.id);
-                          setHighlightQuery('');
-                          setIsMobileNavOpen(false);
-                          document.getElementById('doc-content-area')?.scrollTo(0, 0);
-                        }}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activePageId === p.id
-                          ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-white font-bold'
+                        onClick={() => handleSelectPage(p.id)}
+                        className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2.5 ${activePageId === p.id
+                          ? 'bg-amber-400/15 text-slate-900 dark:text-white font-bold border-l-2 border-amber-400'
                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                           }`}
                       >
-                        {p.title}
+                        <span className={`shrink-0 ${activePageId === p.id ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>{renderDocIcon(p.id, "w-4 h-4")}</span>
+                        <span className="truncate">{p.title}</span>
                       </button>
                     ))}
                   </nav>
@@ -1091,24 +1193,21 @@ export default function LandingDocumentationPage({ language }) {
           <div className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto py-6 custom-scrollbar">
           {Object.entries(groupedNav).map(([groupName, pages]) => (
             <div key={groupName} className="mb-6">
-              <h4 className="px-6 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+              <h4 className="px-5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
                 {groupName}
               </h4>
-              <nav className="space-y-0.5 px-3">
+              <nav className="space-y-1 px-3">
                 {pages.map((p) => (
                   <button
                     key={p.id}
-                    onClick={() => {
-                      setActivePageId(p.id);
-                      setHighlightQuery('');
-                      document.getElementById('doc-content-area')?.scrollTo(0, 0);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${activePageId === p.id
-                      ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-white font-bold'
+                    onClick={() => handleSelectPage(p.id)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${activePageId === p.id
+                      ? 'bg-amber-400/15 text-slate-900 dark:text-white font-bold shadow-xs border-l-2 border-amber-400 pl-2.5'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                       }`}
                   >
-                    {p.title}
+                    <span className={`shrink-0 ${activePageId === p.id ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}>{renderDocIcon(p.id, "w-4 h-4")}</span>
+                    <span className="truncate">{p.title}</span>
                   </button>
                 ))}
               </nav>
@@ -1121,104 +1220,144 @@ export default function LandingDocumentationPage({ language }) {
         <div
           id="doc-content-area"
           className="flex-1 overflow-y-auto px-4 py-8 md:px-12 md:py-14 bg-white dark:bg-[#0e1116] scroll-smooth custom-scrollbar"
-          
         >
           <div className="max-w-3xl mx-auto">
             {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-6 uppercase tracking-widest">
-              <span>Help Center</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-6 uppercase tracking-widest flex-wrap">
+              <button
+                onClick={() => handleSelectPage('overview')}
+                className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                {tMsg('Knowledge Base', 'Basis Pengetahuan')}
+              </button>
               <span className="text-slate-300 dark:text-slate-600">/</span>
               <span>{activePage.group}</span>
               <span className="text-slate-300 dark:text-slate-600">/</span>
-              <span className="text-indigo-500">{activePage.title}</span>
+              <span className="text-amber-500 dark:text-amber-400 font-black">{activePage.title}</span>
             </div>
 
-            {/* Page Header */}
-            <h1 className="text-2xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4 flex items-center gap-3">
-              <span className="text-3xl md:text-4xl">{activePage.icon}</span>{' '}
-              <HighlightText text={activePage.title} query={highlightQuery} />
-            </h1>
-            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-10 md:mb-12 pb-10 md:pb-12 border-b border-slate-200 dark:border-slate-800">
-              <HighlightText text={activePage.desc} query={highlightQuery} />
-            </p>
+            {/* Page Hero Header Banner (Anti-Text-Bloat) */}
+            <div className="mb-10 pb-8 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2.5 mb-3 flex-wrap">
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  {activePage.group}
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span>{getEstimatedReadingTime(activePage)}</span>
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>{tMsg('Official alurku. Guide', 'Panduan Resmi alurku.')}</span>
+                </span>
+              </div>
+
+              <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4 flex items-center gap-3">
+                <span className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-400/20 text-slate-900 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-400/30">
+                  {renderDocIcon(activePage.id, "w-5 h-5 md:w-6 md:h-6")}
+                </span>
+                <HighlightText text={activePage.title} query={highlightQuery} />
+              </h1>
+
+              <div className="p-4 md:p-5 rounded-xl bg-slate-50 dark:bg-[#121B2D]/80 border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 leading-relaxed text-sm md:text-base font-medium shadow-xs">
+                <div className="flex items-start gap-3">
+                  <Bookmark className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                      {tMsg('Summary & Core Takeaway', 'Ringkasan & Manfaat Utama')}
+                    </strong>
+                    <HighlightText text={activePage.desc} query={highlightQuery} />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Page Content Sections */}
-            <div className="space-y-16">
-              {activePage.sections.map((sec) => (
+            <div className="space-y-10">
+              {activePage.sections && activePage.sections.map((sec, idx) => (
                 <div key={sec.id} id={`sec-${sec.id}`} className="scroll-mt-24 group">
-                  <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                    <HighlightText text={sec.title} query={highlightQuery} />
-                    <a
-                      href={`#sec-${sec.id}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigator.clipboard.writeText(`${window.location.origin}/#${sec.id}`);
-                        alert(tMsg('Link copied to clipboard!', 'Tautan disalin ke papan klip!'));
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-indigo-500 transition-all text-xl cursor-pointer"
-                      title={tMsg('Copy link to section', 'Salin tautan ke bagian ini')}
-                    >
-                      #
-                    </a>
-                  </h3>
-                  <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed text-base font-medium">
-                    <div dangerouslySetInnerHTML={renderContent(sec.content, highlightQuery)}></div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="w-7 h-7 rounded-lg bg-amber-400 text-slate-900 font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                      {idx + 1}
+                    </span>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <HighlightText text={(sec.title || '').replace(/<[^>]+>/g, '').replace(/^\d+\.\s*/, '')} query={highlightQuery} />
+                      <a
+                        href={`#sec-${sec.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const targetUrl = `${window.location.origin}/dokumentasi/${activePage.id}#sec-${sec.id}`;
+                          navigator.clipboard.writeText(targetUrl);
+                          alert(tMsg('Section link copied to clipboard!', 'Tautan bagian disalin ke papan klip!'));
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-amber-500 transition-all text-lg cursor-pointer ml-1"
+                        title={tMsg('Copy link to section', 'Salin tautan ke bagian ini')}
+                      >
+                        #
+                      </a>
+                    </h3>
+                  </div>
+                  <div className="bg-white dark:bg-[#111622] rounded-xl p-5 md:p-6 border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 leading-relaxed text-sm md:text-base font-normal shadow-xs">
+                    <div
+                      className="doc-content prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-sm md:text-base font-normal"
+                      dangerouslySetInnerHTML={renderContent(sec.content, highlightQuery)}
+                    ></div>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Feedback Footer */}
-            <div className="mt-20 pt-10 border-t border-slate-200 dark:border-slate-800">
+            <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
               {feedbackState[activePageId] ? (
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                  ✅ {tMsg('Thanks for your feedback!', 'Terima kasih atas masukan Anda!')}
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>{tMsg('Thanks for your feedback! This helps us improve.', 'Terima kasih atas masukanmu! Ini sangat membantu kami berbenah.')}</span>
                 </p>
               ) : (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                    {tMsg('Was this page helpful?', 'Apakah halaman ini membantu?')}
+                    {tMsg('Was this guide helpful?', 'Apakah panduan ini membantumu?')}
                   </span>
                   <button
                     onClick={() => handleFeedbackSubmit(true)}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-amber-400 hover:text-slate-900 hover:border-amber-400 transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    {tMsg('Yes', 'Ya')}
+                    <ThumbsUp className="w-3.5 h-3.5 shrink-0" />
+                    <span>{tMsg('Yes, helpful', 'Ya, sangat membantu')}</span>
                   </button>
                   <button
                     onClick={() => handleFeedbackSubmit(false)}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    {tMsg('No', 'Tidak')}
+                    <ThumbsDown className="w-3.5 h-3.5 shrink-0" />
+                    <span>{tMsg('Could be clearer', 'Perlu diperjelas')}</span>
                   </button>
                 </div>
               )}
             </div>
 
             {/* Related Pages (See Also) */}
-            {activePage.seeAlso && activePage.seeAlso.length > 0 && (
+            {activePage.see_also && activePage.see_also.length > 0 && (
               <div className="mt-12">
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-4">
-                  {tMsg('See Also', 'Lihat Juga')}
+                <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
+                  {tMsg('Related Guides & Topics', 'Panduan Terkait & Rekomendasi Bacaan')}
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {activePage.seeAlso.map((id) => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {activePage.see_also.map((id) => {
                     const relatedPage = docData.find((p) => p.id === id);
                     if (!relatedPage) return null;
                     return (
                       <div
                         key={id}
-                        onClick={() => {
-                          setActivePageId(id);
-                          setHighlightQuery('');
-                          document.getElementById('doc-content-area')?.scrollTo(0, 0);
-                        }}
-                        className="p-5 border border-slate-200 dark:border-slate-800 hover:border-sky-500 dark:hover:border-sky-500 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                        onClick={() => handleSelectPage(id)}
+                        className="p-4 border border-slate-200 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-400 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
                       >
-                        <h5 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                          <span>{relatedPage.icon}</span> {relatedPage.title}
+                        <h5 className="font-bold text-slate-900 dark:text-white mb-1.5 flex items-center gap-2 text-sm">
+                          <span className="text-amber-500 shrink-0">{renderDocIcon(relatedPage.id, "w-4 h-4")}</span>
+                          <span>{relatedPage.title}</span>
                         </h5>
-                        <p className="text-xs text-slate-500 line-clamp-2">{relatedPage.desc}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-snug">{relatedPage.desc}</p>
                       </div>
                     );
                   })}
@@ -1227,8 +1366,8 @@ export default function LandingDocumentationPage({ language }) {
             )}
           </div>
 
-          {/* Padding bottom agar pengguna bisa scroll mentok bawah dengan lega */}
-          <div className="h-64"></div>
+          {/* Bottom spacing */}
+          <div className="h-48"></div>
         </div>
 
         {/* Right Sidebar (On this page TOC) */}
@@ -1237,8 +1376,8 @@ export default function LandingDocumentationPage({ language }) {
             <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
               {tMsg('On this page', 'Di halaman ini')}
             </h4>
-            <nav className="space-y-3">
-              {activePage.sections.map((sec) => (
+            <nav className="space-y-2.5">
+              {activePage.sections && activePage.sections.map((sec) => (
                 <a
                   key={`toc-${sec.id}`}
                   href={`#sec-${sec.id}`}
@@ -1246,12 +1385,12 @@ export default function LandingDocumentationPage({ language }) {
                     e.preventDefault();
                     scrollToSection(sec.id);
                   }}
-                  className={`block text-xs font-medium transition-colors border-l-2 pl-3 ${activeSecId === sec.id
-                    ? 'border-sky-500 text-sky-600 dark:text-sky-400 font-bold'
+                  className={`block text-xs font-medium transition-colors border-l-2 pl-3 leading-snug ${activeSecId === sec.id
+                    ? 'border-amber-400 text-amber-700 dark:text-amber-400 font-bold'
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                 >
-                  {sec.title}
+                  {(sec.title || '').replace(/<[^>]+>/g, '').replace(/^\d+\.\s*/, '')}
                 </a>
               ))}
             </nav>

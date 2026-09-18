@@ -814,11 +814,9 @@ export default function DocumentationModal({ setIsDocsOpen, isSuperAdmin, langua
   const tMsg = (en, id) => tMsgStr(en, id); // Teks murni untuk data
 
   const [dbDocs, setDbDocs] = useState([]);
-  const [isDocsLoading, setIsDocsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    setIsDocsLoading(true);
     axios
       .get(`/api/docs?lang=${language}`)
       .then((res) => {
@@ -828,9 +826,6 @@ export default function DocumentationModal({ setIsDocsOpen, isSuperAdmin, langua
       })
       .catch((err) => {
         console.warn('Fallback to local docs data:', err);
-      })
-      .finally(() => {
-        if (isMounted) setIsDocsLoading(false);
       });
     return () => {
       isMounted = false;
@@ -1108,28 +1103,31 @@ export default function DocumentationModal({ setIsDocsOpen, isSuperAdmin, langua
 
             {/* Page Content Sections */}
             <div className="space-y-16">
-              {activePage.sections.map((sec) => (
-                <div key={sec.id} id={`sec-${sec.id}`} className="scroll-mt-24 group">
-                  <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                    <HighlightText text={sec.title} query={highlightQuery} />
-                    <a
-                      href={`#sec-${sec.id}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigator.clipboard.writeText(`${window.location.origin}/#${sec.id}`);
-                        alert(tMsg('Link copied to clipboard!', 'Tautan disalin ke papan klip!'));
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-indigo-500 transition-all text-xl cursor-pointer"
-                      title={tMsg('Copy link to section', 'Salin tautan ke bagian ini')}
-                    >
-                      #
-                    </a>
-                  </h3>
-                  <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed text-base font-medium">
-                    <div dangerouslySetInnerHTML={renderContent(sec.content, highlightQuery)}></div>
+              {activePage.sections.map((sec) => {
+                const cleanTitle = (sec.title || '').replace(/<[^>]+>/g, '');
+                return (
+                  <div key={sec.id} id={`sec-${sec.id}`} className="scroll-mt-24 group">
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                      <HighlightText text={cleanTitle} query={highlightQuery} />
+                      <a
+                        href={`#sec-${sec.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigator.clipboard.writeText(`${window.location.origin}/#${sec.id}`);
+                          alert(tMsg('Link copied to clipboard!', 'Tautan disalin ke papan klip!'));
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-indigo-500 transition-all text-xl cursor-pointer"
+                        title={tMsg('Copy link to section', 'Salin tautan ke bagian ini')}
+                      >
+                        #
+                      </a>
+                    </h3>
+                    <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 leading-relaxed text-base font-medium">
+                      <div dangerouslySetInnerHTML={renderContent(sec.content, highlightQuery)}></div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Feedback Footer */}
@@ -1215,7 +1213,7 @@ export default function DocumentationModal({ setIsDocsOpen, isSuperAdmin, langua
                     : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                 >
-                  {sec.title}
+                  {(sec.title || '').replace(/<[^>]+>/g, '')}
                 </a>
               ))}
             </nav>

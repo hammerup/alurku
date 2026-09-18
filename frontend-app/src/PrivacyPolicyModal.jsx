@@ -36,8 +36,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-lg text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-10">
               {tMsg(
-                'This Privacy Policy clearly describes how Alurku ("we", "us", or "our") collects, uses, stores, shares, and protects your personal and corporate data when you utilize our enterprise workload management platform. We are deeply committed to maintaining the highest standards of data privacy, compliance with data protection laws, and enforcing a Zero-Trust security architecture.',
-                'Kebijakan Privasi ini secara jelas menjelaskan bagaimana Alurku ("kami") mengumpulkan, menggunakan, menyimpan, membagikan, dan melindungi data pribadi dan perusahaan Anda saat Anda menggunakan platform manajemen beban kerja kami. Kami sangat berkomitmen untuk menjaga standar tertinggi privasi data, kepatuhan terhadap undang-undang perlindungan data, dan menegakkan arsitektur keamanan Zero-Trust.'
+                'This Privacy Policy clearly describes how alurku. ("we", "us", or "our") collects, uses, stores, shares, and protects your personal and corporate data when you utilize our enterprise workload management platform. We are deeply committed to maintaining the highest standards of data privacy, compliance with data protection laws, and enforcing a Zero-Trust security architecture.',
+                'Kebijakan Privasi ini secara jelas menjelaskan bagaimana alurku. ("kami") mengumpulkan, menggunakan, menyimpan, membagikan, dan melindungi data pribadi dan perusahaan Anda saat Anda menggunakan platform manajemen beban kerja kami. Kami sangat berkomitmen untuk menjaga standar tertinggi privasi data, kepatuhan terhadap undang-undang perlindungan data, dan menegakkan arsitektur keamanan Zero-Trust.'
               )}
             </p>
 
@@ -153,8 +153,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Alurku rejects invasive tracking cookies. We heavily utilize standard HTML5 Web Storage (Local Storage & Session Storage) locally on your device solely for:',
-                  'Alurku menolak cookie pelacakan yang invasif. Kami banyak menggunakan Web Storage standar HTML5 (Penyimpanan Lokal & Penyimpanan Sesi) secara lokal di perangkat Anda hanya untuk:'
+                  'alurku. rejects invasive tracking cookies. We heavily utilize standard HTML5 Web Storage (Local Storage & Session Storage) locally on your device solely for:',
+                  'alurku. menolak cookie pelacakan yang invasif. Kami banyak menggunakan Web Storage standar HTML5 (Penyimpanan Lokal & Penyimpanan Sesi) secara lokal di perangkat Anda hanya untuk:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
@@ -221,8 +221,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'To mitigate database bloat and adhere to data lifecycle best practices, Alurku enforces aggressive automated retention policies (Auto-Purging):',
-                  'Untuk mengurangi pembengkakan database dan mematuhi praktik terbaik siklus hidup data, Alurku menerapkan kebijakan penyimpanan otomatis yang agresif:'
+                  'To mitigate database bloat and adhere to data lifecycle best practices, alurku. enforces aggressive automated retention policies (Auto-Purging):',
+                  'Untuk mengurangi pembengkakan database dan mematuhi praktik terbaik siklus hidup data, alurku. menerapkan kebijakan penyimpanan otomatis yang agresif:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
@@ -257,8 +257,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Alurku is deployed on modern virtual private servers (VPS) and dedicated cloud hosting infrastructure. Depending on the hosting region and authorized partners, your data may be processed and stored on secure servers located within or outside your jurisdiction. By utilizing the Platform, you agree to this necessary operational transfer and storage, subject to our Zero-Trust encryption protocols.',
-                  'Alurku disebarkan di infrastruktur server privat virtual (VPS) modern dan hosting cloud berdedikasi. Bergantung pada wilayah hosting dan mitra resmi, data Anda dapat diproses dan disimpan di server aman yang berlokasi di dalam maupun di luar yurisdiksi Anda. Dengan menggunakan Platform, Anda menyetujui transfer dan penyimpanan operasional yang diperlukan ini, tunduk pada protokol enkripsi Zero-Trust kami.'
+                  'alurku. is deployed on modern virtual private servers (VPS) and dedicated cloud hosting infrastructure. Depending on the hosting region and authorized partners, your data may be processed and stored on secure servers located within or outside your jurisdiction. By utilizing the Platform, you agree to this necessary operational transfer and storage, subject to our Zero-Trust encryption protocols.',
+                  'alurku. disebarkan di infrastruktur server privat virtual (VPS) modern dan hosting cloud berdedikasi. Bergantung pada wilayah hosting dan mitra resmi, data Anda dapat diproses dan disimpan di server aman yang berlokasi di dalam maupun di luar yurisdiksi Anda. Dengan menggunakan Platform, Anda menyetujui transfer dan penyimpanan operasional yang diperlukan ini, tunduk pada protokol enkripsi Zero-Trust kami.'
                 )}
               </p>
             </div>
@@ -295,8 +295,8 @@ export default function PrivacyPolicyModal({ setIsPrivacyOpen, language }) {
         <div className="mt-16 pt-10 border-t border-neutral-200 dark:border-neutral-800 flex flex-col items-center pb-10">
           <p className="text-xs text-neutral-500 font-medium mb-6 text-center max-w-lg">
             {tMsg(
-              'By continuing to use Alurku, you acknowledge that you have read and understood this Privacy Policy.',
-              'Dengan terus menggunakan Alurku, Anda mengakui bahwa Anda telah membaca dan memahami Kebijakan Privasi ini.'
+              'By continuing to use alurku., you acknowledge that you have read and understood this Privacy Policy.',
+              'Dengan terus menggunakan alurku., Anda mengakui bahwa Anda telah membaca dan memahami Kebijakan Privasi ini.'
             )}
           </p>
           <button

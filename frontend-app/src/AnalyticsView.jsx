@@ -832,7 +832,7 @@ export default function AnalyticsView({
         return acc;
       }, {}),
     };
-    const prompt = `You are a professional Project Manager AI Assistant for Alurku. Analyze these workspace stats for the last ${timeFilter} days: ${JSON.stringify(
+    const prompt = `You are a professional Project Manager AI Assistant for alurku.. Analyze these workspace stats for the last ${timeFilter} days: ${JSON.stringify(
       statsForAI
     )}. Write a 2 to 3 sentence insightful, encouraging, and analytical summary for the team that uncovers hidden trends from the data. Do NOT just paraphrase the systemAlert. Focus on cycle times, completion rates, or bottlenecks. Keep it professional but modern. You can use markdown like bold text. Please respond strictly in ${
       language === 'id' ? 'Indonesian' : 'English'
@@ -848,7 +848,7 @@ export default function AnalyticsView({
         errorDetail && !/gemini|groq|gpt-oss|llama|openai|claude|cloudflare/i.test(errorDetail)
           ? errorDetail
           : (language === 'id'
-              ? 'Asisten AI sedang mengalami kendala koneksi sementara. Silakan coba beberapa saat lagi.'
+              ? 'Asisten AI sedang mengalami kendala koneksi sementara. Yuk coba beberapa saat lagi!'
               : 'AI Assistant is temporarily experiencing connection issues. Please try again in a moment.');
       setAiInsight(`⚠️ ${cleanMsg}`);
     } finally {

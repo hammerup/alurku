@@ -146,7 +146,7 @@ export function WelcomeTourModal({
           👋
         </div>
         <h2 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter mb-2">
-          {tMsg('Welcome to Tracker', 'Selamat Datang di Tracker')}
+          {tMsg('Welcome to alurku.', 'Selamat Datang di alurku.')}
         </h2>
         <p className="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-8 leading-relaxed">
           {tMsg(

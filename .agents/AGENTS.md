@@ -124,4 +124,33 @@ Every public landing page (such as Features, Pricing, Guides, About Us, and Docu
 - **Canonical Self-References:** A `<link rel="canonical" href="...">` tag must be set pointing directly to the self-representative page path.
 - **Cleanup:** All injected header elements (LD-JSON script tags, hreflangs, canonical links) must be cleanly removed from DOM when the user navigates away or the page unmounts to prevent DOM bloat.
 
+---
 
+## 9. SOP & Quality Gate: Public Content & Documentation (Anti-Leak Protocol)
+
+Every AI agent, developer, and workflow MUST strictly pass this 4-step Quality Gate before shipping any user-facing documentation, landing page content, or marketing copy:
+
+### 1. Zero Internal Infrastructure Leaks (Dapur Perusahaan)
+- **STRICTLY PROHIBITED in user-facing copy:**
+  - Cloud vendor names & internal infra: `Cloudflare R2`, `AWS S3`, `Boto3`, `FastAPI`, `Docker`, `SQLAlchemy`, `Nginx`.
+  - Design & styling tokens: Hex codes (`#111E38`, `#FACC15`), CSS utility terms (`anti-glare`, `flat-design`, `border-l-4`).
+  - Engineering architecture: multi-engine, dual-engine, microservices, local volumes.
+- **REQUIRED in user-facing copy:**
+  - Translate to **customer outcomes & enterprise security**: *Penyimpanan Aman Berstandar Enterprise, Kecepatan Unduh Global, Privasi Dokumen Terenkripsi*.
+
+### 2. Single Source of Truth (SSOT) Alignment
+- Pricing, tiers, seat quotas, AI prompt limits, and storage MUST match the canonical UI definition in `LandingPricingPage.jsx` (`/harga`):
+  - **Free:** Rp0 | 1 Workspace, 3 Projects, 3 Members, 500 MB Storage, 50 AI prompts/mo.
+  - **Pro:** Rp79.000 (tahunan) / Rp99.000 (bulanan) | 3 Workspaces, Unlimited Projects, 25 Members, 15 GB, 1.500 AI prompts/mo.
+  - **Business:** Rp199.000 (tahunan) / Rp249.000 (bulanan) | Unlimited Workspaces & Projects, 100 GB, 5.000 AI prompts/mo, SLA 99.9%.
+- Never hardcode or invent alternate pricing or quotas anywhere else.
+
+### 3. Separation of Concerns & Clean Data Formats
+- **Titles & Headings:** Must be clean plain text. NEVER embed raw HTML tags (`<code>`, `<span>`, `<div>`) into titles, breadcrumbs, or navigation labels.
+- **Defensive Frontend Sanitization:** Always sanitize and strip unwanted tags defensively (`.replace(/<[^>]+>/g, '')`) before rendering headings or table-of-contents links.
+
+### 4. Mandatory Multi-Agent Review Protocol (3-Eye Principle)
+Before deploying content changes:
+1. **Developer Agent**: Implements the structural code/seed.
+2. **Product & Marketing Reviewer**: Audits whether the tone matches user benefits (*"Apakah kalimat ini menjawab masalah pengguna atau membicarakan jeroan sistem?"*).
+3. **QA/E2E Gate**: Validates that all automated tests (Playwright smoke tests & backend unit tests) pass 100%.

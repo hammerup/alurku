@@ -1513,7 +1513,7 @@ export default function AdminModal({
             <p className="text-neutral-500 dark:text-neutral-400 max-w-md text-center text-sm leading-relaxed mb-8">
               {tMsg(
                 'Please re-enter your admin password to access the System Configuration.',
-                'Silakan masukkan kembali kata sandi admin Anda untuk mengakses Konfigurasi Sistem.'
+                'Masukkan kembali kata sandi admin Anda untuk mengakses Konfigurasi Sistem.'
               )}
             </p>
 

@@ -3,6 +3,22 @@ import pytest
 from fastapi.testclient import TestClient
 from backend_api import app, get_current_user
 from database import SessionLocal, get_system_policies, set_security_log
+from services.tier_service import get_current_month_key
+
+@pytest.fixture(autouse=True)
+def reset_test_admin_state():
+    db = SessionLocal()
+    month_key = get_current_month_key()
+    set_security_log(db, f"ai_quota:test_admin:{month_key}", 0)
+    set_security_log(db, "ai_generate:test_admin", 0.0)
+    db.commit()
+    db.close()
+    yield
+    db = SessionLocal()
+    set_security_log(db, f"ai_quota:test_admin:{month_key}", 0)
+    set_security_log(db, "ai_generate:test_admin", 0.0)
+    db.commit()
+    db.close()
 
 @pytest.fixture
 def client():

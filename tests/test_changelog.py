@@ -25,7 +25,7 @@ def test_changelog_api_and_db_persistence():
         assert len(data_id) >= 20
         latest = data_id[0]
         assert "version" in latest
-        assert "v2.5.0" in latest["version"]
+        assert "v2.7.0" in latest["version"]
         assert "title" in latest
         assert "changes" in latest
         assert len(latest["changes"]) > 0

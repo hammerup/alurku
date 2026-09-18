@@ -49,9 +49,27 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
 
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState(null);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
+
+  // Hitung mundur lockout timer
+  useEffect(() => {
+    if (lockoutRemaining <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setLoginError(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutRemaining]);
 
   const [resetToken, setResetToken] = useState(() => {
     if (typeof window !== 'undefined') return new URLSearchParams(window.location.search).get('token') || '';
@@ -106,7 +124,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
       const wakeTimer = setTimeout(() => {
         showNotification(
           language === 'id'
-            ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+            ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
             : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
           'info'
         );
@@ -161,7 +179,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
     const wakeTimer = setTimeout(() => {
       showNotification(
         language === 'id'
-          ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
           : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
         'info'
       );
@@ -171,6 +189,8 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
       .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 75000 })
       .then((res) => {
         clearTimeout(wakeTimer);
+        setLoginError(null);
+        setLockoutRemaining(0);
         localStorage.setItem('alurku_auth', 'true');
         localStorage.setItem('alurku_token', res.data.token);
         localStorage.setItem('alurku_username', loginUsername.trim());
@@ -181,9 +201,33 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
       .catch((err) => {
         clearTimeout(wakeTimer);
         setIsLoading(false);
-        let errorMsg = 'Invalid username or password!';
-        if (err.response?.data?.detail) {
-          errorMsg = typeof err.response.data.detail === 'string' ? err.response.data.detail : errorMsg;
+        const detail = err.response?.data?.detail;
+        let errorMsg = language === 'id' ? 'Nama pengguna atau kata sandi salah!' : 'Invalid username or password!';
+
+        if (detail && typeof detail === 'object') {
+          if (detail.lockout) {
+            setLockoutRemaining(detail.remaining_seconds || 900);
+            setLoginError({
+              type: 'lockout',
+              remainingSeconds: detail.remaining_seconds || 900,
+              remainingMinutes: detail.remaining_minutes || 15,
+            });
+            errorMsg = language === 'id'
+              ? `Terlalu banyak percobaan gagal. Akun dikunci selama ${detail.remaining_minutes || 15} menit.`
+              : `Too many failed attempts. Account locked for ${detail.remaining_minutes || 15} minutes.`;
+          } else if (typeof detail.remaining_attempts === 'number') {
+            setLoginError({
+              type: 'wrong_password',
+              remainingAttempts: detail.remaining_attempts,
+            });
+            errorMsg = language === 'id'
+              ? `Kata sandi salah. Sisa percobaan: ${detail.remaining_attempts} kali sebelum akun dikunci.`
+              : `Incorrect password. Remaining attempts: ${detail.remaining_attempts} before account lockout.`;
+          } else if (detail.message) {
+            errorMsg = detail.message;
+          }
+        } else if (typeof detail === 'string') {
+          errorMsg = detail;
         } else if (err.response?.data) {
           errorMsg = typeof err.response.data === 'string' ? `Server Error: ${err.response.data}` : 'Server Error';
         } else if (err.message) {
@@ -208,7 +252,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
     const wakeTimer = setTimeout(() => {
       showNotification(
         language === 'id'
-          ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
           : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
         'info'
       );
@@ -234,7 +278,7 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
           setIsLoginMode(true);
           showNotification(
             language === 'id'
-              ? 'Akun berhasil dibuat! Silakan verifikasi email Anda untuk login.'
+              ? 'Akun berhasil dibuat! Cek email kamu untuk verifikasi sebelum masuk.'
               : 'Account created successfully! Please verify your email to login.',
             'success'
           );
@@ -322,5 +366,8 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
     handleRegister,
     handleForgotPassword,
     handleResetPassword,
+    loginError,
+    setLoginError,
+    lockoutRemaining,
   };
 }

@@ -299,7 +299,7 @@ export default function TaskDetailModal({
     if (!selectedTask?.id || !handleAddComment) return;
     handleAddComment(
       null,
-      `@all 🎥 ${tMsg("I've started a video meeting for this task! Join here:", "Saya telah memulai pertemuan video untuk tugas ini! Bergabung di sini:")} ${link}`
+      `@all 🎥 ${tMsg("I've started a video meeting for this task! Join here:", "Pertemuan video untuk tugas ini sudah dimulai! Yuk gabung di sini:")} ${link}`
     );
   };
 
@@ -307,7 +307,7 @@ export default function TaskDetailModal({
   const handleGenerateDesc = async () => {
     if (!editFormData.project_name) {
       const msg =
-        language === 'id' ? 'Silakan masukkan nama/judul tugas terlebih dahulu.' : 'Please enter a task name first.';
+        language === 'id' ? 'Yuk masukkan judul tugas terlebih dahulu.' : 'Please enter a task title first.';
       if (showNotification) showNotification(msg, 'warning');
       return;
     }
@@ -333,7 +333,7 @@ export default function TaskDetailModal({
   const handleEstimateEtc = async () => {
     if (!editFormData.project_name) {
       const msg =
-        language === 'id' ? 'Silakan masukkan judul tugas terlebih dahulu.' : 'Please enter a task name first.';
+        language === 'id' ? 'Yuk masukkan judul tugas terlebih dahulu.' : 'Please enter a task title first.';
       if (showNotification) showNotification(msg, 'warning');
       return;
     }

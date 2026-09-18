@@ -63,7 +63,7 @@ export default function TaskFormModal({
   const handleGenerateDesc = async () => {
     if (!formData.project_name) {
       showAlert(
-        language === 'id' ? 'Silakan masukkan nama/judul tugas terlebih dahulu.' : 'Please enter a task name first.',
+        language === 'id' ? 'Yuk masukkan judul tugas terlebih dahulu.' : 'Please enter a task title first.',
         tMsg('Task Title Required', 'Judul Tugas Diperlukan'),
         'warning'
       );
@@ -184,7 +184,7 @@ Format:
   const handleEstimateEtc = async () => {
     if (!formData.project_name) {
       showAlert(
-        language === 'id' ? 'Silakan masukkan judul tugas terlebih dahulu.' : 'Please enter a task name first.',
+        language === 'id' ? 'Yuk masukkan judul tugas terlebih dahulu.' : 'Please enter a task title first.',
         tMsg('Task Title Required', 'Judul Tugas Diperlukan'),
         'warning'
       );

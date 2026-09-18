@@ -62,6 +62,7 @@ import WorkspaceOverview from './components/WorkspaceOverview';
 import ProFeatureGate from './components/ProFeatureGate';
 import UpgradeModal from './components/UpgradeModal';
 import CommandBarModal from './components/CommandBarModal';
+import LandingDocumentationPage from './components/LandingPage/LandingDocumentationPage';
 
 import './api/axiosSetup';
 
@@ -73,6 +74,9 @@ function App() {
     showAuthForm,
     loginUsername,
     loginPassword,
+    loginError,
+    setLoginError,
+    lockoutRemaining,
     regFullName,
     regEmail,
     regConfirmPassword,
@@ -872,6 +876,9 @@ function App() {
           handleForgotPassword={handleForgotPassword}
           handleResetPassword={handleResetPassword}
           loginWithGoogle={loginWithGoogle}
+          loginError={loginError}
+          setLoginError={setLoginError}
+          lockoutRemaining={lockoutRemaining}
           notification={notification}
           isInstallable={isInstallable}
           handleInstallClick={handleInstallClick}
@@ -1423,8 +1430,8 @@ function App() {
               </h2>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-8">
                 {tMsg(
-                  'We have updated our Terms of Service and Privacy Policy to better protect your data and improve our services. Please review and accept them to continue using Alurku.',
-                  'Kami telah memperbarui Syarat dan Ketentuan serta Kebijakan Privasi untuk melindungi data Anda dan meningkatkan layanan kami. Silakan tinjau dan setujui untuk melanjutkan.'
+                  'We have updated our Terms of Service and Privacy Policy to better protect your data and improve our services. Please review and accept them to continue using alurku.',
+                  'Kami memperbarui Syarat dan Ketentuan serta Kebijakan Privasi untuk melindungi privasi data dan meningkatkan kenyamananmu. Tinjau dan setujui untuk melanjutkan penggunaan alurku.'
                 )}
               </p>
               <div className="flex flex-col gap-3">
@@ -1496,6 +1503,8 @@ function App() {
             <MyTasksPage />
           ) : currentPath === '/catatan-rilis' || currentPath.endsWith('/catatan-rilis') || currentPath === '/changelog' || currentPath.endsWith('/changelog') ? (
             <ChangelogPage language={language} setLanguage={setLanguage} isInsideApp={true} />
+          ) : currentPath.startsWith('/dokumentasi') ? (
+            <LandingDocumentationPage language={language} isInsideApp={true} />
           ) : currentPath === '/dashboard' || currentPath.endsWith('/dashboard') || currentPath === '/dasbor' ? (
             <HomeDashboard />
           ) : !selectedBoard ? (
@@ -1726,7 +1735,7 @@ function App() {
           {!(currentPath.endsWith('/chat') || (selectedBoard && viewMode === 'kanban') || currentPath.endsWith('/inbox') || currentPath.includes('/leaves') || currentPath.includes('/cuti') || currentPath.includes('/meetings-leaves')) && (
             <footer className="flex flex-col sm:flex-row py-2.5 px-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black justify-between items-center gap-2 sm:gap-4 shrink-0 z-40 relative">
               <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest text-center sm:text-left">
-                © {new Date().getFullYear()} Alurku.
+                © {new Date().getFullYear()} alurku.
               </p>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5">
                 <button

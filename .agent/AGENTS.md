@@ -170,3 +170,4 @@ tests/           — Test suite
 - Code is readable and maintainable
 - Performance is acceptable
 - User requirements are met
+- **Public Content Quality Gate**: Zero internal infrastructure leaks (Cloudflare R2, Boto3, internal tokens), 100% price/tier consistency with `/harga`, clean plain-text headings (no raw HTML tags), and customer-benefit-first writing.

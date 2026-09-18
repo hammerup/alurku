@@ -36,8 +36,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
           <div className="prose dark:prose-invert max-w-none">
             <p className="text-lg text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-10">
               {tMsg(
-                'This Master Service Agreement ("Agreement") constitutes a legally binding contract between you (whether personally or on behalf of an entity) and Alurku concerning your access to and use of the Alurku enterprise workload management platform. By authenticating via Google SSO, clicking "I Agree," or otherwise accessing the system, you expressly acknowledge that you have read, understood, and agree to be bound by all of these enterprise terms.',
-                'Perjanjian Layanan Utama ("Perjanjian") ini merupakan kontrak yang mengikat secara hukum antara Anda (baik secara pribadi atau atas nama entitas) dan Alurku mengenai akses dan penggunaan Anda terhadap platform manajemen beban kerja perusahaan Alurku. Dengan masuk melalui Google SSO, mengeklik "Saya Setuju," atau mengakses sistem, Anda secara tegas menyatakan bahwa Anda telah membaca, memahami, dan setuju untuk terikat oleh seluruh ketentuan perusahaan ini.'
+                'This Master Service Agreement ("Agreement") constitutes a legally binding contract between you (whether personally or on behalf of an entity) and alurku. concerning your access to and use of the alurku. enterprise workload management platform. By authenticating via Google SSO, clicking "I Agree," or otherwise accessing the system, you expressly acknowledge that you have read, understood, and agree to be bound by all of these enterprise terms.',
+                'Perjanjian Layanan Utama ("Perjanjian") ini merupakan kontrak yang mengikat secara hukum antara Anda (baik secara pribadi atau atas nama entitas) dan alurku. mengenai akses dan penggunaan Anda terhadap platform manajemen beban kerja perusahaan alurku. Dengan masuk melalui Google SSO, mengeklik "Saya Setuju," atau mengakses sistem, Anda secara tegas menyatakan bahwa Anda telah membaca, memahami, dan setuju untuk terikat oleh seluruh ketentuan perusahaan ini.'
               )}
             </p>
 
@@ -48,8 +48,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'For the purposes of this Agreement: "Platform" refers to the Alurku software, website, and related APIs. "User", "You", and "Your" refer to the individual accessing the Platform. "Content" refers to any data, text, or materials uploaded by the User. "AI Assistant" refers to the integrated third-party large language models utilized within the Platform.',
-                  'Untuk tujuan Perjanjian ini: "Platform" merujuk pada perangkat lunak, situs web, dan API terkait Alurku. "Pengguna", "Anda", dan "Milik Anda" merujuk pada individu yang mengakses Platform. "Konten" merujuk pada data, teks, atau materi apa pun yang diunggah oleh Pengguna. "Asisten AI" merujuk pada model bahasa besar pihak ketiga yang terintegrasi di dalam Platform.'
+                  'For the purposes of this Agreement: "Platform" refers to the alurku. software, website, and related APIs. "User", "You", and "Your" refer to the individual accessing the Platform. "Content" refers to any data, text, or materials uploaded by the User. "AI Assistant" refers to the integrated third-party large language models utilized within the Platform.',
+                  'Untuk tujuan Perjanjian ini: "Platform" merujuk pada perangkat lunak, situs web, dan API terkait alurku. "Pengguna", "Anda", dan "Milik Anda" merujuk pada individu yang mengakses Platform. "Konten" merujuk pada data, teks, atau materi apa pun yang diunggah oleh Pengguna. "Asisten AI" merujuk pada model bahasa besar pihak ketiga yang terintegrasi di dalam Platform.'
                 )}
               </p>
             </div>
@@ -61,8 +61,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Subject to your compliance with this Agreement, Alurku grants you a limited, non-exclusive, non-transferable, and revocable license to access and use the Platform strictly for internal business purposes. You are strictly prohibited from:',
-                  'Dengan tunduk pada kepatuhan Anda terhadap Perjanjian ini, Alurku memberi Anda lisensi terbatas, non-eksklusif, tidak dapat dialihkan, dan dapat dibatalkan untuk mengakses dan menggunakan Platform secara ketat untuk tujuan bisnis internal. Anda dilarang keras untuk:'
+                  'Subject to your compliance with this Agreement, alurku. grants you a limited, non-exclusive, non-transferable, and revocable license to access and use the Platform strictly for internal business purposes. You are strictly prohibited from:',
+                  'Dengan tunduk pada kepatuhan Anda terhadap Perjanjian ini, alurku. memberi Anda lisensi terbatas, non-eksklusif, tidak dapat dialihkan, dan dapat dibatalkan untuk mengakses dan menggunakan Platform secara ketat untuk tujuan bisnis internal. Anda dilarang keras untuk:'
                 )}
               </p>
               <ul className="list-disc pl-5 space-y-2 text-base text-neutral-600 dark:text-neutral-400 font-medium">
@@ -94,8 +94,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Access is strictly provisioned for Alurku employees and verified partners through Single Sign-On (SSO) authentication. You are solely responsible for safeguarding your credentials. Any unauthorized access attempts, privilege escalation, or lateral movement within the network will be heavily logged and may result in immediate account termination, network ban, and potential legal action.',
-                  'Akses disediakan secara ketat untuk karyawan dan mitra terverifikasi Alurku melalui otentikasi Single Sign-On (SSO). Anda sepenuhnya bertanggung jawab untuk menjaga kredensial Anda. Setiap upaya akses tidak sah, eskalasi hak istimewa, atau pergerakan lateral dalam jaringan akan dicatat secara ketat dan dapat mengakibatkan penghentian akun, larangan jaringan, dan tindakan hukum potensial.'
+                  'Access is strictly provisioned for alurku. employees and verified partners through Single Sign-On (SSO) authentication. You are solely responsible for safeguarding your credentials. Any unauthorized access attempts, privilege escalation, or lateral movement within the network will be heavily logged and may result in immediate account termination, network ban, and potential legal action.',
+                  'Akses disediakan secara ketat untuk karyawan dan mitra terverifikasi alurku. melalui otentikasi Single Sign-On (SSO). Anda sepenuhnya bertanggung jawab untuk menjaga kredensial Anda. Setiap upaya akses tidak sah, eskalasi hak istimewa, atau pergerakan lateral dalam jaringan akan dicatat secara ketat dan dapat mengakibatkan penghentian akun, larangan jaringan, dan tindakan hukum potensial.'
                 )}
               </p>
             </div>
@@ -133,8 +133,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'The Platform integrates advanced enterprise Large Language Models to automate workflows and assist with task estimation. AI-generated content—including but not limited to task drafts, meeting summaries, and planning suggestions—is provided strictly on an "AS IS" and "AS AVAILABLE" basis. You acknowledge that AI may occasionally produce inaccurate, biased, or incomplete information ("Hallucinations"). You must independently verify all AI outputs before utilizing them in production workflows. Alurku assumes zero liability for business damages resulting from reliance on AI-generated content.',
-                  'Platform ini mengintegrasikan Model Bahasa Besar (LLM) tingkat lanjut untuk mengotomatiskan alur kerja dan membantu estimasi tugas. Konten yang dihasilkan AI—termasuk namun tidak terbatas pada draf tugas, ringkasan rapat, dan saran perencanaan—disediakan secara ketat "SEBAGAIMANA ADANYA" dan "SEBAGAIMANA TERSEDIA". Anda mengakui bahwa AI sesekali dapat menghasilkan informasi yang tidak akurat, bias, atau tidak lengkap ("Halusinasi"). Anda harus memverifikasi secara independen semua keluaran AI sebelum menggunakannya. Alurku tidak memikul tanggung jawab apa pun atas kerugian bisnis yang diakibatkan oleh ketergantungan pada konten AI.'
+                  'The Platform integrates advanced enterprise Large Language Models to automate workflows and assist with task estimation. AI-generated content—including but not limited to task drafts, meeting summaries, and planning suggestions—is provided strictly on an "AS IS" and "AS AVAILABLE" basis. You acknowledge that AI may occasionally produce inaccurate, biased, or incomplete information ("Hallucinations"). You must independently verify all AI outputs before utilizing them in production workflows. alurku. assumes zero liability for business damages resulting from reliance on AI-generated content.',
+                  'Platform ini mengintegrasikan Model Bahasa Besar (LLM) tingkat lanjut untuk mengotomatiskan alur kerja dan membantu estimasi tugas. Konten yang dihasilkan AI—termasuk namun tidak terbatas pada draf tugas, ringkasan rapat, dan saran perencanaan—disediakan secara ketat "SEBAGAIMANA ADANYA" dan "SEBAGAIMANA TERSEDIA". Anda mengakui bahwa AI sesekali dapat menghasilkan informasi yang tidak akurat, bias, atau tidak lengkap ("Halusinasi"). Anda harus memverifikasi secara independen semua keluaran AI sebelum menggunakannya. alurku. tidak memikul tanggung jawab apa pun atas kerugian bisnis yang diakibatkan oleh ketergantungan pada konten AI.'
                 )}
               </p>
             </div>
@@ -146,8 +146,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'Alurku runs on dedicated Virtual Private Server (VPS) and containerized cloud hosting architecture designed for continuous availability. While we strive for 99.9% operational availability, the Platform is provided without warranties of uninterrupted service and may undergo scheduled maintenance or brief emergency patching. Commercial uptime guarantees are available exclusively to enterprise agreements.',
-                  'Alurku berjalan pada infrastruktur Virtual Private Server (VPS) berdedikasi dan arsitektur cloud terkontainerisasi yang dirancang untuk ketersediaan berkelanjutan. Meskipun kami berupaya mencapai ketersediaan operasional 99,9%, Layanan disediakan tanpa jaminan bebas gangguan mutlak dan dapat sewaktu-waktu menjalani pemeliharaan terjadwal atau pembaruan darurat. Jaminan uptime komersial tersedia secara eksklusif dalam perjanjian paket enterprise.'
+                  'alurku. runs on dedicated Virtual Private Server (VPS) and containerized cloud hosting architecture designed for continuous availability. While we strive for 99.9% operational availability, the Platform is provided without warranties of uninterrupted service and may undergo scheduled maintenance or brief emergency patching. Commercial uptime guarantees are available exclusively to enterprise agreements.',
+                  'alurku. berjalan pada infrastruktur Virtual Private Server (VPS) berdedikasi dan arsitektur cloud terkontainerisasi yang dirancang untuk ketersediaan berkelanjutan. Meskipun kami berupaya mencapai ketersediaan operasional 99,9%, Layanan disediakan tanpa jaminan bebas gangguan mutlak dan dapat sewaktu-waktu menjalani pemeliharaan terjadwal atau pembaruan darurat. Jaminan uptime komersial tersedia secara eksklusif dalam perjanjian paket enterprise.'
                 )}
               </p>
             </div>
@@ -159,8 +159,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'All project data, task configurations, meeting notes, flowcharts, and chat logs generated or uploaded within this Platform remain the sole and exclusive Intellectual Property (IP) of Alurku. You do not acquire any ownership rights by using the Platform. Furthermore, the source code, design, and architecture of Alurku are protected by copyright and trade secret laws.',
-                  'Semua data proyek, konfigurasi tugas, catatan rapat, bagan alir, dan log obrolan yang dihasilkan atau diunggah di dalam Platform ini tetap menjadi Hak Kekayaan Intelektual (HAKI) tunggal dan eksklusif milik Alurku. Anda tidak memperoleh hak kepemilikan apa pun dengan menggunakan Platform ini. Selain itu, kode sumber, desain, dan arsitektur Alurku dilindungi oleh undang-undang hak cipta dan rahasia dagang.'
+                  'All project data, task configurations, meeting notes, flowcharts, and chat logs generated or uploaded within this Platform remain the sole and exclusive Intellectual Property (IP) of alurku.. You do not acquire any ownership rights by using the Platform. Furthermore, the source code, design, and architecture of alurku. are protected by copyright and trade secret laws.',
+                  'Semua data proyek, konfigurasi tugas, catatan rapat, bagan alir, dan log obrolan yang dihasilkan atau diunggah di dalam Platform ini tetap menjadi Hak Kekayaan Intelektual (HAKI) tunggal dan eksklusif milik alurku.. Anda tidak memperoleh hak kepemilikan apa pun dengan menggunakan Platform ini. Selain itu, kode sumber, desain, dan arsitektur alurku. dilindungi oleh undang-undang hak cipta dan rahasia dagang.'
                 )}
               </p>
             </div>
@@ -193,8 +193,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'You agree to defend, indemnify, and hold harmless Alurku, its affiliates, developers, and licensors from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys’ fees) arising out of or relating to your violation of these Terms of Service or your unauthorized use of the Platform.',
-                  'Anda setuju untuk membela, mengganti rugi, dan membebaskan Alurku, afiliasinya, pengembang, dan pemberi lisensinya dari dan terhadap klaim, kewajiban, kerugian, kerusakan, putusan, penghargaan, kerugian, biaya, pengeluaran, atau biaya apa pun (termasuk biaya pengacara yang wajar) yang timbul dari atau terkait dengan pelanggaran Anda terhadap Ketentuan Layanan ini atau penggunaan Platform Anda yang tidak sah.'
+                  'You agree to defend, indemnify, and hold harmless alurku., its affiliates, developers, and licensors from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys’ fees) arising out of or relating to your violation of these Terms of Service or your unauthorized use of the Platform.',
+                  'Anda setuju untuk membela, mengganti rugi, dan membebaskan alurku., afiliasinya, pengembang, dan pemberi lisensinya dari dan terhadap klaim, kewajiban, kerugian, kerusakan, putusan, penghargaan, kerugian, biaya, pengeluaran, atau biaya apa pun (termasuk biaya pengacara yang wajar) yang timbul dari atau terkait dengan pelanggaran Anda terhadap Ketentuan Layanan ini atau penggunaan Platform Anda yang tidak sah.'
                 )}
               </p>
             </div>
@@ -206,8 +206,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4 uppercase">
                 {tMsg(
-                  'TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL Alurku, ITS DEVELOPERS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, INCLUDING WITHOUT LIMITATION DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA, OR OTHER INTANGIBLE LOSSES, THAT RESULT FROM THE USE OF, OR INABILITY TO USE, THIS PLATFORM.',
-                  'SEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, DALAM KEADAAN APA PUN Alurku, PENGEMBANGNYA, ATAU AFILIASINYA TIDAK AKAN BERTANGGUNG JAWAB ATAS KERUGIAN TIDAK LANGSUNG, HUKUMAN, INSIDENTAL, KHUSUS, KONSEKUENSIAL, ATAU KERUGIAN CONTOH, TERMASUK NAMUN TIDAK TERBATAS PADA KERUGIAN ATAS HILANGNYA KEUNTUNGAN, NIAT BAIK, PENGGUNAAN, DATA, ATAU KERUGIAN TAK BERWUJUD LAINNYA, YANG DIHASILKAN DARI PENGGUNAAN, ATAU KETIDAKMAMPUAN MENGGUNAKAN, PLATFORM INI.'
+                  'TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL alurku., ITS DEVELOPERS, OR AFFILIATES BE LIABLE FOR ANY INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES, INCLUDING WITHOUT LIMITATION DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA, OR OTHER INTANGIBLE LOSSES, THAT RESULT FROM THE USE OF, OR INABILITY TO USE, THIS PLATFORM.',
+                  'SEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, DALAM KEADAAN APA PUN alurku., PENGEMBANGNYA, ATAU AFILIASINYA TIDAK AKAN BERTANGGUNG JAWAB ATAS KERUGIAN TIDAK LANGSUNG, HUKUMAN, INSIDENTAL, KHUSUS, KONSEKUENSIAL, ATAU KERUGIAN CONTOH, TERMASUK NAMUN TIDAK TERBATAS PADA KERUGIAN ATAS HILANGNYA KEUNTUNGAN, NIAT BAIK, PENGGUNAAN, DATA, ATAU KERUGIAN TAK BERWUJUD LAINNYA, YANG DIHASILKAN DARI PENGGUNAAN, ATAU KETIDAKMAMPUAN MENGGUNAKAN, PLATFORM INI.'
                 )}
               </p>
             </div>
@@ -245,8 +245,8 @@ export default function TermsOfServiceModal({ setIsTermsOpen, language }) {
               </h3>
               <p className="text-base text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed mb-4">
                 {tMsg(
-                  'This Agreement constitutes the entire agreement between you and Alurku regarding the use of the Platform. If any provision of these Terms is held to be invalid or unenforceable, such provision shall be struck and the remaining provisions shall be enforced to the fullest extent under law.',
-                  'Perjanjian ini merupakan keseluruhan perjanjian antara Anda dan Alurku mengenai penggunaan Platform. Jika ada ketentuan dalam Ketentuan ini yang dianggap tidak sah atau tidak dapat dilaksanakan, ketentuan tersebut akan dihapus dan ketentuan yang tersisa akan dilaksanakan sejauh mungkin berdasarkan hukum.'
+                  'This Agreement constitutes the entire agreement between you and alurku. regarding the use of the Platform. If any provision of these Terms is held to be invalid or unenforceable, such provision shall be struck and the remaining provisions shall be enforced to the fullest extent under law.',
+                  'Perjanjian ini merupakan keseluruhan perjanjian antara Anda dan alurku. mengenai penggunaan Platform. Jika ada ketentuan dalam Ketentuan ini yang dianggap tidak sah atau tidak dapat dilaksanakan, ketentuan tersebut akan dihapus dan ketentuan yang tersisa akan dilaksanakan sejauh mungkin berdasarkan hukum.'
                 )}
               </p>
             </div>

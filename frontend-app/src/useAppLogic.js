@@ -267,9 +267,27 @@ export default function useAppLogic() {
   });
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState(null);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
+
+  // Hitung mundur lockout timer
+  useEffect(() => {
+    if (lockoutRemaining <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setLoginError(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutRemaining]);
 
   const [resetToken, setResetToken] = useState(() => {
     if (typeof window !== 'undefined') return new URLSearchParams(window.location.search).get('token');
@@ -624,13 +642,13 @@ export default function useAppLogic() {
           const singleMsg = newNotifs[0].message.replace(/(?:<!--|&lt;!--)\s*TASK_ID:\d+\s*(?:-->|--&gt;)/gi, '');
           const multiMsg =
             language === 'id'
-              ? `Anda memiliki ${newNotifs.length} notifikasi aktivitas baru.`
+              ? `Kamu memiliki ${newNotifs.length} notifikasi aktivitas baru.`
               : `You have ${newNotifs.length} new activity notifications.`;
           const displayMsg = newNotifs.length === 1 ? singleMsg : multiMsg;
 
           // Tampilkan Desktop Notif jika diizinkan
           if (browserNotifEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Alurku', { body: displayMsg });
+            new Notification('alurku.', { body: displayMsg });
           }
 
           // Tampilkan Toast In-App Notif
@@ -810,7 +828,7 @@ export default function useAppLogic() {
       setTimeout(() => {
         showNotification(
           language === 'id'
-            ? 'Akun Uji Coba Berhasil Dibuat! Silakan cek email Anda untuk mengatur password.'
+            ? 'Akun Uji Coba Berhasil Dibuat! Cek email Anda untuk mengatur kata sandi.'
             : 'Trial Account Created! Please check your email to set your password.',
           'success'
         );
@@ -848,10 +866,10 @@ export default function useAppLogic() {
           ? [
               {
                 popover: {
-                  title: tMsg('Welcome to Alurku! 🚀', 'Selamat datang di Alurku! 🚀'),
+                  title: tMsg('Welcome to alurku.! 🚀', 'Selamat datang di alurku.! 🚀'),
                   description: tMsg(
                     'This is your main dashboard. Let us give you a quick tour! Click the logo anytime to return here.',
-                    'Ini adalah dasbor utama Anda. Mari kita mulai tur singkat! Klik logo kapan saja untuk kembali ke sini.'
+                    'Ini adalah dasbor utama kamu. Yuk mulai tur singkat! Klik logo kapan saja untuk kembali ke sini.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -863,7 +881,7 @@ export default function useAppLogic() {
                   title: tMsg('AI Daily Briefing', 'Ringkasan Harian AI'),
                   description: tMsg(
                     'Get a quick AI-powered summary of your workload and priorities for the day.',
-                    'Dapatkan ringkasan singkat bertenaga AI tentang beban kerja dan prioritas Anda hari ini.'
+                    'Dapatkan ringkasan singkat bertenaga AI tentang beban kerja dan prioritasmu hari ini.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -872,10 +890,10 @@ export default function useAppLogic() {
               {
                 element: '.tour-my-capacity',
                 popover: {
-                  title: tMsg('Your Capacity Meter', 'Pengukur Kapasitas Anda'),
+                  title: tMsg('Your Capacity Meter', 'Pengukur Kapasitasmu'),
                   description: tMsg(
                     "This meter shows your remaining active workload in hours. It also warns you if you're approaching a weekly or monthly overload, helping you manage your bandwidth.",
-                    'Pengukur ini menunjukkan sisa beban kerja aktif Anda dalam jam. Ini juga akan memberi peringatan jika Anda mendekati kelebihan beban mingguan atau bulanan, membantu Anda mengelola kapasitas kerja.'
+                    'Pengukur ini menunjukkan sisa beban kerja aktif kamu dalam jam. Ini juga akan memberi peringatan jika mendekati batas mingguan atau bulanan, membantumu mengelola kapasitas kerja.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -887,7 +905,7 @@ export default function useAppLogic() {
                   title: tMsg('Quick Stats', 'Statistik Cepat'),
                   description: tMsg(
                     'Keep an eye on your personal tasks, active projects, and any overdue or critical items.',
-                    'Pantau tugas pribadi Anda, proyek aktif, dan item yang terlambat atau kritis.'
+                    'Pantau tugas pribadimu, proyek aktif, dan tugas yang terlambat atau kritis.'
                   ),
                   side: 'top',
                   align: 'start',
@@ -896,10 +914,10 @@ export default function useAppLogic() {
               {
                 element: '.tour-top-queue',
                 popover: {
-                  title: tMsg('My Top Queue', 'Antrean Teratas Saya'),
+                  title: tMsg('My Top Queue', 'Antrean Teratas'),
                   description: tMsg(
                     'Tackle your highest priority pending tasks here to keep your work flowing smoothly.',
-                    'Selesaikan tugas tertunda dengan prioritas tertinggi Anda di sini agar pekerjaan Anda berjalan lancar.'
+                    'Selesaikan tugas prioritas tertinggimu di sini agar pekerjaan tetap mengalir lancar.'
                   ),
                   side: 'top',
                   align: 'start',
@@ -911,7 +929,7 @@ export default function useAppLogic() {
                   title: tMsg('Recent Comments', 'Komentar Terbaru'),
                   description: tMsg(
                     'Stay in the loop with the latest discussions, task updates, and teammate feedback.',
-                    'Tetap terinformasi dengan diskusi terbaru, pembaruan tugas, dan masukan rekan tim.'
+                    'Pantau diskusi terbaru, pembaruan tugas, dan masukan dari rekan tim.'
                   ),
                   side: 'top',
                   align: 'start',
@@ -923,7 +941,7 @@ export default function useAppLogic() {
                   title: tMsg('Create a Project', 'Buat Proyek'),
                   description: tMsg(
                     'Start a new project workspace here. You can invite your team members later.',
-                    'Mulai ruang kerja proyek baru di sini. Anda dapat mengundang anggota tim nanti.'
+                    'Mulai ruang kerja proyek baru di sini. Kamu dapat mengundang anggota tim kapan saja.'
                   ),
                   side: 'left',
                   align: 'start',
@@ -935,7 +953,7 @@ export default function useAppLogic() {
                   title: tMsg('Global Board', 'Papan Global'),
                   description: tMsg(
                     'Access your Global Board from the sidebar anytime to see tasks from all projects.',
-                    'Akses Papan Global Anda dari bilah sisi kapan saja untuk melihat tugas dari semua proyek.'
+                    'Akses Papan Global dari bilah sisi kapan saja untuk melihat tugas dari semua proyek.'
                   ),
                   side: 'right',
                   align: 'start',
@@ -952,7 +970,7 @@ export default function useAppLogic() {
                   title: tMsg('Personal Tasks', 'Tugas Pribadi'),
                   description: tMsg(
                     'Access your private scratchpad workspace here. These tasks are isolated and only visible to you.',
-                    'Akses ruang kerja catatan pribadi Anda di sini. Tugas di sini terisolasi dan hanya dapat dilihat oleh Anda.'
+                    'Akses ruang kerja catatan pribadi kamu di sini. Tugas di sini terisolasi dan hanya dapat kamu lihat sendiri.'
                   ),
                   side: 'right',
                   align: 'start',
@@ -966,10 +984,10 @@ export default function useAppLogic() {
               {
                 element: '.tour-project-card',
                 popover: {
-                  title: tMsg('Your Projects', 'Proyek Anda'),
+                  title: tMsg('Your Projects', 'Proyekmu'),
                   description: tMsg(
                     'Your individual project workspaces will appear here in the sidebar.',
-                    'Ruang kerja proyek individual Anda akan muncul di sini di bilah sisi.'
+                    'Ruang kerja proyek kamu akan muncul di bilah sisi ini.'
                   ),
                   side: 'right',
                   align: 'start',
@@ -986,7 +1004,7 @@ export default function useAppLogic() {
                   title: tMsg('Quick Actions', 'Aksi Cepat'),
                   description: tMsg(
                     'Quickly access chat, export your data, view notifications, and open settings.',
-                    'Akses obrolan dengan cepat, ekspor data Anda, lihat notifikasi, dan buka pengaturan.'
+                    'Akses obrolan dengan cepat, ekspor data, lihat notifikasi, dan buka pengaturan.'
                   ),
                   side: 'right',
                   align: 'start',
@@ -1003,7 +1021,7 @@ export default function useAppLogic() {
                   title: tMsg('Account Options', 'Opsi Akun'),
                   description: tMsg(
                     'Manage your profile, set personal leaves, or start this tour again from the Account menu.',
-                    'Kelola profil Anda, atur cuti pribadi, atau mulai tur ini lagi dari menu Akun.'
+                    'Kelola profil, atur cuti pribadi, atau mulai tur ini lagi dari menu Akun.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -1019,7 +1037,7 @@ export default function useAppLogic() {
                   title: tMsg("You're All Set! 🎉", 'Semua Siap! 🎉'),
                   description: tMsg(
                     "That's the end of the tour! Now let's put it into practice. Go ahead and create your first project to get started!",
-                    'Sekian tur kali ini! Sekarang mari kita praktikkan. Ayo buat proyek pertamamu sekarang untuk memulai!'
+                    'Sekian tur kali ini! Sekarang yuk kita praktikkan. Buat proyek pertamamu sekarang untuk memulai!'
                   ),
                   align: 'center',
                 },
@@ -1031,8 +1049,8 @@ export default function useAppLogic() {
                 popover: {
                   title: tMsg('Home Dashboard', 'Beranda Utama'),
                   description: tMsg(
-                    'Click the Alurku logo anytime to return to your Home Dashboard.',
-                    'Klik logo Alurku kapan saja untuk kembali ke Beranda Utama Anda.'
+                    'Click the alurku. logo anytime to return to your Home Dashboard.',
+                    'Klik logo alurku. kapan saja untuk kembali ke Beranda Utama kamu.'
                   ),
                   side: 'right',
                   align: 'center',
@@ -1044,7 +1062,7 @@ export default function useAppLogic() {
                   title: tMsg('Project Path', 'Jalur Proyek'),
                   description: tMsg(
                     'Here you can easily identify the name of the current project workspace.',
-                    'Di sini Anda dapat dengan mudah mengidentifikasi nama ruang kerja proyek saat ini.'
+                    'Di sini kamu dapat dengan mudah melihat nama ruang kerja proyek saat ini.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -1056,7 +1074,7 @@ export default function useAppLogic() {
                   title: tMsg('Manage Team & Invites', 'Kelola Tim & Undangan'),
                   description: tMsg(
                     'Invite your colleagues to this project or manage their access here. You will also see project invitation notifications here.',
-                    'Undang rekan kerja Anda ke proyek ini atau kelola akses mereka di sini. Notifikasi undangan proyek juga akan muncul di sini.'
+                    'Undang rekan tim ke proyek ini atau kelola akses mereka di sini. Notifikasi undangan proyek juga akan muncul di sini.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -1081,7 +1099,7 @@ export default function useAppLogic() {
                   title: tMsg('Smart Filters', 'Filter Cerdas'),
                   description: tMsg(
                     'Filter tasks by status, category, or click "My Tasks" to instantly see your workload.',
-                    'Saring tugas berdasarkan status, kategori, atau klik "Tugas Saya" untuk langsung melihat beban kerja Anda.'
+                    'Saring tugas berdasarkan status, kategori, atau klik "Tugas Saya" untuk langsung melihat beban kerjamu.'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -1092,8 +1110,8 @@ export default function useAppLogic() {
                 popover: {
                   title: tMsg('Create Task', 'Buat Tugas'),
                   description: tMsg(
-                    'Let\'s simulate creating a request! Click the actual "New Request" button to open the form.',
-                    'Mari kita simulasikan pembuatan permintaan! Klik tombol "Tugas Baru" yang asli untuk membuka formulir.'
+                    "Let's simulate creating a request! Click the actual \"New Request\" button to open the form.",
+                    'Yuk simulasikan pembuatan tugas! Klik tombol "Tugas Baru" yang asli untuk membuka formulir.'
                   ),
                   side: 'left',
                   align: 'start',
@@ -1112,7 +1130,7 @@ export default function useAppLogic() {
                   title: tMsg('Smart Assistant AI', 'Asisten Pintar AI'),
                   description: tMsg(
                     'You can now type your request naturally and let the AI draft the task, deadline, and checklist for you!',
-                    'Anda kini dapat mengetik permintaan secara alami dan biarkan AI menyusun tugas, tenggat waktu, dan daftar periksa untuk Anda!'
+                    'Kamu kini dapat mengetik kebutuhanmu secara alami dan biarkan AI menyusun tugas, tenggat waktu, dan daftar periksa untukmu!'
                   ),
                   side: 'bottom',
                   align: 'start',
@@ -1128,7 +1146,7 @@ export default function useAppLogic() {
                   title: tMsg('Manual Entry', 'Isi Manual'),
                   description: tMsg(
                     'Prefer the old way? Click "Just Fill Manually" to open the standard task form.',
-                    'Lebih suka cara lama? Klik "Isi Manual Saja" untuk membuka formulir tugas standar.'
+                    'Lebih suka cara standar? Klik "Isi Manual Saja" untuk membuka formulir tugas biasa.'
                   ),
                   side: 'top',
                   align: 'start',
@@ -1147,7 +1165,7 @@ export default function useAppLogic() {
                   title: tMsg('Task Title', 'Judul Tugas'),
                   description: tMsg(
                     'Enter the title of your campaign or task here.',
-                    'Masukkan judul kampanye atau tugas Anda di sini.'
+                    'Masukkan judul tugas atau proyekmu di sini.'
                   ),
                   side: 'top',
                   align: 'start',
@@ -1163,7 +1181,7 @@ export default function useAppLogic() {
                   title: tMsg('Smart Assignment', 'Penugasan Cerdas'),
                   description: tMsg(
                     'Type a name, or type "@" to search and instantly assign this to a team member. They will get an email!',
-                    'Ketik nama, atau ketik "@" untuk mencari dan langsung menugaskan ini ke anggota tim. Mereka akan mendapat email!'
+                    'Ketik nama, atau ketik "@" untuk mencari dan langsung menugaskan ini ke rekan tim. Mereka akan mendapat notifikasi email!'
                   ),
                   side: 'top',
                   align: 'start',
@@ -1187,7 +1205,7 @@ export default function useAppLogic() {
                   title: tMsg('Sub-task Delegation', 'Delegasi Sub-tugas'),
                   description: tMsg(
                     'Break down the task into smaller checklists and assign them to different people.',
-                    'Pecah tugas menjadi daftar periksa yang lebih kecil dan tugaskan ke orang yang berbeda.'
+                    'Pecah tugas menjadi daftar periksa yang lebih terperinci dan delegasikan ke rekan tim.'
                   ),
                   side: 'top',
                   align: 'start',
@@ -1199,7 +1217,7 @@ export default function useAppLogic() {
                   title: tMsg('Submit Request', 'Kirim Permintaan'),
                   description: tMsg(
                     'Once filled, hit Create Task. That concludes our workspace tour! 🚀',
-                    'Setelah diisi, tekan Buat Tugas. Itu mengakhiri tur ruang kerja kita! 🚀'
+                    'Setelah terisi, tekan Buat Tugas. Selesai sudah tur ruang kerja kita! 🚀'
                   ),
                   side: 'top',
                   align: 'start',
@@ -1291,7 +1309,7 @@ export default function useAppLogic() {
       const wakeTimer = setTimeout(() => {
         showNotification(
           language === 'id'
-            ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+            ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
             : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
           'info'
         );
@@ -2026,7 +2044,7 @@ export default function useAppLogic() {
       const wakeTimer = setTimeout(() => {
         showNotification(
           language === 'id'
-            ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+            ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
             : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
           'info'
         );
@@ -2038,7 +2056,7 @@ export default function useAppLogic() {
         setIsLoading(false);
         showNotification(
           language === 'id'
-            ? 'Koneksi ke server memakan waktu terlalu lama. Silakan muat ulang halaman.'
+            ? 'Koneksi ke server memakan waktu cukup lama. Coba muat ulang halaman ya.'
             : 'Connection to server took too long. Please refresh the page.',
           'error'
         );
@@ -2203,9 +2221,9 @@ export default function useAppLogic() {
 
   useEffect(() => {
     if (unreadCount > 0) {
-      document.title = `(${unreadCount}) Alurku`;
+      document.title = `(${unreadCount}) alurku.`;
     } else {
-      document.title = 'Alurku | Task & Project Management';
+      document.title = 'alurku. | Task & Project Management';
     }
   }, [unreadCount]);
 
@@ -3287,7 +3305,7 @@ export default function useAppLogic() {
 
     if (!targetBoardId) {
       showNotification(
-        language === 'id' ? 'Silakan pilih proyek tujuan terlebih dahulu!' : 'Please select a target project first!',
+        language === 'id' ? 'Pilih proyek tujuan terlebih dahulu ya!' : 'Please select a target project first!',
         'error'
       );
       return;
@@ -4049,7 +4067,7 @@ export default function useAppLogic() {
     const wakeTimer = setTimeout(() => {
       showNotification(
         language === 'id'
-          ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
           : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
         'info'
       );
@@ -4059,6 +4077,8 @@ export default function useAppLogic() {
       .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 75000 })
       .then((res) => {
         clearTimeout(wakeTimer);
+        setLoginError(null);
+        setLockoutRemaining(0);
         localStorage.setItem('alurku_auth', 'true');
         localStorage.setItem('alurku_token', res.data.token);
         localStorage.setItem('alurku_username', loginUsername.trim());
@@ -4070,9 +4090,33 @@ export default function useAppLogic() {
       .catch((err) => {
         clearTimeout(wakeTimer);
         setIsLoading(false);
-        let errorMsg = 'Invalid username or password!';
-        if (err.response?.data?.detail) {
-          errorMsg = typeof err.response.data.detail === 'string' ? err.response.data.detail : errorMsg;
+        const detail = err.response?.data?.detail;
+        let errorMsg = language === 'id' ? 'Nama pengguna atau kata sandi salah!' : 'Invalid username or password!';
+
+        if (detail && typeof detail === 'object') {
+          if (detail.lockout) {
+            setLockoutRemaining(detail.remaining_seconds || 900);
+            setLoginError({
+              type: 'lockout',
+              remainingSeconds: detail.remaining_seconds || 900,
+              remainingMinutes: detail.remaining_minutes || 15,
+            });
+            errorMsg = language === 'id'
+              ? `Terlalu banyak percobaan gagal. Akun dikunci selama ${detail.remaining_minutes || 15} menit.`
+              : `Too many failed attempts. Account locked for ${detail.remaining_minutes || 15} minutes.`;
+          } else if (typeof detail.remaining_attempts === 'number') {
+            setLoginError({
+              type: 'wrong_password',
+              remainingAttempts: detail.remaining_attempts,
+            });
+            errorMsg = language === 'id'
+              ? `Kata sandi salah. Sisa percobaan: ${detail.remaining_attempts} kali sebelum akun dikunci.`
+              : `Incorrect password. Remaining attempts: ${detail.remaining_attempts} before account lockout.`;
+          } else if (detail.message) {
+            errorMsg = detail.message;
+          }
+        } else if (typeof detail === 'string') {
+          errorMsg = detail;
         } else if (err.response?.data) {
           errorMsg = typeof err.response.data === 'string' ? `Server Error: ${err.response.data}` : 'Server Error';
         } else if (err.message) {
@@ -4414,7 +4458,7 @@ export default function useAppLogic() {
     const wakeTimer = setTimeout(() => {
       showNotification(
         language === 'id'
-          ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
           : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
         'info'
       );
@@ -4472,7 +4516,7 @@ export default function useAppLogic() {
     const wakeTimer = setTimeout(() => {
       showNotification(
         language === 'id'
-          ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
           : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
         'info'
       );
@@ -4504,7 +4548,7 @@ export default function useAppLogic() {
     const wakeTimer = setTimeout(() => {
       showNotification(
         language === 'id'
-          ? 'Server sedang dibangunkan (Cold Start). Harap tunggu hingga 50 detik...'
+          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
           : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
         'info'
       );
@@ -4819,6 +4863,9 @@ export default function useAppLogic() {
     showAuthForm,
     loginUsername,
     loginPassword,
+    loginError,
+    setLoginError,
+    lockoutRemaining,
     regFullName,
     regEmail,
     regConfirmPassword,
