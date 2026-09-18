@@ -220,6 +220,25 @@ class Article(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class Documentation(Base):
+    __tablename__ = "documentations"
+    id = Column(Integer, primary_key=True, index=True)
+    doc_id = Column(String(100), unique=True, index=True, nullable=False)
+    group_id = Column(String(50), nullable=False)
+    group_title_id = Column(String(100), nullable=False)
+    group_title_en = Column(String(100), nullable=False)
+    title_id = Column(String(200), nullable=False)
+    title_en = Column(String(200), nullable=False)
+    desc_id = Column(Text, nullable=False)
+    desc_en = Column(Text, nullable=False)
+    sections = Column(Text, nullable=False)  # JSON string array of section dicts
+    see_also = Column(Text, nullable=True)   # JSON string array of doc_ids
+    order_index = Column(Integer, default=0, index=True)
+    is_superadmin_only = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class AIChatSession(Base):
     __tablename__ = "ai_chat_sessions"
     id = Column(String(50), primary_key=True, index=True)
@@ -571,6 +590,9 @@ def setup_db():
 
         # Inisialisasi dan sinkronisasi catatan rilis (changelog)
         seed_changelogs(db)
+
+        # Inisialisasi dan sinkronisasi basis data dokumentasi
+        seed_documentations(db)
     finally:
         db.close()
 
@@ -609,6 +631,51 @@ def seed_changelogs(db):
         db.commit()
     except Exception as e:
         print("Warning: failed to seed changelogs:", e)
+        db.rollback()
+
+
+def seed_documentations(db):
+    """
+    Menyemai basis data bab dokumentasi alurku. secara terstruktur ke dalam
+    tabel database agar persist, tidak hilang, dan tersinkronisasi.
+    """
+    try:
+        from services.documentation_seed import DOCUMENTATIONS_SEED
+        for item in DOCUMENTATIONS_SEED:
+            existing = db.query(Documentation).filter(Documentation.doc_id == item["doc_id"]).first()
+            sections_json = json.dumps(item["sections"], ensure_ascii=False)
+            see_also_json = json.dumps(item.get("see_also", []), ensure_ascii=False)
+            if not existing:
+                doc = Documentation(
+                    doc_id=item["doc_id"],
+                    group_id=item["group_id"],
+                    group_title_id=item["group_title_id"],
+                    group_title_en=item["group_title_en"],
+                    title_id=item["title_id"],
+                    title_en=item["title_en"],
+                    desc_id=item["desc_id"],
+                    desc_en=item["desc_en"],
+                    sections=sections_json,
+                    see_also=see_also_json,
+                    order_index=item.get("order_index", 0),
+                    is_superadmin_only=item.get("is_superadmin_only", 0),
+                )
+                db.add(doc)
+            else:
+                existing.group_id = item["group_id"]
+                existing.group_title_id = item["group_title_id"]
+                existing.group_title_en = item["group_title_en"]
+                existing.title_id = item["title_id"]
+                existing.title_en = item["title_en"]
+                existing.desc_id = item["desc_id"]
+                existing.desc_en = item["desc_en"]
+                existing.sections = sections_json
+                existing.see_also = see_also_json
+                existing.order_index = item.get("order_index", 0)
+                existing.is_superadmin_only = item.get("is_superadmin_only", 0)
+        db.commit()
+    except Exception as e:
+        print("Warning: failed to seed documentations:", e)
         db.rollback()
 
 

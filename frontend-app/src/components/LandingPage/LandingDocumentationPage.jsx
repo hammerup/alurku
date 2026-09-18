@@ -840,7 +840,35 @@ export default function LandingDocumentationPage({ language }) {
     }
   });
 
-  const docData = useMemo(() => getDocData(tMsg, false), [language]);
+  const [dbDocs, setDbDocs] = useState([]);
+  const [isDocsLoading, setIsDocsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsDocsLoading(true);
+    axios
+      .get(`/api/docs?lang=${language}`)
+      .then((res) => {
+        if (isMounted && res.data && res.data.length > 0) {
+          setDbDocs(res.data);
+        }
+      })
+      .catch((err) => {
+        console.warn('Fallback to local docs data:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsDocsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [language]);
+
+  const docData = useMemo(() => {
+    if (dbDocs.length > 0) return dbDocs;
+    return getDocData(tMsg, false);
+  }, [dbDocs, language]);
+
   const [activePageId, setActivePageId] = useState(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);

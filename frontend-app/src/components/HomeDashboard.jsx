@@ -4,6 +4,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { isUserAssigned, getTaskAssignee } from '../useAppLogic';
 import { Avatar } from '../SharedUI';
 import { getLurukaSystemPrompt } from '../utils/lurukaPersona';
+import OnboardingChecklist from './OnboardingChecklist';
 
 const cleanMarkdown = (text) => {
   if (!text) return '';
@@ -55,7 +56,31 @@ export default function HomeDashboard() {
     isInboxLoading,
     fetchInboxChats,
     sortBy,
+    setIsDocsOpen,
+    handleOpenNewTaskForm,
+    setViewMode,
+    setIsProjectChatOpen,
+    setDrawerTab,
   } = useAppContext();
+
+  const handleOpenCommandBar = () => {
+    window.dispatchEvent(new CustomEvent('alurku:open-command-bar'));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+  };
+
+  const handleNavigateView = (mode) => {
+    if (boards && boards.length > 0) {
+      setSelectedBoard(boards[0]);
+    } else {
+      setSelectedBoard({ id: 'global', name: `${tMsg('All Projects', 'Semua Proyek')}`, role: 'owner', isVirtual: true });
+    }
+    if (setViewMode) setViewMode(mode);
+  };
+
+  const handleOpenAssistant = () => {
+    if (setIsProjectChatOpen) setIsProjectChatOpen(true);
+    if (setDrawerTab) setDrawerTab('assistant');
+  };
 
   // Refs to manage API call state and caching to prevent race conditions and spamming.
   const isFetchPending = useRef(false);
@@ -456,6 +481,17 @@ Provide a super concise (max 2-3 sentences) executive briefing for @${currentUse
             {tMsg('New Project', 'Proyek Baru')}
           </button>
         </header>
+
+        {/* Onboarding Interactive Guide */}
+        <OnboardingChecklist
+          currentUser={currentUser}
+          language={language}
+          onOpenCommandBar={handleOpenCommandBar}
+          onOpenNewTaskForm={handleOpenNewTaskForm}
+          onNavigateView={handleNavigateView}
+          onOpenAssistant={handleOpenAssistant}
+          onOpenDocs={() => setIsDocsOpen && setIsDocsOpen(true)}
+        />
 
         {/* AI Intelligence Center */}
         <section className="tour-ai-briefing ai-glow rounded-2xl p-6 md:p-8 relative overflow-hidden group">

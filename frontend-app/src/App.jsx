@@ -493,8 +493,14 @@ function App() {
         setIsCommandBarOpen((prev) => !prev);
       }
     };
+    const handleOpenCmdBarEvent = () => setIsCommandBarOpen(true);
+
     window.addEventListener('keydown', handleGlobalCmdK);
-    return () => window.removeEventListener('keydown', handleGlobalCmdK);
+    window.addEventListener('alurku:open-command-bar', handleOpenCmdBarEvent);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalCmdK);
+      window.removeEventListener('alurku:open-command-bar', handleOpenCmdBarEvent);
+    };
   }, []);
 
   const tMsg = (en, id) => (language === 'id' ? id : en);

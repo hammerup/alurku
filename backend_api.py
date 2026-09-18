@@ -654,6 +654,8 @@ from routers.articles import router as articles_router
 app.include_router(articles_router)
 from routers.changelog import router as changelog_router
 app.include_router(changelog_router)
+from routers.docs import router as docs_router
+app.include_router(docs_router)
 from routers.ws import router as ws_router
 app.include_router(ws_router)
 

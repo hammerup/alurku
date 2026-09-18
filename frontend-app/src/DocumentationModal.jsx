@@ -813,7 +813,37 @@ export default function DocumentationModal({ setIsDocsOpen, isSuperAdmin, langua
   const tMsgStr = (en, id) => (language === 'id' ? id : en);
   const tMsg = (en, id) => tMsgStr(en, id); // Teks murni untuk data
 
-  const docData = useMemo(() => getDocData(tMsg, isSuperAdmin), [language, isSuperAdmin]);
+  const [dbDocs, setDbDocs] = useState([]);
+  const [isDocsLoading, setIsDocsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsDocsLoading(true);
+    axios
+      .get(`/api/docs?lang=${language}`)
+      .then((res) => {
+        if (isMounted && res.data && res.data.length > 0) {
+          setDbDocs(res.data);
+        }
+      })
+      .catch((err) => {
+        console.warn('Fallback to local docs data:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsDocsLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [language]);
+
+  const docData = useMemo(() => {
+    if (dbDocs.length > 0) {
+      if (isSuperAdmin) return dbDocs;
+      return dbDocs.filter((d) => !d.is_superadmin_only);
+    }
+    return getDocData(tMsg, isSuperAdmin);
+  }, [dbDocs, language, isSuperAdmin]);
   const [activePageId, setActivePageId] = useState('overview');
   const [activeSecId, setActiveSecId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
