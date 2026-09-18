@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
 export default function UpgradeModal({
@@ -11,6 +11,7 @@ export default function UpgradeModal({
 }) {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [selectedTier, setSelectedTier] = useState('pro');
+  const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'annual'
 
   if (!isOpen) return null;
 
@@ -57,9 +58,10 @@ export default function UpgradeModal({
     {
       id: 'free',
       name: tMsg('Starter', 'Gratis (Starter)'),
-      price: 'Rp 0',
+      priceMonthly: 'Rp 0',
+      priceAnnual: 'Rp 0',
       period: tMsg('forever free', 'selamanya'),
-      description: tMsg('Essential workflow tracking for individuals.', 'Manajemen tugas harian esensial untuk individu.'),
+      description: tMsg('Essential workflow tracking for individuals or small teams.', 'Manajemen tugas harian esensial untuk individu atau tim kecil.'),
       features: [
         tMsg('1 Owned Workspace', '1 Workspace Milik Pribadi'),
         tMsg('Up to 3 Team Members', 'Maksimal 3 Anggota Tim'),
@@ -76,8 +78,9 @@ export default function UpgradeModal({
     {
       id: 'pro',
       name: tMsg('Pro (Agile Team)', 'Pro (Agile Team)'),
-      price: 'Rp 29.000',
-      period: tMsg('/ member / mo', '/ anggota / bulan'),
+      priceMonthly: 'Rp 99.000',
+      priceAnnual: 'Rp 79.000',
+      period: tMsg('/ user / mo', '/ user / bulan'),
       description: tMsg('Power and flexibility for growing teams with automated AI planning.', 'Kapasitas dan fleksibilitas penuh untuk tim berkembang dengan asisten AI.'),
       features: [
         tMsg('3 Owned Workspaces', 'Hingga 3 Ruang Kerja Pribadi'),
@@ -87,6 +90,7 @@ export default function UpgradeModal({
         tMsg('1,500 Luruka AI Prompts / mo', '1.500 Prompt Luruka AI / bulan'),
         tMsg('Interactive Gantt & Timeline', 'Gantt Chart & Timeline Interaktif'),
         tMsg('Workload & Burnout Analytics', 'Analisis Beban Kerja & Kapasitas'),
+        tMsg('Unified Chat Workspace', 'Chat Workspace Terpadu'),
       ],
       current: currentTier === 'pro',
       ctaText: currentTier === 'pro' ? tMsg('Current Plan', 'Paket Aktif') : tMsg('Upgrade to Pro', 'Tingkatkan ke Pro'),
@@ -96,8 +100,9 @@ export default function UpgradeModal({
     {
       id: 'business',
       name: tMsg('Business (Scale)', 'Business (Skala Besar)'),
-      price: 'Rp 49.000',
-      period: tMsg('/ member / mo', '/ anggota / bulan'),
+      priceMonthly: 'Rp 249.000',
+      priceAnnual: 'Rp 199.000',
+      period: tMsg('/ user / mo', '/ user / bulan'),
       description: tMsg('Enterprise controls, custom governance, and high AI capacity.', 'Tata kelola kustom, kontrol lanjutan, dan kuota AI komprehensif.'),
       features: [
         tMsg('Unlimited Workspaces', 'Workspace Tanpa Batas'),
@@ -106,6 +111,7 @@ export default function UpgradeModal({
         tMsg('100 GB Cloud Storage', 'Kapasitas Penyimpanan 100 GB'),
         tMsg('5,000 Luruka AI Prompts / mo', '5.000 Prompt Luruka AI / bulan'),
         tMsg('Custom Roles & RBAC', 'Hak Akses & Peran Kustom'),
+        tMsg('SSO & SAML Integration', 'Integrasi SSO & SAML'),
         tMsg('Priority 24/7 SLA Support', 'Dukungan Prioritas SLA 24/7'),
       ],
       current: currentTier === 'business',
@@ -152,11 +158,43 @@ export default function UpgradeModal({
           </button>
         </div>
 
+        {/* Billing Cycle Toggle */}
+        <div className="flex justify-center pt-5 pb-2 bg-[#F3F4F6] dark:bg-[#0d0f11] shrink-0 border-b border-neutral-200/60 dark:border-neutral-800/60">
+          <div className="inline-flex items-center gap-1.5 bg-white dark:bg-[#121B2D] p-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                billingCycle === 'monthly'
+                  ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+              }`}
+            >
+              {tMsg('Monthly Billing', 'Tagihan Bulanan')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBillingCycle('annual')}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                billingCycle === 'annual'
+                  ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
+              }`}
+            >
+              <span>{tMsg('Annual Billing', 'Tagihan Tahunan')}</span>
+              <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 py-0.5 px-2 rounded-full font-black text-[9px]">
+                {tMsg('Save 2 Months', 'Hemat 2 Bulan')}
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Pricing Cards Grid */}
         <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar flex-1 bg-[#F3F4F6] dark:bg-[#0d0f11]">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => {
               const isSelected = selectedTier === plan.id;
+              const currentPrice = billingCycle === 'monthly' ? plan.priceMonthly : plan.priceAnnual;
               return (
                 <div
                   key={plan.id}
@@ -185,11 +223,16 @@ export default function UpgradeModal({
 
                     <div className="mb-3">
                       <span className="text-2xl sm:text-3xl font-black text-[#111E38] dark:text-white tracking-tight">
-                        {plan.price}
+                        {currentPrice}
                       </span>
                       <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 ml-1">
                         {plan.period}
                       </span>
+                      {billingCycle === 'annual' && plan.id !== 'free' && (
+                        <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                          {tMsg('Billed annually (discounted)', 'Ditagih tahunan (lebih hemat)')}
+                        </p>
+                      )}
                     </div>
 
                     <p className="text-xs text-neutral-600 dark:text-neutral-300 font-medium mb-5 leading-relaxed min-h-[32px]">

@@ -36,9 +36,9 @@ export default function LandingPricingPage({ language }) {
       features: [
         tMsg('1 Active Workspace', '1 Workspace Aktif'),
         tMsg('Up to 3 Active Projects', 'Maksimal 3 Proyek Aktif'),
-        tMsg('Up to 5 Team Members', 'Maksimal 5 Anggota Tim'),
+        tMsg('Up to 3 Team Members', 'Maksimal 3 Anggota Tim'),
         tMsg('500 MB Storage', '500 MB Penyimpanan'),
-        tMsg('100 AI Requests / Month', '100 Kueri AI / Bulan'),
+        tMsg('50 Luruka AI Prompts / Month', '50 Prompt Luruka AI / Bulan'),
         tMsg('Basic Kanban & Calendar', 'Papan Kanban & Kalender Dasar')
       ],
       ctaText: tMsg('Get Started Free', 'Mulai Gratis'),
@@ -56,8 +56,8 @@ export default function LandingPricingPage({ language }) {
         tMsg('3 Active Workspaces', '3 Workspace Aktif'),
         tMsg('Unlimited Active Projects', 'Proyek Aktif Tanpa Batas'),
         tMsg('Up to 25 Team Members', 'Maksimal 25 Anggota Tim'),
-        tMsg('10 GB Storage', '10 GB Penyimpanan'),
-        tMsg('1,000 AI Requests / Month', '1.000 Kueri AI / Bulan'),
+        tMsg('15 GB Storage', '15 GB Penyimpanan'),
+        tMsg('1,500 Luruka AI Prompts / Month', '1.500 Prompt Luruka AI / Bulan'),
         tMsg('Gantt Chart (Timeline)', 'Gantt Chart (Lini Masa)'),
         tMsg('Unified Chat Workspace', 'Chat Workspace Terpadu'),
         tMsg('Team Workload Analytics', 'Analisis Beban Kerja (Workload)')
@@ -77,7 +77,7 @@ export default function LandingPricingPage({ language }) {
         tMsg('Unlimited Workspaces', 'Workspace Tanpa Batas'),
         tMsg('Unlimited Projects & Members', 'Proyek & Anggota Tanpa Batas'),
         tMsg('100 GB Storage', '100 GB Penyimpanan'),
-        tMsg('5,000 AI Requests / Month', '5.000 Kueri AI / Bulan'),
+        tMsg('5,000 Luruka AI Prompts / Month', '5.000 Prompt Luruka AI / Bulan'),
         tMsg('Custom Workflow & Stages', 'Kustom Alur Kerja & Tahapan'),
         tMsg('Custom Roles & Permissions', 'Pengaturan Peran & Izin Kustom'),
         tMsg('SSO / SAML Integration', 'Integrasi SSO / SAML'),
@@ -111,14 +111,14 @@ export default function LandingPricingPage({ language }) {
         },
         { 
           name: tMsg('Team Members', 'Anggota Tim'), 
-          free: tMsg('Max 5 Members', 'Maks. 5 Anggota'), 
+          free: tMsg('Max 3 Members', 'Maks. 3 Anggota'), 
           pro: tMsg('Max 25 Members', 'Maks. 25 Anggota'), 
           business: tMsg('Unlimited', 'Tanpa Batas') 
         },
         { 
           name: tMsg('Storage Capacity', 'Kapasitas Penyimpanan'), 
           free: '500 MB', 
-          pro: '10 GB', 
+          pro: '15 GB', 
           business: '100 GB' 
         },
         { 
@@ -154,10 +154,10 @@ export default function LandingPricingPage({ language }) {
       category: tMsg('Artificial Intelligence (AI)', 'Kecerdasan Buatan (AI)'),
       rows: [
         { 
-          name: tMsg('AI Requests / Month', 'AI Requests / Bulan'), 
-          free: tMsg('100 requests', '100 requests'), 
-          pro: tMsg('1,000 requests', '1.000 requests'), 
-          business: tMsg('5,000 requests', '5.000 requests') 
+          name: tMsg('Luruka AI Prompts / Month', 'Prompt Luruka AI / Bulan'), 
+          free: tMsg('50 prompts', '50 prompt'), 
+          pro: tMsg('1,500 prompts', '1.500 prompt'), 
+          business: tMsg('5,000 prompts', '5.000 prompt') 
         },
         { name: tMsg('AI Task Breakdown & Planner', 'AI Task Breakdown & Planner'), free: '✖', pro: '✔', business: '✔' },
         { name: tMsg('Custom AI Training (Custom model)', 'Pelatihan AI Kustom (Custom Training)'), free: '✖', pro: '✖', business: '✔' },
