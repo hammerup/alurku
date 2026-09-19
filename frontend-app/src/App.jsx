@@ -28,6 +28,7 @@ import {
   MyTicketsModal,
   UnfinishedSubtasksModal,
 } from './Modals';
+import NotificationToast from './components/NotificationToast';
 import ChangelogPage from './ChangelogPage';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import TermsOfServiceModal from './TermsOfServiceModal';
@@ -273,6 +274,8 @@ function App() {
     handleMouseUp,
     handleMouseMove,
     showNotification,
+    toastQueue,
+    dismissToast,
     handleReadNotification,
     handleReadAllNotifications,
     handleNotificationTaskClick,
@@ -852,17 +855,15 @@ function App() {
             </p>
           </div>
         )}
-        {notification && (
-          <NotificationModal
-            key={notification.id}
-            notification={notification}
-            setNotification={setNotification}
-            language={language}
-            notifPosition={notifPosition}
-            notifSound={notifSound}
-            notifPrivacy={notifPrivacy}
-          />
-        )}
+        {/* Industry-standard toast notifications — multi-slot stack up to 3 */}
+        <NotificationToast
+          toastQueue={toastQueue}
+          onDismissToast={dismissToast}
+          language={language}
+          notifPosition={notifPosition}
+          notifPrivacy={notifPrivacy}
+        />
+
         <LandingPage
           showAuthForm={showAuthForm}
           setShowAuthForm={setShowAuthForm}
@@ -1432,17 +1433,15 @@ function App() {
             </p>
           </div>
         )}
-        {notification && (
-          <NotificationModal
-            key={notification.id}
-            notification={notification}
-            setNotification={setNotification}
-            language={language}
-            notifPosition={notifPosition}
-            notifSound={notifSound}
-            notifPrivacy={notifPrivacy}
-          />
-        )}
+        {/* Industry-standard toast notifications — error→top-center, others→notifPosition */}
+        <NotificationToast
+          toastQueue={toastQueue}
+          onDismissToast={dismissToast}
+          language={language}
+          notifPosition={notifPosition}
+          notifPrivacy={notifPrivacy}
+        />
+
         {showTosUpdate && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-90 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-6 md:p-10 max-w-lg w-full shadow-2xl mac-animate text-center">

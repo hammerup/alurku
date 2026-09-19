@@ -1313,124 +1313,23 @@ export function LogoutConfirmModal({ setIsLogoutConfirmOpen, handleLogout, langu
   );
 }
 
-export function NotificationModal({
-  notification,
-  setNotification,
-  language,
-  notifPosition = 'bottom-right',
-  notifSound = true,
-  notifPrivacy = false,
-}) {
-  const [isClosing, close] = useCloseAnimation(() => setNotification(null));
-  const tMsg = (en, id) => (language === 'id' ? id : en);
+/**
+ * NotificationModal — backward-compatible re-export
+ *
+ * The original inline implementation has been superseded by the
+ * industry-standard NotificationToast component which adds:
+ *   - Inline SVG icons (no emoji)
+ *   - Multi-slot toast stack (up to 3)
+ *   - Per-type auto-dismiss durations
+ *   - Progress bar countdown
+ *   - Slide-in animation per position
+ *   - Pause on hover
+ *   - aria-live accessibility
+ *
+ * All existing call sites continue to work unchanged.
+ */
+export { NotificationModal } from './components/NotificationToast';
 
-  useEffect(() => {
-    if (notifSound) {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(notification.type === 'error' ? 440 : 880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.5);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.5);
-      } catch (e) {}
-    }
-    const timer = setTimeout(() => {
-      close();
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!notification) return null;
-
-  const isToast = notifPosition !== 'center';
-  const posClasses = {
-    'top-left': 'top-4 left-4 items-start justify-start',
-    'top-center': 'top-4 left-1/2 -translate-x-1/2 items-start justify-center',
-    'top-right': 'top-4 right-4 items-start justify-end',
-    center: 'inset-0 items-center justify-center bg-white/60 dark:bg-black/60 backdrop-blur-md',
-    'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2 items-end justify-center',
-    'bottom-right': 'bottom-4 right-4 items-end justify-end',
-  };
-
-  const animationClass = isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100';
-  const displayMessage =
-    notifPrivacy && notification.type !== 'error' && notification.type !== 'success'
-      ? tMsg('You have a new notification.', 'Anda memiliki notifikasi baru.')
-      : notification.message.replace(/(?:<!--|&lt;!--)\s*TASK_ID:\d+\s*(?:-->|--&gt;)/gi, '');
-
-  return (
-    <div
-      className={`fixed flex ${posClasses[notifPosition]} pointer-events-none transition-all duration-300 ${
-        isToast ? 'p-0' : 'p-4'
-      } ${!isToast && isClosing ? 'opacity-0' : 'opacity-100'}`}
-      style={{ zIndex: 9999 }}
-    >
-      <div
-        className={`pointer-events-auto bg-white dark:bg-neutral-950 p-5 ${
-          isToast
-            ? 'w-80 shadow-2xl rounded-2xl flex-row text-left border border-neutral-200 dark:border-neutral-800'
-            : 'w-full max-w-sm shadow-2xl rounded-3xl md:rounded-[2.5rem] text-center flex-col items-center border border-neutral-200 dark:border-neutral-800'
-        } flex gap-4 transform transition-all duration-300 ${animationClass}`}
-      >
-        <div
-          className={`${
-            isToast ? 'w-10 h-10 text-xl' : 'w-20 h-20 text-4xl mb-6'
-          } rounded-full flex items-center justify-center shrink-0 shadow-sm border ${
-            notification.type === 'error'
-              ? 'bg-red-50 dark:bg-red-900/30 text-red-500 border-red-200 dark:border-red-800/50'
-              : notification.type === 'success'
-              ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 border-emerald-200 dark:border-emerald-800/50'
-              : 'bg-blue-50 dark:bg-blue-900/30 text-blue-500 border-blue-200 dark:border-blue-800/50'
-          }`}
-        >
-          {notification.type === 'error' ? '⚠️' : notification.type === 'success' ? '✅' : 'ℹ️'}
-        </div>
-        <div className={`flex-1 ${isToast ? 'min-w-0' : 'w-full'}`}>
-          <h3
-            className={`${
-              isToast ? 'text-sm mb-1' : 'text-2xl mb-2'
-            } font-black text-black dark:text-white uppercase tracking-tighter`}
-          >
-            {notification.type === 'error'
-              ? tMsg('Error', 'Kesalahan')
-              : notification.type === 'success'
-              ? tMsg('Success', 'Berhasil')
-              : tMsg('Notice', 'Pemberitahuan')}
-          </h3>
-          <p
-            className={`text-neutral-600 dark:text-neutral-400 ${
-              isToast ? 'text-xs' : 'mb-8 text-sm'
-            } font-medium leading-relaxed wrap-break-word`}
-          >
-            {displayMessage}
-          </p>
-          {!isToast && (
-            <button
-              onClick={close}
-              className="w-full px-4 py-4 rounded-full font-bold text-black dark:text-white bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors uppercase tracking-widest text-xs mt-4"
-            >
-              {tMsg('Dismiss', 'Tutup')}
-            </button>
-          )}
-        </div>
-        {isToast && (
-          <button
-            onClick={close}
-            className="text-neutral-400 hover:text-black dark:hover:text-white transition-colors self-start ml-2 shrink-0"
-          >
-            ✖
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export function MyTicketsModal({ setIsMyTicketsOpen, language, setSelectedTask, notifications }) {
   const [isClosing, close] = useCloseAnimation(() => setIsMyTicketsOpen(false));

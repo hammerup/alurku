@@ -464,6 +464,31 @@ export default function AppThemes({ appTheme }) {
           color: #F8FAFC !important;
         }
       `}</style>
+
+      {/* Toast Notification Slide-in Animations */}
+      <style>{`
+        @keyframes toast-slide-right {
+          from { opacity: 0; transform: translateX(110%); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toast-slide-left {
+          from { opacity: 0; transform: translateX(-110%); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toast-slide-down {
+          from { opacity: 0; transform: translateY(-110%); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes toast-slide-up {
+          from { opacity: 0; transform: translateY(110%); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .toast-slide-right  { animation: toast-slide-right  0.28s cubic-bezier(0.22,1,0.36,1) both; }
+        .toast-slide-left   { animation: toast-slide-left   0.28s cubic-bezier(0.22,1,0.36,1) both; }
+        .toast-slide-down   { animation: toast-slide-down   0.28s cubic-bezier(0.22,1,0.36,1) both; }
+        .toast-slide-up     { animation: toast-slide-up     0.28s cubic-bezier(0.22,1,0.36,1) both; }
+      `}</style>
     </>
   );
 }
+

@@ -163,5 +163,77 @@ test.describe('Smoke E2E Test Suite - alurku.', () => {
     await backBtn.click();
     await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 10000 });
   });
-});
 
+  test('9. NotificationToast — success toast has SVG icon, progress bar, and aria-live', async ({ page }) => {
+    // Login
+    await page.goto(BASE_URL + '/masuk');
+    await page.locator('input[type="text"]').first().fill('admin');
+    await page.locator('input[type="password"]').first().fill('AdminAlurku2026!');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
+
+    // Bypass WelcomeTour
+    await page.evaluate(() => {
+      const u = localStorage.getItem('alurku_username') || 'admin';
+      localStorage.setItem(`alurku_tour_done_v2_${u}`, 'true');
+    });
+    await page.reload();
+
+    // Trigger a notification via custom event (same mechanism used throughout app)
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('show-notification', {
+        detail: { message: 'Tes Toast Berhasil!', type: 'success' }
+      }));
+    });
+
+    // Toast should appear with role="status" (aria-live)
+    const toast = page.locator('[role="status"]').first();
+    await expect(toast).toBeVisible({ timeout: 5000 });
+
+    // Should contain SVG icon (not emoji)
+    const svg = toast.locator('svg').first();
+    await expect(svg).toBeVisible({ timeout: 3000 });
+
+    // Should contain the message text
+    await expect(toast).toContainText('Tes Toast Berhasil!');
+
+    // Should have a progress bar element (absolute bottom div)
+    const progressBar = toast.locator('div.absolute.bottom-0').first();
+    await expect(progressBar).toBeVisible({ timeout: 3000 });
+  });
+
+  test('10. NotificationToast — error toast always renders at top-center, not user-configured position', async ({ page }) => {
+    await page.goto(BASE_URL + '/masuk');
+    await page.locator('input[type="text"]').first().fill('admin');
+    await page.locator('input[type="password"]').first().fill('AdminAlurku2026!');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
+
+    // Bypass WelcomeTour
+    await page.evaluate(() => {
+      const u = localStorage.getItem('alurku_username') || 'admin';
+      localStorage.setItem(`alurku_tour_done_v2_${u}`, 'true');
+      // Force position setting to bottom-right (default) to confirm override
+      localStorage.setItem('alurku_notif_pos', 'bottom-right');
+    });
+    await page.reload();
+
+    // Fire an error notification
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('show-notification', {
+        detail: { message: 'Error Kritis!', type: 'error' }
+      }));
+    });
+
+    // The error toast container must be anchored at top (top-4 class present on the stack div)
+    const errorStack = page.locator('[aria-label="top-center notifications"]');
+    await expect(errorStack).toBeVisible({ timeout: 5000 });
+
+    // Toast must contain the error message
+    await expect(errorStack).toContainText('Error Kritis!');
+
+    // The error stack must have CSS classes indicating top position
+    const classes = await errorStack.getAttribute('class');
+    expect(classes).toContain('top-4');
+  });
+});

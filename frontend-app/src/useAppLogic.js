@@ -812,17 +812,42 @@ export default function useAppLogic() {
     projectChatLengthRef.current = projectChatMessages.length;
   }, [comments, projectChatMessages]);
 
-  const showNotification = (message, type = 'info') => {
-    let safeMessage = message;
-    if (message && typeof message !== 'string') {
-      try {
-        safeMessage = JSON.stringify(message);
-      } catch (e) {
-        safeMessage = 'An unexpected error occurred.';
+  // ─── Toast Queue (industry-standard multi-slot notification) ────
+  // Supports up to 3 simultaneous toasts; oldest is dropped when limit exceeded.
+  // Backward-compatible: `notification` & `setNotification` still exist for legacy consumers.
+  const [toastQueue, setToastQueue] = useState([]);
+
+  const dismissToast = useCallback(
+    (id) => {
+      setToastQueue((prev) => prev.filter((t) => t.id !== id));
+      // Also clear legacy single-notification if it's the same id
+      setNotification((prev) => (prev && prev.id === id ? null : prev));
+    },
+    [setNotification]
+  );
+
+  const showNotification = useCallback(
+    (message, type = 'info', opts = {}) => {
+      let safeMessage = message;
+      if (message && typeof message !== 'string') {
+        try {
+          safeMessage = JSON.stringify(message);
+        } catch (e) {
+          safeMessage = 'An unexpected error occurred.';
+        }
       }
-    }
-    setNotification({ message: safeMessage, type, id: Date.now() });
-  };
+      const id = Date.now();
+      const toast = { id, message: safeMessage, type, ...opts };
+
+      // Keep legacy single-notification in sync for backward compat
+      setNotification(toast);
+
+      // Push to queue, keep max 3
+      setToastQueue((prev) => [...prev.slice(-2), toast]);
+    },
+    [setNotification]
+  );
+
 
   useEffect(() => {
     const handleNotificationEvent = (e) => {
@@ -5109,6 +5134,8 @@ export default function useAppLogic() {
     handleMouseUp,
     handleMouseMove,
     showNotification,
+    toastQueue,
+    dismissToast,
     handleReadNotification,
     handleDeleteNotification,
     handleReadAllNotifications,
