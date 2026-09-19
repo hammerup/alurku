@@ -121,19 +121,9 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
     onSuccess: (tokenResponse) => {
       setIsLoading(true);
 
-      const wakeTimer = setTimeout(() => {
-        showNotification(
-          language === 'id'
-            ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
-            : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
-          'info'
-        );
-      }, 5000);
-
       axios
-        .post('/api/google-login', { token: tokenResponse.access_token }, { timeout: 75000 })
+        .post('/api/google-login', { token: tokenResponse.access_token }, { timeout: 30000 })
         .then((res) => {
-          clearTimeout(wakeTimer);
           localStorage.setItem('alurku_auth', 'true');
           localStorage.setItem('alurku_token', res.data.token);
           localStorage.setItem('alurku_username', res.data.username);
@@ -141,12 +131,18 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
           window.location.href = '/dashboard';
         })
         .catch((err) => {
-          clearTimeout(wakeTimer);
           setIsLoading(false);
-          showNotification(err.response?.data?.detail || 'Google Login failed', 'error');
+          showNotification(
+            err.response?.data?.detail || (language === 'id' ? 'Gagal masuk dengan Google.' : 'Google Login failed.'),
+            'error'
+          );
         });
     },
-    onError: () => showNotification('Google Login failed or cancelled', 'error'),
+    onError: () =>
+      showNotification(
+        language === 'id' ? 'Masuk dengan Google dibatalkan.' : 'Google Login failed or cancelled.',
+        'error'
+      ),
   });
 
   const handleLogout = (setIsLogoutConfirmOpen) => {
@@ -171,24 +167,17 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
   const handleLogin = (e) => {
     if (e) e.preventDefault();
     if (!loginUsername.trim() || !loginPassword.trim()) {
-      showNotification('Username and Password are required!', 'error');
+      showNotification(
+        language === 'id' ? 'Nama pengguna dan kata sandi wajib diisi!' : 'Username and Password are required!',
+        'error'
+      );
       return;
     }
     setIsLoading(true);
 
-    const wakeTimer = setTimeout(() => {
-      showNotification(
-        language === 'id'
-          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
-          : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
-        'info'
-      );
-    }, 5000);
-
     axios
-      .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 75000 })
+      .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 30000 })
       .then((res) => {
-        clearTimeout(wakeTimer);
         setLoginError(null);
         setLockoutRemaining(0);
         localStorage.setItem('alurku_auth', 'true');
@@ -199,7 +188,6 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
         window.location.href = '/dashboard';
       })
       .catch((err) => {
-        clearTimeout(wakeTimer);
         setIsLoading(false);
         const detail = err.response?.data?.detail;
         let errorMsg = language === 'id' ? 'Nama pengguna atau kata sandi salah!' : 'Invalid username or password!';
@@ -229,9 +217,9 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
         } else if (typeof detail === 'string') {
           errorMsg = detail;
         } else if (err.response?.data) {
-          errorMsg = typeof err.response.data === 'string' ? `Server Error: ${err.response.data}` : 'Server Error';
+          errorMsg = typeof err.response.data === 'string' ? err.response.data : (language === 'id' ? 'Terjadi kesalahan sistem.' : 'Server Error');
         } else if (err.message) {
-          errorMsg = `Connection Error: ${err.message}. Is the backend running?`;
+          errorMsg = language === 'id' ? 'Gagal terhubung ke server.' : `Connection Error: ${err.message}`;
         }
         showNotification(errorMsg, 'error');
       });
@@ -240,23 +228,20 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
   const handleRegister = (e) => {
     if (e) e.preventDefault();
     if (!loginUsername.trim() || !loginPassword.trim() || !regFullName.trim() || !regEmail.trim()) {
-      showNotification('All form fields are required!', 'error');
+      showNotification(
+        language === 'id' ? 'Semua kolom formulir wajib diisi!' : 'All form fields are required!',
+        'error'
+      );
       return;
     }
     if (loginPassword !== regConfirmPassword) {
-      showNotification('Passwords do not match!', 'error');
+      showNotification(
+        language === 'id' ? 'Konfirmasi kata sandi tidak cocok!' : 'Passwords do not match!',
+        'error'
+      );
       return;
     }
     setIsLoading(true);
-
-    const wakeTimer = setTimeout(() => {
-      showNotification(
-        language === 'id'
-          ? 'Server sedang bersiap (Cold Start). Tunggu sebentar ya (hingga 50 detik)...'
-          : 'Waking up server (Cold Start). Please wait up to 50 seconds...',
-        'info'
-      );
-    }, 5000);
 
     axios
       .post(
@@ -267,10 +252,9 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
           username: loginUsername.trim(),
           password: loginPassword,
         },
-        { timeout: 75000 }
+        { timeout: 30000 }
       )
       .then(() => {
-        clearTimeout(wakeTimer);
         setTimeout(() => {
           setIsLoading(false);
           setLoginPassword('');
@@ -282,63 +266,90 @@ export function useAuth({ showNotification, setIsLoading, language, onClearSessi
               : 'Account created successfully! Please verify your email to login.',
             'success'
           );
-        }, 1000);
+        }, 800);
       })
       .catch((err) => {
-        clearTimeout(wakeTimer);
         setIsLoading(false);
-        showNotification(err.response?.data?.detail || 'Registration failed!', 'error');
+        showNotification(
+          err.response?.data?.detail || (language === 'id' ? 'Pendaftaran akun gagal.' : 'Registration failed!'),
+          'error'
+        );
       });
   };
 
   const handleForgotPassword = (e) => {
     if (e) e.preventDefault();
     if (!forgotEmail.trim()) {
-      showNotification('Please enter your email!', 'error');
+      showNotification(
+        language === 'id' ? 'Silakan masukkan alamat email kamu.' : 'Please enter your email.',
+        'error'
+      );
       return;
     }
     setIsLoading(true);
 
     axios
-      .post('/api/forgot-password', { email: forgotEmail.trim() }, { timeout: 75000 })
+      .post('/api/forgot-password', { email: forgotEmail.trim() }, { timeout: 30000 })
       .then(() => {
         setIsLoading(false);
-        showNotification('Password reset link sent! Check your email.', 'success');
+        showNotification(
+          language === 'id'
+            ? 'Tautan atur ulang kata sandi telah dikirim ke email kamu.'
+            : 'Password reset link sent! Check your email.',
+          'success'
+        );
         setIsForgotMode(false);
         setForgotEmail('');
       })
       .catch((err) => {
         setIsLoading(false);
-        showNotification(err.response?.data?.detail || 'Failed to send reset link.', 'error');
+        showNotification(
+          err.response?.data?.detail || (language === 'id' ? 'Gagal mengirim tautan atur ulang kata sandi.' : 'Failed to send reset link.'),
+          'error'
+        );
       });
   };
 
   const handleResetPassword = (e) => {
     if (e) e.preventDefault();
     if (!loginPassword.trim() || !regConfirmPassword.trim()) {
-      showNotification('All fields are required!', 'error');
+      showNotification(
+        language === 'id' ? 'Semua kolom formulir wajib diisi!' : 'All fields are required!',
+        'error'
+      );
       return;
     }
     if (loginPassword !== regConfirmPassword) {
-      showNotification('Passwords do not match!', 'error');
+      showNotification(
+        language === 'id' ? 'Konfirmasi kata sandi tidak cocok!' : 'Passwords do not match!',
+        'error'
+      );
       return;
     }
     setIsLoading(true);
 
     axios
-      .post('/api/reset-password', { token: resetToken, new_password: loginPassword }, { timeout: 75000 })
+      .post('/api/reset-password', { token: resetToken, new_password: loginPassword }, { timeout: 30000 })
       .then(() => {
         setIsLoading(false);
         setIsResetMode(false);
         setResetToken('');
         setLoginPassword('');
         setRegConfirmPassword('');
-        showNotification('Password successfully reset! You can now login.', 'success');
+        showNotification(
+          language === 'id'
+            ? 'Kata sandi berhasil diperbarui! Kamu sudah bisa masuk sekarang.'
+            : 'Password successfully reset! You can now login.',
+          'success'
+        );
         window.history.replaceState({}, document.title, '/');
       })
       .catch((err) => {
         setIsLoading(false);
-        showNotification(err.response?.data?.detail || 'Failed to reset password. Link may be expired.', 'error');
+        showNotification(
+          err.response?.data?.detail || (language === 'id' ? 'Gagal mengatur ulang kata sandi. Tautan mungkin telah kedaluwarsa.' : 'Failed to reset password. Link may be expired.'),
+          'error'
+        );
       });
   };
 

@@ -1230,7 +1230,10 @@ export default function SettingsPage({
                             type="button"
                             onClick={() => {
                               setNotifPosition(pos.id);
-                              if (typeof window !== 'undefined') localStorage.setItem('alurku_notif_position', pos.id);
+                              if (typeof window !== 'undefined') {
+                                localStorage.setItem('alurku_notif_pos', pos.id);
+                                localStorage.setItem('alurku_notif_position', pos.id);
+                              }
                               showNotification(msg(`Position set to ${pos.label}`, `Posisi disetel ke ${pos.label}`), 'success');
                             }}
                             className={`p-3 rounded-xl border text-xs font-bold text-center transition-all cursor-pointer ${
