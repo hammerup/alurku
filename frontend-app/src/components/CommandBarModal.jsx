@@ -401,6 +401,14 @@ export default function CommandBarModal({
       return;
     }
 
+    const isK = e.key === 'k' || e.key === 'K' || e.code === 'KeyK' || e.keyCode === 75;
+    if ((e.metaKey || e.ctrlKey) && isK) {
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+      return;
+    }
+
     // Enter key
     if (e.key === 'Enter') {
       e.preventDefault();

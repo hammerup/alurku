@@ -57,3 +57,8 @@ how e68f24b
 
 # User Uploaded Files (Persistent Volume)
 uploads/
+
+# Security Scan Reports & Artifacts
+security-reports/
+nuclei-*
+run-nuclei.bat

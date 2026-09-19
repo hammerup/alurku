@@ -451,6 +451,19 @@ export default function AppThemes({ appTheme }) {
           .dark [class*="divide-neutral-7"] > :not([hidden]) ~ :not([hidden]), .dark [class*="divide-neutral-8"] > :not([hidden]) ~ :not([hidden]), .dark [class*="divide-slate-7"] > :not([hidden]) ~ :not([hidden]), .dark [class*="divide-slate-8"] > :not([hidden]) ~ :not([hidden]) { border-color: #37475A !important; }
         `}</style>
       )}
+
+      {/* Universal Surface Contrast Protection (WCAG AA) */}
+      <style>{`
+        /* Protect settings cards, modals, and standard panels from contrast degradation */
+        .settings-card-surface {
+          background-color: #FAFAFA !important;
+          color: #111E38 !important;
+        }
+        .dark .settings-card-surface {
+          background-color: #121B2D !important;
+          color: #F8FAFC !important;
+        }
+      `}</style>
     </>
   );
 }

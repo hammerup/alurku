@@ -394,6 +394,8 @@ function App() {
     cardTheme,
     handleSelectCardTheme,
     appBgImage,
+    setAppBgImage,
+    handleSelectAppBg,
     handleAppBgUpload,
     removeAppBgImage,
     appTexture,
@@ -492,8 +494,10 @@ function App() {
 
   React.useEffect(() => {
     const handleGlobalCmdK = (e) => {
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      const isK = e.key === 'k' || e.key === 'K' || e.code === 'KeyK' || e.keyCode === 75;
+      if ((e.metaKey || e.ctrlKey) && isK) {
         e.preventDefault();
+        e.stopPropagation();
         setIsCommandBarOpen((prev) => !prev);
       }
     };
@@ -718,6 +722,7 @@ function App() {
 
         if (
           path === '/chat' || path.endsWith('/chat') ||
+          path.startsWith('/pengaturan') || path.startsWith('/settings') ||
           path === '/inbox' || path.endsWith('/inbox') ||
           path === '/leaves' || path.endsWith('/leaves') ||
           path === '/cuti' || path.endsWith('/cuti') ||
@@ -787,7 +792,12 @@ function App() {
   // Sync state changes back to URL
   useEffect(() => {
     if (!isAuthenticated || !activeWorkspace) return;
-    if (window.location.pathname === '/chat' || window.location.pathname.endsWith('/chat')) return;
+    if (
+      window.location.pathname === '/chat' ||
+      window.location.pathname.endsWith('/chat') ||
+      window.location.pathname.startsWith('/pengaturan') ||
+      window.location.pathname.startsWith('/settings')
+    ) return;
     
     const slugify = (text) => text ? text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : '';
     
@@ -818,6 +828,14 @@ function App() {
     }
   }, [selectedBoard, activeWorkspace, isAuthenticated, currentPath, viewMode, setViewMode]);
 
+  // Backward-compatibility: If any legacy component sets isSettingsOpen, route to /pengaturan page
+  useEffect(() => {
+    if (isSettingsOpen) {
+      if (typeof setIsSettingsOpen === 'function') setIsSettingsOpen(false);
+      window.history.pushState({}, '', '/pengaturan');
+      window.dispatchEvent(new CustomEvent('alurku-navigate'));
+    }
+  }, [isSettingsOpen, setIsSettingsOpen]);
 
   if (!isAuthenticated) {
     return (
@@ -1328,12 +1346,17 @@ function App() {
         }`}
         style={
           appBgImage
-            ? {
-                backgroundImage: `url(${appBgImage})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-              }
+            ? appBgImage.includes('gradient')
+              ? {
+                  background: appBgImage,
+                  backgroundAttachment: 'fixed',
+                }
+              : {
+                  backgroundImage: `url(${appBgImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundAttachment: 'fixed',
+                }
             : appTheme &&
               appTheme !== 'gamer' &&
               appTheme !== 'minimal' &&
@@ -1385,6 +1408,9 @@ function App() {
             }
           }}
         />
+        {appBgImage && !appBgImage.includes('gradient') && (
+          <div className="fixed inset-0 z-0 pointer-events-none bg-slate-50/20 dark:bg-[#090D16]/30 backdrop-blur-[1px]" />
+        )}
         {appTexture && (
           <div
             className="fixed inset-0 z-0 pointer-events-none opacity-60"
@@ -1505,6 +1531,56 @@ function App() {
             <ChangelogPage language={language} setLanguage={setLanguage} isInsideApp={true} />
           ) : currentPath.startsWith('/dokumentasi') ? (
             <LandingDocumentationPage language={language} isInsideApp={true} />
+          ) : currentPath.startsWith('/pengaturan') || currentPath.startsWith('/settings') ? (
+            <SettingsPage
+              closeSettings={() => {
+                window.history.pushState({}, '', '/dashboard');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              profileData={profileData}
+              setProfileData={setProfileData}
+              handleUpdateProfile={handleUpdateProfile}
+              handleAvatarUpload={handleAvatarUpload}
+              appTheme={appTheme}
+              handleSelectAppTheme={handleSelectAppTheme}
+              appBgImage={appBgImage}
+              setAppBgImage={setAppBgImage}
+              handleSelectAppBg={handleSelectAppBg}
+              handleAppBgUpload={handleAppBgUpload}
+              removeAppBgImage={removeAppBgImage}
+              appTexture={appTexture}
+              handleSelectAppTexture={handleSelectAppTexture}
+              chatBg={chatBg}
+              handleChatBgUpload={handleChatBgUpload}
+              removeChatBg={removeChatBg}
+              handleSelectDefaultBg={handleSelectDefaultBg}
+              cardTheme={cardTheme}
+              handleSelectCardTheme={handleSelectCardTheme}
+              isDarkMode={isDarkMode}
+              setIsDarkMode={setIsDarkMode}
+              language={language}
+              setLanguage={setLanguage}
+              dateFormat={dateFormat}
+              setDateFormat={setDateFormat}
+              showLiveClock={showLiveClock}
+              setShowLiveClock={setShowLiveClock}
+              showLiveClockDate={showLiveClockDate}
+              setShowLiveClockDate={setShowLiveClockDate}
+              pomodoroEnabled={pomodoroEnabled}
+              setPomodoroEnabled={setPomodoroEnabled}
+              showAssistantButton={showAssistantButton}
+              setShowAssistantButton={setShowAssistantButton}
+              notifPosition={notifPosition}
+              setNotifPosition={setNotifPosition}
+              notifSound={notifSound}
+              setNotifSound={setNotifSound}
+              notifPrivacy={notifPrivacy}
+              setNotifPrivacy={setNotifPrivacy}
+              browserNotifEnabled={browserNotifEnabled}
+              setBrowserNotifEnabled={setBrowserNotifEnabled}
+              showNotification={showNotification}
+              tMsg={tMsg}
+            />
           ) : currentPath === '/dashboard' || currentPath.endsWith('/dashboard') || currentPath === '/dasbor' ? (
             <HomeDashboard />
           ) : !selectedBoard ? (
@@ -2447,52 +2523,7 @@ function App() {
     </div>
   )}
   <AppModals />
-      {isSettingsOpen && (
-        <SettingsPage
-          closeSettings={() => setIsSettingsOpen(false)}
-          profileData={profileData}
-          setProfileData={setProfileData}
-          handleUpdateProfile={handleUpdateProfile}
-          handleAvatarUpload={handleAvatarUpload}
-          appTheme={appTheme}
-          handleSelectAppTheme={handleSelectAppTheme}
-          appBgImage={appBgImage}
-          handleAppBgUpload={handleAppBgUpload}
-          removeAppBgImage={removeAppBgImage}
-          appTexture={appTexture}
-          handleSelectAppTexture={handleSelectAppTexture}
-          chatBg={chatBg}
-          handleChatBgUpload={handleChatBgUpload}
-          removeChatBg={removeChatBg}
-          handleSelectDefaultBg={handleSelectDefaultBg}
-          cardTheme={cardTheme}
-          handleSelectCardTheme={handleSelectCardTheme}
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
-          language={language}
-          setLanguage={setLanguage}
-          dateFormat={dateFormat}
-          setDateFormat={setDateFormat}
-          showLiveClock={showLiveClock}
-          setShowLiveClock={setShowLiveClock}
-          showLiveClockDate={showLiveClockDate}
-          setShowLiveClockDate={setShowLiveClockDate}
-          pomodoroEnabled={pomodoroEnabled}
-          setPomodoroEnabled={setPomodoroEnabled}
-          showAssistantButton={showAssistantButton}
-          setShowAssistantButton={setShowAssistantButton}
-          notifPosition={notifPosition}
-          setNotifPosition={setNotifPosition}
-          notifSound={notifSound}
-          setNotifSound={setNotifSound}
-          notifPrivacy={notifPrivacy}
-          setNotifPrivacy={setNotifPrivacy}
-          browserNotifEnabled={browserNotifEnabled}
-          setBrowserNotifEnabled={setBrowserNotifEnabled}
-          showNotification={showNotification}
-          tMsg={tMsg}
-        />
-      )}
+      {/* Settings Modal fallback removed: Now rendered as first-class full page at /pengaturan */}
 
       {/* Upgrade Modal Triggered from Gated Features */}
       {isUpgradeModalOpen && (

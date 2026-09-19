@@ -770,6 +770,18 @@ export default function useAppLogic() {
     showNotification('Custom background removed!', 'success');
   };
 
+  const handleSelectAppBg = (bgStr) => {
+    setAppBgImage(bgStr || '');
+    if (typeof window !== 'undefined') {
+      if (bgStr) {
+        localStorage.setItem('alurku_app_bg_image', bgStr);
+      } else {
+        localStorage.removeItem('alurku_app_bg_image');
+      }
+    }
+    showNotification(language === 'id' ? 'Latar belakang diperbarui!' : 'Background updated!', 'success');
+  };
+
   const handleSelectAppTexture = (textureStr) => {
     setAppTexture(textureStr);
     if (typeof window !== 'undefined') localStorage.setItem('alurku_app_texture', textureStr);
@@ -5203,6 +5215,8 @@ export default function useAppLogic() {
     cardTheme,
     handleSelectCardTheme,
     appBgImage,
+    setAppBgImage,
+    handleSelectAppBg,
     handleAppBgUpload,
     removeAppBgImage,
     appTexture,

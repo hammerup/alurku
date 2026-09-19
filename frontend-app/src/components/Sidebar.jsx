@@ -1138,6 +1138,25 @@ export default function Sidebar() {
               <IconUpgrade className="w-4.5 h-4.5" />
             </button>
 
+            {/* Settings */}
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/pengaturan');
+                window.dispatchEvent(new CustomEvent('alurku-navigate'));
+              }}
+              className={`w-8 h-8 flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
+                activePath.startsWith('/pengaturan') || activePath.startsWith('/settings')
+                  ? 'bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
+                  : 'text-slate-500 hover:text-black dark:hover:text-white hover:bg-neutral-300/60 dark:hover:bg-neutral-800'
+              }`}
+              title={tMsg('Settings', 'Pengaturan')}
+            >
+              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="3" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+              </svg>
+            </button>
+
             {/* EXPLICIT EXPAND / COLLAPSE BUTTON WITH SMOOTH ROTATION */}
             <button
               onClick={toggleCollapse}
@@ -1259,6 +1278,21 @@ export default function Sidebar() {
                       >
                         <IconSparkles className="w-4 h-4 text-amber-500 shrink-0" />
                         {tMsg('Upgrade Plan / Quota', 'Tingkatkan Paket / Kuota')}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsWorkspaceMenuOpen(false);
+                          window.history.pushState({}, '', '/pengaturan/ruang-kerja');
+                          window.dispatchEvent(new CustomEvent('alurku-navigate'));
+                        }}
+                        className="w-full text-left px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg font-bold flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {tMsg('Workspace Settings', 'Pengaturan Ruang Kerja')}
                       </button>
                     </div>
                 </div>

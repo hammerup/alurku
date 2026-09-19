@@ -86,6 +86,27 @@ export default function HeaderNavigation({
 
   const searchInputRef = useRef(null);
 
+  const [modifierKey, setModifierKey] = useState('Ctrl');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isApple = /(Mac|iPhone|iPod|iPad)/i.test(navigator.userAgent || navigator.platform || '');
+      setModifierKey(isApple ? '⌘' : 'Ctrl');
+    }
+  }, []);
+
+  const handleCommandBarClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (typeof onOpenCommandBar === 'function') {
+      onOpenCommandBar();
+    } else {
+      window.dispatchEvent(new CustomEvent('alurku:open-command-bar'));
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
@@ -94,29 +115,21 @@ export default function HeaderNavigation({
       if (scopeRef.current && !scopeRef.current.contains(event.target)) {
         setIsScopeDropdownOpen(false);
       }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setIsScopeDropdownOpen(false);
+      }
     };
 
     const handleKeyDown = (e) => {
       const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
       const isEditable = document.activeElement?.isContentEditable;
 
-      // 1. Slash key (/) focuses search input when user is not typing in a text field
+      // Slash key (/) focuses search input when user is not typing in a text field
       if (e.key === '/' && !e.metaKey && !e.ctrlKey && activeTag !== 'input' && activeTag !== 'textarea' && !isEditable) {
         e.preventDefault();
         if (searchInputRef.current) {
           searchInputRef.current.focus();
           searchInputRef.current.select();
-        }
-        return;
-      }
-
-      // 2. Cmd/Ctrl + K triggers Command Bar Quick-Add
-      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
-        e.preventDefault();
-        if (onOpenCommandBar) {
-          onOpenCommandBar();
-        } else if (searchInputRef.current) {
-          searchInputRef.current.focus();
         }
       }
     };
@@ -304,11 +317,11 @@ export default function HeaderNavigation({
                 /
               </kbd>
               <kbd
-                onClick={onOpenCommandBar}
-                className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 select-none border border-neutral-300/60 dark:border-neutral-700/60 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 transition-colors"
-                title={tMsg('Command Bar (Cmd/Ctrl + K)', 'Command Bar (Cmd/Ctrl + K)')}
+                onClick={handleCommandBarClick}
+                className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-neutral-200/70 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 select-none border border-neutral-300/60 dark:border-neutral-700/60 cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white transition-colors"
+                title={tMsg(`Command Bar (${modifierKey} + K)`, `Command Bar (${modifierKey} + K)`)}
               >
-                ⌘K
+                {modifierKey === '⌘' ? '⌘K' : 'Ctrl K'}
               </kbd>
             </div>
           )}
@@ -662,7 +675,10 @@ export default function HeaderNavigation({
 
         {/* Direct Setting Gear Button */}
         <button
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={() => {
+            window.history.pushState({}, '', '/pengaturan');
+            window.dispatchEvent(new CustomEvent('alurku-navigate'));
+          }}
           className={`p-2 rounded-xl transition-all border flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
             isDarkMode
               ? 'border-neutral-800 text-neutral-300 bg-neutral-900/60'
@@ -716,8 +732,9 @@ export default function HeaderNavigation({
                 )}
                 <button
                   onClick={() => {
-                    setIsSettingsOpen(true);
                     setIsProfileMenuOpen(false);
+                    window.history.pushState({}, '', '/pengaturan');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
                   }}
                   className="w-full text-left px-4 py-2.5 text-xs font-medium hover:bg-[#FACC15]/15 hover:text-[#111E38] dark:hover:text-[#FACC15] flex items-center gap-2.5 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
                 >

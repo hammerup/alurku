@@ -1505,6 +1505,7 @@ USER REQUEST:
         setLanguage={setLanguage}
         currentUser={currentUser}
         avatarsMap={avatarsMap}
+        onOpenCommandBar={() => window.dispatchEvent(new CustomEvent('alurku:open-command-bar'))}
         onLogoClick={handleLogoClick}
         onNavClick={handleNavClick}
       />

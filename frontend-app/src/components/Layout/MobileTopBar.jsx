@@ -220,8 +220,9 @@ export default function MobileTopBar() {
                 )}
                 <button
                   onClick={() => {
-                    setIsSettingsOpen(true);
                     setIsMobileProfileOpen(false);
+                    window.history.pushState({}, '', '/pengaturan');
+                    window.dispatchEvent(new CustomEvent('alurku-navigate'));
                   }}
                   className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-[#FACC15]/15 hover:text-[#111E38] dark:hover:text-[#FACC15] flex items-center gap-2.5 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
                 >

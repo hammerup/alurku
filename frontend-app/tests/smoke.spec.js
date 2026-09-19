@@ -63,4 +63,105 @@ test.describe('Smoke E2E Test Suite - alurku.', () => {
     await expect(page.locator('body')).toContainText(/Real-Time Capacity Guard|Sistem Proteksi Kapasitas/i);
     await expect(page.locator('body')).toContainText(/Zero-Retention AI Privacy|Privasi AI Tanpa Retensi/i);
   });
+
+  test('7. Search Bar Ctrl+K Adaptation, Clickability & Shortcut Toggle', async ({ page }) => {
+    // 1. Log in to access the header search bar
+    await page.goto(BASE_URL + '/masuk');
+    await page.locator('input[type="text"]').first().fill('admin');
+    await page.locator('input[type="password"]').first().fill('AdminAlurku2026!');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
+
+    // 2. Wait for Header search bar to be visible
+    const kbdBadge = page.locator('kbd:has-text("Ctrl K")');
+    await expect(kbdBadge).toBeVisible({ timeout: 10000 });
+
+    // Ensure ⌘K is NOT shown on non-Mac
+    const macBadge = page.locator('kbd:has-text("⌘K")');
+    await expect(macBadge).toHaveCount(0);
+
+    // 3. Test clicking the badge opens the Command Bar
+    await kbdBadge.click();
+    const commandModalInput = page.locator('input[placeholder*="Design UI"], input[placeholder*="Desain UI"]').first();
+    await expect(commandModalInput).toBeVisible({ timeout: 5000 });
+
+    // 4. Test closing with Escape
+    await page.keyboard.press('Escape');
+    await expect(commandModalInput).not.toBeVisible({ timeout: 5000 });
+
+    // 5. Test pressing Control+k opens the Command Bar
+    await page.keyboard.press('Control+k');
+    await expect(commandModalInput).toBeVisible({ timeout: 5000 });
+
+    // 6. Test pressing Control+k again closes the Command Bar
+    await page.keyboard.press('Control+k');
+    await expect(commandModalInput).not.toBeVisible({ timeout: 5000 });
+  });
+
+  test('8. Settings Page (/pengaturan) Full-Page Navigation, Tabs & WCAG AA Contrast Safeguard', async ({ page }) => {
+    // 1. Log in to access the app
+    await page.goto(BASE_URL + '/masuk');
+    await page.locator('input[type="text"]').first().fill('admin');
+    await page.locator('input[type="password"]').first().fill('AdminAlurku2026!');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
+
+    // Mark tour as done to prevent WelcomeTourModal overlay from intercepting clicks
+    await page.evaluate(() => {
+      localStorage.setItem('alurku_tour_done_v2_admin', 'true');
+    });
+
+    // 2. Direct permalink navigation to /pengaturan
+    await page.goto(BASE_URL + '/pengaturan');
+    await expect(page).toHaveURL(/.*\/pengaturan/, { timeout: 10000 });
+
+    // Verify Settings Page Header & Subtitle
+    const heading = page.locator('h1').filter({ hasText: /Pengaturan|Settings/i }).first();
+    await expect(heading).toBeVisible({ timeout: 10000 });
+
+    // Verify Breadcrumb
+    const breadcrumb = page.locator('nav').filter({ hasText: /Dasbor|Dashboard/i }).first();
+    await expect(breadcrumb).toBeVisible();
+
+    // 3. Tab Navigation: Appearance & Themes (/pengaturan/tampilan)
+    const appearanceTab = page.locator('button').filter({ hasText: /Tampilan|Appearance/i }).first();
+    await appearanceTab.click();
+    await expect(page).toHaveURL(/.*\/pengaturan\/tampilan/, { timeout: 5000 });
+    await expect(page.locator('text=/WCAG AA|Color Mode|Mode Tampilan/i').first()).toBeVisible({ timeout: 5000 });
+
+    // Test Wallpaper / Background Preset Selection
+    const wallpaperPreset = page.locator('button').filter({ hasText: /Soft Aurora|Calm Slate|Warm Silk|Default/i }).first();
+    await expect(wallpaperPreset).toBeVisible({ timeout: 5000 });
+    await wallpaperPreset.click();
+
+    // 4. Tab Navigation: Work Preferences (/pengaturan/preferensi)
+    const preferencesTab = page.locator('button').filter({ hasText: /Preferensi|Preferences/i }).first();
+    await preferencesTab.click();
+    await expect(page).toHaveURL(/.*\/pengaturan\/preferensi/, { timeout: 5000 });
+    await expect(page.locator('text=/Format Tanggal|Date Format/i').first()).toBeVisible({ timeout: 5000 });
+
+    // 5. Tab Navigation: Notifications (/pengaturan/notifikasi)
+    const notifTab = page.locator('button').filter({ hasText: /Notifikasi|Notifications/i }).first();
+    await notifTab.click();
+    await expect(page).toHaveURL(/.*\/pengaturan\/notifikasi/, { timeout: 5000 });
+    await expect(page.locator('text=/Suara Notifikasi|Notification Chime|Tes Suara/i').first()).toBeVisible({ timeout: 5000 });
+
+    // 6. Tab Navigation: Security & Danger Zone (/pengaturan/keamanan)
+    const securityTab = page.locator('button').filter({ hasText: /Keamanan|Security/i }).first();
+    await securityTab.click();
+    await expect(page).toHaveURL(/.*\/pengaturan\/keamanan/, { timeout: 5000 });
+    await expect(page.locator('text=/Kata Sandi|Password|Zona Bahaya|Danger Zone/i').first()).toBeVisible({ timeout: 5000 });
+
+    // 7. Tab Navigation: Plan & Usage Quotas (/pengaturan/paket)
+    const planTab = page.locator('button').filter({ hasText: /Paket|Plan|Billing/i }).first();
+    await planTab.click();
+    await expect(page).toHaveURL(/.*\/pengaturan\/paket/, { timeout: 5000 });
+    await expect(page.locator('text=/Kursi|Seats|Penyimpanan|Storage/i').first()).toBeVisible({ timeout: 5000 });
+
+    // 8. Back to Dashboard Button
+    const backBtn = page.locator('button').filter({ hasText: /Kembali|Back/i }).first();
+    await backBtn.click();
+    await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 10000 });
+  });
 });
+
