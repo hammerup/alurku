@@ -348,7 +348,7 @@ export default function AppModals() {
         />
       )}
 
-      {selectedTask && !isChatWorkspaceOpen && !(typeof window !== 'undefined' && (window.location.pathname.includes('workspace-chat') || window.location.pathname.includes('chat'))) && (
+      {selectedTask && (
         <TaskDetailModal
           selectedTask={selectedTask}
           tasks={tasks}

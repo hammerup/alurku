@@ -558,8 +558,8 @@ export default function useAppLogic() {
   }, [isMomNotepadOpen]);  
 
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_chat_ws_open', isChatWorkspaceOpen);
-  }, [isChatWorkspaceOpen]);
+    if (typeof window !== 'undefined') localStorage.removeItem('alurku_chat_ws_open');
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('alurku_changelog_open', isChangelogOpen);
@@ -3503,8 +3503,7 @@ export default function useAppLogic() {
   const startEditing = (taskToEdit = null) => {
     const targetTask = taskToEdit || selectedTask;
     if (!targetTask) return;
-    const isWorkspaceChatPath = typeof window !== 'undefined' && (window.location.pathname.includes('workspace-chat') || window.location.pathname.includes('chat'));
-    if (!isWorkspaceChatPath && !isChatWorkspaceOpen && (!selectedTask || selectedTask.id !== targetTask.id)) {
+    if (!selectedTask || selectedTask.id !== targetTask.id) {
       setSelectedTask(targetTask);
     }
     setEditFormData({
@@ -4720,7 +4719,6 @@ export default function useAppLogic() {
         isExportModalOpen ||
         isMyTicketsOpen ||
         colModal.isOpen ||
-        isChatWorkspaceOpen ||
         isMobileMenuOpen ||
         isAssistantOpen ||
         isProactiveAIOpen

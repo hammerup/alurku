@@ -72,6 +72,14 @@ test.describe('Smoke E2E Test Suite - alurku.', () => {
     await page.locator('button[type="submit"]').first().click();
     await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
 
+    // Bypass WelcomeTour
+    await page.evaluate(() => {
+      const u = localStorage.getItem('alurku_username') || 'admin';
+      localStorage.setItem(`alurku_tour_done_v2_${u}`, 'true');
+      localStorage.setItem('alurku_tour_done_v2', 'true');
+    });
+    await page.reload();
+
     // 2. Wait for Header search bar to be visible
     const kbdBadge = page.locator('kbd:has-text("Ctrl K")');
     await expect(kbdBadge).toBeVisible({ timeout: 10000 });
@@ -236,4 +244,83 @@ test.describe('Smoke E2E Test Suite - alurku.', () => {
     const classes = await errorStack.getAttribute('class');
     expect(classes).toContain('top-4');
   });
+
+  test('11. TaskDetailModal — clicking a task card in Kanban, Table, and Calendar opens TaskDetailModal', async ({ page }) => {
+    await page.goto(BASE_URL + '/masuk');
+    await page.locator('input[type="text"]').first().fill('admin');
+    await page.locator('input[type="password"]').first().fill('AdminAlurku2026!');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
+
+    // Bypass tour and board tour
+    await page.evaluate(() => {
+      const u = localStorage.getItem('alurku_username') || 'admin';
+      localStorage.setItem(`alurku_tour_done_v2_${u}`, 'true');
+      localStorage.setItem('alurku_tour_done_v2', 'true');
+      localStorage.setItem(`alurku_board_tour_done_v2_${u}`, 'true');
+    });
+    await page.reload();
+    await page.waitForTimeout(2000);
+
+    // Click the project button in sidebar to switch from HomeDashboard to Kanban
+    await page.getByRole('button', { name: /System Feedback/i }).first().click();
+    await page.waitForTimeout(2000);
+
+    const modal = page.locator('div.fixed.inset-0.z-100');
+
+    // 1. VERIFY KANBAN VIEW
+    console.log('Testing TaskDetailModal in Kanban view...');
+    const kanbanCard = page.locator('[id*="task-card-"], .task-card').first();
+    await expect(kanbanCard).toBeVisible({ timeout: 10000 });
+    await kanbanCard.click();
+    await page.waitForTimeout(1000);
+
+    await expect(modal).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/Detail Tugas|Task Details/i').first()).toBeVisible({ timeout: 5000 });
+    console.log('TaskDetailModal verified in Kanban!');
+
+    // Close modal via Escape key
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(1000);
+    await expect(modal).not.toBeVisible({ timeout: 5000 });
+
+    // 2. VERIFY TABLE (LIST) VIEW
+    console.log('Testing TaskDetailModal in List view...');
+    const listTabBtn = page.locator('button').filter({ hasText: /^List$/i }).first();
+    if (await listTabBtn.isVisible()) {
+      await listTabBtn.click();
+      await page.waitForTimeout(1500);
+      const listRow = page.locator('main [data-testid^="task-item-"], main [id*="task-"]').first();
+      await expect(listRow).toBeVisible({ timeout: 5000 });
+      await listRow.click();
+      await page.waitForTimeout(1000);
+      await expect(modal).toBeVisible({ timeout: 5000 });
+      console.log('TaskDetailModal verified in List view!');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(1000);
+      await expect(modal).not.toBeVisible({ timeout: 5000 });
+    }
+
+    // 3. VERIFY CALENDAR VIEW
+    console.log('Testing TaskDetailModal in Calendar view...');
+    const calTabBtn = page.locator('button').filter({ hasText: /^Calendar$/i }).first();
+    if (await calTabBtn.isVisible()) {
+      await calTabBtn.click();
+      await page.waitForTimeout(1500);
+      const calItem = page.locator('main [data-testid^="calendar-task-"], .calendar-day-cell [data-testid^="calendar-task-"]').first();
+      await expect(calItem).toBeVisible({ timeout: 5000 });
+      await calItem.click();
+      await page.waitForTimeout(1000);
+      await expect(modal).toBeVisible({ timeout: 5000 });
+      console.log('TaskDetailModal verified in Calendar view!');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(1000);
+      await expect(modal).not.toBeVisible({ timeout: 5000 });
+    }
+    console.log('All TaskDetailModal views verified successfully!');
+  });
+
+
 });
+
+

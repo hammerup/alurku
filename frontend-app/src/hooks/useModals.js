@@ -29,7 +29,7 @@ export function useModals() {
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isChatWorkspaceOpen, setIsChatWorkspaceOpen] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_chat_ws_open') === 'true';
+    if (typeof window !== 'undefined') localStorage.removeItem('alurku_chat_ws_open');
     return false;
   });
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);

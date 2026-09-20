@@ -123,6 +123,16 @@ export default function TaskDetailModal({
     fetchAttachments();
   }, [fetchAttachments]);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && !isEditing) {
+        close();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [close, isEditing]);
+
   const handleUploadAttachment = async (files) => {
     if (!files || files.length === 0 || !selectedTask?.id) return;
     const formData = new FormData();

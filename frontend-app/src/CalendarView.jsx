@@ -548,6 +548,7 @@ export default function CalendarView({
                                     />
                                   )}
                                   <div
+                                    data-testid={`calendar-task-${t.id}`}
                                     className={`flex-1 px-1 sm:px-2 py-0.5 sm:py-1 truncate ${
                                       isDraggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
                                     }`}
@@ -691,6 +692,7 @@ export default function CalendarView({
                           return (
                             <div
                               key={t.id}
+                              data-testid={`calendar-task-${t.id}`}
                               onClick={() => setSelectedTask(t)}
                               className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 gap-2 rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 hover:border-amber-400 dark:hover:border-amber-400/50 cursor-pointer shadow-xs hover:shadow-md transition-all hover:scale-[1.01]"
                             >

@@ -843,6 +843,7 @@ export default function TableList({
                   <div
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
+                    data-testid={`task-item-${task.id}`}
                     onAnimationEnd={() => {
                       if (newlyAddedId === task.id) setNewlyAddedId(null);
                       if (newlyActivatedId === task.id) setNewlyActivatedId(null);
@@ -1260,7 +1261,7 @@ export default function TableList({
                         className="mt-0.5 rounded-full border-neutral-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-5 h-5 bg-indigo-600 shrink-0"
                       />
                     )}
-                    <div className="flex-1 min-w-0" onClick={() => setSelectedTask(task)}>
+                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedTask(task)}>
                       <p
                         className="text-sm font-bold line-through text-neutral-600 dark:text-neutral-400 truncate group-hover:text-indigo-600 transition-colors"
                         title={task.project_name}
