@@ -166,6 +166,14 @@ export default function ChatMessage({
     .replace(/Luruka 🤖/g, 'Luruka')
     .replace(/🤖/g, '');
 
+  const isAi =
+    displayUsername === 'Luruka' ||
+    Boolean(c.isAI) ||
+    Boolean(c.is_ai) ||
+    c.username === 'Smart Assistant' ||
+    c.username === 'Luruka' ||
+    c.role === 'assistant';
+
   return (
     <React.Fragment>
       {showDivider && (
@@ -184,12 +192,65 @@ export default function ChatMessage({
           </span>
         </div>
       )}
-      <div
-        id={`${idPrefix}${c.id}`}
-        className={`flex gap-3 w-full p-2 -mx-1.5 rounded-2xl transition-all duration-700 ${
-          isMe ? 'flex-row-reverse' : 'flex-row'
-        } chat-animate scroll-mt-20 group/bubble target:bg-[#FACC15]/25 dark:target:bg-[#FACC15]/20 target:border-l-4 target:border-[#FACC15] target:pl-3 target:shadow-md`}
-      >
+      {isAi ? (
+        /* Luruka AI Reply — Modern Open Layout without Chat Bubble */
+        <div
+          id={`${idPrefix}${c.id}`}
+          className="flex gap-3.5 w-full py-3 px-2 -mx-1.5 transition-all duration-300 flex-row scroll-mt-20 group/ai-msg"
+        >
+          {/* AI Monogram / Spark Avatar */}
+          <div className="w-7 h-7 rounded-xl bg-[#FACC15] text-[#111E38] flex items-center justify-center font-black text-xs shrink-0 shadow-2xs mt-0.5 select-none">
+            <svg className="w-4 h-4 text-[#111E38]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L14.7 8.3L21.5 9.3L16.6 14.1L17.8 20.8L12 17.6L6.2 20.8L7.4 14.1L2.5 9.3L9.3 8.3L12 2Z" />
+            </svg>
+          </div>
+
+          <div className="flex flex-col items-start min-w-0 flex-1 max-w-full">
+            {/* Header: Luruka AI & Timestamp */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xs font-bold text-[#111E38] dark:text-white flex items-center gap-1.5">
+                <span>Luruka</span>
+                <span className="text-[8px] bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-[#FACC15] font-black px-1.5 py-0.2 rounded uppercase tracking-wider border border-amber-300/60 dark:border-amber-700/60">
+                  AI
+                </span>
+              </span>
+              <span className="text-[9px] font-medium text-neutral-400">
+                {new Date(c.timestamp.replace(/-/g, '/')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+
+            {/* AI Text Content — Open layout, No bubble container */}
+            <div className="w-full text-sm leading-relaxed text-[#111E38] dark:text-neutral-200 font-normal">
+              <div
+                dangerouslySetInnerHTML={{ __html: renderChatMessageContent(c.text, false) }}
+                className="wrap-break-word space-y-2 select-text"
+              />
+              {children}
+            </div>
+
+            {/* Subtle Action Toolbar below reply */}
+            <div className="flex items-center gap-2 mt-2 pt-1 text-neutral-400">
+              <button
+                onClick={onCopy}
+                className="flex items-center gap-1 text-[11px] font-medium text-neutral-400 hover:text-[#111E38] dark:hover:text-white transition-colors px-1.5 py-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
+                title={tMsg ? tMsg('Copy response', 'Salin balasan') : 'Copy'}
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                </svg>
+                <span className="text-[10px]">{tMsg ? tMsg('Copy', 'Salin') : 'Copy'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Regular User / Teammate Message with Speech Bubble */
+        <div
+          id={`${idPrefix}${c.id}`}
+          className={`flex gap-3 w-full p-2 -mx-1.5 rounded-2xl transition-all duration-700 ${
+            isMe ? 'flex-row-reverse' : 'flex-row'
+          } chat-animate scroll-mt-20 group/bubble target:bg-[#FACC15]/25 dark:target:bg-[#FACC15]/20 target:border-l-4 target:border-[#FACC15] target:pl-3 target:shadow-md`}
+        >
         <Avatar name={displayUsername} url={avatarsMap[c.username]} size="w-8 h-8 shrink-0" textClass="text-[10px]" />
         <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} min-w-0 max-w-[92%]`}>
           <div className={`flex items-baseline gap-2 mb-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -324,6 +385,7 @@ export default function ChatMessage({
           </div>
         </div>
       </div>
-    </React.Fragment>
-  );
+    )}
+  </React.Fragment>
+);
 }

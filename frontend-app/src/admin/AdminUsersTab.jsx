@@ -64,6 +64,20 @@ export default function AdminUsersTab({
     });
   }, [adminUsers, userSearchQuery, userStatusFilter]);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [userSearchQuery, userStatusFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredUsers.slice(start, start + pageSize);
+  }, [filteredUsers, currentPage, pageSize]);
+
   const handleToggleSelectUser = (username) => {
     if (username === 'admin') return;
     setSelectedUsers((prev) => (prev.includes(username) ? prev.filter((u) => u !== username) : [...prev, username]));
@@ -266,7 +280,7 @@ export default function AdminUsersTab({
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/50 font-medium">
-                {filteredUsers.map((u) => {
+                {paginatedUsers.map((u) => {
                   const isSelected = selectedUsers.includes(u.username);
                   const isRootAdmin = u.username === 'admin';
                   return (
@@ -455,6 +469,74 @@ export default function AdminUsersTab({
                 )}
               </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            {filteredUsers.length > 0 && (
+              <div className="px-4 py-3 border-t border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs select-none">
+                <div className="text-neutral-500 dark:text-neutral-400 font-medium">
+                  {tMsg(
+                    `Showing ${(currentPage - 1) * pageSize + 1} - ${Math.min(currentPage * pageSize, filteredUsers.length)} of ${filteredUsers.length} users`,
+                    `Menampilkan ${(currentPage - 1) * pageSize + 1} - ${Math.min(currentPage * pageSize, filteredUsers.length)} dari ${filteredUsers.length} pengguna`
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-neutral-500 dark:text-neutral-400">{tMsg('Rows:', 'Baris:')}</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-xs font-bold text-neutral-700 dark:text-neutral-300 outline-none cursor-pointer"
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={currentPage <= 1}
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors"
+                    >
+                      {tMsg('Prev', 'Sebelumnya')}
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                      .map((p, idx, arr) => (
+                        <span key={p} className="flex items-center">
+                          {idx > 0 && arr[idx - 1] !== p - 1 && (
+                            <span className="px-1 text-neutral-400 font-bold">...</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setCurrentPage(p)}
+                            className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors cursor-pointer ${
+                              currentPage === p
+                                ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38]'
+                                : 'border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        </span>
+                      ))}
+
+                    <button
+                      type="button"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors"
+                    >
+                      {tMsg('Next', 'Berikutnya')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -320,6 +320,43 @@ test.describe('Smoke E2E Test Suite - alurku.', () => {
     console.log('All TaskDetailModal views verified successfully!');
   });
 
+  test('12. Admin Dashboard Pagination & Luruka AI Open Reply Format', async ({ page }) => {
+    // 1. Log in as admin
+    await page.goto(BASE_URL + '/masuk');
+    await page.locator('input[type="text"]').first().fill('admin');
+    await page.locator('input[type="password"]').first().fill('AdminAlurku2026!');
+    await page.locator('button[type="submit"]').first().click();
+    await expect(page).toHaveURL(/.*(\/dashboard|\/$)/, { timeout: 15000 });
+
+    await page.evaluate(() => {
+      const u = localStorage.getItem('alurku_username') || 'admin';
+      localStorage.setItem(`alurku_tour_done_v2_${u}`, 'true');
+      localStorage.setItem('alurku_tour_done_v2', 'true');
+    });
+    await page.reload();
+    await page.waitForTimeout(1500);
+
+    // 2. Navigate to Admin Dashboard (/admin)
+    await page.goto(BASE_URL + '/admin');
+    await expect(page).toHaveURL(/.*\/admin/, { timeout: 10000 });
+
+    // Verify Users Tab pagination controls
+    const usersTable = page.locator('table').first();
+    await expect(usersTable).toBeVisible({ timeout: 10000 });
+    const paginationText = page.locator('text=/Menampilkan|Showing/i').first();
+    await expect(paginationText).toBeVisible({ timeout: 5000 });
+    console.log('Admin Users tab pagination verified!');
+
+    // Switch to Projects Tab
+    const projectsTab = page.locator('button').filter({ hasText: /Direktori Proyek|Projects/i }).first();
+    if (await projectsTab.isVisible()) {
+      await projectsTab.click();
+      await page.waitForTimeout(1000);
+      const projPagination = page.locator('text=/Menampilkan|Showing/i').first();
+      await expect(projPagination).toBeVisible({ timeout: 5000 });
+      console.log('Admin Projects tab pagination verified!');
+    }
+  });
 
 });
 

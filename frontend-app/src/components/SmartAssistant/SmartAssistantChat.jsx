@@ -246,6 +246,7 @@ export default function SmartAssistantChat({
             const chatMsgData = {
               id: msg.id,
               username: isMe ? currentUser : 'Luruka',
+              isAI: !isMe,
               text: msg.text,
               timestamp: msg.timestamp || getLocalTimestamp(),
               reactions: {},

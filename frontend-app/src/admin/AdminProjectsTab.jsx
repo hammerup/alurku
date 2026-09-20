@@ -48,6 +48,20 @@ export default function AdminProjectsTab({ language, showNotification, fetchStat
     });
   }, [adminBoards, projectFilter, projectSearchQuery]);
 
+  // Pagination states
+  const [projectCurrentPage, setProjectCurrentPage] = useState(1);
+  const [projectPageSize, setProjectPageSize] = useState(10);
+
+  useEffect(() => {
+    setProjectCurrentPage(1);
+  }, [projectSearchQuery, projectFilter, projectPageSize]);
+
+  const totalProjectPages = Math.max(1, Math.ceil(filteredAdminBoards.length / projectPageSize));
+  const paginatedProjects = useMemo(() => {
+    const start = (projectCurrentPage - 1) * projectPageSize;
+    return filteredAdminBoards.slice(start, start + projectPageSize);
+  }, [filteredAdminBoards, projectCurrentPage, projectPageSize]);
+
   const handleExecuteTransfer = (e) => {
     e.preventDefault();
     if (!boardToTransfer || !newOwnerInput.trim()) return;
@@ -138,7 +152,7 @@ export default function AdminProjectsTab({ language, showNotification, fetchStat
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/50 font-medium">
-              {filteredAdminBoards.map((b) => (
+              {paginatedProjects.map((b) => (
                 <tr key={b.id} className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors">
                   <td className="p-3.5 pl-4 font-bold text-[#111E38] dark:text-white flex items-center">
                     <span className="material-symbols-outlined text-[16px] align-middle mr-1">folder</span> {b.name}
@@ -203,6 +217,74 @@ export default function AdminProjectsTab({ language, showNotification, fetchStat
               ) : null}
             </tbody>
           </table>
+
+          {/* Pagination Controls */}
+          {filteredAdminBoards.length > 0 && (
+            <div className="px-4 py-3 border-t border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs select-none">
+              <div className="text-neutral-500 dark:text-neutral-400 font-medium">
+                {tMsg(
+                  `Showing ${(projectCurrentPage - 1) * projectPageSize + 1} - ${Math.min(projectCurrentPage * projectPageSize, filteredAdminBoards.length)} of ${filteredAdminBoards.length} projects`,
+                  `Menampilkan ${(projectCurrentPage - 1) * projectPageSize + 1} - ${Math.min(projectCurrentPage * projectPageSize, filteredAdminBoards.length)} dari ${filteredAdminBoards.length} proyek`
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-neutral-500 dark:text-neutral-400">{tMsg('Rows:', 'Baris:')}</span>
+                  <select
+                    value={projectPageSize}
+                    onChange={(e) => setProjectPageSize(Number(e.target.value))}
+                    className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-xs font-bold text-neutral-700 dark:text-neutral-300 outline-none cursor-pointer"
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={projectCurrentPage <= 1}
+                    onClick={() => setProjectCurrentPage((prev) => Math.max(1, prev - 1))}
+                    className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors"
+                  >
+                    {tMsg('Prev', 'Sebelumnya')}
+                  </button>
+
+                  {Array.from({ length: totalProjectPages }, (_, i) => i + 1)
+                    .filter((p) => p === 1 || p === totalProjectPages || Math.abs(p - projectCurrentPage) <= 1)
+                    .map((p, idx, arr) => (
+                      <span key={p} className="flex items-center">
+                        {idx > 0 && arr[idx - 1] !== p - 1 && (
+                          <span className="px-1 text-neutral-400 font-bold">...</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setProjectCurrentPage(p)}
+                          className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors cursor-pointer ${
+                            projectCurrentPage === p
+                              ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38]'
+                              : 'border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      </span>
+                    ))}
+
+                  <button
+                    type="button"
+                    disabled={projectCurrentPage >= totalProjectPages}
+                    onClick={() => setProjectCurrentPage((prev) => Math.min(totalProjectPages, prev + 1))}
+                    className="px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer transition-colors"
+                  >
+                    {tMsg('Next', 'Berikutnya')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

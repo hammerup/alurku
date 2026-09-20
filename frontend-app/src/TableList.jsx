@@ -823,255 +823,256 @@ export default function TableList({
               </div>
             )}
 
-            {/* Render List Tasks Aktif */}
-            {currentTasks.length > 0 ? (
-              currentTasks.map((task) => {
-                const isNewClone = clonedTaskIds && (clonedTaskIds.has(task.id) || clonedTaskIds.has(String(task.id)) || clonedTaskIds.has(Number(task.id)));
-                const isGlobal = !selectedBoard || selectedBoard.id === 'global';
-                const qPos = isGlobal ? task.queue_global_number : task.queue_project_number;
-                const qTot = isGlobal ? task.total_global_queue : task.total_project_queue;
-                const unreadComments = (notifications || []).filter(
-                  (n) => !n.is_read && n.related_task_id === task.id && (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
-                ).length;
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const dlDate = task.deadline ? new Date(task.deadline.replace(/-/g, '/')) : null;
-                if (dlDate) dlDate.setHours(0, 0, 0, 0);
-                const isOverdue = dlDate && dlDate < today && task.status !== 'Done' && task.status !== 'Rejected';
-
-                return (
-                  <div
-                    key={task.id}
-                    onClick={() => setSelectedTask(task)}
-                    data-testid={`task-item-${task.id}`}
-                    onAnimationEnd={() => {
-                      if (newlyAddedId === task.id) setNewlyAddedId(null);
-                      if (newlyActivatedId === task.id) setNewlyActivatedId(null);
-                    }}
-                    className={`flex flex-col sm:flex-row items-start gap-4 p-4 md:p-5 rounded-2xl border ${
-                      newlyCompletedId === task.id ? 'animate-slide-out' : ''
-                    } ${newlyActivatedId === task.id ? 'animate-slide-in-right' : ''} ${
-                      newlyAddedId === task.id ? 'animate-slide-in-from-top' : ''
-                    } ${
-                      isNewClone
-                        ? 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-800/50'
-                        : isOverdue
-                        ? 'bg-red-50/40 dark:bg-red-900/10 border-red-300 dark:border-red-800/60'
-                        : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'
-                    } hover:shadow-md ${!isOverdue ? 'hover:border-neutral-300 dark:hover:border-neutral-700' : 'hover:border-red-400 dark:hover:border-red-600'} transition-all cursor-pointer group ${
-                      task.status === 'Done' ? 'opacity-70' : ''
-                    }`}
-                  >
-                    {/* Left Column: Actions & Queue */}
-                    <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2 w-full sm:w-auto shrink-0" onClick={e => e.stopPropagation()}>
-                      <div className="flex items-center gap-3">
-                        {processingTaskId === task.id ? (
-                          <div className="w-5 h-5 flex items-center justify-center">
-                             <div className="w-4 h-4 border-2 border-indigo-200 dark:border-indigo-700 border-t-indigo-500 rounded-full animate-spin"></div>
-                          </div>
-                        ) : isBulkSelectMode ? (
-                          <input
-                            type="checkbox"
-                            checked={selectedTaskIds.includes(task.id)}
-                            onChange={() => handleToggleSelectTask(task.id)}
-                            className="rounded border-neutral-300 w-5 h-5 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                          />
-                        ) : (
-                          <input
-                            type="checkbox"
-                            checked={task.status === 'Done'}
-                            onChange={(e) => handleToggleTaskDone(task, e)}
-                            title={task.status === 'Done' ? 'Mark as not done' : 'Mark as done'}
-                            className={`rounded-full border-neutral-400 dark:border-neutral-600 focus:ring-indigo-500 cursor-pointer w-5 h-5 transition-all ${
-                              task.status === 'Done' ? 'bg-indigo-600 text-indigo-600' : 'bg-transparent dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-transparent'
-                            }`}
-                          />
-                        )}
-                      </div>
-                      {qPos && qTot && (
-                        <span
-                          className="text-xs font-black text-amber-800 dark:text-amber-300 bg-amber-200/60 dark:bg-amber-900/60 px-2.5 py-1 rounded-lg shadow-sm border border-amber-300 dark:border-amber-700/50 text-center sm:w-full mt-0 sm:mt-1"
-                          title={isGlobal ? 'Overall Queue Position' : 'Queue Position'}
-                        >
-                          {qPos} / {qTot}
-                        </span>
-                      )}
-                      {task.recurring && task.recurring !== 'none' && (
-                        <span
-                          className="text-[10px] capitalize font-bold text-blue-800 dark:text-blue-300 bg-blue-100/60 dark:bg-blue-900/60 px-2.5 py-1 rounded-lg shadow-sm border border-blue-200 dark:border-blue-700/50 text-center sm:w-full mt-1.5 flex items-center justify-center gap-1"
-                          title="Recurring Task"
-                        >
-                          🔁 {task.recurring}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Right Column: Task Content & Badges */}
-                    <div className="flex-1 min-w-0 flex flex-col gap-2.5 w-full">
-                      {/* Header: Title & Deadline */}
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                        <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
-                          {isNewClone && (
-                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-widest shadow-sm bg-indigo-500 dark:bg-indigo-600 text-white animate-pulse shrink-0">
-                              NEW CLONE
-                            </span>
-                          )}
-                          <h4 className={`text-base font-bold text-slate-800 dark:text-slate-100 leading-snug ${task.status === 'Done' ? 'line-through text-slate-500 dark:text-slate-400' : ''}`}>
-                            <HighlightText text={task.project_name} query={searchQuery} />
-                          </h4>
-                          {unreadComments > 0 && (
-                            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-md shadow-sm font-black animate-pulse flex items-center gap-1 shrink-0">
-                              💬 {unreadComments} New
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/50 px-2 py-1 rounded-lg shrink-0 whitespace-nowrap">
-                          <span>{task.start_date ? formatDateMMM(task.start_date) : '--'}</span>
-                          <span>→</span>
-                          <span className={isOverdue ? 'text-red-600 dark:text-red-400 font-black' : ''}>
-                            {task.deadline ? formatDateMMM(task.deadline) : 'No Deadline'}
-                          </span>
-                          {task.deadline && task.status !== 'Done' && task.status !== 'Rejected' && (() => {
-                            const dlInfo = getTaskDeadlineInfo(task);
-                            if (!dlInfo) return null;
-                            return (
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest border shrink-0 ml-1.5 ${dlInfo.badgeColor}`}>
-                                {dlInfo.timeStr}
-                              </span>
-                            );
-                          })()}
-                        </div>
-                      </div>
-
-                      {/* Description Line Clamp */}
-                      {task.description && typeof task.description === 'string' && (
-                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 pr-4">
-                          {task.description.replace(/<[^>]+>/g, '').replace(/[*_~`]/g, '')}
-                        </p>
-                      )}
-
-                      {/* Meta Badges & Assignee Container */}
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mt-1 w-full">
-                        
-                        {/* Left: Metadata Badges */}
-                        <div className="flex flex-wrap items-center gap-2 flex-1">
-                          
-                          {/* Project Name Badge */}
-                          <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700" title="Project / Board">
-                            📂 {task.board_name}
-                          </span>
-
-                          {/* Category Badge */}
-                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-800/50">
-                            🏷️ {task.category}
-                          </span>
-
-                          {/* Status Badge */}
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-md border ${
-                            task.status === 'Done' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
-                            : task.status === 'Rejected' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                            : task.status === 'In Progress' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'
-                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
-                          }`}>
-                            {task.status === 'Pending' ? 'To do' : task.status}
-                          </span>
-
-                          {/* Impact Badge */}
-                          <span className={`text-[10px] font-bold px-2 py-1 rounded-md border uppercase tracking-wide ${
-                            task.impact === 'High' ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/50'
-                            : task.impact === 'Low' ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                            : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/50'
-                          }`}>
-                            {task.impact === 'High' ? '🔥 High' : task.impact === 'Low' ? '🧊 Low' : '⚡ Med'}
-                          </span>
-
-                          {/* Subtask Badge */}
-                          {task.subtask_total > 0 && (
-                            <span className={`text-[10px] font-bold px-2 py-1 rounded-md border ${
-                              task.subtask_done === task.subtask_total
-                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
-                                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
-                            }`}>
-                              📋 {task.subtask_done}/{task.subtask_total}
-                            </span>
-                          )}
-
-                          {/* ETC Badge */}
-                          {(task.etc !== undefined && task.etc !== null) && (
-                             <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
-                               ⏱️ {task.etc}h
-                             </span>
-                          )}
-
-                        </div>
-                        
-                        {/* Right: Assignee & Mentions Area */}
-                        <div className="flex items-center gap-4 shrink-0 self-start sm:self-auto border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800/50 pt-2 sm:pt-0 w-full sm:w-auto justify-between sm:justify-end mt-1 sm:mt-0">
-                          {/* Owner Mention */}
-                          {task.owner_username && task.owner_username !== currentUser && (
-                            <span className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 px-2 py-1">
-                              🤝 from {task.owner_username}
-                            </span>
-                          )}
-
-                          <div className="flex items-center gap-2">                            
-                            <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-md border shadow-sm min-w-0 max-w-37.5 sm:max-w-none ${
-                                task.requester && task.requester.includes('@') 
-                                  ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' 
-                                  : 'bg-neutral-50 dark:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
-                              }`}                              
-                              title={task.requester && task.requester.includes('@') ? `Assigned To: ${task.requester}` : `Requester: ${task.requester}`}                              
-                            >
-                              {task.requester && task.requester.includes('@') ? '👉' : <IconPerson className="w-3 h-3 shrink-0" />}
-                              <Avatar name={task.requester} url={avatarsMap[task.requester ? task.requester.replace('@', '').trim() : '']} size="w-4 h-4" textClass="text-[8px]" />
-                              <span className="truncate">{task.requester}</span>
-                            </span>
-                            {/* Subtask Assignees */}
-                            {(() => {
-                              const mainAssignee = (task.requester || '').replace('@', '').trim().toLowerCase();
-                              const subAssignees = (task.subtask_assignees || '')
-                                .split(', ')
-                                .filter(Boolean)
-                                .filter(name => name.toLowerCase() !== mainAssignee);
-                              const uniqueSubAssignees = [...new Set(subAssignees)];
-
-                              if (uniqueSubAssignees.length > 0) {
-                                return (
-                                  <div className="flex -space-x-2" title={`Subtask assignees: ${uniqueSubAssignees.join(', ')}`}>
-                                    {uniqueSubAssignees.slice(0, 3).map(name => (
-                                      <Avatar 
-                                        key={name}
-                                        name={name} 
-                                        url={avatarsMap[name.trim()]} 
-                                        size="w-5 h-5" 
-                                        textClass="text-[8px]" 
-                                      />
-                                    ))}
-                                    {uniqueSubAssignees.length > 3 && (
-                                      <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-[8px] font-bold border-2 border-white dark:border-neutral-900">
-                                        +{uniqueSubAssignees.length - 3}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-500 dark:text-slate-400 text-center">
-                <span className="text-4xl mb-3 opacity-50">🍃</span>
-                <p className="font-bold">No tasks found.</p>
-                <p className="text-xs mt-1">Enjoy the clarity of an empty list, or add a new task!</p>
+            {/* Industry-Standard Table View Container */}
+            <div className="border border-neutral-200/80 dark:border-neutral-800 rounded-2xl overflow-hidden bg-white dark:bg-[#121B2D] shadow-2xs">
+              {/* Table Column Header Row (Desktop) */}
+              <div className="hidden lg:grid grid-cols-12 gap-3 px-4 py-3 bg-neutral-50/80 dark:bg-neutral-900/60 border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 select-none items-center">
+                <div className="col-span-5 flex items-center gap-3">
+                  <span className="w-5 text-center">#</span>
+                  <span>{tMsg('Task & Space', 'Tugas & Proyek')}</span>
+                </div>
+                <div className="col-span-2 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" /></svg>
+                  <span>{tMsg('Category', 'Kategori')}</span>
+                </div>
+                <div className="col-span-2 flex items-center gap-1.5">
+                  <span>{tMsg('Status', 'Status')}</span>
+                </div>
+                <div className="col-span-1 flex items-center gap-1.5">
+                  <span>{tMsg('Priority', 'Prioritas')}</span>
+                </div>
+                <div className="col-span-2 flex items-center justify-between">
+                  <span>{tMsg('Assignee & Due', 'Penerima & Tenggat')}</span>
+                </div>
               </div>
-            )}
+
+              {/* Table Body Rows */}
+              {currentTasks.length > 0 ? (
+                <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
+                  {currentTasks.map((task) => {
+                    const isNewClone = clonedTaskIds && (clonedTaskIds.has(task.id) || clonedTaskIds.has(String(task.id)) || clonedTaskIds.has(Number(task.id)));
+                    const isGlobal = !selectedBoard || selectedBoard.id === 'global';
+                    const qPos = isGlobal ? task.queue_global_number : task.queue_project_number;
+                    const qTot = isGlobal ? task.total_global_queue : task.total_project_queue;
+                    const unreadComments = (notifications || []).filter(
+                      (n) => !n.is_read && n.related_task_id === task.id && (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
+                    ).length;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const dlDate = task.deadline ? new Date(task.deadline.replace(/-/g, '/')) : null;
+                    if (dlDate) dlDate.setHours(0, 0, 0, 0);
+                    const isOverdue = dlDate && dlDate < today && task.status !== 'Done' && task.status !== 'Rejected';
+
+                    return (
+                      <div
+                        key={task.id}
+                        onClick={() => setSelectedTask(task)}
+                        data-testid={`task-item-${task.id}`}
+                        onAnimationEnd={() => {
+                          if (newlyAddedId === task.id) setNewlyAddedId(null);
+                          if (newlyActivatedId === task.id) setNewlyActivatedId(null);
+                        }}
+                        className={`hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer group px-4 py-3.5 ${
+                          newlyCompletedId === task.id ? 'animate-slide-out' : ''
+                        } ${newlyActivatedId === task.id ? 'animate-slide-in-right' : ''} ${
+                          newlyAddedId === task.id ? 'animate-slide-in-from-top' : ''
+                        } ${
+                          isNewClone
+                            ? 'bg-indigo-50/40 dark:bg-indigo-950/20'
+                            : isOverdue
+                            ? 'bg-red-50/25 dark:bg-red-950/15'
+                            : ''
+                        } ${task.status === 'Done' ? 'opacity-65' : ''}`}
+                      >
+                        {/* Desktop Grid Layout (lg:grid) */}
+                        <div className="hidden lg:grid grid-cols-12 gap-3 items-center">
+                          {/* Col 1: Checkbox & Task Title & Project */}
+                          <div className="col-span-5 flex items-center gap-3 min-w-0">
+                            {/* Checkbox / Action */}
+                            <div className="w-5 shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                              {processingTaskId === task.id ? (
+                                <div className="w-4 h-4 border-2 border-indigo-200 dark:border-indigo-700 border-t-indigo-500 rounded-full animate-spin"></div>
+                              ) : isBulkSelectMode ? (
+                                <input
+                                  type="checkbox"
+                                  checked={selectedTaskIds.includes(task.id)}
+                                  onChange={() => handleToggleSelectTask(task.id)}
+                                  className="rounded border-neutral-300 w-4.5 h-4.5 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                />
+                              ) : (
+                                <input
+                                  type="checkbox"
+                                  checked={task.status === 'Done'}
+                                  onChange={(e) => handleToggleTaskDone(task, e)}
+                                  title={task.status === 'Done' ? 'Mark as not done' : 'Mark as done'}
+                                  className={`rounded-full border-neutral-400 dark:border-neutral-600 focus:ring-indigo-500 cursor-pointer w-4.5 h-4.5 transition-all ${
+                                    task.status === 'Done'
+                                      ? 'bg-indigo-600 text-indigo-600'
+                                      : 'bg-transparent dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-transparent'
+                                  }`}
+                                />
+                              )}
+                            </div>
+
+                            {/* Title & Badges */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {isNewClone && (
+                                  <span className="text-[8px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wider bg-indigo-500 text-white shrink-0">
+                                    NEW
+                                  </span>
+                                )}
+                                <h4 className={`text-xs sm:text-sm font-bold text-[#111E38] dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-[#FACC15] transition-colors truncate ${
+                                  task.status === 'Done' ? 'line-through text-neutral-400 dark:text-neutral-500' : ''
+                                }`}>
+                                  <HighlightText text={task.project_name} query={searchQuery} />
+                                </h4>
+                                {unreadComments > 0 && (
+                                  <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-md font-bold flex items-center gap-1 shrink-0">
+                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                    {unreadComments}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                                  <svg className="w-2.5 h-2.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
+                                  <span className="truncate max-w-35">{task.board_name}</span>
+                                </span>
+                                {qPos && qTot && (
+                                  <span className="text-[9px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/50 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800/40">
+                                    Q {qPos}/{qTot}
+                                  </span>
+                                )}
+                                {task.recurring && task.recurring !== 'none' && (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800/40">
+                                    <svg className="w-2.5 h-2.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                                    {task.recurring}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Col 2: Category & Tags */}
+                          <div className="col-span-2 min-w-0">
+                            {task.category ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.8 rounded-md border border-neutral-200/60 dark:border-neutral-700/60 truncate max-w-full">
+                                <svg className="w-2.5 h-2.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /></svg>
+                                <span className="truncate">{task.category}</span>
+                              </span>
+                            ) : (
+                              <span className="text-neutral-400 text-xs font-medium">--</span>
+                            )}
+                          </div>
+
+                          {/* Col 3: Status */}
+                          <div className="col-span-2">
+                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.8 rounded-full border ${
+                              task.status === 'Done'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
+                                : task.status === 'Rejected'
+                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                                : task.status === 'In Progress'
+                                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50'
+                                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                task.status === 'Done' ? 'bg-emerald-500' : task.status === 'In Progress' ? 'bg-blue-500' : task.status === 'Rejected' ? 'bg-slate-400' : 'bg-amber-500'
+                              }`}></span>
+                              <span>{task.status === 'Pending' ? 'To do' : task.status}</span>
+                            </span>
+                          </div>
+
+                          {/* Col 4: Priority */}
+                          <div className="col-span-1">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                task.impact === 'High' ? 'bg-rose-500 ring-2 ring-rose-200 dark:ring-rose-900/50' : task.impact === 'Low' ? 'bg-slate-400' : 'bg-amber-500'
+                              }`}></span>
+                              <span>{task.impact || 'Med'}</span>
+                            </span>
+                          </div>
+
+                          {/* Col 5: Assignee & Due Date */}
+                          <div className="col-span-2 flex items-center justify-between min-w-0">
+                            {/* Assignee */}
+                            <div className="flex items-center gap-1.5 min-w-0 max-w-28">
+                              <Avatar name={task.requester || ''} url={avatarsMap[task.requester ? task.requester.replace('@', '').trim() : '']} size="w-5 h-5 shrink-0" textClass="text-[8px]" />
+                              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate" title={task.requester}>
+                                {task.requester ? (task.requester.startsWith('@') ? task.requester : `@${task.requester}`) : '--'}
+                              </span>
+                            </div>
+
+                            {/* Deadline Badge */}
+                            <div className="text-right shrink-0">
+                              {task.deadline ? (
+                                <span className={`text-[11px] font-bold ${isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-neutral-600 dark:text-neutral-400'}`}>
+                                  {formatDateMMM(task.deadline)}
+                                </span>
+                              ) : (
+                                <span className="text-[11px] text-neutral-400">--</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mobile Stacked Layout (lg:hidden) */}
+                        <div className="lg:hidden flex flex-col gap-2.5">
+                          <div className="flex items-start gap-3">
+                            <div className="w-5 shrink-0 pt-0.5" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={task.status === 'Done'}
+                                onChange={(e) => handleToggleTaskDone(task, e)}
+                                className="rounded-full border-neutral-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-4.5 h-4.5"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className={`text-sm font-bold text-[#111E38] dark:text-neutral-100 ${task.status === 'Done' ? 'line-through text-neutral-400' : ''}`}>
+                                <HighlightText text={task.project_name} query={searchQuery} />
+                              </h4>
+                              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                                {task.board_name} {task.category ? `• ${task.category}` : ''}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between pl-8 text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                task.status === 'Done' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+                              }`}>
+                                {task.status === 'Pending' ? 'To do' : task.status}
+                              </span>
+                              <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 flex items-center gap-1">
+                                <span className={`w-1.5 h-1.5 rounded-full ${task.impact === 'High' ? 'bg-rose-500' : 'bg-amber-500'}`}></span>
+                                {task.impact || 'Med'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-medium text-neutral-500">{task.requester || ''}</span>
+                              {task.deadline && (
+                                <span className={`text-[11px] font-bold ${isOverdue ? 'text-rose-600' : 'text-neutral-500'}`}>
+                                  {formatDateMMM(task.deadline)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-neutral-400 dark:text-neutral-500 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 mb-2.5">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  </div>
+                  <p className="font-bold text-sm text-[#111E38] dark:text-neutral-200">{tMsg('No tasks found.', 'Belum ada tugas.')}</p>
+                  <p className="text-xs mt-1 text-neutral-500">{tMsg('Enjoy the clarity of an empty list, or add a new task!', 'Nikmati daftar yang rapi, atau buat tugas baru!')}</p>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Completed Tasks Toggle (Visible only on < xl screens) */}
             <div className="xl:hidden w-full border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-white dark:bg-neutral-900 mt-6 shadow-sm overflow-hidden mb-2">
@@ -1239,6 +1240,7 @@ export default function TableList({
                 visibleDoneTasks.map((task) => (
                   <div
                     key={task.id}
+                    data-testid={`task-item-${task.id}`}
                     onAnimationEnd={() => handleAnimationEnd(task.id)}
                     className={`bg-white dark:bg-neutral-900 p-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex items-start gap-3 opacity-70 hover:opacity-100 hover:shadow-sm transition-all duration-300 cursor-pointer group ${
                       newlyCompletedId === task.id ? 'animate-slide-in' : ''
