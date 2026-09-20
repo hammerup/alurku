@@ -670,9 +670,8 @@ export default function TableList({
             )}
           </div>
 
-          {}
           {/* Task List Content */}
-          <div className="flex-1 overflow-y-auto w-full custom-scrollbar relative min-h-0 p-4 md:p-6 space-y-4 bg-neutral-50/30 dark:bg-neutral-950/30">
+          <div className="flex-1 overflow-y-auto w-full custom-scrollbar relative min-h-0 px-4 md:px-6 py-3 space-y-3 bg-white dark:bg-neutral-950">
             {/* Quick Add Row */}
             {selectedBoard && selectedBoard.id !== 'global' && accountStatus !== 'suspended' && currentPage === 1 && (
               <div className="bg-indigo-50/50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-4 transition-all shadow-sm flex flex-col gap-3 relative">
@@ -823,33 +822,10 @@ export default function TableList({
               </div>
             )}
 
-            {/* Industry-Standard Table View Container */}
-            <div className="border border-neutral-200/80 dark:border-neutral-800 rounded-2xl overflow-hidden bg-white dark:bg-[#121B2D] shadow-2xs">
-              {/* Table Column Header Row (Desktop) */}
-              <div className="hidden lg:grid grid-cols-12 gap-3 px-4 py-3 bg-neutral-50/80 dark:bg-neutral-900/60 border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 select-none items-center">
-                <div className="col-span-5 flex items-center gap-3">
-                  <span className="w-5 text-center">#</span>
-                  <span>{tMsg('Task & Space', 'Tugas & Proyek')}</span>
-                </div>
-                <div className="col-span-2 flex items-center gap-1.5">
-                  <svg className="w-3 h-3 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /><path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" /></svg>
-                  <span>{tMsg('Category', 'Kategori')}</span>
-                </div>
-                <div className="col-span-2 flex items-center gap-1.5">
-                  <span>{tMsg('Status', 'Status')}</span>
-                </div>
-                <div className="col-span-1 flex items-center gap-1.5">
-                  <span>{tMsg('Priority', 'Prioritas')}</span>
-                </div>
-                <div className="col-span-2 flex items-center justify-between">
-                  <span>{tMsg('Assignee & Due', 'Penerima & Tenggat')}</span>
-                </div>
-              </div>
-
-              {/* Table Body Rows */}
-              {currentTasks.length > 0 ? (
-                <div className="divide-y divide-neutral-100 dark:divide-neutral-800/60">
-                  {currentTasks.map((task) => {
+            {/* Pure Flat List View Items */}
+            {currentTasks.length > 0 ? (
+              <div className="divide-y divide-neutral-200/70 dark:divide-neutral-800/80 -mx-4 md:-mx-6">
+                {currentTasks.map((task) => {
                     const isNewClone = clonedTaskIds && (clonedTaskIds.has(task.id) || clonedTaskIds.has(String(task.id)) || clonedTaskIds.has(Number(task.id)));
                     const isGlobal = !selectedBoard || selectedBoard.id === 'global';
                     const qPos = isGlobal ? task.queue_global_number : task.queue_project_number;
@@ -1072,7 +1048,6 @@ export default function TableList({
                   <p className="text-xs mt-1 text-neutral-500">{tMsg('Enjoy the clarity of an empty list, or add a new task!', 'Nikmati daftar yang rapi, atau buat tugas baru!')}</p>
                 </div>
               )}
-            </div>
 
             {/* Mobile Completed Tasks Toggle (Visible only on < xl screens) */}
             <div className="xl:hidden w-full border border-neutral-200 dark:border-neutral-800 rounded-2xl bg-white dark:bg-neutral-900 mt-6 shadow-sm overflow-hidden mb-2">
