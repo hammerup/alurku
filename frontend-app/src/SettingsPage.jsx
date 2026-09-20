@@ -1649,7 +1649,8 @@ export default function SettingsPage({
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span>{msg('Team Seats', 'Kursi Anggota')}</span>
                       <span>
-                        {usageData?.seats_used || 1} / {usageData?.seats_limit || (activeWorkspace?.tier === 'pro' ? 25 : 3)}
+                        {usageData?.members?.used ?? usageData?.seats_used ?? 1} /{' '}
+                        {usageData?.members?.is_unlimited ? '∞' : (usageData?.members?.max ?? usageData?.seats_limit ?? (activeWorkspace?.tier === 'pro' ? 25 : 3))}
                       </span>
                     </div>
                     <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
@@ -1658,7 +1659,9 @@ export default function SettingsPage({
                         style={{
                           width: `${Math.min(
                             100,
-                            ((usageData?.seats_used || 1) / (usageData?.seats_limit || (activeWorkspace?.tier === 'pro' ? 25 : 3))) * 100
+                            usageData?.members?.is_unlimited
+                              ? 5
+                              : (((usageData?.members?.used ?? usageData?.seats_used ?? 1) / (usageData?.members?.max ?? usageData?.seats_limit ?? (activeWorkspace?.tier === 'pro' ? 25 : 3))) * 100)
                           )}%`,
                         }}
                       ></div>
@@ -1673,7 +1676,7 @@ export default function SettingsPage({
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span>{msg('Storage Used', 'Penyimpanan')}</span>
                       <span>
-                        {usageData?.storage_used_mb || 12} MB /{' '}
+                        {usageData?.storage?.used_mb ?? usageData?.storage_used_mb ?? 0} MB /{' '}
                         {activeWorkspace?.tier === 'pro' ? '15 GB' : activeWorkspace?.tier === 'business' ? '100 GB' : '500 MB'}
                       </span>
                     </div>
@@ -1683,7 +1686,7 @@ export default function SettingsPage({
                         style={{
                           width: `${Math.min(
                             100,
-                            ((usageData?.storage_used_mb || 12) / (activeWorkspace?.tier === 'pro' ? 15360 : 500)) * 100
+                            usageData?.storage?.percentage ?? (((usageData?.storage?.used_mb ?? usageData?.storage_used_mb ?? 0) / (activeWorkspace?.tier === 'pro' ? 15360 : 500)) * 100)
                           )}%`,
                         }}
                       ></div>
@@ -1698,8 +1701,8 @@ export default function SettingsPage({
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span>{msg('AI Prompts / Mo', 'Prompt AI / Bulan')}</span>
                       <span>
-                        {usageData?.ai_prompts_used || 8} /{' '}
-                        {activeWorkspace?.tier === 'pro' ? '1.500' : activeWorkspace?.tier === 'business' ? '5.000' : '50'}
+                        {usageData?.ai_requests?.used ?? usageData?.ai_prompts_used ?? 0} /{' '}
+                        {usageData?.ai_requests?.max ?? (activeWorkspace?.tier === 'pro' ? '1.500' : activeWorkspace?.tier === 'business' ? '5.000' : '50')}
                       </span>
                     </div>
                     <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
@@ -1708,7 +1711,7 @@ export default function SettingsPage({
                         style={{
                           width: `${Math.min(
                             100,
-                            ((usageData?.ai_prompts_used || 8) / (activeWorkspace?.tier === 'pro' ? 1500 : 50)) * 100
+                            usageData?.ai_requests?.percentage ?? (((usageData?.ai_requests?.used ?? usageData?.ai_prompts_used ?? 0) / (activeWorkspace?.tier === 'pro' ? 1500 : activeWorkspace?.tier === 'business' ? 5000 : 50)) * 100)
                           )}%`,
                         }}
                       ></div>
