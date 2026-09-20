@@ -860,14 +860,14 @@ export default function TableList({
                             : ''
                         } ${task.status === 'Done' ? 'opacity-65' : ''}`}
                       >
-                        {/* Desktop Grid Layout (lg:grid) */}
-                        <div className="hidden lg:grid grid-cols-12 gap-3 items-center">
-                          {/* Col 1: Checkbox & Task Title & Project */}
-                          <div className="col-span-5 flex items-center gap-3 min-w-0">
-                            {/* Checkbox / Action */}
-                            <div className="w-5 shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        {/* Simple Clean Todo List Item Layout */}
+                        <div className="flex items-center justify-between gap-3 min-w-0">
+                          {/* Left: Checkbox + Title + Subtitle/Project */}
+                          <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                            {/* Todo Checkbox */}
+                            <div className="shrink-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                               {processingTaskId === task.id ? (
-                                <div className="w-4 h-4 border-2 border-indigo-200 dark:border-indigo-700 border-t-indigo-500 rounded-full animate-spin"></div>
+                                <div className="w-5 h-5 border-2 border-indigo-200 dark:border-indigo-700 border-t-indigo-500 rounded-full animate-spin"></div>
                               ) : isBulkSelectMode ? (
                                 <input
                                   type="checkbox"
@@ -876,21 +876,26 @@ export default function TableList({
                                   className="rounded border-neutral-300 w-4.5 h-4.5 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                 />
                               ) : (
-                                <input
-                                  type="checkbox"
-                                  checked={task.status === 'Done'}
-                                  onChange={(e) => handleToggleTaskDone(task, e)}
-                                  title={task.status === 'Done' ? 'Mark as not done' : 'Mark as done'}
-                                  className={`rounded-full border-neutral-400 dark:border-neutral-600 focus:ring-indigo-500 cursor-pointer w-4.5 h-4.5 transition-all ${
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleToggleTaskDone(task, e)}
+                                  title={task.status === 'Done' ? tMsg('Mark as incomplete', 'Tandai belum selesai') : tMsg('Mark as completed', 'Tandai selesai')}
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer ${
                                     task.status === 'Done'
-                                      ? 'bg-indigo-600 text-indigo-600'
-                                      : 'bg-transparent dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-transparent'
+                                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                                      : 'border-neutral-300 dark:border-neutral-600 hover:border-amber-500 dark:hover:border-[#FACC15] bg-transparent'
                                   }`}
-                                />
+                                >
+                                  {task.status === 'Done' && (
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                    </svg>
+                                  )}
+                                </button>
                               )}
                             </div>
 
-                            {/* Title & Badges */}
+                            {/* Task Content */}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 {isNewClone && (
@@ -898,11 +903,12 @@ export default function TableList({
                                     NEW
                                   </span>
                                 )}
-                                <h4 className={`text-xs sm:text-sm font-bold text-[#111E38] dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-[#FACC15] transition-colors truncate ${
+                                <span className={`text-sm font-semibold text-[#111E38] dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-[#FACC15] transition-colors truncate ${
                                   task.status === 'Done' ? 'line-through text-neutral-400 dark:text-neutral-500' : ''
                                 }`}>
                                   <HighlightText text={task.project_name} query={searchQuery} />
-                                </h4>
+                                </span>
+
                                 {unreadComments > 0 && (
                                   <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.2 rounded-md font-bold flex items-center gap-1 shrink-0">
                                     <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -910,41 +916,40 @@ export default function TableList({
                                   </span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
-                                  <svg className="w-2.5 h-2.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
-                                  <span className="truncate max-w-35">{task.board_name}</span>
-                                </span>
+
+                              {/* Subtitle meta details */}
+                              <div className="flex items-center gap-2 mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                <span className="font-medium truncate max-w-40">{task.board_name}</span>
+                                {task.category && (
+                                  <>
+                                    <span className="text-neutral-300 dark:text-neutral-700">•</span>
+                                    <span className="truncate max-w-32">{task.category}</span>
+                                  </>
+                                )}
                                 {qPos && qTot && (
-                                  <span className="text-[9px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/50 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800/40">
-                                    Q {qPos}/{qTot}
-                                  </span>
+                                  <>
+                                    <span className="text-neutral-300 dark:text-neutral-700">•</span>
+                                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                                      Q {qPos}/{qTot}
+                                    </span>
+                                  </>
                                 )}
                                 {task.recurring && task.recurring !== 'none' && (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800/40">
-                                    <svg className="w-2.5 h-2.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
-                                    {task.recurring}
-                                  </span>
+                                  <>
+                                    <span className="text-neutral-300 dark:text-neutral-700">•</span>
+                                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                                      {task.recurring}
+                                    </span>
+                                  </>
                                 )}
                               </div>
                             </div>
                           </div>
 
-                          {/* Col 2: Category & Tags */}
-                          <div className="col-span-2 min-w-0">
-                            {task.category ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-600 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.8 rounded-md border border-neutral-200/60 dark:border-neutral-700/60 truncate max-w-full">
-                                <svg className="w-2.5 h-2.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" /></svg>
-                                <span className="truncate">{task.category}</span>
-                              </span>
-                            ) : (
-                              <span className="text-neutral-400 text-xs font-medium">--</span>
-                            )}
-                          </div>
-
-                          {/* Col 3: Status */}
-                          <div className="col-span-2">
-                            <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.8 rounded-full border ${
+                          {/* Right: Badges, Assignee, Due Date */}
+                          <div className="flex items-center gap-3 shrink-0">
+                            {/* Status Pill */}
+                            <span className={`hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
                               task.status === 'Done'
                                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
                                 : task.status === 'Rejected'
@@ -958,81 +963,41 @@ export default function TableList({
                               }`}></span>
                               <span>{task.status === 'Pending' ? 'To do' : task.status}</span>
                             </span>
-                          </div>
 
-                          {/* Col 4: Priority */}
-                          <div className="col-span-1">
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${
-                                task.impact === 'High' ? 'bg-rose-500 ring-2 ring-rose-200 dark:ring-rose-900/50' : task.impact === 'Low' ? 'bg-slate-400' : 'bg-amber-500'
-                              }`}></span>
-                              <span>{task.impact || 'Med'}</span>
-                            </span>
-                          </div>
-
-                          {/* Col 5: Assignee & Due Date */}
-                          <div className="col-span-2 flex items-center justify-between min-w-0">
-                            {/* Assignee */}
-                            <div className="flex items-center gap-1.5 min-w-0 max-w-28">
-                              <Avatar name={task.requester || ''} url={avatarsMap[task.requester ? task.requester.replace('@', '').trim() : '']} size="w-5 h-5 shrink-0" textClass="text-[8px]" />
-                              <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate" title={task.requester}>
-                                {task.requester ? (task.requester.startsWith('@') ? task.requester : `@${task.requester}`) : '--'}
-                              </span>
-                            </div>
-
-                            {/* Deadline Badge */}
-                            <div className="text-right shrink-0">
-                              {task.deadline ? (
-                                <span className={`text-[11px] font-bold ${isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-neutral-600 dark:text-neutral-400'}`}>
-                                  {formatDateMMM(task.deadline)}
-                                </span>
-                              ) : (
-                                <span className="text-[11px] text-neutral-400">--</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Mobile Stacked Layout (lg:hidden) */}
-                        <div className="lg:hidden flex flex-col gap-2.5">
-                          <div className="flex items-start gap-3">
-                            <div className="w-5 shrink-0 pt-0.5" onClick={(e) => e.stopPropagation()}>
-                              <input
-                                type="checkbox"
-                                checked={task.status === 'Done'}
-                                onChange={(e) => handleToggleTaskDone(task, e)}
-                                className="rounded-full border-neutral-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-4.5 h-4.5"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className={`text-sm font-bold text-[#111E38] dark:text-neutral-100 ${task.status === 'Done' ? 'line-through text-neutral-400' : ''}`}>
-                                <HighlightText text={task.project_name} query={searchQuery} />
-                              </h4>
-                              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                                {task.board_name} {task.category ? `• ${task.category}` : ''}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between pl-8 text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                task.status === 'Done' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
+                            {/* Priority Indicator */}
+                            {task.impact && (
+                              <span className={`hidden md:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                task.impact === 'High'
+                                  ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400'
+                                  : task.impact === 'Low'
+                                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                  : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
                               }`}>
-                                {task.status === 'Pending' ? 'To do' : task.status}
+                                {task.impact}
                               </span>
-                              <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400 flex items-center gap-1">
-                                <span className={`w-1.5 h-1.5 rounded-full ${task.impact === 'High' ? 'bg-rose-500' : 'bg-amber-500'}`}></span>
-                                {task.impact || 'Med'}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[11px] font-medium text-neutral-500">{task.requester || ''}</span>
-                              {task.deadline && (
-                                <span className={`text-[11px] font-bold ${isOverdue ? 'text-rose-600' : 'text-neutral-500'}`}>
+                            )}
+
+                            {/* Assignee Avatar */}
+                            {task.requester && (
+                              <div className="flex items-center gap-1.5" title={task.requester}>
+                                <Avatar name={task.requester} url={avatarsMap[task.requester.replace('@', '').trim()]} size="w-6 h-6 shrink-0" textClass="text-[9px]" />
+                                <span className="hidden xl:inline text-xs font-medium text-neutral-600 dark:text-neutral-300 truncate max-w-20">
+                                  {task.requester.startsWith('@') ? task.requester : `@${task.requester}`}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Deadline / Due Date */}
+                            {task.deadline && (
+                              <div className="flex items-center gap-1 text-right">
+                                <svg className={`w-3.5 h-3.5 shrink-0 ${isOverdue ? 'text-rose-500' : 'text-neutral-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                </svg>
+                                <span className={`text-xs font-semibold ${isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-neutral-600 dark:text-neutral-400'}`}>
                                   {formatDateMMM(task.deadline)}
                                 </span>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
