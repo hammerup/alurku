@@ -564,9 +564,9 @@ export default function TableList({
       `}</style>
       <div className="flex flex-1 min-h-0 gap-6 text-slate-800 dark:text-slate-200">
         {/* Main Task List Container */}
-        <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-3xl flex flex-col flex-1 min-h-0 relative overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 relative">
           {/* Sort & Filter Action Bar */}
-          <div className="flex flex-wrap items-center gap-2 px-4 md:px-6 py-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 text-xs font-bold text-neutral-500 dark:text-neutral-400 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 px-1 py-2 text-xs font-bold text-neutral-500 dark:text-neutral-400 shrink-0">
             <span className="mr-2 uppercase tracking-widest text-[10px]">Sort By:</span>
             <div className="hidden md:flex flex-wrap items-center gap-2">
               {[
@@ -671,7 +671,7 @@ export default function TableList({
           </div>
 
           {/* Task List Content */}
-          <div className="flex-1 overflow-y-auto w-full custom-scrollbar relative min-h-0 px-4 md:px-6 py-3 space-y-3 bg-white dark:bg-neutral-950">
+          <div className="flex-1 overflow-y-auto w-full custom-scrollbar relative min-h-0 py-2 space-y-2">
             {/* Quick Add Row */}
             {selectedBoard && selectedBoard.id !== 'global' && accountStatus !== 'suspended' && currentPage === 1 && (
               <div className="bg-indigo-50/50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-4 transition-all shadow-sm flex flex-col gap-3 relative">
@@ -824,7 +824,7 @@ export default function TableList({
 
             {/* Pure Flat List View Items */}
             {currentTasks.length > 0 ? (
-              <div className="divide-y divide-neutral-200/70 dark:divide-neutral-800/80 -mx-4 md:-mx-6">
+              <div className="divide-y divide-neutral-200/80 dark:divide-neutral-800/80">
                 {currentTasks.map((task) => {
                     const isNewClone = clonedTaskIds && (clonedTaskIds.has(task.id) || clonedTaskIds.has(String(task.id)) || clonedTaskIds.has(Number(task.id)));
                     const isGlobal = !selectedBoard || selectedBoard.id === 'global';
@@ -1088,7 +1088,7 @@ export default function TableList({
 
           {/* Footer / Pagination */}
           {sortedTasks.length > 0 && (
-            <div className="flex flex-col justify-between items-center px-4 md:px-6 py-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 gap-4 shrink-0 mt-auto">
+            <div className="flex flex-col justify-between items-center px-1 py-4 gap-4 shrink-0 mt-auto">
               <div className="w-full flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="hidden sm:inline text-[10px] font-bold text-slate-500 uppercase tracking-widest">Show:</span>
