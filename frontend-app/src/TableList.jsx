@@ -566,34 +566,38 @@ export default function TableList({
         {/* Main Task List Container */}
         <div className="flex flex-col flex-1 min-h-0 relative">
           {/* Sort & Filter Action Bar */}
-          <div className="flex flex-wrap items-center gap-2 px-1 py-2 text-xs font-bold text-neutral-500 dark:text-neutral-400 shrink-0">
-            <span className="mr-2 uppercase tracking-widest text-[10px]">Sort By:</span>
-            <div className="hidden md:flex flex-wrap items-center gap-2">
-              {[
-                { key: 'queue', label: 'Queue' },
-                { key: 'project_name', label: 'Name' },
-                { key: 'status', label: 'Status' },
-                { key: 'start_date', label: 'Start Date' },
-                { key: 'deadline', label: 'Deadline' },
-                { key: 'priority_lvl', label: 'Priority' },
-              ].map((sortOption) => (
-                <button
-                  key={sortOption.key}
-                  onClick={() => requestSort(sortOption.key)}
-                  className={`px-3 py-1.5 rounded-md transition-colors ${
-                    sortConfig.key === sortOption.key
-                      ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200'
-                      : 'hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50'
-                  }`}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-2 text-xs font-bold text-neutral-500 dark:text-neutral-400 shrink-0">
+            {/* Left: Compact Sort By Dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-extrabold flex items-center gap-1">
+                <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg>
+                {tMsg('Sort by:', 'Urutkan:')}
+              </span>
+              <div className="relative">
+                <select
+                  onChange={(e) => requestSort(e.target.value)}
+                  value={sortConfig.key || ''}
+                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/80 rounded-xl px-2.5 py-1.5 text-xs font-bold text-[#111E38] dark:text-neutral-200 outline-none focus:ring-2 focus:ring-[#FACC15] cursor-pointer shadow-2xs transition-all"
                 >
-                  {sortOption.label} {renderSortIcon(sortOption.key)}
+                  <option value="">{tMsg('Default', 'Bawaan')}</option>
+                  <option value="queue">{tMsg('Queue Priority', 'Urutan Antrean')}</option>
+                  <option value="project_name">{tMsg('Task Name', 'Nama Tugas')}</option>
+                  <option value="status">{tMsg('Status', 'Status')}</option>
+                  <option value="start_date">{tMsg('Start Date', 'Tanggal Mulai')}</option>
+                  <option value="deadline">{tMsg('Deadline', 'Tenggat Waktu')}</option>
+                  <option value="priority_lvl">{tMsg('Priority Level', 'Tingkat Prioritas')}</option>
+                </select>
+              </div>
+              {sortConfig.key && (
+                <button
+                  onClick={() => requestSort(sortConfig.key)}
+                  className="p-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
+                  title={sortConfig.direction === 'ascending' ? 'Ascending (A-Z, 0-9)' : 'Descending (Z-A, 9-0)'}
+                >
+                  {renderSortIcon(sortConfig.key)}
                 </button>
-              ))}
+              )}
             </div>
-            <select onChange={(e) => requestSort(e.target.value)} value={sortConfig.key || ''} className="flex-1 md:hidden bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-2 py-1.5 text-xs font-bold">
-              <option value="">Default</option>
-              {[{ key: 'queue', label: 'Queue' }, { key: 'project_name', label: 'Name' }, { key: 'status', label: 'Status' }, { key: 'start_date', label: 'Start Date' }, { key: 'deadline', label: 'Deadline' }, { key: 'priority_lvl', label: 'Priority' }].map(opt => <option key={opt.key} value={opt.key}>{opt.label}</option>)}
-            </select>
             {isBulkSelectMode && (
               <div className="ml-auto flex flex-wrap items-center gap-2">
                 {selectedTaskIds.length > 0 && (
@@ -674,9 +678,11 @@ export default function TableList({
           <div className="flex-1 overflow-y-auto w-full custom-scrollbar relative min-h-0 py-2 space-y-2">
             {/* Quick Add Row */}
             {selectedBoard && selectedBoard.id !== 'global' && accountStatus !== 'suspended' && currentPage === 1 && (
-              <div className="bg-indigo-50/50 dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-4 transition-all shadow-sm flex flex-col gap-3 relative">
+              <div className="bg-neutral-50/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 focus-within:border-[#FACC15] focus-within:ring-2 focus-within:ring-[#FACC15]/30 rounded-2xl p-3.5 transition-all shadow-2xs flex flex-col gap-2.5 relative">
                 <div className="flex items-center gap-3">
-                  <span className="text-indigo-500 font-black text-xl select-none">✨</span>
+                  <div className="w-7 h-7 rounded-xl bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] flex items-center justify-center shrink-0">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                  </div>
                   <input
                     type="text"
                     value={quickAddData.project_name}
@@ -687,22 +693,22 @@ export default function TableList({
                         submitQuickAdd();
                       }
                     }}
-                    placeholder="New task request title... (Press Enter to submit)"
-                    className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-base font-bold text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+                    placeholder={tMsg('New task title... (Press Enter to save)', 'Tulis tugas baru... (Tekan Enter untuk simpan)')}
+                    className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-sm font-semibold text-[#111E38] dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 transition-all"
                   />
                   <button
                     onClick={submitQuickAdd}
-                    className="hidden md:block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors uppercase tracking-widest"
+                    className="hidden md:flex items-center gap-1.5 bg-[#111E38] hover:bg-slate-800 dark:bg-[#FACC15] dark:hover:bg-yellow-400 text-white dark:text-[#111E38] px-3.5 py-1.5 rounded-xl text-xs font-extrabold shadow-xs transition-colors cursor-pointer"
                   >
-                    Add Task
+                    <span>{tMsg('Add Task', 'Tambah')}</span>
                   </button>
                 </div>
 
                 {/* Quick Add Metadata Inputs */}
-                <div className="flex flex-wrap items-center gap-2 pl-9">
+                <div className="flex flex-wrap items-center gap-2 pl-10">
                   {/* Assignee Input */}
                   <div className="relative group">
-                    <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
+                    <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/80 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-[#FACC15]">
                       <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                       <input
                         type="text"
@@ -766,7 +772,7 @@ export default function TableList({
                   <select
                     value={quickAddData.category}
                     onChange={(e) => setQuickAddData({ ...quickAddData, category: e.target.value })}
-                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 ring-indigo-500/50 cursor-pointer"
+                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/80 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-[#FACC15] cursor-pointer"
                   >
                     {categories?.map((c) => (
                       <option key={c} value={c}>
@@ -779,7 +785,7 @@ export default function TableList({
                   <select
                     value={quickAddData.impact}
                     onChange={(e) => setQuickAddData({ ...quickAddData, impact: e.target.value })}
-                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 ring-indigo-500/50 cursor-pointer"
+                    className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/80 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-[#FACC15] cursor-pointer"
                     title={tMsg('Priority', 'Prioritas')}
                   >
                     <option value="High">{tMsg('High Priority', 'Prioritas Tinggi')}</option>
@@ -788,7 +794,7 @@ export default function TableList({
                   </select>
 
                   {/* Deadline Input */}
-                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50">
+                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/80 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-[#FACC15]">
                     <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     <input
                       type="date"
@@ -799,7 +805,7 @@ export default function TableList({
                   </div>
  
                   {/* Time Estimate Input */}
-                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 focus-within:ring-2 ring-indigo-500/50" title={tMsg('Estimated time in hours', 'Estimasi waktu dalam jam')}>
+                  <div className="flex items-center gap-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700/80 rounded-lg px-2 py-1 focus-within:ring-2 focus-within:ring-[#FACC15]" title={tMsg('Estimated time in hours', 'Estimasi waktu dalam jam')}>
                     <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <input
                       type="number"
@@ -814,9 +820,9 @@ export default function TableList({
                   {/* Mobile submit */}
                   <button
                     onClick={submitQuickAdd}
-                    className="md:hidden mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors uppercase tracking-widest"
+                    className="md:hidden mt-2 w-full bg-[#111E38] dark:bg-[#FACC15] text-white dark:text-[#111E38] px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-colors uppercase tracking-widest cursor-pointer"
                   >
-                    Submit Task
+                    {tMsg('Add Task', 'Tambah Tugas')}
                   </button>
                 </div>
               </div>
@@ -848,13 +854,13 @@ export default function TableList({
                           if (newlyAddedId === task.id) setNewlyAddedId(null);
                           if (newlyActivatedId === task.id) setNewlyActivatedId(null);
                         }}
-                        className={`hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer group px-4 py-3.5 ${
+                        className={`hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60 rounded-xl transition-all duration-150 cursor-pointer group px-3.5 py-3 border-l-2 border-transparent hover:border-[#FACC15] ${
                           newlyCompletedId === task.id ? 'animate-slide-out' : ''
                         } ${newlyActivatedId === task.id ? 'animate-slide-in-right' : ''} ${
                           newlyAddedId === task.id ? 'animate-slide-in-from-top' : ''
                         } ${
                           isNewClone
-                            ? 'bg-indigo-50/40 dark:bg-indigo-950/20'
+                            ? 'bg-amber-50/40 dark:bg-amber-950/20'
                             : isOverdue
                             ? 'bg-red-50/25 dark:bg-red-950/15'
                             : ''
@@ -1169,51 +1175,59 @@ export default function TableList({
         </div>
 
         {/* Completed Tasks Sidebar (Desktop only) */}
-        <div className="hidden xl:flex flex-col w-80 shrink-0">
-          <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-sm rounded-3xl flex flex-col flex-1 min-h-0">
-            <h3 className="p-6 text-base font-black text-slate-800 dark:text-white border-b border-neutral-200 dark:border-neutral-800 shrink-0 flex items-center gap-2">
-              <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              Completed Tasks
+        <div className="hidden xl:flex flex-col w-80 shrink-0 border-l border-neutral-200/80 dark:border-neutral-800/80 pl-6">
+          <div className="flex flex-col flex-1 min-h-0">
+            <h3 className="py-2.5 text-sm font-extrabold text-[#111E38] dark:text-white shrink-0 flex items-center justify-between border-b border-neutral-100 dark:border-neutral-800/80 mb-2">
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                {tMsg('Completed Tasks', 'Tugas Selesai')}
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                {doneTasks.length}
+              </span>
             </h3>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-neutral-50/30 dark:bg-neutral-950/30">
+            <div className="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar py-1">
               {visibleDoneTasks.length > 0 ? (
                 visibleDoneTasks.map((task) => (
                   <div
                     key={task.id}
                     data-testid={`task-item-${task.id}`}
                     onAnimationEnd={() => handleAnimationEnd(task.id)}
-                    className={`bg-white dark:bg-neutral-900 p-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex items-start gap-3 opacity-70 hover:opacity-100 hover:shadow-sm transition-all duration-300 cursor-pointer group ${
+                    className={`p-2.5 rounded-xl border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 flex items-start gap-2.5 opacity-70 hover:opacity-100 transition-all duration-200 cursor-pointer group ${
                       newlyCompletedId === task.id ? 'animate-slide-in' : ''
                     } ${newlyReactivatedId === task.id ? 'animate-slide-out-left' : ''}`}
                   >
                     {processingTaskId === task.id ? (
                       <div
-                        className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5"
+                        className="w-4 h-4 flex items-center justify-center shrink-0 mt-0.5"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="w-4 h-4 border-2 border-indigo-200 dark:border-indigo-700 border-t-indigo-500 rounded-full animate-spin"></div>
+                        <div className="w-3.5 h-3.5 border-2 border-indigo-200 dark:border-indigo-700 border-t-indigo-500 rounded-full animate-spin"></div>
                       </div>
                     ) : (
-                      <input
-                        type="checkbox"
-                        checked={true}
-                        onChange={(e) => handleToggleTaskDone(task, e)}
-                        onClick={(e) => e.stopPropagation()}
-                        title="Mark as not done"
-                        className="mt-0.5 rounded-full border-neutral-400 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-5 h-5 bg-indigo-600 shrink-0"
-                      />
+                      <button
+                        type="button"
+                        onClick={(e) => handleToggleTaskDone(task, e)}
+                        title={tMsg('Mark as incomplete', 'Tandai belum selesai')}
+                        className="mt-0.5 w-4.5 h-4.5 rounded-full bg-emerald-500 border-2 border-emerald-500 text-white flex items-center justify-center shrink-0 cursor-pointer shadow-2xs"
+                      >
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      </button>
                     )}
                     <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setSelectedTask(task)}>
                       <p
-                        className="text-sm font-bold line-through text-neutral-600 dark:text-neutral-400 truncate group-hover:text-indigo-600 transition-colors"
+                        className="text-xs font-semibold line-through text-neutral-500 dark:text-neutral-400 truncate group-hover:text-[#111E38] dark:group-hover:text-neutral-200 transition-colors"
                         title={task.project_name}
                       >
                         {task.project_name}
                       </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[9px] font-bold text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[9px] font-medium text-neutral-400 truncate max-w-28">
                           {task.board_name}
                         </span>
+                        <span className="text-neutral-300 dark:text-neutral-700">•</span>
                         <p className="text-[9px] font-medium text-neutral-400">{formatDateMMM(task.completed_time)}</p>
                       </div>
                     </div>
@@ -1221,31 +1235,31 @@ export default function TableList({
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center py-10 text-neutral-400 dark:text-neutral-600">
-                  <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 mb-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <div className="w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 mb-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-xs font-bold text-center">
+                  <p className="text-xs font-semibold text-center">
                     {tMsg('No completed tasks yet.', 'Belum ada tugas yang selesai.')}
                     <br />
-                    <span className="text-neutral-500 font-medium">{tMsg('Keep going!', 'Tetap semangat!')}</span>
+                    <span className="text-neutral-400 font-normal text-[11px]">{tMsg('Keep going!', 'Tetap semangat!')}</span>
                   </p>
                 </div>
               )}
             </div>
             {doneTasks.length > archiveLimit && (
-              <div className="p-4 shrink-0 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-950/30 rounded-b-3xl">
+              <div className="pt-3 shrink-0 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   onClick={() => setIsArchiveExpanded(!isArchiveExpanded)}
-                  className="w-full py-3 bg-neutral-200/50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <svg className={`w-3.5 h-3.5 transition-transform ${isArchiveExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
                   {isArchiveExpanded
-                    ? tMsg('Hide Archived Tasks', 'Sembunyikan Arsip Tugas')
-                    : tMsg(`View ${archivedCount} Archived Tasks`, `Lihat ${archivedCount} Arsip Tugas`)}
+                    ? tMsg('Hide Archived Tasks', 'Sembunyikan Arsip')
+                    : tMsg(`View ${archivedCount} Archived Tasks`, `Lihat ${archivedCount} Arsip`)}
                 </button>
               </div>
             )}
