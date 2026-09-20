@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 export default function ProFeatureGate({
   feature = 'timeline', // 'timeline' | 'analytics'
@@ -88,7 +88,7 @@ export default function ProFeatureGate({
             className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-[#111E38] font-black text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-base">stars</span>
-            <span>{tMsg('Upgrade to Pro (Rp 29k / mo)', 'Tingkatkan ke Pro (Rp 29rb / bln)')}</span>
+            <span>{tMsg('Upgrade to Pro (Rp 79k / mo)', 'Tingkatkan ke Pro (Mulai Rp 79rb / bln)')}</span>
           </button>
         </div>
       </div>
