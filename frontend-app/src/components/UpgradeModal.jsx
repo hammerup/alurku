@@ -158,6 +158,20 @@ export default function UpgradeModal({
           </button>
         </div>
 
+        {/* Workspace Scope Clarity Banner — Point 1 Fix */}
+        <div className="px-6 sm:px-8 py-3 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200/60 dark:border-amber-800/40 flex items-start gap-3 shrink-0">
+          <svg className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+          </svg>
+          <p className="text-xs text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
+            {language === 'id' ? (
+              <>Upgrade berlaku untuk: <span className="font-black">{activeWorkspace?.name || 'workspace ini'}</span>. Workspace lain yang kamu miliki tetap pada paket masing-masing, kecuali diupgrade secara terpisah.</>
+            ) : (
+              <>Upgrading workspace: <span className="font-black">{activeWorkspace?.name || 'this workspace'}</span>. Other workspaces you own will keep their current plan unless upgraded separately.</>
+            )}
+          </p>
+        </div>
+
         {/* Billing Cycle Toggle */}
         <div className="flex justify-center pt-5 pb-2 bg-[#F3F4F6] dark:bg-[#0d0f11] shrink-0 border-b border-neutral-200/60 dark:border-neutral-800/60">
           <div className="inline-flex items-center gap-1.5 bg-white dark:bg-[#121B2D] p-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-2xs">
