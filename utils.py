@@ -57,6 +57,65 @@ def get_frontend_url(request=None, path: str = "") -> str:
 
     return base_url
 
+def serialize_tags(tags_input) -> str:
+    """Safely serialize tags into JSON string."""
+    if tags_input is None:
+        return "[]"
+    if isinstance(tags_input, str):
+        tags_input = tags_input.strip()
+        if not tags_input or tags_input == "[]":
+            return "[]"
+        if tags_input.startswith("[") and tags_input.endswith("]"):
+            try:
+                loaded = json.loads(tags_input)
+                if isinstance(loaded, list):
+                    cleaned = []
+                    for t in loaded:
+                        if t is not None:
+                            s = str(t).strip()
+                            if s and s not in cleaned:
+                                cleaned.append(s)
+                    return json.dumps(cleaned)
+            except Exception:
+                pass
+        items = []
+        for t in tags_input.split(","):
+            s = t.strip()
+            if s and s not in items:
+                items.append(s)
+        return json.dumps(items)
+    if isinstance(tags_input, (list, tuple, set)):
+        cleaned = []
+        for t in tags_input:
+            if t is not None:
+                s = str(t).strip()
+                if s and s not in cleaned:
+                    cleaned.append(s)
+        return json.dumps(cleaned)
+    return "[]"
+
+
+def parse_tags(tags_field) -> list:
+    """Safely parse tags from database JSON string to list of strings."""
+    if not tags_field:
+        return []
+    if isinstance(tags_field, (list, tuple)):
+        return [str(t).strip() for t in tags_field if t is not None and str(t).strip()]
+    if isinstance(tags_field, str):
+        tags_field = tags_field.strip()
+        if not tags_field or tags_field == "[]":
+            return []
+        try:
+            val = json.loads(tags_field)
+            if isinstance(val, list):
+                return [str(t).strip() for t in val if t is not None and str(t).strip()]
+            elif isinstance(val, str) and val.strip():
+                return [val.strip()]
+        except Exception:
+            return [t.strip() for t in tags_field.split(",") if t.strip()]
+    return []
+
+
 def format_dt(dt_val):
     if isinstance(dt_val, datetime):
         return dt_val.strftime("%Y-%m-%d %H:%M:%S")

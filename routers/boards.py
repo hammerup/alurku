@@ -631,9 +631,8 @@ def get_board_tasks(
             "etc": getattr(task, "etc", 2),
             "auto_nudge": bool(getattr(task, "auto_nudge", False)),
             "recurring": getattr(task, "recurring", "none"),
-            "recurring": getattr(task, "recurring", "none"),
-            "recurring": getattr(task, "recurring", "none"),
             "status": task.status,
+            "tags": parse_tags(task.tags),
             "completed_time": task.completed_time,
             "owner_username": task.owner_username,
             "queue_global_number": q_info.get("global_q"),
@@ -721,6 +720,7 @@ def get_light_tasks(
                 "project_name": t.project_name,
                 "status": t.status,
                 "is_involved": involved,
+                "tags": parse_tags(t.tags),
             }
         )
 
@@ -784,6 +784,7 @@ def create_task(
             auto_nudge=True if task.auto_nudge else False,
             status="Pending",
             owner_username=current_user,
+            tags=serialize_tags(getattr(task, "tags", None)),
         )
         setattr(new_task, "recurring", task.recurring or "none")
         db.add(new_task)
@@ -850,6 +851,13 @@ def create_task(
             "message": response_message,
             "project": task.project_name,
             "task_id": new_task.id,
+            "tags": parse_tags(new_task.tags),
+            "task": {
+                "id": new_task.id,
+                "project_name": new_task.project_name,
+                "board_id": new_task.board_id,
+                "tags": parse_tags(new_task.tags),
+            }
         }
     except Exception as e:
         db.rollback()

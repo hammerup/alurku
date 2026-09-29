@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HighlightText } from './Utils';
+import { getTagColor, parseTaskTags } from './components/TagInput';
 import { IconPerson, Avatar } from './SharedUI';
 
 export default function TableList({
@@ -948,6 +949,25 @@ export default function TableList({
                                     </span>
                                   </>
                                 )}
+                              {/* Task Tags Badges in Row */}
+                              {(() => {
+                                const rowTags = parseTaskTags(task.tags);
+                                if (!rowTags || rowTags.length === 0) return null;
+                                return (
+                                  <div className="flex items-center gap-1 flex-wrap mt-1">
+                                    {rowTags.map((tag, tIdx) => (
+                                      <span
+                                        key={tIdx}
+                                        className={`inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-md border shadow-2xs ${getTagColor(tag)}`}
+                                        title={`Tag: ${tag}`}
+                                      >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 shrink-0"></span>
+                                        <span className="truncate max-w-[100px]">{tag}</span>
+                                      </span>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
                               </div>
                             </div>
                           </div>

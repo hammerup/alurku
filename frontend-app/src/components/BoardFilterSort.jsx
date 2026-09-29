@@ -29,6 +29,8 @@ export default function BoardFilterSort({
   filterStatus, setFilterStatus,
   filterCategory, setFilterCategory,
   filterAssignee, setFilterAssignee,
+  filterTag = 'All', setFilterTag,
+  availableTags = [],
   groupBy, setGroupBy,
   sortBy, setSortBy
 }) {
@@ -84,7 +86,7 @@ export default function BoardFilterSort({
     setIsOpen(!isOpen);
   };
 
-  const hasActiveFilters = filterStatus !== 'All' || filterCategory !== 'All' || filterAssignee !== 'All';
+  const hasActiveFilters = filterStatus !== 'All' || filterCategory !== 'All' || filterAssignee !== 'All' || (filterTag && filterTag !== 'All');
 
   const SelectGroup = ({ title, value, onChange, options }) => (
     <div className="mb-4 last:mb-0">
@@ -203,6 +205,18 @@ export default function BoardFilterSort({
               ]} 
             />
 
+            <div className="h-px w-full bg-slate-100 dark:bg-slate-800 my-3"></div>
+
+            <SelectGroup 
+              title="Filter Tag / Label" 
+              value={filterTag || 'All'} 
+              onChange={setFilterTag || (() => {})} 
+              options={[
+                { value: 'All', label: 'All Tags' },
+                ...(availableTags || []).filter(Boolean).map(t => ({ value: t, label: t }))
+              ]} 
+            />
+
           </div>
           
           {hasActiveFilters && (
@@ -212,6 +226,7 @@ export default function BoardFilterSort({
                   setFilterStatus('All');
                   setFilterCategory('All');
                   setFilterAssignee('All');
+                  if (setFilterTag) setFilterTag('All');
                 }}
                 className="w-full py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
               >

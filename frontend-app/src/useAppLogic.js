@@ -319,6 +319,7 @@ export default function useAppLogic() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterAssignee, setFilterAssignee] = useState('All');
+  const [filterTag, setFilterTag] = useState('All');
   const [showMyTasks, setShowMyTasks] = useState(false);
   const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [showDueTodayOnly, setShowDueTodayOnly] = useState(false);
@@ -347,6 +348,7 @@ export default function useAppLogic() {
     etc: 2,
     auto_nudge: false,
     recurring: 'none',
+    tags: [],
   });
   const [formSubtasks, setFormSubtasks] = useState([]);
   const [formSubtaskInput, setFormSubtaskInput] = useState('');
@@ -3351,6 +3353,7 @@ export default function useAppLogic() {
           start_date: getLocalToday(),
           deadline: getLocalToday(),
           recurring: 'none',
+          tags: [],
         });
         setFormSubtasks([]);
         setFormSubtaskInput('');
@@ -3520,6 +3523,11 @@ export default function useAppLogic() {
       recurring: targetTask.recurring || 'none',
       status: targetTask.status || 'Pending',
       board_id: targetTask.board_id,
+      tags: Array.isArray(targetTask.tags)
+        ? targetTask.tags
+        : (typeof targetTask.tags === 'string' && targetTask.tags.trim() && targetTask.tags !== '[]'
+          ? (() => { try { const p = JSON.parse(targetTask.tags); return Array.isArray(p) ? p : [targetTask.tags]; } catch { return targetTask.tags.split(',').map(x => x.trim()).filter(Boolean); } })()
+          : []),
     });
     setIsEditing(true);
   };
@@ -3681,6 +3689,31 @@ export default function useAppLogic() {
       });
   };
 
+  const availableTags = useMemo(() => {
+    const tagSet = new Set();
+    (tasks || []).forEach((t) => {
+      let taskTags = [];
+      if (Array.isArray(t.tags)) {
+        taskTags = t.tags;
+      } else if (typeof t.tags === 'string') {
+        const trimmed = t.tags.trim();
+        if (trimmed && trimmed !== '[]') {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) taskTags = parsed;
+          } catch {
+            taskTags = trimmed.split(',');
+          }
+        }
+      }
+      taskTags.forEach((tag) => {
+        const s = String(tag || '').trim();
+        if (s) tagSet.add(s);
+      });
+    });
+    return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+  }, [tasks]);
+
   const filteredTasks = useMemo(() => {
     const filtered = tasks.filter((task) => {
       if (selectedBoard && selectedBoard.id !== 'global') {
@@ -3714,6 +3747,24 @@ export default function useAppLogic() {
       const matchStatus = filterStatus === 'All' || task.status === filterStatus;
       const matchCategory = filterCategory === 'All' || task.category === filterCategory;
       const matchAssignee = filterAssignee === 'All' || getTaskAssignee(task) === filterAssignee;
+      const matchTag = (() => {
+        if (!filterTag || filterTag === 'All') return true;
+        let tTags = [];
+        if (Array.isArray(task.tags)) {
+          tTags = task.tags;
+        } else if (typeof task.tags === 'string') {
+          const trimmed = task.tags.trim();
+          if (trimmed && trimmed !== '[]') {
+            try {
+              const parsed = JSON.parse(trimmed);
+              if (Array.isArray(parsed)) tTags = parsed;
+            } catch {
+              tTags = trimmed.split(',');
+            }
+          }
+        }
+        return tTags.some((t) => String(t).trim().toLowerCase() === String(filterTag).trim().toLowerCase());
+      })();
       const matchMyTasks = !showMyTasks || isUserAssigned(task, currentUser);
       const matchUnread =
         !showUnreadOnly ||
@@ -3763,6 +3814,7 @@ export default function useAppLogic() {
         matchStatus &&
         matchCategory &&
         matchAssignee &&
+        matchTag &&
         matchMyTasks &&
         matchUnread &&
         matchHasSubtasks &&
@@ -3826,6 +3878,8 @@ export default function useAppLogic() {
     filterStatus,
     filterCategory,
     filterAssignee,
+    filterTag,
+    availableTags,
     showMyTasks,
     showOverdueOnly,
     showUnreadOnly,
@@ -4989,6 +5043,7 @@ export default function useAppLogic() {
     setFilterStatus,
     setFilterCategory,
     setFilterAssignee,
+    setFilterTag,
     setShowMyTasks,
     showOverdueOnly,
     setShowOverdueOnly,

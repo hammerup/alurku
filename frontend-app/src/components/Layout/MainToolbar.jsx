@@ -50,6 +50,9 @@ export default function MainToolbar() {
     setFilterCategory,
     filterAssignee,
     setFilterAssignee,
+    filterTag,
+    setFilterTag,
+    availableTags,
     columns,
     categories,
     assigneeOptions,
@@ -69,7 +72,8 @@ export default function MainToolbar() {
     hideCompleted ||
     filterStatus ||
     filterCategory ||
-    filterAssignee;
+    filterAssignee ||
+    (filterTag && filterTag !== 'All');
 
   return (
     <header className="px-4 py-3 md:px-6 md:py-4 flex flex-col gap-3 shrink-0 border-b border-neutral-200/70 dark:border-neutral-800/80 bg-white/60 dark:bg-[#0d0f11]/60 backdrop-blur-md select-none">
@@ -369,6 +373,9 @@ export default function MainToolbar() {
             setFilterCategory={setFilterCategory}
             filterAssignee={filterAssignee}
             setFilterAssignee={setFilterAssignee}
+            filterTag={filterTag}
+            setFilterTag={setFilterTag}
+            availableTags={availableTags}
             groupBy={groupBy}
             setGroupBy={setGroupBy}
             sortBy={sortBy}

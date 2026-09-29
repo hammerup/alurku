@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 class AIGenerateModel(BaseModel):
     prompt: str
@@ -8,7 +8,7 @@ class AIGenerateModel(BaseModel):
     prompt_type: Optional[str] = None
 
 
-class RequestFormModel(BaseModel):
+class TaskCreateModel(BaseModel):
     project_name: str
     requester: str
     category: str
@@ -21,10 +21,35 @@ class RequestFormModel(BaseModel):
     auto_nudge: Optional[bool] = False
     recurring: Optional[str] = "none"
     subtasks: Optional[List[dict]] = []
+    tags: Optional[Union[List[str], str]] = None
+    board_id: Optional[int] = None
+
+
+class RequestFormModel(TaskCreateModel):
+    pass
 
 
 class TaskUpdateModel(BaseModel):
-    status: str
+    status: Optional[str] = None
+    tags: Optional[Union[List[str], str]] = None
+
+
+class TaskDetailModel(BaseModel):
+    id: Optional[int] = None
+    board_id: Optional[int] = None
+    project_name: Optional[str] = None
+    requester: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    supporting_access: Optional[str] = None
+    start_date: Optional[str] = None
+    deadline: Optional[str] = None
+    impact: Optional[str] = "Medium"
+    etc: Optional[float] = 2.0
+    auto_nudge: Optional[bool] = False
+    recurring: Optional[str] = "none"
+    status: Optional[str] = None
+    tags: Optional[Union[List[str], str]] = None
 
 
 class TaskEditModel(BaseModel):
@@ -41,6 +66,7 @@ class TaskEditModel(BaseModel):
     recurring: Optional[str] = "none"
     status: str
     board_id: Optional[int] = None
+    tags: Optional[Union[List[str], str]] = None
 
 
 class SubtaskModel(BaseModel):

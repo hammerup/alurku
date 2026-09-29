@@ -70,6 +70,7 @@ class Request(Base):
     etc = Column(Float, default=2.0)
     auto_nudge = Column(Boolean, default=False)
     recurring = Column(String(50), default="none")
+    tags = Column(Text, nullable=True, default="[]")
 
     # Relationships
     workspace = relationship("Workspace", back_populates="requests")
@@ -329,6 +330,19 @@ def setup_db():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
+        # Auto-migration: ensure tags column exists in requests table
+        try:
+            db.execute(text("ALTER TABLE requests ADD COLUMN IF NOT EXISTS tags TEXT DEFAULT '[]'"))
+            db.commit()
+        except Exception:
+            db.rollback()
+            try:
+                db.execute(text("ALTER TABLE requests ADD COLUMN tags TEXT DEFAULT '[]'"))
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                print(f"[DB Migration] requests.tags migration note: {e}")
+
         # Auto-migration: ensure tier column exists in workspaces table
         try:
             db.execute(text("ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS tier VARCHAR(20) DEFAULT 'free'"))

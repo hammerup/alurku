@@ -3,6 +3,7 @@ import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { IconPlus, Avatar } from './SharedUI';
 import { getTaskAssignee } from './useAppLogic';
 import { HighlightText } from './Utils';
+import { getTagColor, parseTaskTags } from './components/TagInput';
 
 export default function KanbanBoard({
   activeColumns,
@@ -310,6 +311,26 @@ export default function KanbanBoard({
                           </div>
                         )}
                     </div>
+
+                    {/* Task Tags Badges */}
+                    {(() => {
+                      const tagsList = parseTaskTags(task.tags);
+                      if (!tagsList || tagsList.length === 0) return null;
+                      return (
+                        <div className="flex flex-wrap items-center gap-1 mb-2.5">
+                          {tagsList.map((tag, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className={`inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-md border shadow-2xs ${getTagColor(tag)}`}
+                              title={`Tag: ${tag}`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 shrink-0"></span>
+                              <span className="truncate max-w-[120px]">{tag}</span>
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     {/* Task Description */}
                     <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mb-3 line-clamp-2 wrap-break-word font-medium leading-relaxed">
