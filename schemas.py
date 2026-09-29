@@ -244,3 +244,36 @@ class TaskAttachmentResponse(BaseModel):
     preview_url: Optional[str] = None
 
 
+# --- Webhook Schemas ---
+class WebhookCreateModel(BaseModel):
+    url: str
+    secret: Optional[str] = None
+    events: Optional[List[str]] = ["task.created", "task.status_changed", "task.completed", "comment.created"]
+    is_active: Optional[int] = 1
+
+
+class WebhookUpdateModel(BaseModel):
+    url: Optional[str] = None
+    secret: Optional[str] = None
+    events: Optional[List[str]] = None
+    is_active: Optional[int] = None
+
+
+# --- Billing / Invoice Schemas ---
+class CheckoutRequestModel(BaseModel):
+    tier: str  # 'pro' or 'business'
+    billing_cycle: str  # 'monthly' or 'yearly'
+    payment_method: Optional[str] = "qris"
+
+
+class InvoiceResponseModel(BaseModel):
+    invoice_number: str
+    workspace_id: int
+    username: str
+    tier: str
+    billing_cycle: str
+    amount: int
+    status: str
+    payment_method: str
+    created_at: Optional[str] = None
+    paid_at: Optional[str] = None
