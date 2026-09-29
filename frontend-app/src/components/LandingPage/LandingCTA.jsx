@@ -10,10 +10,10 @@ export default function LandingCTA({ setIsLoginMode, setShowAuthForm, language }
     : "Ready to experience a healthier way of working?";
 
   const desc = isId
-    ? 'Dapatkan akses ke Sandbox Private Beta alurku. dan jadilah bagian dari revolusi produktivitas tanpa stres.'
-    : 'Get access to the alurku. Private Beta Sandbox and be part of the stress-free productivity revolution.';
+    ? 'Daftar sekarang dan rasakan kemudahan mengelola tugas, proyek, dan otomasi alur kerja tim tanpa stres.'
+    : 'Sign up now and experience effortless task planning, project management, and team automations without the stress.';
 
-  const ctaBtn = isId ? 'Gabung Akses Beta' : 'Join Beta Access';
+  const ctaBtn = isId ? 'Mulai Coba Gratis' : 'Start Free Trial';
 
   const handleStart = () => {
     setIsLoginMode(false);

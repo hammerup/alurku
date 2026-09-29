@@ -77,6 +77,32 @@ const IconTeam = () => (
   </svg>
 );
 
+// Database / import-export icon (Data Portability)
+const IconPortability = () => (
+  <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
+    <rect x="16" y="18" width="48" height="44" rx="6" stroke="#FACC15" strokeWidth="2"/>
+    <line x1="16" y1="32" x2="64" y2="32" stroke="#FACC15" strokeWidth="1.5"/>
+    <line x1="32" y1="32" x2="32" y2="62" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="3 2"/>
+    <line x1="48" y1="32" x2="48" y2="62" stroke="#FACC15" strokeWidth="1.5" strokeDasharray="3 2"/>
+    {/* Arrow badge */}
+    <circle cx="56" cy="54" r="14" fill="#111E38" stroke="#FACC15" strokeWidth="2"/>
+    <path d="M56 46 V58 M52 54 L56 58 L60 54" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// Integration / webhook & tags icon
+const IconIntegrations = () => (
+  <svg viewBox="0 0 80 80" className="w-20 h-20" fill="none">
+    <circle cx="28" cy="30" r="10" stroke="#FACC15" strokeWidth="2"/>
+    <circle cx="52" cy="50" r="10" stroke="#FACC15" strokeWidth="2"/>
+    <path d="M35 37 L45 43" stroke="#FACC15" strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="44" y="20" width="22" height="12" rx="3" stroke="#FACC15" strokeWidth="1.5"/>
+    <circle cx="48" cy="26" r="2" fill="#FACC15"/>
+    <rect x="14" y="48" width="22" height="12" rx="3" stroke="#FACC15" strokeWidth="1.5"/>
+    <circle cx="18" cy="54" r="2" fill="#FACC15"/>
+  </svg>
+);
+
 export default function LandingFeatures({ language }) {
   const isId = language === 'id';
 
@@ -92,15 +118,29 @@ export default function LandingFeatures({ language }) {
       icon: <IconTimeline />,
       title: isId ? 'Linimasa Cerdas & Gantt' : 'Smart Timelines & Gantt',
       desc: isId
-        ? 'Visualisasikan progres proyek, kelola tenggat waktu, dan sesuaikan jadwal dengan antarmuka drag-and-drop.'
-        : 'Visualize project progress, manage deadlines, and adjust schedules in a drag-and-drop interface.',
+        ? 'Visualisasikan progres proyek, kelola tenggat waktu, dan sesuaikan jadwal dengan antarmuka drag-and-drop yang intuitif.'
+        : 'Visualize project progress, manage deadlines, and adjust schedules in an intuitive drag-and-drop interface.',
     },
     {
       icon: <IconTeam />,
-      title: isId ? 'Ruang Kerja Tim Terpadu' : 'Unified Team Workspace',
+      title: isId ? 'Ruang Kerja Tim & Beban Kerja' : 'Unified Team & Workload',
       desc: isId
-        ? 'Pusatkan komunikasi, berbagi file, dan umpan balik agar seluruh anggota tim tetap selaras.'
-        : 'Centralize communication, file sharing, and feedback to keep everyone aligned.',
+        ? 'Pusatkan komunikasi, distribusi kapasitas tim, dan pencegahan burnout agar seluruh anggota tim tetap seimbang.'
+        : 'Centralize communication, balance team workload, and prevent burnout to keep everyone productive and healthy.',
+    },
+    {
+      icon: <IconPortability />,
+      title: isId ? 'Portabilitas Data & Impor CSV' : 'Data Portability & CSV Import',
+      desc: isId
+        ? 'Pindahkan tugas dari Excel, Trello, atau spreadsheet dalam hitungan detik. Ekspor seluruh data proyek kapan saja tanpa terkunci vendor.'
+        : 'Migrate tasks from Excel, Trello, or spreadsheets in seconds. Export your complete project data anytime with zero vendor lock-in.',
+    },
+    {
+      icon: <IconIntegrations />,
+      title: isId ? 'Webhook Otomasi & Multi-Tag' : 'Webhook Automations & Tags',
+      desc: isId
+        ? 'Kirim notifikasi instan ke Slack atau Discord saat tugas diperbarui, dan rapikan ratusan tugas dengan label warna dinamis.'
+        : 'Dispatch instant alerts to Slack or Discord when tasks change, and organize hundreds of tasks with dynamic color-coded tags.',
     },
   ];
 
@@ -132,7 +172,7 @@ export default function LandingFeatures({ language }) {
           </div>
         </motion.div>
 
-        {/* Row 2: Left Card */}
+        {/* Row 2: Card 2 & 3 */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -151,7 +191,6 @@ export default function LandingFeatures({ language }) {
           </p>
         </motion.div>
 
-        {/* Row 2: Right Card */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -167,6 +206,43 @@ export default function LandingFeatures({ language }) {
           </h3>
           <p className="text-neutral-500 leading-relaxed text-sm">
             {features[2].desc}
+          </p>
+        </motion.div>
+
+        {/* Row 3: Card 4 & 5 (New Capabilities) */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1, duration: 0.6 }}
+          className="bg-white rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-200/60 hover:shadow-lg transition-all duration-300"
+        >
+          <div className="mb-6 bg-[#111E38] p-4 rounded-2xl shadow-md border-none">
+            {features[3].icon}
+          </div>
+          <h3 className="text-xl font-extrabold text-[#111E38] mb-3">
+            {features[3].title}
+          </h3>
+          <p className="text-neutral-500 leading-relaxed text-sm">
+            {features[3].desc}
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="bg-white rounded-3xl p-8 sm:p-10 flex flex-col items-center text-center border border-neutral-200/60 hover:shadow-lg transition-all duration-300"
+        >
+          <div className="mb-6 bg-[#111E38] p-4 rounded-2xl shadow-md border-none">
+            {features[4].icon}
+          </div>
+          <h3 className="text-xl font-extrabold text-[#111E38] mb-3">
+            {features[4].title}
+          </h3>
+          <p className="text-neutral-500 leading-relaxed text-sm">
+            {features[4].desc}
           </p>
         </motion.div>
 

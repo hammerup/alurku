@@ -824,3 +824,110 @@ def broadcast_task_update_event(workspace_id: int, task_id: int, updated_by: str
         print(f"[Task Update Broadcast Error]: {e}")
 
 
+def seed_starter_board_for_workspace(db: Session, workspace_id: int, username: str):
+    """
+    Creates a starter project ('Mulai Cepat alurku.') with engaging, interactive tasks
+    demonstrating tags, drag & drop, and smart assistant usage for an instant Aha! Moment.
+    """
+    try:
+        # Check if workspace already has any board
+        existing = db.query(Board).filter(Board.workspace_id == workspace_id).first()
+        if existing:
+            return existing
+
+        now = datetime.utcnow()
+        starter_board = Board(
+            workspace_id=workspace_id,
+            name="Mulai Cepat alurku.",
+            owner_username=username,
+            created_at=now,
+            statuses=json.dumps(["To Do", "In Progress", "Done"]),
+            categories=json.dumps(["Panduan", "Alur Kerja", "Smart AI"]),
+            description="Papan interaktif untuk membantumu menguasai fitur utama alurku. dalam hitungan menit.",
+            is_private=0
+        )
+        db.add(starter_board)
+        db.flush()
+
+        # Add user as accepted board member
+        member = BoardMember(
+            board_id=starter_board.id,
+            member_username=username,
+            status="accepted"
+        )
+        db.add(member)
+
+        # Task 1: To Do - Eksplorasi detail dan tag
+        task1 = Request(
+            board_id=starter_board.id,
+            workspace_id=workspace_id,
+            timestamp=now,
+            project_name="Buka tugas ini untuk melihat detail, checklist & tag",
+            requester=username,
+            category="Panduan",
+            description="Selamat datang di alurku.! Di modal ini kamu bisa menambahkan sub-tugas, mengedit prioritas, memberi tag warna-warni, serta melampirkan berkas.",
+            supporting_access="Akses Penuh",
+            start_date=now,
+            deadline=now + timedelta(days=2),
+            status="To Do",
+            owner_username=username,
+            impact="Medium",
+            etc=1.0,
+            tags=json.dumps(["Panduan", "Eksplorasi"])
+        )
+        db.add(task1)
+        db.flush()
+
+        # Subtasks for Task 1
+        st1 = Subtask(request_id=task1.id, task_name="Buka modal detail tugas", is_done=1, position=0)
+        st2 = Subtask(request_id=task1.id, task_name="Coba beri label atau tag baru", is_done=0, position=1)
+        db.add(st1)
+        db.add(st2)
+
+        # Task 2: In Progress - Interaksi drag & drop
+        task2 = Request(
+            board_id=starter_board.id,
+            workspace_id=workspace_id,
+            timestamp=now,
+            project_name="Geser (Drag & Drop) kartu ini ke kolom Selesai",
+            requester=username,
+            category="Alur Kerja",
+            description="Papan Kanban alurku. sangat fleksibel. Coba tahan dan geser kartu ini ke kolom 'Done' untuk merasakan alur eksekusi kerja yang mulus.",
+            supporting_access="Akses Penuh",
+            start_date=now,
+            deadline=now + timedelta(days=1),
+            status="In Progress",
+            owner_username=username,
+            impact="High",
+            etc=0.5,
+            tags=json.dumps(["Interaktif", "Kanban"])
+        )
+        db.add(task2)
+
+        # Task 3: Done - Memanfaatkan Smart AI
+        task3 = Request(
+            board_id=starter_board.id,
+            workspace_id=workspace_id,
+            timestamp=now,
+            project_name="Coba Smart Assistant (klik tombol di pojok kanan bawah)",
+            requester=username,
+            category="Smart AI",
+            description="Ketik rencana kasarmu di chat AI, misalnya: 'Buatkan alur peluncuran produk baru', dan biarkan AI menyusun jadwal serta memecah sub-tugas secara otomatis.",
+            supporting_access="Akses Penuh",
+            start_date=now - timedelta(days=1),
+            deadline=now,
+            status="Done",
+            completed_time=now,
+            owner_username=username,
+            impact="Low",
+            etc=0.5,
+            tags=json.dumps(["Smart AI", "Otomasi"])
+        )
+        db.add(task3)
+
+        db.commit()
+        return starter_board
+    except Exception as e:
+        db.rollback()
+        print(f"[Seed Starter Board Error]: {e}")
+        return None

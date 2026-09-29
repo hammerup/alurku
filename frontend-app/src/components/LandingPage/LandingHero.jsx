@@ -156,9 +156,9 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                 </p>
               )}
               <p className="text-xs text-neutral-400 font-medium pl-0 lg:pl-4 text-center lg:text-left">
-                ℹ️ {isId 
-                  ? 'Pendaftaran akan otomatis membuat akun pengujian di Sandbox Private Beta kami.' 
-                  : 'Registration will automatically create a testing account in our Private Beta Sandbox.'}
+                {isId 
+                  ? 'Pendaftaran instan gratis dengan ruang kerja pribadi langsung aktif.' 
+                  : 'Instant free registration with your personal workspace ready.'}
               </p>
             </div>
           ) : (
@@ -176,7 +176,7 @@ export default function LandingHero({ setIsLoginMode, setShowAuthForm, language 
                   onClick={() => setShowEmailInput(true)}
                   className="w-full sm:w-auto px-8 py-3.5 lg:py-4 rounded-full font-bold text-white border-2 border-white/20 hover:border-white hover:bg-white/10 transition-colors text-center text-sm lg:text-base backdrop-blur-sm cursor-pointer"
                 >
-                  {isId ? 'Daftar Akses Awal (Beta)' : 'Register Early Access (Beta)'}
+                  {isId ? 'Daftar Akun Baru' : 'Register New Account'}
                 </button>
               )}
             </div>
