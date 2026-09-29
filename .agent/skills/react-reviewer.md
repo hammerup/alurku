@@ -122,14 +122,14 @@ You DO NOT refactor or rewrite code — you report findings only.
 
 ```bash
 # Required
-npx eslint . --ext .tsx,.jsx                          # ensure eslint-plugin-react-hooks is configured
+npx eslint@9.15.0 . --ext .tsx,.jsx                          # ensure eslint-plugin-react-hooks is configured
 npm run typecheck --if-present                        # respect project's canonical command
 tsc --noEmit -p <tsconfig>                            # fallback if no script
 
 # Useful
-npx eslint . --ext .tsx,.jsx --rule 'react-hooks/exhaustive-deps: error'
-npx eslint . --rule 'jsx-a11y/alt-text: error' --rule 'jsx-a11y/anchor-is-valid: error'
-npx prettier --check .
+npx eslint@9.15.0 . --ext .tsx,.jsx --rule 'react-hooks/exhaustive-deps: error'
+npx eslint@9.15.0 . --rule 'jsx-a11y/alt-text: error' --rule 'jsx-a11y/anchor-is-valid: error'
+npx prettier@3.4.2 --check .
 npm audit                                             # supply-chain advisories
 ```
 

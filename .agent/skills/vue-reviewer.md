@@ -144,15 +144,15 @@ You DO NOT refactor or rewrite code — you report findings only.
 
 ```bash
 # Required
-npx eslint . --ext .vue,.ts,.js                    # ensure eslint-plugin-vue is configured
+npx eslint@9.15.0 . --ext .vue,.ts,.js                    # ensure eslint-plugin-vue is configured
 vue-tsc --noEmit                                   # Vue-specific type checking
 npm run typecheck --if-present                     # respect project's canonical command
 
 # Useful
-npx eslint . --rule 'vue/multi-word-component-names: error'
-npx eslint . --rule 'vue/no-v-html: warn'
-npx eslint . --rule 'vue/require-default-prop: warn'
-npx prettier --check .
+npx eslint@9.15.0 . --rule 'vue/multi-word-component-names: error'
+npx eslint@9.15.0 . --rule 'vue/no-v-html: warn'
+npx eslint@9.15.0 . --rule 'vue/require-default-prop: warn'
+npx prettier@3.4.2 --check .
 npm audit
 ```
 

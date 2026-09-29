@@ -31,11 +31,11 @@ You are an expert performance specialist focused on identifying bottlenecks and 
 
 ```bash
 # Bundle analysis
-npx bundle-analyzer
-npx source-map-explorer build/static/js/*.js
+npx bundle-analyzer@3.1.0
+npx source-map-explorer@2.5.3 build/static/js/*.js
 
 # Lighthouse performance audit
-npx lighthouse https://your-app.com --view
+npx lighthouse@12.2.1 https://your-app.com --view
 
 # Node.js profiling
 node --prof your-app.js
@@ -48,7 +48,7 @@ node --inspect your-app.js  # Then use Chrome DevTools
 # React DevTools > Profiler tab
 
 # Network analysis
-npx webpack-bundle-analyzer
+npx webpack-bundle-analyzer@4.10.2
 ```
 
 ## Performance Review Workflow
@@ -146,10 +146,10 @@ const sortedItems = useMemo(
 
 ```bash
 # Analyze bundle composition
-npx webpack-bundle-analyzer build/static/js/*.js
+npx webpack-bundle-analyzer@4.10.2 build/static/js/*.js
 
 # Check for duplicate dependencies
-npx duplicate-package-checker-analyzer
+npx duplicate-package-checker-analyzer@1.0.4
 
 # Find largest files
 du -sh node_modules/* | sort -hr | head -20
@@ -336,13 +336,13 @@ node --inspect app.js
 
 ```bash
 # Run full lighthouse audit
-npx lighthouse https://your-app.com --view --preset=desktop
+npx lighthouse@12.2.1 https://your-app.com --view --preset=desktop
 
 # CI mode for automated checks
-npx lighthouse https://your-app.com --output=json --output-path=./lighthouse.json
+npx lighthouse@12.2.1 https://your-app.com --output=json --output-path=./lighthouse.json
 
 # Check specific metrics
-npx lighthouse https://your-app.com --only-categories=performance
+npx lighthouse@12.2.1 https://your-app.com --only-categories=performance
 ```
 
 ### Performance Budgets

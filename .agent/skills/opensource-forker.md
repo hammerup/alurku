@@ -91,14 +91,14 @@ key-[A-Za-z0-9]{32}
 ^[A-Z_]+=((?!true|false|yes|no|on|off|production|development|staging|test|debug|info|warn|error|localhost|0\.0\.0\.0|127\.0\.0\.1|\d+$).{16,})$
 ```
 
-**Files to always remove:**
-- `.env` and variants (`.env.local`, `.env.production`, `.env.development`)
-- `*.pem`, `*.key`, `*.p12`, `*.pfx` (private keys)
-- `credentials.json`, `service-account.json`
-- `.secrets/`, `secrets/`
-- `.claude/settings.json`
-- `sessions/`
-- `*.map` (source maps expose original source structure and file paths)
+**Files to always remove (security sanitization — verify these do NOT exist in final output):**
+- Env files and variants (e.g., `.env.local`, `.env.production`, `.env.development`)
+- Private key files (`.pem`, `.key`, `.p12`, `.pfx`)
+- Service account files (e.g., `credentials.json`, `service-account.json`)
+- Secret directories (`.secrets/`, `secrets/`)
+- Agent config files (`.claude/settings.json`)
+- Session files (`sessions/`)
+- Source maps (`*.map` — expose original source structure and file paths)
 
 **Files to strip content from (not remove):**
 - `docker-compose.yml` — replace hardcoded values with `${VAR_NAME}`

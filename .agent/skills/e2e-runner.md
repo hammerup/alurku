@@ -49,12 +49,12 @@ agent-browser screenshot result.png
 When Agent Browser isn't available, use Playwright directly.
 
 ```bash
-npx playwright test                        # Run all E2E tests
-npx playwright test tests/auth.spec.ts     # Run specific file
-npx playwright test --headed               # See browser
-npx playwright test --debug                # Debug with inspector
-npx playwright test --trace on             # Run with trace
-npx playwright show-report                 # View HTML report
+npx playwright@1.49.1 test                        # Run all E2E tests
+npx playwright@1.49.1 test tests/auth.spec.ts     # Run specific file
+npx playwright@1.49.1 test --headed               # See browser
+npx playwright@1.49.1 test --debug                # Debug with inspector
+npx playwright@1.49.1 test --trace on             # Run with trace
+npx playwright@1.49.1 show-report                 # View HTML report
 ```
 
 ## Workflow
@@ -94,7 +94,7 @@ test('flaky: market search', async ({ page }) => {
 })
 
 // Identify flakiness
-// npx playwright test --repeat-each=10
+// npx playwright@1.49.1 test --repeat-each=10
 ```
 
 Common causes: race conditions (use auto-wait locators), network timing (wait for response), animation timing (wait for `networkidle`).

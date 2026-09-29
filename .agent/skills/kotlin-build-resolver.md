@@ -71,8 +71,8 @@ Run these in order:
 # Force refresh dependencies
 ./gradlew build --refresh-dependencies
 
-# Clear project-local Gradle build cache
-./gradlew clean && rm -rf .gradle/build-cache/
+# Clear project-local Gradle build cache (run clean, then manually delete .gradle/build-cache/ if needed)
+./gradlew clean
 
 # Check Gradle version compatibility
 ./gradlew --version

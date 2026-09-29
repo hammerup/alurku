@@ -98,13 +98,13 @@ For every component or page request, provide:
 
 ## Anti-Patterns
 
-| Issue                      | Why it fails                                                                                       |
-| :------------------------- | :------------------------------------------------------------------------------------------------- |
-| **"Click Here" Links**     | Non-descriptive; screen reader users navigating by links won't know the destination.               |
-| **Fixed-Sized Containers** | Prevents content reflow and breaks the layout at higher zoom levels.                               |
-| **Keyboard Traps**         | Prevents users from navigating the rest of the page once they enter a component.                   |
-| **Auto-Playing Media**     | Distracting for users with cognitive disabilities; interferes with screen reader audio.            |
-| **Empty Buttons**          | Icon-only buttons without an `aria-label` or `accessibilityLabel` are invisible to screen readers. |
+| Issue | Why it fails |
+| :--- | :--- |
+| **"Click Here" Links** | Non-descriptive; screen reader users navigating by links won't know the destination. |
+| **Fixed-Sized Containers** | Prevents content reflow and breaks the layout at higher zoom levels. |
+| **Keyboard Traps** | Prevents users from navigating the rest of the page once they enter a component. |
+| **Auto-Playing Media** | Distracting for users with cognitive disabilities; interferes with screen reader audio. |
+| **Empty Buttons** | Icon-only buttons without an `aria-label` or `accessibilityLabel` are invisible to screen readers. |
 
 ## Accessibility Decision Record Template
 

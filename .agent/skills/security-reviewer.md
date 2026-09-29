@@ -31,7 +31,7 @@ You are an expert security specialist focused on identifying and remediating vul
 
 ```bash
 npm audit --audit-level=high
-npx eslint . --plugin security
+npx eslint@9.15.0 . --plugin security
 ```
 
 ## Review Workflow

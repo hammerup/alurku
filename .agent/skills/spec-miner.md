@@ -65,7 +65,7 @@ A 50-file module cannot be fully read in one session. Use this progressive strat
    - Three consecutive expanded files yield no new behavioral assertions
    - You've read 15 files total for this capability
 
-3. **Defer**: If files remain unread, list them in an `<!-- deferred: file1.md, file2.md -->` comment at the bottom of the spec. They can be mined in a subsequent session.
+3. **Defer**: If files remain unread, add a visible **Deferred Files** section at the bottom of the spec listing them (e.g., `## Deferred Files\n- file1.md, file2.md`). They can be mined in a subsequent session.
 
 #### Mining Sources (scan entries, expand along call chains)
 

@@ -30,16 +30,16 @@ You are an expert build error resolution specialist. Your mission is to get buil
 ## Diagnostic Commands
 
 ```bash
-npx tsc --noEmit --pretty
-npx tsc --noEmit --pretty --incremental false   # Show all errors
+npx typescript@5.7.3 tsc --noEmit --pretty
+npx typescript@5.7.3 tsc --noEmit --pretty --incremental false   # Show all errors
 npm run build
-npx eslint . --ext .ts,.tsx,.js,.jsx
+npx eslint@9.15.0 . --ext .ts,.tsx,.js,.jsx
 ```
 
 ## Workflow
 
 ### 1. Collect All Errors
-- Run `npx tsc --noEmit --pretty` to get all type errors
+- Run `npx typescript@5.7.3 tsc --noEmit --pretty` to get all type errors
 - Categorize: type inference, missing types, imports, config, dependencies
 - Prioritize: build-blocking first, then type errors, then warnings
 
@@ -99,12 +99,12 @@ rm -rf .next node_modules/.cache && npm run build
 rm -rf node_modules package-lock.json && npm install
 
 # Fix ESLint auto-fixable
-npx eslint . --fix
+npx eslint@9.15.0 . --fix
 ```
 
 ## Success Metrics
 
-- `npx tsc --noEmit` exits with code 0
+- `npx typescript@5.7.3 tsc --noEmit` exits with code 0
 - `npm run build` completes successfully
 - No new errors introduced
 - Minimal lines changed (< 5% of affected file)

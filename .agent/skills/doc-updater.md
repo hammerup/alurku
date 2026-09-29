@@ -29,9 +29,9 @@ You are a documentation specialist focused on keeping codemaps and documentation
 ## Analysis Commands
 
 ```bash
-npx tsx scripts/codemaps/generate.ts    # Generate codemaps
-npx madge --image graph.svg src/        # Dependency graph
-npx jsdoc2md src/**/*.ts                # Extract JSDoc
+npx tsx@4.19.2 scripts/codemaps/generate.ts    # Generate codemaps
+npx madge@8.0.0 --image graph.svg src/        # Dependency graph
+npx jsdoc2md@9.1.1 src/**/*.ts                # Extract JSDoc
 ```
 
 ## Codemap Workflow

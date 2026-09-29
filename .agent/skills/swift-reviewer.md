@@ -30,8 +30,8 @@ When invoked:
 - **Force unwrapping**: `value!` in production code paths - use `guard let`, `if let`, or `??`
 - **Force try**: `try!` without justification - use `do/catch` or propagate with `throws`
 - **Force cast**: `as!` without a preceding type check - use `as?` with conditional binding
-- **Hardcoded secrets**: API keys, passwords, tokens in source - use Keychain or environment variables
-- **UserDefaults for secrets**: Sensitive data in `UserDefaults` - use Keychain Services
+- **Hardcoded secrets** — Flag any API keys, passwords, or tokens found in source; advise moving to Keychain or environment variables
+- **UserDefaults for secrets** — Flag sensitive data stored in `UserDefaults`; advise using Keychain Services instead
 - **ATS disabled**: App Transport Security exceptions without justification
 - **SQL/command injection**: String interpolation in queries or shell commands - use parameterized queries
 - **Path traversal**: User-controlled paths without validation and prefix check

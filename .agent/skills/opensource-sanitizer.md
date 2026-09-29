@@ -105,16 +105,16 @@ severity: CRITICAL
 
 ### Step 4: Dangerous Files Check (CRITICAL — existence = FAIL)
 
-Verify these do NOT exist:
+Security check — verify these do NOT exist (presence = FAIL):
 ```
-.env (any variant: .env.local, .env.production, .env.*.local)
-*.pem, *.key, *.p12, *.pfx, *.jks
-credentials.json, service-account*.json
-.secrets/, secrets/
-.claude/settings.json
-sessions/
-*.map (source maps expose original source structure and file paths)
-node_modules/, __pycache__/, .venv/, venv/
+env config files (any variant: local, production, staging)
+private key files (*.pem, *.key, *.p12, *.pfx, *.jks)
+service account files (credentials.json, service-account*.json)
+secret directories (.secrets/, secrets/)
+agent settings (.claude/settings.json)
+session directories (sessions/)
+source maps (*.map — expose original source structure)
+build artifacts (node_modules/, __pycache__/, virtual envs)
 ```
 
 ### Step 5: Configuration Completeness (WARNING)
