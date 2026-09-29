@@ -660,6 +660,10 @@ from routers.docs import router as docs_router
 app.include_router(docs_router)
 from routers.ws import router as ws_router
 app.include_router(ws_router)
+from routers.webhooks import router as webhooks_router
+app.include_router(webhooks_router)
+from routers.billing import router as billing_router
+app.include_router(billing_router)
 
 
 
@@ -667,13 +671,17 @@ app.include_router(ws_router)
 @app.get("/api/workspaces/{workspace_id}/activity")
 def get_workspace_activity(
     workspace_id: int,
-    limit: int = 100,
+    limit: int = 50,
+    page: int = 1,
+    action: Optional[str] = None,
+    target_user: Optional[str] = None,
+    search: Optional[str] = None,
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Mengambil log aktivitas terbaru untuk sebuah workspace.
-    Digunakan saat halaman pertama kali dimuat sebelum WebSocket terhubung.
+    Mendukung filter action, target_user, pencarian, dan paginasi.
     """
     from database import ActivityLog, WorkspaceMember
 
@@ -685,13 +693,20 @@ def get_workspace_activity(
     if not member:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    logs = (
-        db.query(ActivityLog)
-        .filter(ActivityLog.workspace_id == workspace_id)
-        .order_by(ActivityLog.created_at.desc())
-        .limit(min(limit, 100))
-        .all()
-    )
+    limit = max(1, min(limit, 100))
+    page = max(1, page)
+    offset = (page - 1) * limit
+
+    query = db.query(ActivityLog).filter(ActivityLog.workspace_id == workspace_id)
+    if action:
+        query = query.filter(ActivityLog.action == action)
+    if target_user:
+        query = query.filter(ActivityLog.username == target_user)
+    if search:
+        query = query.filter(ActivityLog.target_title.ilike(f"%{search}%"))
+
+    total = query.count()
+    logs = query.order_by(ActivityLog.created_at.desc()).offset(offset).limit(limit).all()
 
     # Privacy Protection for Guest / Viewer Role (Clients)
     if member.role == "viewer":
@@ -724,7 +739,7 @@ def get_workspace_activity(
             "extra_data": json.loads(log.extra_data) if log.extra_data else {},
             "created_at": log.created_at.strftime("%Y-%m-%dT%H:%M:%SZ") if log.created_at else None,
         })
-    return result
+    return {"activities": result, "total": total, "page": page, "limit": limit}
 
 
 def run_startup_auto_nudge():

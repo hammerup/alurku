@@ -282,6 +282,48 @@ class TaskAttachment(Base):
 
 
 
+class Webhook(Base):
+    __tablename__ = "webhooks"
+    id = Column(Integer, primary_key=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    url = Column(String(500), nullable=False)
+    secret = Column(String(100), nullable=True)
+    events = Column(Text, default="[]")  # JSON array: ["task.created","task.status_changed",...]
+    is_active = Column(Integer, default=1)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    deliveries = relationship("WebhookDelivery", back_populates="webhook", cascade="all, delete-orphan")
+
+
+class WebhookDelivery(Base):
+    __tablename__ = "webhook_deliveries"
+    id = Column(Integer, primary_key=True, index=True)
+    webhook_id = Column(Integer, ForeignKey("webhooks.id", ondelete="CASCADE"), index=True)
+    event_type = Column(String(50), nullable=False)
+    payload = Column(Text, nullable=True)
+    response_status = Column(Integer, nullable=True)
+    response_body = Column(Text, nullable=True)
+    success = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    webhook = relationship("Webhook", back_populates="deliveries")
+
+
+class Invoice(Base):
+    __tablename__ = "invoices"
+    id = Column(Integer, primary_key=True, index=True)
+    invoice_number = Column(String(50), unique=True, index=True, nullable=False)
+    workspace_id = Column(Integer, ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    username = Column(String(50), ForeignKey("users.username", ondelete="CASCADE"), index=True)
+    tier = Column(String(20), nullable=False)
+    billing_cycle = Column(String(20), nullable=False)  # 'monthly' or 'yearly'
+    amount = Column(Integer, nullable=False)  # in IDR
+    status = Column(String(20), default="paid")
+    payment_method = Column(String(50), default="qris")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    paid_at = Column(DateTime, default=datetime.utcnow)
+
+
 def get_security_log(db, key: str, default_value=None):
     log = db.query(SecurityLog).filter(SecurityLog.key == key).first()
     if log and log.value:
@@ -358,6 +400,7 @@ def setup_db():
         except Exception as e:
             print(f"[DB Migration] sync_all_users_workspace_tiers note: {e}")
 
+        # Note: webhooks, webhook_deliveries, invoices tables are created by Base.metadata.create_all above
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             salt = bcrypt.gensalt()
