@@ -3,6 +3,8 @@ import { useAppContext } from '../../contexts/AppContext';
 import { IconPlus } from '../../SharedUI';
 import BoardFilterSort from '../BoardFilterSort';
 import { LiveClock } from '../../Widgets';
+import axios from 'axios';
+import ImportCsvModal from '../ImportCsvModal';
 
 export default function MainToolbar() {
   const {
@@ -58,6 +60,41 @@ export default function MainToolbar() {
   } = useAppContext();
 
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = React.useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
+  const [isExporting, setIsExporting] = React.useState(false);
+
+  const handleExportCSVDirect = async () => {
+    if (!selectedBoard || selectedBoard.id === 'global') {
+      setExportMode('board');
+      setIsExportModalOpen(true);
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const res = await axios.get(`/api/boards/${selectedBoard.id}/export-csv`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `alurku-board-${selectedBoard.id}-tasks.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      if (showNotification) {
+        showNotification(language === 'id' ? 'File CSV tugas berhasil diunduh!' : 'Task CSV file downloaded successfully!', 'success');
+      }
+    } catch (err) {
+      console.error('Export error:', err);
+      if (showNotification) {
+        showNotification(language === 'id' ? 'Gagal mengunduh CSV tugas.' : 'Failed to download task CSV.', 'error');
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  };
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
   // Check if any filters are active to highlight the filter toggle button
@@ -451,17 +488,29 @@ export default function MainToolbar() {
 
               {/* Export CSV (Board) */}
               <button
-                onClick={() => {
-                  setExportMode('board');
-                  setIsExportModalOpen(true);
-                }}
-                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all"
+                onClick={handleExportCSVDirect}
+                disabled={isExporting}
+                className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all cursor-pointer"
                 title={tMsg('Export CSV', 'Ekspor CSV')}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                 </svg>
               </button>
+
+              {/* Import CSV (Board) */}
+              {selectedBoard && selectedBoard.id !== 'global' && (
+                <button
+                  onClick={() => setIsImportModalOpen(true)}
+                  disabled={accountStatus === 'suspended'}
+                  className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-[#111E38] dark:hover:text-white hover:bg-white dark:hover:bg-[#121B2D] rounded-lg transition-all cursor-pointer"
+                  title={tMsg('Import CSV', 'Impor CSV')}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  </svg>
+                </button>
+              )}
 
               {/* Get All My Data (Global) */}
               <button
@@ -480,6 +529,18 @@ export default function MainToolbar() {
           </div>
         </div>
       </div>
+      {/* Import CSV Modal */}
+      <ImportCsvModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        boardId={selectedBoard?.id}
+        boardName={selectedBoard?.name}
+        language={language}
+        onSuccess={() => {
+          window.dispatchEvent(new CustomEvent('alurku-refresh-tasks'));
+        }}
+        showNotification={showNotification}
+      />
     </header>
   );
 }

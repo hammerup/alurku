@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HighlightText } from './Utils';
 import { IconPerson, Avatar } from './SharedUI';
+import ImportCsvModal from './components/ImportCsvModal';
 
 export default function TableList({
   clonedTaskIds,
@@ -67,6 +68,43 @@ export default function TableList({
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCSV = async () => {
+    if (!selectedBoard || selectedBoard.id === 'global') {
+      if (showNotification) {
+        showNotification(language === 'id' ? 'Silakan pilih proyek spesifik terlebih dahulu.' : 'Please select a specific project first.', 'warning');
+      }
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const res = await axios.get(`/api/boards/${selectedBoard.id}/export-csv`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `alurku-board-${selectedBoard.id}-tasks.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      if (showNotification) {
+        showNotification(language === 'id' ? 'File CSV berhasil diunduh!' : 'CSV file downloaded successfully!', 'success');
+      }
+    } catch (err) {
+      console.error('Export error:', err);
+      if (showNotification) {
+        showNotification(language === 'id' ? 'Gagal mengunduh CSV tugas.' : 'Failed to download task CSV.', 'error');
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const [tasksPerPage, setTasksPerPage] = useState(() => {
     if (typeof window !== 'undefined') return Number(localStorage.getItem('alurku_tasks_per_page')) || 15;
     return 15;
@@ -597,6 +635,34 @@ export default function TableList({
                   {renderSortIcon(sortConfig.key)}
                 </button>
               )}
+            </div>
+
+            {/* Right: Export & Import CSV Actions */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                disabled={isExporting || !selectedBoard || selectedBoard.id === 'global'}
+                className="px-2.5 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-[#F3F4F6] dark:hover:bg-neutral-800 text-[#111E38] dark:text-neutral-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title={tMsg('Export tasks as CSV', 'Ekspor tugas ke file CSV')}
+              >
+                <svg className="w-3.5 h-3.5 text-[#111E38] dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                <span>{isExporting ? tMsg('Exporting...', 'Mengekspor...') : tMsg('Export CSV', 'Ekspor CSV')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(true)}
+                disabled={accountStatus === 'suspended' || !selectedBoard || selectedBoard.id === 'global'}
+                className="px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-400/50 bg-[#FACC15] hover:bg-amber-400 text-[#111E38] text-xs font-extrabold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title={tMsg('Import tasks from CSV file', 'Impor tugas dari file CSV')}
+              >
+                <svg className="w-3.5 h-3.5 text-[#111E38]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+                <span>{tMsg('Import CSV', 'Impor CSV')}</span>
+              </button>
             </div>
             {isBulkSelectMode && (
               <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -1312,6 +1378,17 @@ export default function TableList({
           </div>
         </div>
       )}
+
+      {/* Import CSV Modal */}
+      <ImportCsvModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        boardId={selectedBoard?.id}
+        boardName={selectedBoard?.name}
+        language={language}
+        onSuccess={() => fetchTasks && fetchTasks()}
+        showNotification={showNotification}
+      />
     </>
   );
 }
