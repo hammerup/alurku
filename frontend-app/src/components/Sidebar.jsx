@@ -342,6 +342,7 @@ export default function Sidebar() {
     activeWorkspace,
     createWorkspace,
     switchWorkspace,
+    fetchWorkspaces,
     tasks,
     showMyTasks,
     setShowMyTasks,
@@ -1230,9 +1231,22 @@ export default function Sidebar() {
                             : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium'
                         }`}
                       >
-                        <span className="truncate">{ws.name}</span>
+                        <div className="flex items-center gap-2 truncate pr-2">
+                          <span className="truncate">{ws.name}</span>
+                          <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded shrink-0 ${
+                            ws.tier === 'pro'
+                              ? ws.id === activeWorkspace?.id
+                                ? 'bg-amber-400 text-slate-900'
+                                : 'bg-[#FACC15] text-[#111E38]'
+                              : ws.tier === 'business'
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
+                          }`}>
+                            {ws.tier ? ws.tier.toUpperCase() : 'FREE'}
+                          </span>
+                        </div>
                         {ws.id === activeWorkspace?.id && (
-                          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <svg className="w-3.5 h-3.5 shrink-0 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -2171,7 +2185,16 @@ export default function Sidebar() {
           language={language}
           showNotification={showNotification}
           onUpgradeSuccess={(data) => {
-            if (activeWorkspace) {
+            // Reload all workspaces from server so ALL owned workspaces
+            // reflect the new tier (account-wide upgrade model).
+            if (fetchWorkspaces) {
+              fetchWorkspaces().then((list) => {
+                if (list && activeWorkspace) {
+                  const refreshed = list.find((w) => w.id === activeWorkspace.id);
+                  if (refreshed) switchWorkspace(refreshed);
+                }
+              });
+            } else if (activeWorkspace) {
               switchWorkspace({ ...activeWorkspace, tier: data.tier });
             }
           }}

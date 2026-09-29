@@ -337,6 +337,13 @@ def setup_db():
             db.rollback()
             print(f"[DB Migration] workspaces.tier migration note: {e}")
 
+        # Auto-migration: propagate highest subscription tier across all workspaces of each owner
+        try:
+            from services.tier_service import sync_all_users_workspace_tiers
+            sync_all_users_workspace_tiers(db)
+        except Exception as e:
+            print(f"[DB Migration] sync_all_users_workspace_tiers note: {e}")
+
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             salt = bcrypt.gensalt()

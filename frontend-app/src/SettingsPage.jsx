@@ -61,7 +61,7 @@ export default function SettingsPage({
   showNotification,
   tMsg,
 }) {
-  const { activeWorkspace, switchWorkspace, workspaces } = useAppContext();
+  const { activeWorkspace, switchWorkspace, workspaces, fetchWorkspaces } = useAppContext();
 
   // Helper for bilingual messages if not passed
   const msg = (en, id) => {
@@ -1787,7 +1787,14 @@ export default function SettingsPage({
           language={language}
           showNotification={showNotification}
           onUpgradeSuccess={(data) => {
-            if (activeWorkspace) {
+            if (fetchWorkspaces) {
+              fetchWorkspaces().then((list) => {
+                if (list && activeWorkspace) {
+                  const refreshed = list.find((w) => w.id === activeWorkspace.id);
+                  if (refreshed) switchWorkspace(refreshed);
+                }
+              });
+            } else if (activeWorkspace) {
               switchWorkspace({ ...activeWorkspace, tier: data.tier });
             }
           }}

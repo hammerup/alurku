@@ -94,6 +94,67 @@ def get_workspace_storage_usage_bytes(db: Session, workspace_id: int) -> int:
     return int(total_bytes or 0)
 
 
+def get_user_highest_tier(db: Session, username: str) -> str:
+    """Finds the user's highest tier across all workspaces they own."""
+    user_workspaces = db.query(Workspace).filter(Workspace.owner_username == username).all()
+    highest_tier = "free"
+    for ws in user_workspaces:
+        ws_tier = (getattr(ws, "tier", "free") or "free").lower().strip()
+        if ws_tier == "business":
+            return "business"
+        elif ws_tier == "pro":
+            highest_tier = "pro"
+    return highest_tier
+
+
+def get_effective_workspace_tier(db: Session, workspace: Workspace) -> str:
+    """
+    Returns the effective tier for a workspace.
+    In alurku's account-wide subscription model, every workspace owned by a user
+    inherits the highest tier of that owner's subscription.
+    """
+    if not workspace:
+        return "free"
+
+    direct_tier = (getattr(workspace, "tier", "free") or "free").lower().strip()
+    if direct_tier == "business":
+        return "business"
+
+    if workspace.owner_username:
+        owner_tier = get_user_highest_tier(db, workspace.owner_username)
+        tier_hierarchy = {"free": 0, "pro": 1, "business": 2}
+        if tier_hierarchy.get(owner_tier, 0) > tier_hierarchy.get(direct_tier, 0):
+            # Sync to DB so it persists and UI/meters see the same tier
+            workspace.tier = owner_tier
+            try:
+                db.commit()
+            except Exception:
+                db.rollback()
+            return owner_tier
+
+    return direct_tier
+
+
+def sync_all_users_workspace_tiers(db: Session):
+    """
+    Data migration/sync helper: ensures all workspaces owned by any user
+    are upgraded to that owner's highest tier.
+    """
+    workspaces = db.query(Workspace).all()
+    owners = set(ws.owner_username for ws in workspaces if ws.owner_username)
+    for owner in owners:
+        highest = get_user_highest_tier(db, owner)
+        if highest in ("pro", "business"):
+            owned = db.query(Workspace).filter(Workspace.owner_username == owner).all()
+            for ws in owned:
+                if ws.tier != highest:
+                    ws.tier = highest
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+
+
 def get_workspace_usage_summary(db: Session, workspace_id: int, username: str) -> Dict[str, Any]:
     """
     Returns full telemetry of limits vs active usage for the given workspace.
@@ -102,7 +163,7 @@ def get_workspace_usage_summary(db: Session, workspace_id: int, username: str) -
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace tidak ditemukan.")
 
-    tier = getattr(workspace, "tier", "free") or "free"
+    tier = get_effective_workspace_tier(db, workspace)
     cfg = get_tier_config(tier)
 
     # Active members count
@@ -177,17 +238,7 @@ def get_workspace_usage_summary(db: Session, workspace_id: int, username: str) -
 def enforce_can_create_workspace(db: Session, username: str):
     """Guards against exceeding maximum owned workspaces count."""
     owned_count = db.query(Workspace).filter(Workspace.owner_username == username).count()
-    # If user owns workspaces, find their highest tier workspace
-    user_workspaces = db.query(Workspace).filter(Workspace.owner_username == username).all()
-    highest_tier = "free"
-    for ws in user_workspaces:
-        ws_tier = getattr(ws, "tier", "free") or "free"
-        if ws_tier == "business":
-            highest_tier = "business"
-            break
-        elif ws_tier == "pro":
-            highest_tier = "pro"
-
+    highest_tier = get_user_highest_tier(db, username)
     cfg = get_tier_config(highest_tier)
     max_ws = cfg["max_workspaces_owned"]
 
@@ -200,7 +251,7 @@ def enforce_can_create_workspace(db: Session, username: str):
 
 def enforce_can_invite_member(db: Session, workspace: Workspace):
     """Guards against exceeding member count limit in the workspace."""
-    tier = getattr(workspace, "tier", "free") or "free"
+    tier = get_effective_workspace_tier(db, workspace)
     cfg = get_tier_config(tier)
     max_members = cfg["max_members_per_workspace"]
 
@@ -219,7 +270,7 @@ def enforce_can_create_project(db: Session, workspace_id: int):
     if not workspace:
         return
 
-    tier = getattr(workspace, "tier", "free") or "free"
+    tier = get_effective_workspace_tier(db, workspace)
     cfg = get_tier_config(tier)
     max_projects = cfg["max_projects_per_workspace"]
 
@@ -246,7 +297,7 @@ def enforce_can_upload_storage(db: Session, workspace_id: int, incoming_bytes: i
     if not workspace:
         return
 
-    tier = getattr(workspace, "tier", "free") or "free"
+    tier = get_effective_workspace_tier(db, workspace)
     cfg = get_tier_config(tier)
     max_bytes = cfg["max_storage_bytes"]
 

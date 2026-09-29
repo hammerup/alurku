@@ -241,6 +241,7 @@ function App() {
     setSelectedBoard,
     workspaces,
     switchWorkspace,
+    fetchWorkspaces,
     setIsCreateBoardOpen,
     setNewBoardName,
     isPrivateBoard,
@@ -2533,7 +2534,14 @@ function App() {
           language={language}
           showNotification={showNotification}
           onUpgradeSuccess={(data) => {
-            if (activeWorkspace) {
+            if (fetchWorkspaces) {
+              fetchWorkspaces().then((list) => {
+                if (list && activeWorkspace) {
+                  const refreshed = list.find((w) => w.id === activeWorkspace.id);
+                  if (refreshed) switchWorkspace(refreshed);
+                }
+              });
+            } else if (activeWorkspace) {
               switchWorkspace({ ...activeWorkspace, tier: data.tier });
             }
           }}

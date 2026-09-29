@@ -23,7 +23,7 @@ export default function UpgradeModal({
     if (!activeWorkspace?.id) return;
     if (tier === currentTier) {
       showNotification(
-        tMsg(`Your workspace is already on ${tier.toUpperCase()} plan.`, `Workspace Anda sudah berada pada paket ${tier.toUpperCase()}.`),
+        tMsg(`Your workspace is already on ${tier.toUpperCase()} plan.`, `Workspace kamu sudah berada pada paket ${tier.toUpperCase()}.`),
         'info'
       );
       return;
@@ -34,13 +34,27 @@ export default function UpgradeModal({
       const resp = await axios.put(`/api/workspaces/${activeWorkspace.id}/tier`, {
         tier: tier,
       });
-      showNotification(
-        tMsg(
-          `Successfully upgraded ${activeWorkspace.name} to ${resp.data.tier_name}!`,
-          `Selamat! Workspace ${activeWorkspace.name} berhasil ditingkatkan ke ${resp.data.tier_name}!`
-        ),
-        'success'
-      );
+      const count = resp.data.workspaces_updated || 1;
+      const isAccountWide = resp.data.account_wide;
+
+      if (isAccountWide) {
+        showNotification(
+          tMsg(
+            `All ${count} of your workspaces have been upgraded to ${resp.data.tier_name}!`,
+            `Semua ${count} workspace kamu berhasil ditingkatkan ke ${resp.data.tier_name}!`
+          ),
+          'success'
+        );
+      } else {
+        showNotification(
+          tMsg(
+            `Workspace "${activeWorkspace.name}" upgraded to ${resp.data.tier_name}!`,
+            `Workspace "${activeWorkspace.name}" berhasil ditingkatkan ke ${resp.data.tier_name}!`
+          ),
+          'success'
+        );
+      }
+
       if (onUpgradeSuccess) {
         onUpgradeSuccess(resp.data);
       }
@@ -158,16 +172,16 @@ export default function UpgradeModal({
           </button>
         </div>
 
-        {/* Workspace Scope Clarity Banner — Point 1 Fix */}
-        <div className="px-6 sm:px-8 py-3 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200/60 dark:border-amber-800/40 flex items-start gap-3 shrink-0">
-          <svg className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        {/* Account-Wide Scope Info Banner */}
+        <div className="px-6 sm:px-8 py-3 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200/60 dark:border-indigo-800/40 flex items-start gap-3 shrink-0">
+          <svg className="w-4 h-4 shrink-0 text-indigo-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
           </svg>
-          <p className="text-xs text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
+          <p className="text-xs text-indigo-800 dark:text-indigo-300 font-medium leading-relaxed">
             {language === 'id' ? (
-              <>Upgrade berlaku untuk: <span className="font-black">{activeWorkspace?.name || 'workspace ini'}</span>. Workspace lain yang kamu miliki tetap pada paket masing-masing, kecuali diupgrade secara terpisah.</>
+              <>Upgrade ke <span className="font-black">Pro</span> atau <span className="font-black">Business</span> akan otomatis berlaku untuk <span className="font-black">semua workspace</span> yang kamu miliki — paket berlaku di seluruh akun, bukan hanya satu workspace.</>
             ) : (
-              <>Upgrading workspace: <span className="font-black">{activeWorkspace?.name || 'this workspace'}</span>. Other workspaces you own will keep their current plan unless upgraded separately.</>
+              <>Upgrading to <span className="font-black">Pro</span> or <span className="font-black">Business</span> automatically applies to <span className="font-black">all your workspaces</span> — the subscription is account-wide, not just for one workspace.</>
             )}
           </p>
         </div>

@@ -155,14 +155,21 @@ def test_workspace_creation_limits_per_tier():
     assert resp_upgrade.status_code == 200
     assert resp_upgrade.json()["tier"] == "pro"
 
-    # 4. Under Pro tier, creating 2nd and 3rd workspace MUST succeed
+    # 4. Under Pro tier, creating 2nd and 3rd workspace MUST succeed and inherit Pro tier
     resp_ws_2 = client.post("/api/workspaces", json={"name": "Workspace 2 - Pro Allowed"}, headers=headers)
     assert resp_ws_2.status_code == 200
+    assert resp_ws_2.json()["workspace"]["tier"] == "pro"
     ws_2_id = resp_ws_2.json()["workspace"]["id"]
 
     resp_ws_3 = client.post("/api/workspaces", json={"name": "Workspace 3 - Pro Allowed"}, headers=headers)
     assert resp_ws_3.status_code == 200
+    assert resp_ws_3.json()["workspace"]["tier"] == "pro"
     ws_3_id = resp_ws_3.json()["workspace"]["id"]
+
+    # Verify all workspaces are now Pro
+    resp_ws_check = client.get("/api/workspaces", headers=headers)
+    assert resp_ws_check.status_code == 200
+    assert all(w["tier"] == "pro" for w in resp_ws_check.json())
 
     # 5. Attempting to create 4th workspace under Pro tier MUST fail with 403
     resp_ws_4_fail = client.post("/api/workspaces", json={"name": "Workspace 4 - Should Fail"}, headers=headers)
@@ -170,11 +177,19 @@ def test_workspace_creation_limits_per_tier():
     assert "Batas Paket Tercapai" in resp_ws_4_fail.json()["detail"]
     assert "hanya mengizinkan maksimal 3 Workspace" in resp_ws_4_fail.json()["detail"]
 
-    # 6. Upgrade to Business tier (unlimited workspaces)
+    # 6. Upgrade to Business tier (unlimited workspaces) — propagates account-wide
     resp_upgrade_biz = client.put(f"/api/workspaces/{ws_1['id']}/tier", json={"tier": "business"}, headers=headers)
     assert resp_upgrade_biz.status_code == 200
+    assert resp_upgrade_biz.json()["tier"] == "business"
+    assert resp_upgrade_biz.json()["workspaces_updated"] == 3
 
-    # 7. Creating 4th workspace under Business tier MUST succeed
+    # All existing workspaces must now be business
+    resp_ws_biz_check = client.get("/api/workspaces", headers=headers)
+    assert resp_ws_biz_check.status_code == 200
+    assert all(w["tier"] == "business" for w in resp_ws_biz_check.json())
+
+    # 7. Creating 4th workspace under Business tier MUST succeed and inherit Business tier
     resp_ws_4 = client.post("/api/workspaces", json={"name": "Workspace 4 - Business Allowed"}, headers=headers)
     assert resp_ws_4.status_code == 200
     assert resp_ws_4.json()["workspace"]["name"] == "Workspace 4 - Business Allowed"
+    assert resp_ws_4.json()["workspace"]["tier"] == "business"

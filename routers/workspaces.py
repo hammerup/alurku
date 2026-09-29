@@ -12,6 +12,8 @@ from services.tier_service import (
     enforce_can_invite_member,
     get_workspace_usage_summary,
     get_tier_config,
+    get_effective_workspace_tier,
+    get_user_highest_tier,
 )
 
 
@@ -73,9 +75,11 @@ def list_workspaces(current_user: str = Depends(get_current_user), db: Session =
         user = db.query(User).filter(User.username == current_user).first()
         full_name = user.full_name if user else current_user
         
+        owner_tier = get_user_highest_tier(db, current_user)
         new_ws = Workspace(
             name=f"Workspace Pribadi {full_name}",
             owner_username=current_user,
+            tier=owner_tier,
             created_at=datetime.now()
         )
         db.add(new_ws)
@@ -99,7 +103,7 @@ def list_workspaces(current_user: str = Depends(get_current_user), db: Session =
     for ws in workspaces:
         # Get member count for CRM tracking
         member_count = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == ws.id).count()
-        tier = getattr(ws, "tier", "free") or "free"
+        tier = get_effective_workspace_tier(db, ws)
         result.append({
             "id": ws.id,
             "name": ws.name,
@@ -120,17 +124,21 @@ def create_workspace(
     """
     Membuat workspace baru dan mendaftarkan pembuat sebagai Admin.
     Menegakkan batas kuota kepemilikan workspace sesuai tier akun.
+    Workspace baru otomatis mewarisi paket langganan tertinggi dari pemilik (account-wide subscription).
     """
     if not payload.name.strip():
         raise HTTPException(status_code=400, detail="Workspace name cannot be empty")
 
     # Enforce maximum owned workspaces
     enforce_can_create_workspace(db, current_user)
+    
+    # Inherit owner's account tier!
+    owner_tier = get_user_highest_tier(db, current_user)
         
     new_ws = Workspace(
         name=payload.name.strip(),
         owner_username=current_user,
-        tier="free"
+        tier=owner_tier
     )
     db.add(new_ws)
     db.flush()
@@ -578,8 +586,12 @@ def update_workspace_tier(
     db: Session = Depends(get_db),
 ):
     """
-    Mengubah paket langganan (tier) workspace. Hanya Owner workspace atau Superadmin yang diizinkan.
-    Mendukung aktivasi instant sandbox upgrade ke Pro atau Business.
+    Mengubah paket langganan (tier) workspace.
+    Hanya Owner workspace atau Superadmin yang diizinkan.
+
+    Jika upgrade ke Pro atau Business, SEMUA workspace milik user akan ikut diupgrade
+    (account-wide subscription model). Jika downgrade ke Free, hanya workspace yang
+    diminta yang diubah sebagai langkah keamanan.
     """
     workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
     if not workspace:
@@ -596,7 +608,19 @@ def update_workspace_tier(
     if target_tier not in ["free", "pro", "business"]:
         raise HTTPException(status_code=400, detail="Paket tier tidak valid. Pilih: 'free', 'pro', atau 'business'.")
 
-    workspace.tier = target_tier
+    # Determine the owner whose workspaces to update.
+    # Superadmin acting on behalf of another user's workspace uses that workspace's owner.
+    owner_username = workspace.owner_username
+
+    workspaces_updated = 0
+
+    # Account-wide subscription change: apply to ALL workspaces owned by this user
+    # so the subscription tier is 100% consistent across the entire account.
+    owned_workspaces = db.query(Workspace).filter(Workspace.owner_username == owner_username).all()
+    for ws in owned_workspaces:
+        ws.tier = target_tier
+        workspaces_updated += 1
+
     db.commit()
     db.refresh(workspace)
 
@@ -617,10 +641,12 @@ def update_workspace_tier(
         pass
 
     return {
-        "message": f"Paket workspace berhasil diubah ke {cfg['tier_name']}.",
+        "message": f"Paket berhasil diubah ke {cfg['tier_name']}. {workspaces_updated} workspace diperbarui.",
         "workspace_id": workspace.id,
         "tier": workspace.tier,
-        "tier_name": cfg["tier_name"]
+        "tier_name": cfg["tier_name"],
+        "workspaces_updated": workspaces_updated,
+        "account_wide": workspaces_updated > 1,
     }
 
 
