@@ -1,8 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks, Request as FastAPIRequest
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func, text
 import re
 import json
+import csv
+import io
 from datetime import datetime, timedelta
 import os
 
@@ -725,6 +728,292 @@ def get_light_tasks(
         )
 
     return {"tasks": res}
+
+
+@router.get("/api/boards/{board_id}/export-csv")
+def export_board_csv(
+    board_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    board = db.query(Board).filter(Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=404, detail="Board not found")
+    if not check_board_access(db, board_id, current_user):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    tasks = (
+        db.query(Request)
+        .filter(
+            Request.board_id == board_id,
+            or_(Request.requester == None, Request.requester != "System"),
+            or_(
+                Request.project_name == None,
+                Request.project_name != "[SYSTEM] PROJECT CHAT",
+            ),
+        )
+        .order_by(Request.id.asc())
+        .all()
+    )
+
+    output = io.StringIO()
+    output.write("\ufeff")
+    writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+    headers = [
+        "ID",
+        "Judul Tugas",
+        "Pemohon",
+        "Kategori",
+        "Status",
+        "Prioritas",
+        "Start Date",
+        "Deadline",
+        "Estimasi Jam",
+        "Subtasks",
+    ]
+    writer.writerow(headers)
+
+    for task in tasks:
+        subtasks = (
+            db.query(Subtask)
+            .filter(Subtask.request_id == task.id)
+            .order_by(Subtask.position.asc(), Subtask.id.asc())
+            .all()
+        )
+        subtasks_str = "; ".join(
+            f"[{'x' if s.is_done else ' '}] {s.task_name}" + (f" (@{s.assignee})" if s.assignee else "")
+            for s in subtasks if s.task_name
+        )
+
+        start_date_str = ""
+        if task.start_date:
+            start_date_str = task.start_date.strftime("%Y-%m-%d %H:%M:%S") if hasattr(task.start_date, "strftime") else str(task.start_date)
+        deadline_str = ""
+        if task.deadline:
+            deadline_str = task.deadline.strftime("%Y-%m-%d %H:%M:%S") if hasattr(task.deadline, "strftime") else str(task.deadline)
+
+        etc_val = task.etc if task.etc is not None else 2.0
+        if isinstance(etc_val, float) and etc_val.is_integer():
+            etc_val = int(etc_val)
+
+        writer.writerow([
+            task.id,
+            task.project_name or "",
+            task.requester or "",
+            task.category or "",
+            task.status or "Pending",
+            task.impact or "Medium",
+            start_date_str,
+            deadline_str,
+            etc_val,
+            subtasks_str,
+        ])
+
+    csv_content = output.getvalue()
+    filename = f"alurku-board-{board_id}-tasks.csv"
+
+    return StreamingResponse(
+        io.BytesIO(csv_content.encode("utf-8")),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        },
+    )
+
+
+@router.post("/api/boards/{board_id}/import-csv")
+async def import_board_csv(
+    board_id: int,
+    file: UploadFile = File(...),
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    board = db.query(Board).filter(Board.id == board_id).first()
+    if not board:
+        raise HTTPException(status_code=404, detail="Board not found")
+    if not check_board_access(db, board_id, current_user):
+        raise HTTPException(status_code=403, detail="Access denied")
+    if not is_board_writer(db, board_id, current_user):
+        raise HTTPException(
+            status_code=403,
+            detail="Mode Pengawas Workspace (Read-Only): Anda tidak memiliki izin menulis di proyek ini."
+        )
+
+    content_bytes = await file.read()
+    if not content_bytes:
+        raise HTTPException(status_code=400, detail="File CSV kosong.")
+
+    try:
+        text_content = content_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        try:
+            text_content = content_bytes.decode("latin-1")
+        except Exception:
+            raise HTTPException(status_code=400, detail="Format encoding file tidak didukung.")
+
+    lines = [l for l in text_content.splitlines() if l.strip()]
+    if not lines:
+        raise HTTPException(status_code=400, detail="File CSV tidak memiliki baris data.")
+
+    first_line = lines[0]
+    delimiter = ";" if first_line.count(";") > first_line.count(",") else ","
+
+    reader = csv.reader(lines, delimiter=delimiter)
+    try:
+        raw_headers = next(reader)
+    except StopIteration:
+        raise HTTPException(status_code=400, detail="Header CSV tidak ditemukan.")
+
+    header_map = {}
+    for idx, h in enumerate(raw_headers):
+        clean_h = h.strip().lower().replace("_", " ")
+        if clean_h in ("id", "task id", "no"):
+            header_map["id"] = idx
+        elif clean_h in ("judul tugas", "judul", "task name", "task", "title", "nama tugas"):
+            header_map["project_name"] = idx
+        elif clean_h in ("pemohon", "requester", "assignee", "pekerja"):
+            header_map["requester"] = idx
+        elif clean_h in ("kategori", "category"):
+            header_map["category"] = idx
+        elif clean_h in ("status",):
+            header_map["status"] = idx
+        elif clean_h in ("prioritas", "priority", "impact"):
+            header_map["impact"] = idx
+        elif clean_h in ("start date", "tanggal mulai", "start"):
+            header_map["start_date"] = idx
+        elif clean_h in ("deadline", "tenggat", "tenggat waktu", "due date"):
+            header_map["deadline"] = idx
+        elif clean_h in ("estimasi jam", "etc", "estimasi", "etc (hrs)", "hours"):
+            header_map["etc"] = idx
+        elif clean_h in ("subtasks", "sub-task", "sub task", "subtugas"):
+            header_map["subtasks"] = idx
+        elif clean_h in ("deskripsi", "description", "desc"):
+            header_map["description"] = idx
+
+    if "project_name" not in header_map:
+        raise HTTPException(
+            status_code=400,
+            detail="Kolom 'Judul Tugas' atau 'Task Name' wajib ada di file CSV."
+        )
+
+    def parse_date_str(val: str):
+        if not val or not val.strip():
+            return None
+        val = val.strip()
+        formats = [
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%Y-%m-%d",
+            "%d/%m/%Y %H:%M:%S",
+            "%d/%m/%Y %H:%M",
+            "%d/%m/%Y",
+            "%Y/%m/%d",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%dT%H:%M",
+        ]
+        for fmt in formats:
+            try:
+                return datetime.strptime(val, fmt)
+            except ValueError:
+                continue
+        return None
+
+    board_categories = []
+    if board.categories:
+        try:
+            board_categories = json.loads(board.categories)
+        except Exception:
+            board_categories = []
+    default_category = board_categories[0] if board_categories else "Development"
+
+    created_tasks = []
+    now = datetime.utcnow()
+
+    for row_idx, row in enumerate(reader):
+        if not row or not any(field.strip() for field in row):
+            continue
+
+        def get_val(key, default=""):
+            idx = header_map.get(key)
+            if idx is not None and idx < len(row):
+                return row[idx].strip()
+            return default
+
+        project_name = get_val("project_name")
+        if not project_name:
+            continue
+
+        requester = get_val("requester", f"@{current_user}")
+        category = get_val("category", default_category)
+        status = get_val("status", "Pending")
+        impact = get_val("impact", "Medium")
+        desc = get_val("description", "")
+        start_date_val = parse_date_str(get_val("start_date"))
+        deadline_val = parse_date_str(get_val("deadline"))
+
+        etc_str = get_val("etc", "2")
+        try:
+            etc_val = float(etc_str)
+        except (ValueError, TypeError):
+            etc_val = 2.0
+
+        task_ts = (now + timedelta(seconds=row_idx)).strftime("%Y-%m-%d %H:%M:%S")
+
+        new_task = Request(
+            board_id=board_id,
+            workspace_id=board.workspace_id,
+            timestamp=task_ts,
+            project_name=project_name,
+            requester=requester,
+            category=category,
+            description=desc,
+            supporting_access="",
+            start_date=start_date_val,
+            deadline=deadline_val,
+            impact=impact,
+            etc=etc_val,
+            status=status,
+            owner_username=current_user,
+        )
+        setattr(new_task, "recurring", "none")
+        db.add(new_task)
+        db.flush()
+
+        subtasks_raw = get_val("subtasks", "")
+        if subtasks_raw:
+            subtask_items = [st.strip() for st in re.split(r'[;\n|]+', subtasks_raw) if st.strip()]
+            for s_idx, st_item in enumerate(subtask_items):
+                is_done = 1 if re.match(r'^\[[xX]\]', st_item) else 0
+                cleaned_name = re.sub(r'^\[[ xX]\]\s*', '', st_item)
+
+                assignee_match = re.search(r'\(@([a-zA-Z0-9_.-]+)\)', cleaned_name)
+                assignee = None
+                if assignee_match:
+                    assignee = assignee_match.group(1)
+                    cleaned_name = re.sub(r'\(@[a-zA-Z0-9_.-]+\)', '', cleaned_name).strip()
+
+                if cleaned_name:
+                    db.add(
+                        Subtask(
+                            request_id=new_task.id,
+                            task_name=cleaned_name,
+                            is_done=is_done,
+                            assignee=assignee,
+                            position=s_idx,
+                        )
+                    )
+
+        created_tasks.append(new_task.id)
+
+    board.last_activity_date = datetime.utcnow()
+    db.commit()
+
+    return {
+        "success": True,
+        "imported_count": len(created_tasks),
+        "task_ids": created_tasks,
+        "message": f"Berhasil mengimpor {len(created_tasks)} tugas."
+    }
 
 
 @router.post("/api/boards/{board_id}/tasks")

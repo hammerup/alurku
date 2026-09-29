@@ -1696,6 +1696,8 @@ function App() {
                         cardTheme={cardTheme}
                         isTrashHovered={isTrashHovered}
                         language={language}
+                        fetchTasks={fetchTasks}
+                        showNotification={showNotification}
                       />
                     )}
 
