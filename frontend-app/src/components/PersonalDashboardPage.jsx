@@ -127,12 +127,12 @@ export default function PersonalDashboardPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto custom-scrollbar">
       {/* Top Banner Header */}
-      <div className="bg-white dark:bg-[#121B2D] border-b border-neutral-200/70 dark:border-neutral-800/60 px-6 py-6 shrink-0">
+      <div className="bg-white dark:bg-[#121B2D] border-b border-neutral-200/70 dark:border-neutral-800/60 px-4 sm:px-6 py-4 sm:py-6 shrink-0">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <Avatar username={currentUser} size={40} avatarUrl={avatarsMap?.[currentUser]} />
             <div>
-              <h1 className="text-xl font-extrabold text-[#111E38] dark:text-white tracking-tight">
+              <h1 className="text-lg sm:text-xl font-extrabold text-[#111E38] dark:text-white tracking-tight">
                 {tMsg(`Welcome back, ${currentUser}!`, `Selamat datang kembali, ${currentUser}!`)}
               </h1>
               <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
@@ -146,7 +146,7 @@ export default function PersonalDashboardPage() {
               window.history.pushState({}, '', '/my-tasks');
               window.dispatchEvent(new CustomEvent('alurku-navigate'));
             }}
-            className="flex items-center gap-2 px-3 py-2 bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] text-xs font-bold rounded-xl shadow-xs hover:opacity-90 transition-all"
+            className="flex items-center gap-2 px-3 py-2 bg-[#111E38] text-[#FACC15] dark:bg-[#FACC15] dark:text-[#111E38] text-xs font-bold rounded-xl shadow-xs hover:opacity-90 transition-all cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">task_alt</span>
             <span>{tMsg('View All My Tasks', 'Lihat Semua Tugas Saya')}</span>
@@ -154,7 +154,7 @@ export default function PersonalDashboardPage() {
         </div>
       </div>
 
-      <div className="p-6 space-y-6 max-w-7xl w-full mx-auto">
+      <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl w-full mx-auto">
         {/* Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/70 dark:border-neutral-800/60 p-4 rounded-xl shadow-2xs flex items-center justify-between">

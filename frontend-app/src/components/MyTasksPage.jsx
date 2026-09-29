@@ -675,7 +675,7 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
         <div className={`flex items-center gap-3 shrink-0 transition-opacity duration-300 ${isCompleting ? 'opacity-30' : ''}`}>
           {/* Avatar Stack */}
           {visibleAvatars.length > 0 && (
-            <div className="flex items-center -space-x-2">
+            <div className="hidden sm:flex items-center -space-x-2">
               {visibleAvatars.map((name, i) => (
                 <div
                   key={i}
@@ -755,10 +755,10 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
       `}</style>
 
       {/* Page Header */}
-      <div className="bg-white dark:bg-[#121B2D] border-b border-neutral-200/70 dark:border-neutral-800/60 px-6 py-4 shrink-0">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="bg-white dark:bg-[#121B2D] border-b border-neutral-200/70 dark:border-neutral-800/60 px-4 sm:px-6 py-3.5 sm:py-4 shrink-0">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap">
           <div>
-            <h1 className="text-xl font-extrabold text-[#111E38] dark:text-white tracking-tight">
+            <h1 className="text-lg sm:text-xl font-extrabold text-[#111E38] dark:text-white tracking-tight">
               {tMsg('My Tasks', 'Tugas Saya')}
             </h1>
             <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
@@ -766,16 +766,16 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             {/* Search */}
-            <div className="relative">
+            <div className="relative flex-1 sm:flex-initial">
               <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[15px] text-neutral-400 pointer-events-none">search</span>
               <input
                 type="text"
                 placeholder={tMsg('Search tasks...', 'Cari tugas...')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-lg outline-none focus:border-[#FACC15] text-[#111E38] dark:text-neutral-100 w-44 transition-colors"
+                className="pl-8 pr-3 py-1.5 text-xs bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 rounded-lg outline-none focus:border-[#FACC15] text-[#111E38] dark:text-neutral-100 w-full sm:w-44 transition-colors"
               />
             </div>
 
@@ -837,7 +837,7 @@ export default function MyTasksPage({ initialFilter = 'all' }) {
       </div>
 
       {/* Task List */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-3.5 sm:py-4 custom-scrollbar">
         {filteredTasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <span className="material-symbols-outlined text-5xl text-neutral-300 dark:text-neutral-700 mb-3">task_alt</span>

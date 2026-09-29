@@ -643,7 +643,7 @@ export default function WorkspaceOverview() {
   }
 
   return (
-    <div className="flex-1 p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
+    <div className="flex-1 p-4 sm:p-6 md:p-8 bg-[#F3F4F6] dark:bg-[#0d0f11] overflow-y-auto w-full h-full custom-scrollbar">
       {/* Page Title & Hero */}
       <section className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -670,7 +670,7 @@ export default function WorkspaceOverview() {
                 </form>
               ) : (
                 <div className="flex items-center gap-3">
-                  <h1 className="text-3xl md:text-4xl font-black text-[#111E38] dark:text-white tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#111E38] dark:text-white tracking-tight">
                     {activeWorkspace?.name || 'Main Workspace'}
                   </h1>
                   {activeWorkspace?.owner_username === currentUser && (

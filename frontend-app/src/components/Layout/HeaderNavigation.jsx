@@ -171,7 +171,8 @@ export default function HeaderNavigation({
         {/* Hamburger Menu on Mobile */}
         <button
           onClick={() => setIsMobileMenuOpen(true)}
-          className="md:hidden p-1.5 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md transition-colors"
+          className="md:hidden p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer min-w-10 min-h-10 flex items-center justify-center -ml-1"
+          aria-label={tMsg('Open Sidebar Menu', 'Buka Menu Sidebar')}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -567,7 +568,7 @@ export default function HeaderNavigation({
               {/* Invisible overlay to close on click outside */}
               <div className="fixed inset-0 z-40" onClick={() => setIsNotifOpen(false)}></div>
               <div 
-                className="absolute right-0 mt-3 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl z-50 flex flex-col max-h-128 overflow-hidden animate-fadeIn w-80 sm:w-96"
+                className="absolute right-0 mt-3 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-2xl z-50 flex flex-col max-h-128 overflow-hidden animate-fadeIn w-[calc(100vw-2rem)] max-w-sm sm:w-96"
               >
                 <div className="p-3.5 border-b border-neutral-100 dark:border-neutral-800/80 flex justify-between items-center bg-white/50 dark:bg-neutral-900/50">
                   <h3 className="font-black text-sm text-[#111E38] dark:text-white flex items-center gap-1.5">

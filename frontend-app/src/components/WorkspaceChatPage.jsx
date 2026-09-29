@@ -669,6 +669,7 @@ export default function WorkspaceChatPage() {
     });
     setIsNewDmOpen(false);
     setNewDmSearch('');
+    setIsMobileSidebarOpen(false);
   };
 
   const deleteWorkspaceMessage = (msgId) => {
@@ -841,6 +842,8 @@ export default function WorkspaceChatPage() {
         activeChat={activeChat}
         setActiveChat={setActiveChat}
         isDesktopSidebarOpen={isDesktopSidebarOpen}
+        isMobileSidebarOpen={isMobileSidebarOpen}
+        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
         sidebarWidth={sidebarWidth}
         boards={boards}
         boardSearchQuery={boardSearchQuery}

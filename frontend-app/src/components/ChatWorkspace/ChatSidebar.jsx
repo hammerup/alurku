@@ -86,6 +86,8 @@ export default function ChatSidebar({
   activeChat,
   setActiveChat,
   isDesktopSidebarOpen,
+  isMobileSidebarOpen,
+  setIsMobileSidebarOpen,
   sidebarWidth,
   boards,
   boardSearchQuery,
@@ -117,6 +119,13 @@ export default function ChatSidebar({
   tasks,
   onlineUsers,
 }) {
+  const handleSelectChat = (chat) => {
+    setActiveChat(chat);
+    if (setIsMobileSidebarOpen) {
+      setIsMobileSidebarOpen(false);
+    }
+  };
+
   const unreadInboxChatsCount = React.useMemo(() => {
     return (inboxChats || []).filter(chat => {
       if (chat.latest_sender === currentUser) return false;
@@ -160,18 +169,38 @@ export default function ChatSidebar({
   }, [filteredUsers, currentUser]);
 
   return (
-    <div
-      className={`bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col h-full transition-all duration-300 ease-in-out ${
-        isDesktopSidebarOpen ? 'w-[288px]' : 'w-0 overflow-hidden border-r-0'
-      }`}
-      style={isDesktopSidebarOpen ? { width: sidebarWidth } : {}}
-    >
-      {/* Search & Filters */}
-      <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
-        <h3 className="font-black text-base text-[#111E38] dark:text-white mb-3 flex items-center gap-2">
-          <IconChat className="w-5 h-5 text-[#FACC15] shrink-0" />
-          <span>{tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}</span>
-        </h3>
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-xs transition-opacity"
+          onClick={() => setIsMobileSidebarOpen && setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      <div
+        className={`bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col h-full transition-transform duration-300 ease-in-out fixed inset-y-0 left-0 z-50 w-72 sm:w-80 shadow-2xl md:static md:z-auto md:shadow-none md:translate-x-0 ${
+          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        } ${
+          isDesktopSidebarOpen ? 'md:w-[288px]' : 'md:w-0 md:overflow-hidden md:border-r-0'
+        }`}
+        style={isDesktopSidebarOpen && typeof window !== 'undefined' && window.innerWidth >= 768 ? { width: sidebarWidth } : {}}
+      >
+        {/* Search & Filters */}
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-black text-base text-[#111E38] dark:text-white flex items-center gap-2">
+              <IconChat className="w-5 h-5 text-[#FACC15] shrink-0" />
+              <span>{tMsg('Workspace Chat', 'Obrolan Ruang Kerja')}</span>
+            </h3>
+            <button
+              onClick={() => setIsMobileSidebarOpen && setIsMobileSidebarOpen(false)}
+              className="md:hidden p-1.5 text-neutral-400 hover:text-black dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              title={tMsg('Close', 'Tutup')}
+            >
+              <IconClose className="w-4 h-4" />
+            </button>
+          </div>
         <div className="relative mb-3">
           <IconSearch className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
           <input
@@ -247,7 +276,7 @@ export default function ChatSidebar({
                       <button
                         key={`global-search-proj-${b.id}`}
                         onClick={() => {
-                          setActiveChat({ type: 'project', id: b.id, name: `${b.name} (General)`, board_id: b.id });
+                          handleSelectChat({ type: 'project', id: b.id, name: `${b.name} (General)`, board_id: b.id });
                           setBoardSearchQuery('');
                         }}
                         className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
@@ -275,7 +304,7 @@ export default function ChatSidebar({
                       <button
                         key={`global-search-task-${t.id}`}
                         onClick={() => {
-                          setActiveChat({ type: 'task', id: t.id, name: t.project_name, board_id: t.board_id, is_involved: t.is_involved });
+                          handleSelectChat({ type: 'task', id: t.id, name: t.project_name, board_id: t.board_id, is_involved: t.is_involved });
                           setBoardSearchQuery('');
                         }}
                         className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
@@ -313,9 +342,9 @@ export default function ChatSidebar({
                           key={`global-search-msg-${c.timestamp}-${c.latest_sender}`}
                           onClick={() => {
                             if (c.is_dm) {
-                              setActiveChat({ type: 'dm', id: c.partner_username, name: c.partner_username, partner: c.partner_username });
+                              handleSelectChat({ type: 'dm', id: c.partner_username, name: c.partner_username, partner: c.partner_username });
                             } else {
-                              setActiveChat({
+                              handleSelectChat({
                                 type: c.is_project_chat ? 'project' : 'task',
                                 id: c.is_project_chat ? c.board_id : c.task_id,
                                 name: c.is_project_chat ? `${c.board_name} (General)` : c.project_name,
@@ -478,7 +507,7 @@ export default function ChatSidebar({
 
                       return (
                         <button
-                          onClick={() => setActiveChat({ type: 'project', id: board.id, name: `${board.name} (General)`, board_id: board.id })}
+                          onClick={() => handleSelectChat({ type: 'project', id: board.id, name: `${board.name} (General)`, board_id: board.id })}
                           className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                             activeChat?.type === 'project' && activeChat?.id === board.id
                               ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
@@ -515,7 +544,7 @@ export default function ChatSidebar({
                       return (
                         <button
                           key={`tree-task-${t.id}`}
-                          onClick={() => setActiveChat({ type: 'task', id: t.id, name: t.project_name, board_id: board.id, is_involved: t.is_involved })}
+                          onClick={() => handleSelectChat({ type: 'task', id: t.id, name: t.project_name, board_id: board.id, is_involved: t.is_involved })}
                           className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
                             activeChat?.type === 'task' && activeChat?.id === t.id
                               ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
@@ -606,7 +635,7 @@ export default function ChatSidebar({
           {dmConversations.map((dm) => (
             <div key={`dm-sidebar-${dm.partner}`} className="flex items-center group">
               <button
-                onClick={() => setActiveChat({ type: 'dm', id: dm.partner, name: dm.partner, partner: dm.partner })}
+                onClick={() => handleSelectChat({ type: 'dm', id: dm.partner, name: dm.partner, partner: dm.partner })}
                 className={`flex-1 text-left px-2 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer ${
                   activeChat?.type === 'dm' && activeChat?.id === dm.partner
                     ? 'bg-[#FACC15]/20 text-[#111E38] dark:text-[#FACC15] font-bold border-l-2 border-[#FACC15]'
@@ -639,5 +668,6 @@ export default function ChatSidebar({
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -1006,7 +1006,9 @@ export default function Sidebar() {
       {/* ════════════════════════════════════════════════════════════════════════ */}
       {/* ALURKU DUAL SIDEBAR: DOCK RAIL (COLUMN 1) + CONTENT PANEL (COLUMN 2) */}
       {/* ════════════════════════════════════════════════════════════════════════ */}
-      <div className="flex md:sticky md:top-20 md:h-[calc(100vh-5rem)] md:shrink-0 z-90 md:z-50 select-none">
+      <div className={`fixed inset-y-0 left-0 z-90 flex transition-transform duration-300 ease-in-out md:sticky md:top-20 md:h-[calc(100vh-5rem)] md:shrink-0 md:z-50 md:translate-x-0 select-none ${
+        isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'
+      }`}>
         
         {/* ── COLUMN 1: MASTER BIG CATEGORY ICON DOCK RAIL (~56PX) ── */}
         <aside className="w-14 bg-[#EBECEF] dark:bg-[#090b0d] border-r border-neutral-300/60 dark:border-neutral-800/80 flex flex-col items-center py-3 gap-2 shrink-0">
@@ -1177,8 +1179,6 @@ export default function Sidebar() {
             isCollapsed
               ? 'w-0 opacity-0 pointer-events-none border-r-0 border-transparent'
               : 'w-60 md:w-64 opacity-100'
-          } ${
-            isMobileMenuOpen ? 'fixed inset-y-0 left-14 z-90 translate-x-0' : ''
           }`}
         >
           {/* ── HEADER ROW 1: WORKSPACE SELECTOR DROPDOWN + WORKSPACE CHAT BUTTON ── */}
@@ -1333,6 +1333,17 @@ export default function Sidebar() {
                   {totalUnreadChats > 9 ? '9+' : totalUnreadChats}
                 </span>
               )}
+            </button>
+
+            {/* Mobile Explicit Close Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="md:hidden p-1.5 rounded-lg text-neutral-500 hover:text-black dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-800/60 transition-colors shrink-0 ml-0.5 cursor-pointer"
+              title={tMsg('Close Sidebar', 'Tutup Sidebar')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
 

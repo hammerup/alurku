@@ -495,7 +495,7 @@ export default function SettingsPage({
       </div>
 
       {/* Main Settings Content Container */}
-      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 flex-1">
+      <div className="max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 md:py-10 flex-1">
         {/* Page Title & Subtitle */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -519,10 +519,35 @@ export default function SettingsPage({
           </div>
         </div>
 
+        {/* Mobile Horizontal Sub-Navigation (< lg) */}
+        <div className="lg:hidden w-full mb-4">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 custom-scrollbar">
+            {allTabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={`mobile-tab-${tab.id}`}
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#111E38] text-white dark:bg-[#FACC15] dark:text-[#111E38] shadow-xs'
+                      : 'bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 text-slate-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                >
+                  <span className={isActive ? 'text-[#FACC15] dark:text-[#111E38]' : 'text-slate-400 dark:text-slate-500'}>
+                    {tab.icon}
+                  </span>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Two-Column Layout: Sidebar Tabs + Card Content */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-          {/* Sub-Navigation Sidebar */}
-          <div className="w-full lg:w-72 shrink-0 space-y-6">
+          {/* Sub-Navigation Sidebar (Desktop) */}
+          <div className="hidden lg:block w-72 shrink-0 space-y-6">
             {/* Category 1: Personal Settings */}
             <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800 rounded-2xl p-3 shadow-xs">
               <div className="px-3 py-1.5 text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">

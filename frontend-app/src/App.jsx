@@ -1597,7 +1597,7 @@ function App() {
 
               <main
                 ref={scrollRef}
-                className={`px-6 pb-4 flex flex-col ${
+                className={`px-3 sm:px-6 pb-4 flex flex-col ${
                   selectedBoard && viewMode === 'kanban'
                     ? 'flex-1 min-h-0 overflow-auto sm:overflow-x-auto sm:overflow-y-hidden'
                     : 'h-auto'
