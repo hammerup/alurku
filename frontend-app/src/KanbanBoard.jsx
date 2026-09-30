@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { IconPlus, Avatar } from './SharedUI';
 import { getTaskAssignee } from './useAppLogic';
 import { HighlightText } from './Utils';
+import { getTagColor, parseTaskTags } from './components/TagInput';
+import ImportCsvModal from './components/ImportCsvModal';
 
 export default function KanbanBoard({
   activeColumns,
@@ -26,6 +29,8 @@ export default function KanbanBoard({
   isTrashHovered,
   language,
   clonedTaskIds,
+  fetchTasks,
+  showNotification,
 }) {
   const [expandedArchives, setExpandedArchives] = useState({});
   const [expandedSubtasksMap, setExpandedSubtasksMap] = useState({});
@@ -40,6 +45,43 @@ export default function KanbanBoard({
   };
 
   const tMsg = (en, id) => (language === 'id' ? id : en);
+
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCSV = async () => {
+    if (!selectedBoard || selectedBoard.id === 'global') {
+      if (showNotification) {
+        showNotification(language === 'id' ? 'Silakan pilih proyek spesifik terlebih dahulu.' : 'Please select a specific project first.', 'warning');
+      }
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const res = await axios.get(`/api/boards/${selectedBoard.id}/export-csv`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `alurku-board-${selectedBoard.id}-tasks.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      if (showNotification) {
+        showNotification(language === 'id' ? 'File CSV berhasil diunduh!' : 'CSV file downloaded successfully!', 'success');
+      }
+    } catch (err) {
+      console.error('Export error:', err);
+      if (showNotification) {
+        showNotification(language === 'id' ? 'Gagal mengunduh CSV tugas.' : 'Failed to download task CSV.', 'error');
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Column Status Dot Indicator Helper
   const getColumnDotColor = (name) => {
@@ -62,7 +104,49 @@ export default function KanbanBoard({
   };
 
   return (
-    <div className="flex-1 flex gap-5 sm:gap-6 items-stretch pb-4 w-max min-w-full min-h-0 select-none">
+    <div className="flex-1 flex flex-col min-w-full min-h-0">
+      {/* Board Header Action Bar */}
+      <div className="flex items-center justify-between gap-3 pb-3 px-1 shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-black text-[#111E38] dark:text-neutral-200">
+            {selectedBoard?.name || 'Board'}
+          </span>
+          <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500">
+            ({filteredTasks.length} {tMsg('tasks', 'tugas')})
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Export CSV Button */}
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            disabled={isExporting || !selectedBoard || selectedBoard.id === 'global'}
+            className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#121B2D] hover:bg-[#F3F4F6] dark:hover:bg-neutral-800 text-[#111E38] dark:text-neutral-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title={tMsg('Export tasks as CSV', 'Ekspor tugas ke file CSV')}
+          >
+            <svg className="w-3.5 h-3.5 text-[#111E38] dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span>{isExporting ? tMsg('Exporting...', 'Mengekspor...') : tMsg('Export CSV', 'Ekspor CSV')}</span>
+          </button>
+
+          {/* Import CSV Button */}
+          <button
+            type="button"
+            onClick={() => setIsImportModalOpen(true)}
+            disabled={accountStatus === 'suspended' || !selectedBoard || selectedBoard.id === 'global'}
+            className="px-3 py-1.5 rounded-xl border border-amber-300 dark:border-amber-400/50 bg-[#FACC15] hover:bg-amber-400 text-[#111E38] text-xs font-extrabold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title={tMsg('Import tasks from CSV file', 'Impor tugas dari file CSV')}
+          >
+            <svg className="w-3.5 h-3.5 text-[#111E38]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <span>{tMsg('Import CSV', 'Impor CSV')}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 flex gap-5 sm:gap-6 items-stretch pb-4 w-max min-w-full min-h-0 select-none">
       <Droppable droppableId="board" direction="horizontal" type="column">
         {(providedBoard) => (
           <div
@@ -310,6 +394,26 @@ export default function KanbanBoard({
                           </div>
                         )}
                     </div>
+
+                    {/* Task Tags Badges */}
+                    {(() => {
+                      const tagsList = parseTaskTags(task.tags);
+                      if (!tagsList || tagsList.length === 0) return null;
+                      return (
+                        <div className="flex flex-wrap items-center gap-1 mb-2.5">
+                          {tagsList.map((tag, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className={`inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-md border shadow-2xs ${getTagColor(tag)}`}
+                              title={`Tag: ${tag}`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 shrink-0"></span>
+                              <span className="truncate max-w-[120px]">{tag}</span>
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     {/* Task Description */}
                     <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mb-3 line-clamp-2 wrap-break-word font-medium leading-relaxed">
@@ -624,6 +728,18 @@ export default function KanbanBoard({
           </span>
         </div>
       )}
+      </div>
+
+      {/* Import CSV Modal */}
+      <ImportCsvModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        boardId={selectedBoard?.id}
+        boardName={selectedBoard?.name}
+        language={language}
+        onSuccess={() => fetchTasks && fetchTasks()}
+        showNotification={showNotification}
+      />
     </div>
   );
 }

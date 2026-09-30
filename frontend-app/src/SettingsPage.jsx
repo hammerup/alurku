@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { useAppContext } from './hooks/useAppContext';
 import UpgradeModal from './components/UpgradeModal';
+import WebhookManager from './components/WebhookManager';
+import InvoiceDetailModal, { CheckoutModal } from './components/InvoiceDetailModal';
 
 /**
  * SettingsPage (Halaman Pengaturan)
@@ -78,6 +80,7 @@ export default function SettingsPage({
     if (path.includes('/notifikasi') || path.includes('/notifications')) return 'notifications';
     if (path.includes('/keamanan') || path.includes('/security')) return 'security';
     if (path.includes('/ruang-kerja') || path.includes('/workspace')) return 'workspace';
+    if (path.includes('/webhook')) return 'webhooks';
     if (path.includes('/paket') || path.includes('/billing') || path.includes('/plan')) return 'billing';
     return 'profile';
   };
@@ -106,6 +109,7 @@ export default function SettingsPage({
       notifications: '/pengaturan/notifikasi',
       security: '/pengaturan/keamanan',
       workspace: '/pengaturan/ruang-kerja',
+      webhooks: '/pengaturan/webhook',
       billing: '/pengaturan/paket',
     };
     const targetUrl = slugMap[tabId] || '/pengaturan';
@@ -134,6 +138,10 @@ export default function SettingsPage({
 
   // Workspace Usage & Plan State
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [selectedInvoiceForModal, setSelectedInvoiceForModal] = useState(null);
+  const [invoices, setInvoices] = useState([]);
+  const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
   const [usageData, setUsageData] = useState(null);
   const [isLoadingUsage, setIsLoadingUsage] = useState(false);
 
@@ -150,9 +158,26 @@ export default function SettingsPage({
     }
   };
 
+  const fetchInvoices = async () => {
+    if (!activeWorkspace?.id) return;
+    setIsLoadingInvoices(true);
+    try {
+      const token = localStorage.getItem('alurku_token') || '';
+      const resp = await axios.get(`/api/workspaces/${activeWorkspace.id}/invoices`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setInvoices(resp.data.invoices || []);
+    } catch (err) {
+      console.error('Failed to load invoices:', err);
+    } finally {
+      setIsLoadingInvoices(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'billing') {
       fetchUsageData();
+      fetchInvoices();
     }
   }, [activeTab, activeWorkspace?.id]);
 
@@ -439,6 +464,16 @@ export default function SettingsPage({
       icon: (
         <svg className="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+      ),
+    },
+    {
+      id: 'webhooks',
+      label: msg('Webhooks & Integrations', 'Webhook & Integrasi'),
+      subtitle: msg('Outbound event dispatches', 'Pengiriman event otomatis'),
+      icon: (
+        <svg className="w-4.5 h-4.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
         </svg>
       ),
     },
@@ -1746,6 +1781,86 @@ export default function SettingsPage({
                     </div>
                   </div>
                 </div>
+
+                {/* Invoices & Billing History Section */}
+                <div className="space-y-4 pt-4 border-t border-neutral-200/80 dark:border-neutral-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-bold text-[#111E38] dark:text-slate-100">
+                        {msg('Billing History & Receipts', 'Riwayat Tagihan & Faktur')}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {msg(
+                          'View past subscription transactions and download printable payment receipts.',
+                          'Lihat transaksi langganan sebelumnya dan cetak bukti pembayaran resmi.'
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsCheckoutModalOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
+                    >
+                      {msg('Simulate Checkout', 'Simulasi Pembayaran')}
+                    </button>
+                  </div>
+
+                  {isLoadingInvoices ? (
+                    <div className="py-8 text-center text-xs text-slate-400">{msg('Loading invoices...', 'Memuat faktur...')}</div>
+                  ) : invoices.length === 0 ? (
+                    <div className="p-6 rounded-2xl bg-[#F3F4F6]/50 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 text-center text-xs text-slate-400">
+                      {msg('No billing transactions found for this workspace.', 'Belum ada transaksi pembayaran di ruang kerja ini.')}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-2xl border border-neutral-200/80 dark:border-neutral-800">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-[#F3F4F6] dark:bg-[#090D16] text-slate-600 dark:text-slate-300 font-bold border-b border-neutral-200 dark:border-neutral-800">
+                          <tr>
+                            <th className="px-4 py-3">{msg('Invoice No.', 'No. Faktur')}</th>
+                            <th className="px-4 py-3">{msg('Plan', 'Paket')}</th>
+                            <th className="px-4 py-3">{msg('Cycle', 'Siklus')}</th>
+                            <th className="px-4 py-3">{msg('Amount', 'Nominal')}</th>
+                            <th className="px-4 py-3">{msg('Date', 'Tanggal')}</th>
+                            <th className="px-4 py-3 text-right">{msg('Action', 'Aksi')}</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800 bg-white dark:bg-[#121B2D]">
+                          {invoices.map((inv) => (
+                            <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                              <td className="px-4 py-3 font-mono font-semibold text-slate-900 dark:text-slate-100">{inv.invoice_number}</td>
+                              <td className="px-4 py-3 uppercase font-bold text-sky-600 dark:text-[#FACC15]">{inv.tier}</td>
+                              <td className="px-4 py-3 text-slate-500 capitalize">{inv.billing_cycle}</td>
+                              <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">Rp {inv.amount_paid?.toLocaleString('id-ID')}</td>
+                              <td className="px-4 py-3 text-slate-500">{inv.paid_at ? new Date(inv.paid_at).toLocaleDateString('id-ID') : '—'}</td>
+                              <td className="px-4 py-3 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedInvoiceForModal(inv)}
+                                  className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-slate-800 hover:bg-neutral-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] transition-colors"
+                                >
+                                  {msg('View Receipt', 'Lihat Bukti')}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ─────────────────────────────────────────────────────────────
+                TAB 8: WEBHOOKS & INTEGRATIONS
+            ────────────────────────────────────────────────────────────── */}
+            {activeTab === 'webhooks' && (
+              <div className="space-y-6 animate-fadeIn">
+                <WebhookManager
+                  workspaceId={activeWorkspace?.id}
+                  lang={language}
+                  token={localStorage.getItem('alurku_token') || ''}
+                />
               </div>
             )}
           </div>
@@ -1822,7 +1937,44 @@ export default function SettingsPage({
             } else if (activeWorkspace) {
               switchWorkspace({ ...activeWorkspace, tier: data.tier });
             }
+            fetchUsageData();
+            fetchInvoices();
           }}
+        />
+      )}
+
+      {/* Checkout Simulator Modal */}
+      {isCheckoutModalOpen && (
+        <CheckoutModal
+          workspaceId={activeWorkspace?.id}
+          currentTier={activeWorkspace?.tier || 'free'}
+          lang={language}
+          token={localStorage.getItem('alurku_token') || ''}
+          onClose={() => setIsCheckoutModalOpen(false)}
+          onSuccess={(invoice) => {
+            setIsCheckoutModalOpen(false);
+            showNotification(msg('Checkout completed successfully!', 'Pembayaran berhasil diselesaikan!'), 'success');
+            if (fetchWorkspaces) {
+              fetchWorkspaces().then((list) => {
+                if (list && activeWorkspace) {
+                  const refreshed = list.find((w) => w.id === activeWorkspace.id);
+                  if (refreshed) switchWorkspace(refreshed);
+                }
+              });
+            }
+            fetchUsageData();
+            fetchInvoices();
+            setSelectedInvoiceForModal(invoice);
+          }}
+        />
+      )}
+
+      {/* Invoice Detail & Receipt Modal */}
+      {selectedInvoiceForModal && (
+        <InvoiceDetailModal
+          invoice={selectedInvoiceForModal}
+          lang={language}
+          onClose={() => setSelectedInvoiceForModal(null)}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 class AIGenerateModel(BaseModel):
     prompt: str
@@ -8,7 +8,7 @@ class AIGenerateModel(BaseModel):
     prompt_type: Optional[str] = None
 
 
-class RequestFormModel(BaseModel):
+class TaskCreateModel(BaseModel):
     project_name: str
     requester: str
     category: str
@@ -21,10 +21,35 @@ class RequestFormModel(BaseModel):
     auto_nudge: Optional[bool] = False
     recurring: Optional[str] = "none"
     subtasks: Optional[List[dict]] = []
+    tags: Optional[Union[List[str], str]] = None
+    board_id: Optional[int] = None
+
+
+class RequestFormModel(TaskCreateModel):
+    pass
 
 
 class TaskUpdateModel(BaseModel):
-    status: str
+    status: Optional[str] = None
+    tags: Optional[Union[List[str], str]] = None
+
+
+class TaskDetailModel(BaseModel):
+    id: Optional[int] = None
+    board_id: Optional[int] = None
+    project_name: Optional[str] = None
+    requester: Optional[str] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    supporting_access: Optional[str] = None
+    start_date: Optional[str] = None
+    deadline: Optional[str] = None
+    impact: Optional[str] = "Medium"
+    etc: Optional[float] = 2.0
+    auto_nudge: Optional[bool] = False
+    recurring: Optional[str] = "none"
+    status: Optional[str] = None
+    tags: Optional[Union[List[str], str]] = None
 
 
 class TaskEditModel(BaseModel):
@@ -41,6 +66,7 @@ class TaskEditModel(BaseModel):
     recurring: Optional[str] = "none"
     status: str
     board_id: Optional[int] = None
+    tags: Optional[Union[List[str], str]] = None
 
 
 class SubtaskModel(BaseModel):
@@ -218,3 +244,36 @@ class TaskAttachmentResponse(BaseModel):
     preview_url: Optional[str] = None
 
 
+# --- Webhook Schemas ---
+class WebhookCreateModel(BaseModel):
+    url: str
+    secret: Optional[str] = None
+    events: Optional[List[str]] = ["task.created", "task.status_changed", "task.completed", "comment.created"]
+    is_active: Optional[int] = 1
+
+
+class WebhookUpdateModel(BaseModel):
+    url: Optional[str] = None
+    secret: Optional[str] = None
+    events: Optional[List[str]] = None
+    is_active: Optional[int] = None
+
+
+# --- Billing / Invoice Schemas ---
+class CheckoutRequestModel(BaseModel):
+    tier: str  # 'pro' or 'business'
+    billing_cycle: str  # 'monthly' or 'yearly'
+    payment_method: Optional[str] = "qris"
+
+
+class InvoiceResponseModel(BaseModel):
+    invoice_number: str
+    workspace_id: int
+    username: str
+    tier: str
+    billing_cycle: str
+    amount: int
+    status: str
+    payment_method: str
+    created_at: Optional[str] = None
+    paid_at: Optional[str] = None

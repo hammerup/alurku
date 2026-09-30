@@ -280,6 +280,7 @@ def get_my_tickets(
                 "status": task.status,
                 "timestamp": task.timestamp,
                 "category": task.category,
+                "tags": parse_tags(task.tags),
             }
         )
     return {"tickets": tasks_list}

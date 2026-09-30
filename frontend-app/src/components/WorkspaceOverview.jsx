@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Avatar } from '../SharedUI';
 import { useAppContext } from '../contexts/AppContext';
 import { useWebSocket } from '../hooks/useWebSocket';
+import WorkspaceActivityFeed from './WorkspaceActivityFeed';
 
 export default function WorkspaceOverview() {
   const {
@@ -53,6 +54,9 @@ export default function WorkspaceOverview() {
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSuggestions, setInviteSuggestions] = useState([]);
   const [inviteIndex, setInviteIndex] = useState(0);
+
+  // Activity panel mode: 'live' or 'history'
+  const [activityTabMode, setActivityTabMode] = useState('live');
 
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -1238,41 +1242,71 @@ export default function WorkspaceOverview() {
               }
             `}</style>
 
-            <div className="p-6 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+            <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-[#111E38] dark:text-white">{tMsg('Team Activity', 'Aktivitas Tim')}</h2>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  {tMsg('Latest 15', '15 Terkini')}
-                </span>
+                <h2 className="text-base sm:text-lg font-bold text-[#111E38] dark:text-white">{tMsg('Team Activity', 'Aktivitas Tim')}</h2>
               </div>
-              <div className="flex items-center gap-1.5 bg-[#FACC15]/20 border border-[#FACC15]/40 text-[#111E38] dark:text-[#FACC15] text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live</span>
+              <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActivityTabMode('live')}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                    activityTabMode === 'live'
+                      ? 'bg-white dark:bg-[#121B2D] text-[#111E38] dark:text-white shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Live</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivityTabMode('history')}
+                  className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                    activityTabMode === 'history'
+                      ? 'bg-white dark:bg-[#121B2D] text-[#111E38] dark:text-white shadow-xs'
+                      : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                  }`}
+                >
+                  {tMsg('Audit Log', 'Audit')}
+                </button>
               </div>
             </div>
             
-            <div className="flex-1 p-6 space-y-6 relative max-h-[600px] overflow-y-auto custom-scrollbar">
-              {activityFeed.slice(0, 15).map((act, index, arr) => (
-                <div key={act.id} className="flex gap-4 relative z-10 animate-activity-item">
-                  <div className="shrink-0 flex flex-col items-center relative">
-                    <div className="ring-2 ring-white dark:ring-[#121B2D] bg-white dark:bg-[#121B2D] rounded-full z-10">
-                      <Avatar name={act.username} url={avatarsMap[act.username]} size="w-10 h-10" />
+            <div className="flex-1 p-5 space-y-6 relative max-h-[600px] overflow-y-auto custom-scrollbar">
+              {activityTabMode === 'history' ? (
+                <WorkspaceActivityFeed
+                  workspaceId={activeWorkspace?.id}
+                  lang={language}
+                  token={token}
+                />
+              ) : (
+                <>
+                  {activityFeed.slice(0, 15).map((act, index, arr) => (
+                    <div key={act.id} className="flex gap-4 relative z-10 animate-activity-item">
+                      <div className="shrink-0 flex flex-col items-center relative">
+                        <div className="ring-2 ring-white dark:ring-[#121B2D] bg-white dark:bg-[#121B2D] rounded-full z-10">
+                          <Avatar name={act.username} url={avatarsMap[act.username]} size="w-10 h-10" />
+                        </div>
+                        {index < arr.length - 1 && (
+                          <div className="w-px bg-neutral-200 dark:bg-neutral-800 absolute top-10 bottom-[-24px] left-1/2 -translate-x-1/2 z-0"></div>
+                        )}
+                      </div>
+                      <div className="flex-1 pt-0.5">
+                        {formatActivityMessage(act.username, act.action, act.target_title, act.extra_data)}
+                        <p className="text-[11px] text-neutral-400 mt-0.5">{formatTimeAgo(act.created_at)}</p>
+                      </div>
                     </div>
-                    {index < arr.length - 1 && (
-                      <div className="w-px bg-neutral-200 dark:bg-neutral-800 absolute top-10 bottom-[-24px] left-1/2 -translate-x-1/2 z-0"></div>
-                    )}
-                  </div>
-                  <div className="flex-1 pt-0.5">
-                    {formatActivityMessage(act.username, act.action, act.target_title, act.extra_data)}
-                    <p className="text-[11px] text-neutral-400 mt-0.5">{formatTimeAgo(act.created_at)}</p>
-                  </div>
-                </div>
-              ))}
+                  ))}
 
-              {activityFeed.length === 0 && (
-                <div className="text-center py-10 text-xs text-neutral-450 dark:text-neutral-500">
-                  {tMsg('No activity recorded yet.', 'Belum ada aktivitas tercatat.')}
-                </div>
+                  {activityFeed.length === 0 && (
+                    <div className="text-center py-10 text-xs text-neutral-450 dark:text-neutral-500">
+                      {tMsg('No activity recorded yet.', 'Belum ada aktivitas tercatat.')}
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

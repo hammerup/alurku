@@ -62,12 +62,12 @@ def test_free_tier_limits_and_upgrade_flow():
     assert usage["members"]["max"] == 3
     assert usage["ai_requests"]["max"] == 50
 
-    # 2. Test Project limit (max 3 in Free tier)
-    for i in range(1, 4):
+    # 2. Test Project limit (max 3 in Free tier; workspace already has 1 starter project)
+    for i in range(1, 3):
         resp_p = client.post("/api/boards", json={"name": f"Project {i}", "workspace_id": ws_id}, headers=headers)
         assert resp_p.status_code == 200
 
-    # 4th project must be blocked with 403
+    # 4th project (total > 3) must be blocked with 403
     resp_p4 = client.post("/api/boards", json={"name": "Project 4 - Over Limit", "workspace_id": ws_id}, headers=headers)
     assert resp_p4.status_code == 403
     assert "Batas Proyek Tercapai" in resp_p4.json()["detail"]

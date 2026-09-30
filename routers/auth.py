@@ -110,6 +110,9 @@ def register(user_data: RegisterModel, background_tasks: BackgroundTasks, reques
     db.add(ws_member)
     db.commit()
 
+    # Seed starter board with interactive tasks for instant 60-second Aha! Moment
+    seed_starter_board_for_workspace(db, default_ws.id, new_user.username)
+
     # Kirim Email Verifikasi
     verify_token = create_access_token(
         data={"sub": new_user.username, "type": "verify"}
@@ -212,6 +215,9 @@ def quick_register(user_data: QuickRegisterModel, background_tasks: BackgroundTa
     )
     db.add(ws_member)
     db.commit()
+
+    # Seed starter board with interactive tasks for instant 60-second Aha! Moment
+    seed_starter_board_for_workspace(db, default_ws.id, new_user.username)
 
     # Kirim email untuk atur password (menggunakan token reset-password)
     reset_token = create_access_token(
@@ -374,6 +380,9 @@ def google_login(payload: GoogleLoginModel, db: Session = Depends(get_db)):
         )
         db.add(ws_member)
         db.commit()
+
+        # Seed starter board with interactive tasks for instant 60-second Aha! Moment
+        seed_starter_board_for_workspace(db, default_ws.id, user.username)
     else:
         evaluate_user_lifecycle(db, user)
         if user.account_status == "pending_deletion":

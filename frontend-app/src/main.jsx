@@ -52,14 +52,20 @@ console.warn = (...args) => {
   originalWarn(...args);
 };
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '41152093961-52ogmeodb9tqist3kk4vthj2edkrs0aj.apps.googleusercontent.com';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={googleClientId}>
+    {googleClientId ? (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <AppProvider>
+          <App />
+        </AppProvider>
+      </GoogleOAuthProvider>
+    ) : (
       <AppProvider>
         <App />
       </AppProvider>
-    </GoogleOAuthProvider>
+    )}
   </StrictMode>
 );

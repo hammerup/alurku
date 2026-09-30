@@ -13,6 +13,7 @@ import TaskDetailComments from './components/TaskDetail/TaskDetailComments';
 import TaskDetailCommentForm from './components/TaskDetail/TaskDetailCommentForm';
 import TaskDetailAttachments from './components/TaskDetail/TaskDetailAttachments';
 import StartMeetingModal from './components/StartMeetingModal';
+import TagInput, { getTagColor, parseTaskTags } from './components/TagInput';
 export default function TaskDetailModal({
   tasks,
   selectedTask,
@@ -1002,6 +1003,22 @@ export default function TaskDetailModal({
                       </div>
                     </div>
 
+                    {/* Task Tags & Labels Selector in Edit Mode */}
+                    <div className="group pt-1">
+                      <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                        </svg>
+                        <span>{tMsg('Tags & Custom Labels', 'Label & Tag Khusus')}</span>
+                      </label>
+                      <TagInput
+                        tags={editFormData.tags || []}
+                        onChange={(newTags) => setEditFormData({ ...editFormData, tags: newTags })}
+                        language={language}
+                      />
+                    </div>
+
                     <div className="group pt-2">
                       <label className="text-[10px] font-bold text-neutral-500 group-focus-within:text-black dark:group-focus-within:text-white tracking-widest mb-2 flex items-center gap-2">
                         <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" /></svg>
@@ -1254,6 +1271,24 @@ export default function TaskDetailModal({
                       </span>
                     </div>
                     <p className="text-lg font-extrabold wrap-break-word">{selectedTask.project_name || 'Untitled Task'}</p>
+                    {/* Task Tags Badges in Detail View */}
+                    {(() => {
+                      const tagsList = parseTaskTags(selectedTask.tags);
+                      if (!tagsList || tagsList.length === 0) return null;
+                      return (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                          {tagsList.map((tag, tIdx) => (
+                            <span
+                              key={tIdx}
+                              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-lg border shadow-2xs ${getTagColor(tag)}`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
+                              <span>{tag}</span>
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <TaskDetailSidebar
                     selectedTask={selectedTask}

@@ -11,7 +11,7 @@ from schemas import *
 from dependencies import *
 from utils import *
 from routers.ai import generate_ai_text
-from routers.workspaces import get_active_workspace_id
+from routers.workspaces import get_active_workspace_id, get_write_active_workspace_id
 from services.tier_service import enforce_can_upload_storage
 
 router = APIRouter()
@@ -80,6 +80,7 @@ def get_all_global_tasks(
             "status": task.status,
             "completed_time": task.completed_time,
             "owner_username": task.owner_username,
+            "tags": parse_tags(task.tags),
             "queue_global_number": q_info.get("global_q"),
             "total_global_queue": q_info.get("global_t"),
             "queue_project_number": q_info.get("project_q"),
@@ -374,6 +375,7 @@ def global_search_tasks(
             "status": task.status,
             "completed_time": task.completed_time,
             "owner_username": task.owner_username,
+            "tags": parse_tags(task.tags),
         }
         subtasks = (
             db.query(Subtask)
@@ -457,8 +459,9 @@ def get_single_task(
         "queue_project_number": q_info.get("project_q"),
         "total_project_queue": q_info.get("project_t"),
         "main_assignee": q_info.get("main_assignee"),
+        "tags": parse_tags(task.tags),
     }
-    return {"task": t_dict}
+    return {"task": t_dict, "tags": parse_tags(task.tags)}
 
 
 @router.get("/api/tasks/preview/{task_id}")
@@ -507,10 +510,11 @@ def get_task_preview(task_id: int, db: Session = Depends(get_db)):
         "queue_project_number": q_info.get("project_q"),
         "total_project_queue": q_info.get("project_t"),
         "main_assignee": q_info.get("main_assignee"),
+        "tags": parse_tags(task.tags),
         "description": "", # Masked
         "supporting_access": "" # Masked
     }
-    return {"task": t_dict}
+    return {"task": t_dict, "tags": parse_tags(task.tags)}
 
 
 @router.put("/api/tasks/{task_id}/auto-nudge")
@@ -562,13 +566,16 @@ def update_task_status(
         )
 
     old_status = task.status
-    task.status = update.status
-    task.completed_time = now_str if update.status in ["Done", "Rejected"] else None
+    if update.status:
+        task.status = update.status
+        task.completed_time = now_str if update.status in ["Done", "Rejected"] else None
     
     cloned_task_id = None
-    if old_status != "Done" and update.status == "Done":
+    if update.status and old_status != "Done" and update.status == "Done":
         cloned_task_id = spawn_recurring_task(db, task)
 
+    if getattr(update, "tags", None) is not None:
+        task.tags = serialize_tags(update.tags)
 
     db.commit()
 
@@ -616,7 +623,16 @@ def update_task_status(
                     )
 
     update_board_activity(db, task.board_id)
-    return {"message": "Task updated successfully", "cloned_task_id": cloned_task_id}
+    return {
+        "message": "Task updated successfully",
+        "cloned_task_id": cloned_task_id,
+        "tags": parse_tags(task.tags),
+        "task": {
+            "id": task.id,
+            "status": task.status,
+            "tags": parse_tags(task.tags),
+        },
+    }
 
 
 @router.put("/api/tasks/{task_id}/details")
@@ -718,6 +734,13 @@ def edit_task_details(
     task.etc = update.etc if update.etc is not None else 2
     task.auto_nudge = True if update.auto_nudge else False
 
+    if getattr(update, "tags", None) is not None:
+        old_tags = parse_tags(task.tags)
+        new_tags = parse_tags(serialize_tags(update.tags))
+        if old_tags != new_tags:
+            changes.append(f"**Tags**: `{', '.join(old_tags) or 'None'}` ? `{', '.join(new_tags) or 'None'}`")
+        task.tags = serialize_tags(update.tags)
+
     if task.status != update.status:
         task.status = update.status
         task.completed_time = now_str if update.status in ["Done", "Rejected"] else None
@@ -799,7 +822,16 @@ def edit_task_details(
                     )
 
     update_board_activity(db, target_board_id)
-    return {"message": "Task details updated successfully", "cloned_task_id": cloned_task_id}
+    return {
+        "message": "Task details updated successfully",
+        "cloned_task_id": cloned_task_id,
+        "tags": parse_tags(task.tags),
+        "task": {
+            "id": task.id,
+            "project_name": task.project_name,
+            "tags": parse_tags(task.tags),
+        },
+    }
 
 
 @router.delete("/api/tasks/{task_id}")
@@ -1466,3 +1498,86 @@ def toggle_reaction(
         update_board_activity(db, task.board_id)
     return {"message": "Reaction updated", "reactions": rx}
 
+
+
+class TaskTagsModel(BaseModel):
+    tags: Union[List[str], str]
+
+
+@router.put("/api/tasks/{task_id}/tags")
+def update_task_tags(
+    task_id: int,
+    payload: TaskTagsModel,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    task = db.query(Request).filter(Request.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if not has_task_read_access(db, task, current_user):
+        raise HTTPException(status_code=403, detail="Access denied")
+    if is_workspace_viewer(db, getattr(task, 'workspace_id', None), current_user):
+        raise HTTPException(status_code=403, detail="Akses Ditolak: Role Viewer hanya memiliki akses baca.")
+    if not is_board_writer(db, task.board_id, current_user):
+        raise HTTPException(status_code=403, detail="Mode Pengawas Workspace: Read-Only.")
+
+    task.tags = serialize_tags(payload.tags)
+    db.commit()
+    log_activity(db, task.id, f"**@{current_user}** updated tags to: `{', '.join(parse_tags(task.tags))}`")
+    return {"message": "Tags updated successfully", "tags": parse_tags(task.tags), "task_id": task.id}
+
+
+@router.post("/api/tasks")
+def create_task_direct(
+    task: TaskCreateModel,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_write_active_workspace_id),
+):
+    target_board_id = task.board_id
+    if not target_board_id:
+        board = db.query(Board).filter(Board.workspace_id == workspace_id).first()
+        if not board:
+            raise HTTPException(status_code=400, detail="No board found in workspace. Please specify board_id.")
+        target_board_id = board.id
+
+    from routers.boards import create_task as board_create_task
+    return board_create_task(board_id=target_board_id, task=task, current_user=current_user, db=db, workspace_id=workspace_id)
+
+
+@router.get("/api/my-tasks")
+@router.get("/api/tasks/my")
+def get_my_tasks(
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    workspace_id: int = Depends(get_active_workspace_id),
+):
+    owned_subq = db.query(Board.id).filter(Board.owner_username == current_user, Board.workspace_id == workspace_id)
+    shared_subq = db.query(BoardMember.board_id).filter(
+        BoardMember.member_username == current_user, BoardMember.status == "accepted"
+    )
+
+    tasks = (
+        db.query(Request)
+        .filter(
+            Request.workspace_id == workspace_id,
+            or_(Request.board_id.in_(owned_subq), Request.board_id.in_(shared_subq)),
+            or_(Request.owner_username == current_user, Request.requester.ilike(f"%{current_user}%")),
+        )
+        .all()
+    )
+    res = []
+    for t in tasks:
+        res.append({
+            "id": t.id,
+            "board_id": t.board_id,
+            "project_name": t.project_name,
+            "requester": t.requester,
+            "category": t.category,
+            "status": t.status,
+            "tags": parse_tags(t.tags),
+            "deadline": format_dt(t.deadline),
+            "start_date": format_dt(t.start_date),
+            "owner_username": t.owner_username,
+        })
+    return {"tasks": res}

@@ -4,7 +4,9 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
-from database import get_db, User, Workspace, WorkspaceMember
+from database import get_db, User, Workspace, WorkspaceMember, Board, Request, Subtask
+from sqlalchemy import or_
+import json
 from schemas import WorkspaceCreateModel, WorkspaceInviteModel
 from dependencies import get_current_user
 from services.tier_service import (
@@ -650,4 +652,129 @@ def update_workspace_tier(
     }
 
 
+@router.get("/{workspace_id}/export-json")
+def export_workspace_json(
+    workspace_id: int,
+    current_user: str = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mengembalikan data lengkap workspace (boards, tasks, subtasks, members)
+    dalam format JSON terstruktur untuk migrasi dan portabilitas data.
+    """
+    workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace tidak ditemukan.")
 
+    from utils import is_user_superadmin
+    membership = (
+        db.query(WorkspaceMember)
+        .filter(WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.username == current_user)
+        .first()
+    )
+    if not membership and not is_user_superadmin(db, current_user):
+        raise HTTPException(status_code=403, detail="Akses ditolak: Anda bukan anggota workspace ini.")
+
+    boards = db.query(Board).filter(Board.workspace_id == workspace_id).all()
+    boards_data = []
+
+    for b in boards:
+        tasks = (
+            db.query(Request)
+            .filter(
+                Request.board_id == b.id,
+                or_(Request.project_name == None, Request.project_name != "[SYSTEM] PROJECT CHAT"),
+            )
+            .order_by(Request.id.asc())
+            .all()
+        )
+
+        tasks_data = []
+        for t in tasks:
+            subtasks = (
+                db.query(Subtask)
+                .filter(Subtask.request_id == t.id)
+                .order_by(Subtask.position.asc(), Subtask.id.asc())
+                .all()
+            )
+            tasks_data.append({
+                "id": t.id,
+                "project_name": t.project_name,
+                "requester": t.requester,
+                "category": t.category,
+                "description": t.description,
+                "supporting_access": t.supporting_access,
+                "start_date": t.start_date.isoformat() if t.start_date else None,
+                "deadline": t.deadline.isoformat() if t.deadline else None,
+                "status": t.status,
+                "impact": t.impact,
+                "etc": t.etc,
+                "auto_nudge": bool(t.auto_nudge) if t.auto_nudge is not None else False,
+                "recurring": getattr(t, "recurring", "none"),
+                "completed_time": t.completed_time.isoformat() if t.completed_time else None,
+                "owner_username": t.owner_username,
+                "subtasks": [
+                    {
+                        "id": st.id,
+                        "task_name": st.task_name,
+                        "is_done": st.is_done,
+                        "assignee": st.assignee,
+                        "position": st.position,
+                    }
+                    for st in subtasks
+                ],
+            })
+
+        parsed_statuses = []
+        if b.statuses:
+            try:
+                parsed_statuses = json.loads(b.statuses)
+            except Exception:
+                parsed_statuses = []
+
+        parsed_categories = []
+        if b.categories:
+            try:
+                parsed_categories = json.loads(b.categories)
+            except Exception:
+                parsed_categories = []
+
+        boards_data.append({
+            "id": b.id,
+            "name": b.name,
+            "description": b.description,
+            "owner_username": b.owner_username,
+            "is_private": b.is_private,
+            "statuses": parsed_statuses,
+            "categories": parsed_categories,
+            "created_at": b.created_at.isoformat() if hasattr(b.created_at, "isoformat") else str(b.created_at),
+            "tasks": tasks_data,
+        })
+
+    members = (
+        db.query(WorkspaceMember)
+        .filter(WorkspaceMember.workspace_id == workspace_id)
+        .all()
+    )
+    members_data = [
+        {
+            "username": m.username,
+            "role": m.role,
+            "joined_at": m.joined_at.isoformat() if hasattr(m.joined_at, "isoformat") else str(m.joined_at),
+        }
+        for m in members
+    ]
+
+    return {
+        "version": "1.0",
+        "exported_at": datetime.utcnow().isoformat(),
+        "workspace": {
+            "id": workspace.id,
+            "name": workspace.name,
+            "owner_username": workspace.owner_username,
+            "tier": workspace.tier,
+            "created_at": workspace.created_at.isoformat() if hasattr(workspace.created_at, "isoformat") else str(workspace.created_at),
+        },
+        "members": members_data,
+        "boards": boards_data,
+    }
