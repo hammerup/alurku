@@ -13,6 +13,10 @@ SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 if not SQLALCHEMY_DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set in the environment or .env file!")
 
+# Normalisasi URL jika menggunakan postgresql:// standar agar diarahkan ke psycopg2 driver
+if SQLALCHEMY_DATABASE_URL.startswith("postgresql://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 # Tambahkan pool_pre_ping dan pool_recycle untuk menangani auto-disconnect di cloud DB (seperti Neon DB)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, pool_pre_ping=True, pool_recycle=300
