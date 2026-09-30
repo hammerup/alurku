@@ -99,21 +99,22 @@ export default function WorkspaceActivityFeed({ workspaceId, lang = 'id', apiBas
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-base font-semibold text-[#111E38]">
-          {lang === 'id' ? 'Aktivitas Terkini' : 'Recent Activity'}
+        <h3 className="text-sm font-bold text-[#111E38] dark:text-slate-100">
+          {lang === 'id' ? 'Log Audit & Riwayat' : 'Audit Log & History'}
         </h3>
         <button
+          type="button"
           onClick={handleRefresh}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#111E38] hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-[#111E38] dark:text-slate-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         >
           <svg
-            className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
+            className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          {lang === 'id' ? 'Perbarui' : 'Refresh'}
+          {lang === 'id' ? 'Segarkan' : 'Refresh'}
         </button>
       </div>
 
@@ -121,15 +122,15 @@ export default function WorkspaceActivityFeed({ workspaceId, lang = 'id', apiBas
       <div className="flex flex-wrap gap-2">
         <input
           type="text"
-          placeholder={lang === 'id' ? 'Cari tugas atau proyek…' : 'Search task or project…'}
+          placeholder={lang === 'id' ? 'Cari tugas atau user…' : 'Search task or user…'}
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 min-w-[180px] px-3 py-2 text-sm border border-gray-200 rounded-lg text-[#111E38] focus:outline-none focus:ring-2 focus:ring-[#FACC15]"
+          className="flex-1 min-w-[140px] px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-[#121B2D] text-[#111E38] dark:text-slate-100 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#FACC15]"
         />
         <select
           value={actionFilter}
           onChange={e => setActionFilter(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg text-[#111E38] bg-white focus:outline-none focus:ring-2 focus:ring-[#FACC15]"
+          className="px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-xl text-[#111E38] dark:text-slate-100 bg-white dark:bg-[#121B2D] focus:outline-none focus:ring-2 focus:ring-[#FACC15]"
         >
           {actionOptions.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -141,37 +142,37 @@ export default function WorkspaceActivityFeed({ workspaceId, lang = 'id', apiBas
       {loading && activities.length === 0 ? (
         <div className="flex justify-center py-8">
           <svg className="w-6 h-6 animate-spin text-[#FACC15]" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         </div>
       ) : activities.length === 0 ? (
-        <div className="py-10 text-center text-gray-400 text-sm">
+        <div className="py-8 text-center text-neutral-400 text-xs">
           {lang === 'id'
             ? 'Belum ada aktivitas tercatat di workspace ini.'
             : 'No activity recorded in this workspace yet.'}
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           {activities.map(act => {
-            const actionInfo = ACTION_LABELS[act.action] || { id: act.action, en: act.action, color: 'bg-gray-100 text-gray-600' };
+            const actionInfo = ACTION_LABELS[act.action] || { id: act.action, en: act.action, color: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' };
             return (
-              <div key={act.id} className="flex items-start gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3">
+              <div key={act.id} className="flex items-start gap-3 bg-neutral-50/80 dark:bg-slate-900/40 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 px-3.5 py-3">
                 <AvatarCircle username={act.username} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold text-[#111E38]">{act.username}</span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${actionInfo.color}`}>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs font-bold text-[#111E38] dark:text-slate-100">{act.username}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${actionInfo.color}`}>
                       {lang === 'id' ? actionInfo.id : actionInfo.en}
                     </span>
                   </div>
                   {act.target_title && (
-                    <p className="text-sm text-gray-600 mt-0.5 truncate">
+                    <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5 truncate">
                       {act.target_title}
                     </p>
                   )}
                 </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0 mt-0.5">
+                <span className="text-[10px] text-neutral-400 whitespace-nowrap flex-shrink-0 mt-0.5">
                   {relativeTime(act.created_at, lang)}
                 </span>
               </div>
@@ -180,9 +181,10 @@ export default function WorkspaceActivityFeed({ workspaceId, lang = 'id', apiBas
 
           {hasMore && (
             <button
+              type="button"
               onClick={handleLoadMore}
               disabled={loading}
-              className="w-full py-2.5 text-sm font-medium text-[#111E38] border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              className="w-full py-2 text-xs font-bold text-[#111E38] dark:text-slate-200 border border-neutral-200 dark:border-neutral-700 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               {loading
                 ? (lang === 'id' ? 'Memuat…' : 'Loading…')

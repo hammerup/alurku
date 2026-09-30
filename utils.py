@@ -830,8 +830,8 @@ def seed_starter_board_for_workspace(db: Session, workspace_id: int, username: s
     demonstrating tags, drag & drop, and smart assistant usage for an instant Aha! Moment.
     """
     try:
-        # Check if workspace already has any board
-        existing = db.query(Board).filter(Board.workspace_id == workspace_id).first()
+        # Check if workspace already has the starter board
+        existing = db.query(Board).filter(Board.workspace_id == workspace_id, Board.name == "Mulai Cepat alurku.").first()
         if existing:
             return existing
 

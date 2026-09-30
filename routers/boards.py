@@ -24,6 +24,17 @@ def get_boards(
     db: Session = Depends(get_db),
     workspace_id: int = Depends(get_active_workspace_id)
 ):
+    # Ensure starter onboarding board exists for an instant Aha! Moment
+    starter_board_exists = db.query(Board).filter(
+        Board.workspace_id == workspace_id,
+        Board.name == "Mulai Cepat alurku."
+    ).first()
+    if not starter_board_exists:
+        try:
+            seed_starter_board_for_workspace(db, workspace_id, current_user)
+        except Exception as e:
+            print(f"[Seed Starter Board Warning]: {e}")
+
     # Auto-create a private "Personal Tasks" board if it doesn't exist in the active workspace
     todo_exists = db.query(Board).filter(
         Board.owner_username == current_user,
@@ -76,6 +87,7 @@ def get_boards(
     shared = [
         b for m in member_links
         if (b := db.query(Board).filter(Board.id == m.board_id, Board.workspace_id == workspace_id).first()) is not None
+        and b.owner_username != current_user
     ]
 
     # Workspace Owners & Admins can supervision-access ALL public workspace boards
