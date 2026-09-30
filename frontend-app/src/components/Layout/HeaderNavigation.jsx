@@ -83,6 +83,7 @@ export default function HeaderNavigation({
   const [isScopeDropdownOpen, setIsScopeDropdownOpen] = useState(false);
   const profileMenuRef = useRef(null);
   const scopeRef = useRef(null);
+  const searchContainerRef = useRef(null);
 
   const searchInputRef = useRef(null);
 
@@ -223,7 +224,7 @@ export default function HeaderNavigation({
       </div>
 
       {/* Sleek, Center-Aligned Search everywhere bar */}
-      <div className="hidden lg:flex items-center flex-1 max-w-2xl mx-6 relative group bg-white/40 dark:bg-neutral-900/50 hover:bg-white/80 dark:hover:bg-neutral-900 border border-neutral-300/40 dark:border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black rounded-full shadow-xs pl-1">
+      <div ref={searchContainerRef} className="hidden lg:flex items-center flex-1 max-w-2xl mx-6 relative group bg-white/40 dark:bg-neutral-900/50 hover:bg-white/80 dark:hover:bg-neutral-900 border border-neutral-300/40 dark:border-transparent focus-within:border-neutral-300 dark:focus-within:border-neutral-700 focus-within:bg-white dark:focus-within:bg-black rounded-full shadow-xs pl-1">
         
         {/* Scope Dropdown Selector */}
         {activeWorkspace && activeWorkspace.id ? (
