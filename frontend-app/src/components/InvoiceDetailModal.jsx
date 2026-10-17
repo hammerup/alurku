@@ -98,7 +98,7 @@ export default function InvoiceDetailModal({ invoice, lang = 'id', onClose }) {
             <div className="flex justify-between text-sm">
               <span className="text-gray-600 dark:text-slate-300">
                 {invoice.tier_label || invoice.tier} — {invoice.billing_cycle === 'yearly'
-                  ? (lang === 'id' ? 'Langganan Tahunan' : 'Annual Subscription')
+                  ? (lang === 'id' ? 'Langganan Tahunan (12 Bulan)' : 'Annual Subscription (12 Months)')
                   : (lang === 'id' ? 'Langganan Bulanan' : 'Monthly Subscription')}
               </span>
               <span className="text-[#111E38] dark:text-white font-semibold">{formatRp(invoice.amount)}</span>
@@ -146,7 +146,9 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
 
-  const price = PRICING[tier]?.[cycle] ?? 0;
+  const monthlyRate = PRICING[tier]?.[cycle] ?? 0;
+  const totalAmount = cycle === 'yearly' ? monthlyRate * 12 : monthlyRate;
+  const yearlySavings = (PRICING[tier].monthly - PRICING[tier].yearly) * 12;
 
   const handleCheckout = async () => {
     setPaying(true);
@@ -224,13 +226,30 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
 
           {/* Price display */}
           <div className="bg-[#F3F4F6] dark:bg-slate-800/70 border border-gray-200/60 dark:border-slate-700/60 rounded-xl px-4 py-4 text-center">
-            <p className="text-3xl font-extrabold text-[#111E38] dark:text-white">
-              {formatRp(price)}
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-3xl font-extrabold text-[#111E38] dark:text-white">
+                {formatRp(monthlyRate)}
+              </span>
               <span className="text-sm font-normal text-gray-500 dark:text-slate-400">/bln</span>
-            </p>
-            {cycle === 'yearly' && (
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
-                {lang === 'id' ? 'Tagihan tahunan, hemat dibanding bulanan' : 'Billed annually, save vs monthly'}
+            </div>
+
+            {cycle === 'yearly' ? (
+              <div className="mt-2.5 pt-2.5 border-t border-gray-200/60 dark:border-slate-700/60 flex flex-col gap-0.5">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {lang === 'id' ? 'Total Ditagih di Muka:' : 'Billed Upfront:'}{' '}
+                  <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
+                    {formatRp(totalAmount)} / {lang === 'id' ? 'tahun' : 'year'}
+                  </span>
+                </p>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                  {lang === 'id'
+                    ? `Hemat ${formatRp(yearlySavings)} / tahun dibanding bayar bulanan`
+                    : `Save ${formatRp(yearlySavings)} / year vs monthly`}
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                {lang === 'id' ? 'Ditagih setiap bulan, batalkan kapan saja' : 'Billed monthly, cancel anytime'}
               </p>
             )}
           </div>
@@ -273,7 +292,7 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
           >
             {paying
               ? (lang === 'id' ? 'Memproses…' : 'Processing…')
-              : (lang === 'id' ? `Bayar Sekarang — ${formatRp(price)}` : `Pay Now — ${formatRp(price)}`)}
+              : (lang === 'id' ? `Bayar Sekarang — ${formatRp(totalAmount)}` : `Pay Now — ${formatRp(totalAmount)}`)}
           </button>
         </div>
       </div>

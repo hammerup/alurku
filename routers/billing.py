@@ -89,7 +89,8 @@ def checkout(
     if ws.owner_username != current_user:
         raise HTTPException(status_code=403, detail="Hanya pemilik workspace yang dapat melakukan checkout.")
 
-    amount = PRICING[tier][cycle]
+    monthly_rate = PRICING[tier][cycle]
+    amount = monthly_rate * 12 if cycle == "yearly" else monthly_rate
 
     # Generate unique invoice number
     inv_number = _invoice_number()

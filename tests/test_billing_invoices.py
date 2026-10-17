@@ -62,8 +62,8 @@ def test_checkout_pro_yearly(client, billing_user_token_ws):
     data = resp.json()
     assert "invoice" in data
     inv = data["invoice"]
-    # SSOT: Pro yearly = Rp 79.000
-    assert inv["amount"] == 79_000, f"Expected 79000, got {inv['amount']}"
+    # SSOT: Pro yearly = Rp 79.000/bln billed annually = Rp 948.000
+    assert inv["amount"] == 948_000, f"Expected 948000, got {inv['amount']}"
     assert inv["tier"] == "pro"
     assert inv["billing_cycle"] == "yearly"
     assert inv["invoice_number"].startswith("INV-")
@@ -92,8 +92,8 @@ def test_checkout_business_yearly(client, billing_user_token_ws):
     )
     assert resp.status_code == 200, resp.text
     inv = resp.json()["invoice"]
-    # SSOT: Business yearly = Rp 199.000
-    assert inv["amount"] == 199_000, f"Expected 199000, got {inv['amount']}"
+    # SSOT: Business yearly = Rp 199.000/bln billed annually = Rp 2.388.000
+    assert inv["amount"] == 2_388_000, f"Expected 2388000, got {inv['amount']}"
 
 
 def test_checkout_upgrades_workspace_tier(client, billing_user_token_ws):
