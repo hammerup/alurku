@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function useTheme() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -11,6 +11,20 @@ export function useTheme() {
     }
     return false;
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.backgroundColor = '#090D16';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.style.backgroundColor = '#F3F4F6';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+  }, [isDarkMode]);
   const [appTheme, setAppTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       if (localStorage.getItem('alurku_auth') !== 'true') return '';
