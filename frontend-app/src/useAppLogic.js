@@ -1,5364 +1,777 @@
-import { useFilters } from './hooks/useFilters';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useModals } from './hooks/useModals';
-import { useAuth } from './hooks/useAuth';
-import { useTask } from './hooks/useTask';
-import { useBoard } from './hooks/useBoard';
-import { useUISettings } from './hooks/useUISettings';
 import { useWebSocket } from './hooks/useWebSocket';
-import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
-import axios from 'axios'; 
-import { useGoogleLogin } from '@react-oauth/google';
-import { driver } from 'driver.js';
-import 'driver.js/dist/driver.css';
 
-const DEFAULT_COLUMNS = ['Pending', 'In Progress', 'Done', 'Rejected'];
-const DEFAULT_CATEGORIES = ['Development', 'Design', 'Marketing', 'Research', 'Maintenance', 'Consulting', 'Other'];
-const DAY_WIDTH = 45;
-let cachedGlobalTasks = null;
-let cachedGlobalTasksTime = 0;
+import { DEFAULT_COLUMNS, DAY_WIDTH, translations } from './hooks/domains/constants';
+import { isUserAssigned, getTaskAssignee } from './hooks/domains/helpers';
 
-export const isUserAssigned = (task, username) => {
-  if (!task || !username) return false;
-  const uname = username.toLowerCase();
-  const reqLower = (task.requester || '').toLowerCase();
-  const escapedUname = uname.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const isMentionedExact = new RegExp(`@${escapedUname}(?![\\w.-])`, 'i').test(reqLower);
-  const isAssignedSubtask =
-    (task.subtask_assignees || '').toLowerCase().split(', ').includes(uname) ||
-    (Array.isArray(task.subtasks) && task.subtasks.some((st) => (st.assignee || '').toLowerCase() === uname));
-  const isOwner = (task.owner_username || '').toLowerCase() === uname;
-  const hasAnyMention = reqLower.includes('@');
+import { useAuthSession } from './hooks/domains/useAuthSession';
+import { useWorkspaceManagement } from './hooks/domains/useWorkspaceManagement';
+import { useBoardWorkspace } from './hooks/domains/useBoardWorkspace';
+import { useTaskManagement } from './hooks/domains/useTaskManagement';
+import { useTeamManagement } from './hooks/domains/useTeamManagement';
+import { useLeaveRecords } from './hooks/domains/useLeaveRecords';
+import { useRealtimeNotifications } from './hooks/domains/useRealtimeNotifications';
+import { useChatCommunication } from './hooks/domains/useChatCommunication';
+import { useAIAssistantState } from './hooks/domains/useAIAssistantState';
+import { useAppPreferences } from './hooks/domains/useAppPreferences';
 
-  return isMentionedExact || isAssignedSubtask || (isOwner && !hasAnyMention);
-};
-
-const translations = {
-  en: {
-    File: 'File',
-    Team: 'Team',
-    Account: 'Account',
-    'New Request': 'New Request',
-    'Export CSV': 'Export CSV',
-    'Manage Team': 'Manage Team',
-    Invitations: 'Invitations',
-    'Team Chat': 'Team Chat',
-    Profile: 'Profile',
-    'Time Off': 'Time Off',
-    'Replay Tour': 'Replay Tour',
-    Admin: 'Admin',
-    'Search across all projects...': 'Search across all projects...',
-    'Your Projects': 'Your Projects',
-    'Select a workspace to start managing tasks.': 'Select a workspace to start managing tasks.',
-    'New Project': 'New Project',
-    'Global Export': 'Get All My Data',
-    'Master View': 'Master View',
-    'Global Workload': 'See the Big Picture',
-    'All tasks across your projects': 'All tasks across your projects',
-    'Click to View Everything': 'Click to View Everything',
-    'Kanban Board': 'Kanban Board',
-    'Table List': 'Table List',
-    Analytics: 'Analytics',
-    Timeline: 'Timeline',
-    Calendar: 'Calendar',
-    'My Tasks': 'My Tasks',
-    'Group: Status': 'Group: Status',
-    'Group: Category': 'Group: Category',
-    'Group: Assignee': 'Group: Assignee',
-    'Group: Project': 'Group: Project',
-    'Sort: Default': 'Sort: Default',
-    'Sort: Due Date': 'Sort: Due Date',
-    'Sort: Date Created': 'Sort: Date Created',
-    'Sort: Impact': 'Sort: Impact',
-  },
-  id: {
-    File: 'Berkas',
-    Team: 'Tim',
-    Account: 'Akun',
-    'New Request': 'Tugas Baru',
-    'Export CSV': 'Ekspor CSV',
-    'Manage Team': 'Kelola Tim',
-    Invitations: 'Undangan',
-    'Team Chat': 'Obrolan Tim',
-    Profile: 'Profil',
-    'Time Off': 'Cuti & Libur',
-    'Replay Tour': 'Ulangi Tur',
-    Admin: 'Admin',
-    'Search across all projects...': 'Cari di semua proyek...',
-    'Your Projects': 'Proyek Anda',
-    'Select a workspace to start managing tasks.': 'Pilih ruang kerja untuk mulai mengelola tugas.',
-    'New Project': 'Proyek Baru',
-    'Global Export': 'Dapatkan Semua Data',
-    'Master View': 'Tampilan Utama',
-    'Global Workload': 'Lihat Gambaran Besar',
-    'All tasks across your projects': 'Semua tugas di seluruh proyek Anda',
-    'Click to View Everything': 'Klik untuk Melihat Semua',
-    'Kanban Board': 'Papan Kanban',
-    'Table List': 'Daftar Tabel',
-    Analytics: 'Analitik',
-    Timeline: 'Lini Masa',
-    Calendar: 'Kalender',
-    'My Tasks': 'Tugas Saya',
-    'Group: Status': 'Grup: Status',
-    'Group: Category': 'Grup: Kategori',
-    'Group: Assignee': 'Grup: Pekerja',
-    'Group: Project': 'Grup: Proyek',
-    'Sort: Default': 'Urutkan: Bawaan',
-    'Sort: Due Date': 'Urutkan: Tenggat Waktu',
-    'Sort: Date Created': 'Urutkan: Tanggal Dibuat',
-    'Sort: Impact': 'Urutkan: Dampak',
-  },
-};
-
-// Helper untuk mengekstrak nama pekerja (Assignee) dari data tugas
-export const getTaskAssignee = (task) => {
-  if (!task) return 'Unassigned';
-  const match = (task.requester || '').match(/@([\w.-]+)/);
-  if (match) return `@${match[1]}`;
-  if (task.owner_username) return `@${task.owner_username}`;
-  return 'Unassigned';
-};
-
-const parseLocalZero = (dateStr) => {
-  if (!dateStr) return new Date(0);
-  const d = new Date(dateStr.split(' ')[0].replace(/-/g, '/'));
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const getLocalToday = () => {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(
-    2,
-    '0'
-  )}`;
-};
+export { isUserAssigned, getTaskAssignee };
 
 export default function useAppLogic() {
-  const { searchQuery, setSearchQuery, groupBy, setGroupBy, sortBy, setSortBy } = useFilters();
-
-  // Set default sort on initial load
-  useEffect(() => {
-    setSortBy('Date Created');
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  const {
-    isDarkMode,
-    setIsDarkMode,
-    appTheme,
-    setAppTheme,
-    appBgImage,
-    setAppBgImage,
-    appTexture,
-    setAppTexture,
-    cardTheme,
-    setCardTheme,
-    language,
-    setLanguage,
-  } = useTheme();
-
-  const {
-    isFormOpen,
-    setIsFormOpen,
-    isDeleteConfirmOpen,
-    setIsDeleteConfirmOpen,
-    isTeamModalOpen,
-    setIsTeamModalOpen,
-    isInvitesModalOpen,
-    setIsInvitesModalOpen,
-    isSettingsOpen,
-    setIsSettingsOpen,
-    isAdminModalOpen,
-    setIsAdminModalOpen,
-    isNotifOpen,
-    setIsNotifOpen,
-    isCreateBoardOpen,
-    setIsCreateBoardOpen,
-    showTosUpdate,
-    setShowTosUpdate,
-    isExportModalOpen,
-    setIsExportModalOpen,
-    isLeaveModalOpen,
-    setIsLeaveModalOpen,
-    isGlobalSearchOpen,
-    setIsGlobalSearchOpen,
-    isFeedbackOpen,
-    setIsFeedbackOpen,
-    isSupportOpen,
-    setIsSupportOpen,
-    isDocsOpen,
-    setIsDocsOpen,
-    isMomNotepadOpen,
-    setIsMomNotepadOpen,    
-    isMyTicketsOpen,
-    setIsMyTicketsOpen,
-    isArchivedOpen,
-    setIsArchivedOpen,
-    isMobileMenuOpen,
-    setIsMobileMenuOpen,
-    isMobileProfileOpen,
-    setIsMobileProfileOpen,
-    isLogoutConfirmOpen,
-    setIsLogoutConfirmOpen,
-    isChatWorkspaceOpen,
-    setIsChatWorkspaceOpen,
-    isPrivacyOpen,
-    setIsPrivacyOpen,
-    isTermsOpen,
-    setIsTermsOpen,
-    isChangelogOpen,
-    setIsChangelogOpen,
-    isAssistantOpen,
-    setIsAssistantOpen,
-    isProactiveAIOpen,
-    setIsProactiveAIOpen,
-    isProjectChatOpen,
-    setIsProjectChatOpen,
-    isChatSearchOpen,
-    setIsChatSearchOpen,
-    showWelcomeTour,
-    setShowWelcomeTour,
-    workspaceChatTarget,
-    setWorkspaceChatTarget,
-  } = useModals();
-
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) {
-      localStorage.removeItem('alurku_auth');
-      localStorage.removeItem('alurku_token');
-      localStorage.removeItem('alurku_username');
-      return false;
-    }
-    return localStorage.getItem('alurku_auth') === 'true';
-  });
-
-  const isAuthenticatedRef = useRef(isAuthenticated);
-  useEffect(() => {
-    isAuthenticatedRef.current = isAuthenticated;
-  }, [isAuthenticated]);
-
-  const [currentUser, setCurrentUser] = useState(() => {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('token')) return '';
-    return localStorage.getItem('alurku_username') || '';
-  });
-  const [isLoginMode, setIsLoginMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname;
-      if (path === '/daftar') return false;
-    }
-    return true;
-  });
-  const [showAuthForm, setShowAuthForm] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const path = window.location.pathname;
-      if (
-        params.get('token') ||
-        params.get('verify') ||
-        params.get('task') ||
-        params.get('board') ||
-        path.startsWith('/task/') ||
-        path.startsWith('/project/') ||
-        ['/masuk', '/daftar', '/lupa-sandi'].includes(path)
-      )
-        return true;
-    }
-    return false;
-  });
-  const [loginUsername, setLoginUsername] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState(null);
-  const [lockoutRemaining, setLockoutRemaining] = useState(0);
-  const [regFullName, setRegFullName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
-
-  // Hitung mundur lockout timer
-  useEffect(() => {
-    if (lockoutRemaining <= 0) return;
-    const interval = setInterval(() => {
-      setLockoutRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setLoginError(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [lockoutRemaining]);
-
-  const [resetToken, setResetToken] = useState(() => {
-    if (typeof window !== 'undefined') return new URLSearchParams(window.location.search).get('token');
-    return null;
-  });
-  const [isResetMode, setIsResetMode] = useState(!!resetToken);
-  const [isForgotMode, setIsForgotMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname;
-      if (path === '/lupa-sandi') return true;
-    }
-    return false;
-  });
-  const [forgotEmail, setForgotEmail] = useState('');
-
   const [tasks, setTasks] = useState([]);
-  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
-  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [colModal, setColModal] = useState({ isOpen: false, target: 'Status', mode: 'add', oldName: '', newName: '' });
-  const [viewMode, setViewMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('alurku_view_mode') || 'overview';
-    }
-    return 'overview';
-  });
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editFormData, setEditFormData] = useState({});
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [filterCategory, setFilterCategory] = useState('All');
-  const [filterAssignee, setFilterAssignee] = useState('All');
-  const [filterTag, setFilterTag] = useState('All');
-  const [showMyTasks, setShowMyTasks] = useState(false);
-  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
-  const [showDueTodayOnly, setShowDueTodayOnly] = useState(false);
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const [showHasSubtasks, setShowHasSubtasks] = useState(false);
-  const [hideCompleted, setHideCompleted] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_hide_completed') === 'true';
-    return false;
-  });
-  const [calDate, setCalDate] = useState(new Date());
-  const [subtasks, setSubtasks] = useState([]);
-  const [clonedTaskIds, setClonedTaskIds] = useState(new Set());
-  const isInitialTasksLoad = useRef(true);
-  const [isSubtasksLoading, setIsSubtasksLoading] = useState(false);
-  const [newSubtaskName, setNewSubtaskName] = useState('');
-  const [newSubtaskAssignee, setNewSubtaskAssignee] = useState('');
-  const [formData, setFormData] = useState({
-    project_name: '',
-    requester: '',
-    category: 'Development',
-    description: '',
-    supporting_access: '',
-    start_date: getLocalToday(),
-    deadline: getLocalToday(),
-    impact: 'Medium',
-    etc: 2,
-    auto_nudge: false,
-    recurring: 'none',
-    tags: [],
-  });
-  const [formSubtasks, setFormSubtasks] = useState([]);
-  const [formSubtaskInput, setFormSubtaskInput] = useState('');
-  const [formSubtaskAssignee, setFormSubtaskAssignee] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [notification, setNotification] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('alurku_notify');
-      if (saved) {
-        sessionStorage.removeItem('alurku_notify');
-        return { ...JSON.parse(saved), id: Date.now() };
-      }
-    }
-    return null;
-  });
-  const [inviteInput, setInviteInput] = useState('');
-  const [inviteSuggestions, setInviteSuggestions] = useState([]);
-  const [inviteIndex, setInviteIndex] = useState(0);
-  const [userDirectory, setUserDirectory] = useState([]);
-  const [invitations, setInvitations] = useState([]);
-  const [profileData, setProfileData] = useState({ username: '', email: '', full_name: '' });
-  const [isMentioning, setIsMentioning] = useState(false);
-  const [mentionQuery, setMentionQuery] = useState('');
-  const [mentionIndex, setMentionIndex] = useState(0);
-  const [isCommentMentioning, setIsCommentMentioning] = useState(false);
-  const [commentMentionQuery, setCommentMentionQuery] = useState('');
-  const [commentMentionIndex, setCommentMentionIndex] = useState(0);
-  const [adminUsers, setAdminUsers] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [isAiReplying, setIsAiReplying] = useState(false);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [isNotifClosing, setIsNotifClosing] = useState(false);
-  const [commentToDelete, setCommentToDelete] = useState(null);
-  const [memberToRevoke, setMemberToRevoke] = useState(null);
-  const [transferTargetUsername, setTransferTargetUsername] = useState(null);
-  const [avatarsMap, setAvatarsMap] = useState({});
-  const [myTeam, setMyTeam] = useState([]);
-  const [boards, setBoards] = useState([]);
-  const [workspaceBoards, setWorkspaceBoards] = useState([]);
-  const [workspaces, setWorkspaces] = useState([]);
-  const [activeWorkspace, setActiveWorkspace] = useState(null);
-
-  const wsToken = typeof window !== 'undefined' ? localStorage.getItem('alurku_token') || '' : '';
-  const { onlineUsers, isConnected: isWsConnected, lastWsMessage } = useWebSocket(
-    activeWorkspace?.id,
-    wsToken,
-    currentUser
-  );
-  const [selectedBoard, setSelectedBoard] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('alurku_selected_board');
-      return saved && saved !== 'null' && saved !== 'undefined' ? JSON.parse(saved) : null;
-    }
-    return null;
-  });
-  const [newBoardName, setNewBoardName] = useState('');
-  const [isPrivateBoard, setIsPrivateBoard] = useState(false);
-  const [boardToDelete, setBoardToDelete] = useState(null);
-  const [boardToArchive, setBoardToArchive] = useState(null);
-
-  // PWA (Progressive Web App) Install Logic
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstallable, setIsInstallable] = useState(false);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setIsInstallable(false);
-      }
-    }
-  };
-
-  // ToS & Privacy Policy Update Consent Logic
-  const prevProactiveAIOpen = useRef(isProactiveAIOpen);
-  useEffect(() => {
-    if (prevProactiveAIOpen.current === true && !isProactiveAIOpen && isAuthenticated && currentUser) {
-      const hasAccepted = localStorage.getItem(`alurku_tos_accepted_${currentUser}`);
-      if (hasAccepted !== 'true') {
-        const timer = setTimeout(() => {
-          setShowTosUpdate(true);
-        }, 15000); // Delay 15 detik setelah Proactive AI ditutup
-        return () => clearTimeout(timer);
-      }
-    }
-    prevProactiveAIOpen.current = isProactiveAIOpen;
-  }, [isProactiveAIOpen, isAuthenticated, currentUser]);
-
-  const handleAcceptTos = () => {
-    localStorage.setItem(`alurku_tos_accepted_${currentUser}`, 'true');
-    setShowTosUpdate(false);
-    showNotification(
-      language === 'id' ? 'Terima kasih telah menyetujui persyaratan!' : 'Thank you for accepting the terms!',
-      'success'
-    );
-  };
-  const [deleteBoardConfirmText, setDeleteBoardConfirmText] = useState('');
-  const [exportMode, setExportMode] = useState('board');
-  const [exportStartDate, setExportStartDate] = useState('');
-  const [exportEndDate, setExportEndDate] = useState('');
-  const [leaves, setLeaves] = useState([]);
-  const [leaveForm, setLeaveForm] = useState({ start_date: '', end_date: '', desc: '', type: 'personal' });
-  const [timelineDrag, setTimelineDrag] = useState(null);
-  const [hoveredTimelineRow, setHoveredTimelineRow] = useState(null);
-  const [pendingStatusChange, setPendingStatusChange] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTasksLoading, setIsTasksLoading] = useState(false);
-  const [isBoardsLoading, setIsBoardsLoading] = useState(false);
-  const [isKanbanDragging, setIsKanbanDragging] = useState(false);
-  const [isTrashHovered, setIsTrashHovered] = useState(false);
-
-  // State Khusus Pratinjau Publik
-  const [previewTask, setPreviewTask] = useState(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !isAuthenticated) {
-      const path = window.location.pathname;
-      if (path.startsWith('/task/')) {
-        const taskId = parseInt(path.replace('/task/', '').split('-')[0], 10);
-        if (!isNaN(taskId)) {
-          axios
-            .get(`/api/tasks/preview/${taskId}`)
-            .then((res) => {
-              setPreviewTask(res.data.task);
-            })
-            .catch((err) => {
-              console.error('Preview error', err);
-              alert(
-                language === 'id'
-                  ? 'Gagal memuat pratinjau. Tugas mungkin telah dihapus, bersifat privat, atau server sedang sibuk (Cold Start).'
-                  : 'Failed to load preview. The task might be deleted, private, or the server is busy.'
-              );
-            });
-        }
-      }
-    }
-  }, [isAuthenticated]);
-
-  // NEW: Project Boards Preferences
-  const [boardViewMode, setBoardViewMode] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_view') || 'grid';
-    return 'grid';
-  });
-  const [boardSortBy, setBoardSortBy] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_board_sort') || 'active';
-    return 'active';
-  });
-  const [favoriteBoards, setFavoriteBoards] = useState(() => {
-    if (typeof window !== 'undefined') return JSON.parse(localStorage.getItem('alurku_fav_boards') || '[]');
-    return [];
-  });
-  useEffect(() => localStorage.setItem('alurku_board_view', boardViewMode), [boardViewMode]);
-  useEffect(() => localStorage.setItem('alurku_board_sort', boardSortBy), [boardSortBy]);
-  useEffect(() => localStorage.setItem('alurku_fav_boards', JSON.stringify(favoriteBoards)), [favoriteBoards]);
-  useEffect(() => localStorage.setItem('alurku_hide_completed', hideCompleted), [hideCompleted]);
-
-  const confirmPendingStatusChange = () => {
-    if (!pendingStatusChange) return;
-    const { type, payload } = pendingStatusChange;
-    if (type === 'drag') {
-      onDragEnd(payload, true);
-    } else if (type === 'direct') {
-      handleDirectStatusChange(payload, true);
-    } else if (type === 'edit') {
-      handleEditSubmit(null, true);
-    } else if (type === 'timeline') {
-      handleMouseUp(null, payload);
-    }
-    setPendingStatusChange(null);
-  };
-
-  const cancelPendingStatusChange = () => {
-    if (pendingStatusChange?.previousTasks) {
-      setTasks(pendingStatusChange.previousTasks);
-    }
-    setPendingStatusChange(null);
-  };
-
-  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [globalSearchResults, setGlobalSearchResults] = useState([]);
-  const [globalSearchBoards, setGlobalSearchBoards] = useState([]);
-  const [forceSearchAll, setForceSearchAll] = useState(false);
-  const [isGlobalSearchClosing, setIsGlobalSearchClosing] = useState(false);
-  const [accountStatus, setAccountStatus] = useState('active');
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [supportText, setSupportText] = useState('');
-  useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_docs_open', isDocsOpen);
-  }, [isDocsOpen]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_mom_notepad_open', isMomNotepadOpen);
-  }, [isMomNotepadOpen]);  
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.removeItem('alurku_chat_ws_open');
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_changelog_open', isChangelogOpen);
-  }, [isChangelogOpen]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_proactive_ai_open', isProactiveAIOpen);
-  }, [isProactiveAIOpen]);
-
-  const [chatBg, setChatBg] = useState('');
-  const [projectChatMessages, setProjectChatMessages] = useState([]);
-  const [newProjectChatMessage, setNewProjectChatMessage] = useState('');
-  const [drawerTab, setDrawerTab] = useState('team'); // 'team' or 'assistant'
-  const [isProjectMentioning, setIsProjectMentioning] = useState(false);
-  const [projectMentionQuery, setProjectMentionQuery] = useState('');
-  const [projectMentionIndex, setProjectMentionIndex] = useState(0);
-  const [hasNewProjectChat, setHasNewProjectChat] = useState(false);
-  const [hasMoreProjectChat, setHasMoreProjectChat] = useState(false);
-  const [hasMoreComments, setHasMoreComments] = useState(false);
-  const [chatSearchQuery, setChatSearchQuery] = useState('');
-  const [dmConversations, setDmConversations] = useState([]);
-  const [inboxChats, setInboxChats] = useState([]);
-  const [isInboxLoading, setIsInboxLoading] = useState(false);
-  const [showScrollBottom, setShowScrollBottom] = useState(false);
-  const [latestMentionId, setLatestMentionId] = useState(null);
-  const [dismissedMentionIds, setDismissedMentionIds] = useState(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const driverRef = useRef(null);
+
+  // 1. UI Settings & Theme
+  const theme = useTheme();
+  const modals = useModals();
+
+  const { language } = theme;
   const t = (key) => translations[language]?.[key] || key;
   const tMsg = (en, id) => (language === 'id' ? id : en);
 
-  const [dateFormat, setDateFormat] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_date_format') || 'DD MMM YYYY';
-    return 'DD MMM YYYY';
+  // 2. Auth Session
+  const authSession = useAuthSession({
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    setIsLoading,
+    language,
+    tMsg,
+    setSelectedBoard: (b) => boardWs.setSelectedBoard(b),
+    setIsLogoutConfirmOpen: modals.setIsLogoutConfirmOpen,
   });
 
-  const [showLiveClock, setShowLiveClock] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_show_clock') === 'true';
-    return false;
-  });
-  const [showLiveClockDate, setShowLiveClockDate] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_show_clock_date') !== 'false';
-    return true;
-  });
-  const [pomodoroEnabled, setPomodoroEnabled] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_pomodoro') === 'true';
-    return false;
-  });
-  const [showAssistantButton, setShowAssistantButton] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_show_assistant_btn') !== 'false';
-    return true;
-  });
-  const [notifPosition, setNotifPosition] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_notif_pos') || 'bottom-right';
-    return 'bottom-right';
-  });
-  const [notifSound, setNotifSound] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_notif_sound') !== 'false';
-    return true;
-  });
-  const [notifPrivacy, setNotifPrivacy] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_notif_privacy') === 'true';
-    return false;
+  // 3. Workspaces
+  const workspacesMgr = useWorkspaceManagement({
+    isAuthenticated: authSession.isAuthenticated,
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    language,
+    setSelectedBoard: (b) => boardWs.setSelectedBoard(b),
+    fetchBoards: () => boardWs.fetchBoards(),
+    fetchTasks: (force) => taskMgmt.fetchTasks(force),
   });
 
-  const [browserNotifEnabled, setBrowserNotifEnabled] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('alurku_browser_notif') === 'true';
-    return false;
+  // 4. Boards & Columns
+  const boardWs = useBoardWorkspace({
+    isAuthenticated: authSession.isAuthenticated,
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    setIsLoading,
+    setIsSubmitting,
+    language,
+    tMsg,
+    tasks,
+    setTasks,
+    isFormOpen: modals.isFormOpen,
+    setFormData: (fd) => taskMgmt.setFormData(fd),
+    isEditing: () => taskMgmt?.isEditing,
+    setEditFormData: (efd) => taskMgmt.setEditFormData(efd),
+    setIsCreateBoardOpen: modals.setIsCreateBoardOpen,
+    fetchTasks: () => taskMgmt.fetchTasks(),
   });
 
-  const lastNotifIdRef = useRef(null);
-
-  useEffect(() => {
-    if (notifications.length > 0) {
-      const maxId = Math.max(...notifications.map((n) => n.id));
-      if (lastNotifIdRef.current === null) {
-        lastNotifIdRef.current = maxId;
-      } else if (maxId > lastNotifIdRef.current) {
-        const newNotifs = notifications.filter((n) => n.id > lastNotifIdRef.current && !n.is_read);
-        if (newNotifs.length > 0) {
-          const singleMsg = newNotifs[0].message.replace(/(?:<!--|&lt;!--)\s*TASK_ID:\d+\s*(?:-->|--&gt;)/gi, '');
-          const multiMsg =
-            language === 'id'
-              ? `Kamu memiliki ${newNotifs.length} notifikasi aktivitas baru.`
-              : `You have ${newNotifs.length} new activity notifications.`;
-          const displayMsg = newNotifs.length === 1 ? singleMsg : multiMsg;
-
-          // Tampilkan Desktop Notif jika diizinkan
-          if (browserNotifEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('alurku.', { body: displayMsg });
-          }
-
-          // Tampilkan Toast In-App Notif
-          setNotification({ message: displayMsg, type: 'info', id: Date.now() });
-
-          // Auto-refresh papan Kanban agar task yang baru masuk langsung muncul tanpa perlu refresh halaman
-          if (selectedBoard) fetchTasks();
-          fetchBoards(); // Memperbarui lencana peringatan merah (badges) di beranda secara otomatis
-        }
-        lastNotifIdRef.current = maxId;
-      }
-    }
-  }, [notifications, browserNotifEnabled, language, selectedBoard]);
-
-  const formatDateMMM = (dateString) => {
-    if (!dateString) return '-';
-    const d = new Date(dateString.replace(/-/g, '/'));
-    if (isNaN(d)) return dateString.split(' ')[0];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    if (dateFormat === 'DD/MM/YYYY') {
-      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-    } else if (dateFormat === 'YYYY-MM-DD') {
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    } else if (dateFormat === 'MMM DD, YYYY') {
-      return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}, ${d.getFullYear()}`;
-    }
-    return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
-  };
-
-  const prevChatLenRef = useRef(0);
-  const chatEndRef = useRef(null);
-
-  const closeNotif = () => {
-    setIsNotifClosing(true);
-    setTimeout(() => {
-      setIsNotifOpen(false);
-      setIsNotifClosing(false);
-    }, 200);
-  };
-
-  const closeGlobalSearch = () => {
-    setIsGlobalSearchClosing(true);
-    setTimeout(() => {
-      setIsGlobalSearchOpen(false);
-      setIsGlobalSearchClosing(false);
-    }, 200);
-  };
-
-  useEffect(() => {
-    if (currentUser) {
-      setChatBg(localStorage.getItem(`alurku_chat_bg_${currentUser}`) || '');
-    } else {
-      setChatBg('');
-    }
-  }, [currentUser]);
-
-  const handleChatBgUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showNotification('Image size must be less than 2MB', 'error');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setChatBg(reader.result);
-        if (currentUser) {
-          localStorage.setItem(`alurku_chat_bg_${currentUser}`, reader.result);
-        }
-        showNotification('Chat background updated!', 'success');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeChatBg = () => {
-    setChatBg('');
-    if (currentUser) {
-      localStorage.removeItem(`alurku_chat_bg_${currentUser}`);
-    }
-    showNotification('Chat background removed!', 'success');
-  };
-
-  const handleSelectDefaultBg = (bgStr) => {
-    setChatBg(bgStr);
-    if (currentUser) {
-      localStorage.setItem(`alurku_chat_bg_${currentUser}`, bgStr);
-    }
-    showNotification('Chat theme updated!', 'success');
-  };
-
-  const handleSelectAppTheme = (themeStr) => {
-    setAppTheme(themeStr);
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_app_theme', themeStr);
-    showNotification('App background updated!', 'success');
-  };
-
-  const handleAppBgUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('Image size must be less than 5MB', 'error');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAppBgImage(reader.result);
-        if (typeof window !== 'undefined') localStorage.setItem('alurku_app_bg_image', reader.result);
-        showNotification('Custom background updated!', 'success');
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const removeAppBgImage = () => {
-    setAppBgImage('');
-    if (typeof window !== 'undefined') localStorage.removeItem('alurku_app_bg_image');
-    showNotification('Custom background removed!', 'success');
-  };
-
-  const handleSelectAppBg = (bgStr) => {
-    setAppBgImage(bgStr || '');
-    if (typeof window !== 'undefined') {
-      if (bgStr) {
-        localStorage.setItem('alurku_app_bg_image', bgStr);
-      } else {
-        localStorage.removeItem('alurku_app_bg_image');
-      }
-    }
-    showNotification(language === 'id' ? 'Latar belakang diperbarui!' : 'Background updated!', 'success');
-  };
-
-  const handleSelectAppTexture = (textureStr) => {
-    setAppTexture(textureStr);
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_app_texture', textureStr);
-    showNotification('Texture overlay updated!', 'success');
-  };
-
-  const handleSelectCardTheme = (themeStr) => {
-    setCardTheme(themeStr);
-    if (typeof window !== 'undefined') localStorage.setItem('alurku_card_theme', themeStr);
-    showNotification('Task card theme updated!', 'success');
-  };
-
-  useEffect(() => {
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-  }, [isLoginMode, isForgotMode, isResetMode, showAuthForm]);
-
-  const driverRef = useRef(null);
-  const scrollRef = useRef(null);
-  const activeScrollRef = useRef(null);
-  const mouseUpRef = useRef();
-  const currentBoardIdRef = useRef(null);
-  const commentsLengthRef = useRef(0);
-  const projectChatLengthRef = useRef(0);
-
-  useEffect(() => {
-    commentsLengthRef.current = comments.length;
-    projectChatLengthRef.current = projectChatMessages.length;
-  }, [comments, projectChatMessages]);
-
-  // ─── Toast Queue (industry-standard multi-slot notification) ────
-  // Supports up to 3 simultaneous toasts; oldest is dropped when limit exceeded.
-  // Backward-compatible: `notification` & `setNotification` still exist for legacy consumers.
-  const [toastQueue, setToastQueue] = useState([]);
-
-  const dismissToast = useCallback(
-    (id) => {
-      setToastQueue((prev) => prev.filter((t) => t.id !== id));
-      // Also clear legacy single-notification if it's the same id
-      setNotification((prev) => (prev && prev.id === id ? null : prev));
-    },
-    [setNotification]
+  // 5. WebSocket
+  const wsToken =
+    typeof window !== 'undefined' ? localStorage.getItem('alurku_token') || '' : '';
+  const { onlineUsers, isConnected: isWsConnected, lastWsMessage } = useWebSocket(
+    workspacesMgr.activeWorkspace?.id,
+    wsToken,
+    authSession.currentUser
   );
 
-  const showNotification = useCallback(
-    (message, type = 'info', opts = {}) => {
-      let safeMessage = message;
-      if (message && typeof message !== 'string') {
-        try {
-          safeMessage = JSON.stringify(message);
-        } catch (e) {
-          safeMessage = 'An unexpected error occurred.';
-        }
-      }
-      const id = Date.now();
-      const toast = { id, message: safeMessage, type, ...opts };
-
-      // Keep legacy single-notification in sync for backward compat
-      setNotification(toast);
-
-      // Push to queue, keep max 3
-      setToastQueue((prev) => [...prev.slice(-2), toast]);
-    },
-    [setNotification]
-  );
-
-
-  useEffect(() => {
-    const handleNotificationEvent = (e) => {
-      if (e.detail && e.detail.message) {
-        showNotification(e.detail.message, e.detail.type || 'info');
-      }
-    };
-    window.addEventListener('show-notification', handleNotificationEvent);
-    return () => window.removeEventListener('show-notification', handleNotificationEvent);
-  }, []);
-
-  useEffect(() => {
-    if (sessionStorage.getItem('alurku_trial_signup')) {
-      sessionStorage.removeItem('alurku_trial_signup');
-      setTimeout(() => {
-        showNotification(
-          language === 'id'
-            ? 'Akun Uji Coba Berhasil Dibuat! Cek email Anda untuk mengatur kata sandi.'
-            : 'Trial Account Created! Please check your email to set your password.',
-          'success'
-        );
-      }, 1000);
-    }
-  }, [language]);
-
-  const startTour = () => {
-    setShowWelcomeTour(true);
-  };
-
-  const startDriverTour = () => {
-    let driverObj = null;
-    driverObj = driver({
-      allowClose: true,
-      allowKeyboardControl: true,
-      showProgress: true,
-      animate: true,
-      overlayColor: 'rgba(0, 0, 0, 0.75)',
-      onDestroyStarted: () => {
-        if (!selectedBoard || selectedBoard.id === 'global') {
-          localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
-          setIsProactiveAIOpen(true);
-          window.history.pushState({}, '', '/proactive-ai');
-          window.dispatchEvent(new CustomEvent('alurku-navigate'));
-        } else {
-          localStorage.setItem(`alurku_board_tour_done_v2_${currentUser}`, 'true');
-        }
-        setIsFormOpen(false);
-        setIsMobileMenuOpen(false);
-        driverObj.destroy();
-      },
-      steps:
-        !selectedBoard || selectedBoard.id === 'global'
-          ? [
-              {
-                popover: {
-                  title: tMsg('Welcome to alurku.! 🚀', 'Selamat datang di alurku.! 🚀'),
-                  description: tMsg(
-                    'This is your main dashboard. Let us give you a quick tour! Click the logo anytime to return here.',
-                    'Ini adalah dasbor utama kamu. Yuk mulai tur singkat! Klik logo kapan saja untuk kembali ke sini.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-ai-briefing',
-                popover: {
-                  title: tMsg('AI Daily Briefing', 'Ringkasan Harian AI'),
-                  description: tMsg(
-                    'Get a quick AI-powered summary of your workload and priorities for the day.',
-                    'Dapatkan ringkasan singkat bertenaga AI tentang beban kerja dan prioritasmu hari ini.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-my-capacity',
-                popover: {
-                  title: tMsg('Your Capacity Meter', 'Pengukur Kapasitasmu'),
-                  description: tMsg(
-                    "This meter shows your remaining active workload in hours. It also warns you if you're approaching a weekly or monthly overload, helping you manage your bandwidth.",
-                    'Pengukur ini menunjukkan sisa beban kerja aktif kamu dalam jam. Ini juga akan memberi peringatan jika mendekati batas mingguan atau bulanan, membantumu mengelola kapasitas kerja.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-quick-stats',
-                popover: {
-                  title: tMsg('Quick Stats', 'Statistik Cepat'),
-                  description: tMsg(
-                    'Keep an eye on your personal tasks, active projects, and any overdue or critical items.',
-                    'Pantau tugas pribadimu, proyek aktif, dan tugas yang terlambat atau kritis.'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-top-queue',
-                popover: {
-                  title: tMsg('My Top Queue', 'Antrean Teratas'),
-                  description: tMsg(
-                    'Tackle your highest priority pending tasks here to keep your work flowing smoothly.',
-                    'Selesaikan tugas prioritas tertinggimu di sini agar pekerjaan tetap mengalir lancar.'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-recent-comments',
-                popover: {
-                  title: tMsg('Recent Comments', 'Komentar Terbaru'),
-                  description: tMsg(
-                    'Stay in the loop with the latest discussions, task updates, and teammate feedback.',
-                    'Pantau diskusi terbaru, pembaruan tugas, dan masukan dari rekan tim.'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-home-new-project',
-                popover: {
-                  title: tMsg('Create a Project', 'Buat Proyek'),
-                  description: tMsg(
-                    'Start a new project workspace here. You can invite your team members later.',
-                    'Mulai ruang kerja proyek baru di sini. Kamu dapat mengundang anggota tim kapan saja.'
-                  ),
-                  side: 'left',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-global-board',
-                popover: {
-                  title: tMsg('Global Board', 'Papan Global'),
-                  description: tMsg(
-                    'Access your Global Board from the sidebar anytime to see tasks from all projects.',
-                    'Akses Papan Global dari bilah sisi kapan saja untuk melihat tugas dari semua proyek.'
-                  ),
-                  side: 'right',
-                  align: 'start',
-                },
-                onHighlightStarted: () => {
-                  if (window.innerWidth < 768 && !isMobileMenuOpen) {
-                    setIsMobileMenuOpen(true);
-                  }
-                },
-              },
-              {
-                element: '.tour-my-todolist',
-                popover: {
-                  title: tMsg('Personal Tasks', 'Tugas Pribadi'),
-                  description: tMsg(
-                    'Access your private scratchpad workspace here. These tasks are isolated and only visible to you.',
-                    'Akses ruang kerja catatan pribadi kamu di sini. Tugas di sini terisolasi dan hanya dapat kamu lihat sendiri.'
-                  ),
-                  side: 'right',
-                  align: 'start',
-                },
-                onHighlightStarted: () => {
-                  if (window.innerWidth < 768 && !isMobileMenuOpen) {
-                    setIsMobileMenuOpen(true);
-                  }
-                },
-              },
-              {
-                element: '.tour-project-card',
-                popover: {
-                  title: tMsg('Your Projects', 'Proyekmu'),
-                  description: tMsg(
-                    'Your individual project workspaces will appear here in the sidebar.',
-                    'Ruang kerja proyek kamu akan muncul di bilah sisi ini.'
-                  ),
-                  side: 'right',
-                  align: 'start',
-                },
-                onHighlightStarted: () => {
-                  if (window.innerWidth < 768 && !isMobileMenuOpen) {
-                    setIsMobileMenuOpen(true);
-                  }
-                },
-              },
-              {
-                element: '.tour-quick-actions',
-                popover: {
-                  title: tMsg('Quick Actions', 'Aksi Cepat'),
-                  description: tMsg(
-                    'Quickly access chat, export your data, view notifications, and open settings.',
-                    'Akses obrolan dengan cepat, ekspor data, lihat notifikasi, dan buka pengaturan.'
-                  ),
-                  side: 'right',
-                  align: 'start',
-                },
-                onHighlightStarted: () => {
-                  if (window.innerWidth < 768 && !isMobileMenuOpen) {
-                    setIsMobileMenuOpen(true);
-                  }
-                },
-              },
-              {
-                element: window.innerWidth >= 768 ? '.tour-account-menu' : '.tour-account-menu-mobile',
-                popover: {
-                  title: tMsg('Account Options', 'Opsi Akun'),
-                  description: tMsg(
-                    'Manage your profile, set personal leaves, or start this tour again from the Account menu.',
-                    'Kelola profil, atur cuti pribadi, atau mulai tur ini lagi dari menu Akun.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-                onHighlightStarted: () => {
-                  if (window.innerWidth < 768 && isMobileMenuOpen) {
-                    setIsMobileMenuOpen(false);
-                  }
-                },
-              },
-              {
-                popover: {
-                  title: tMsg("You're All Set! 🎉", 'Semua Siap! 🎉'),
-                  description: tMsg(
-                    "That's the end of the tour! Now let's put it into practice. Go ahead and create your first project to get started!",
-                    'Sekian tur kali ini! Sekarang yuk kita praktikkan. Buat proyek pertamamu sekarang untuk memulai!'
-                  ),
-                  align: 'center',
-                },
-              },
-            ]
-          : [
-              {
-                element: window.innerWidth >= 768 ? '.tour-board-title' : '.tour-board-title-mobile',
-                popover: {
-                  title: tMsg('Home Dashboard', 'Beranda Utama'),
-                  description: tMsg(
-                    'Click the alurku. logo anytime to return to your Home Dashboard.',
-                    'Klik logo alurku. kapan saja untuk kembali ke Beranda Utama kamu.'
-                  ),
-                  side: 'right',
-                  align: 'center',
-                },
-              },
-              {
-                element: '.tour-breadcrumb',
-                popover: {
-                  title: tMsg('Project Path', 'Jalur Proyek'),
-                  description: tMsg(
-                    'Here you can easily identify the name of the current project workspace.',
-                    'Di sini kamu dapat dengan mudah melihat nama ruang kerja proyek saat ini.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-team-menu',
-                popover: {
-                  title: tMsg('Manage Team & Invites', 'Kelola Tim & Undangan'),
-                  description: tMsg(
-                    'Invite your colleagues to this project or manage their access here. You will also see project invitation notifications here.',
-                    'Undang rekan tim ke proyek ini atau kelola akses mereka di sini. Notifikasi undangan proyek juga akan muncul di sini.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-
-              {
-                element: '.tour-views',
-                popover: {
-                  title: tMsg('Workspace Views', 'Tampilan Ruang Kerja'),
-                  description: tMsg(
-                    'Switch between Kanban, Table List, Analytics Dashboard, Timeline (Gantt), and Calendar modes.',
-                    'Beralih antara mode Papan Kanban, Daftar Tabel, Dasbor Analitik, Lini Masa (Gantt), dan Kalender.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-filters',
-                popover: {
-                  title: tMsg('Smart Filters', 'Filter Cerdas'),
-                  description: tMsg(
-                    'Filter tasks by status, category, or click "My Tasks" to instantly see your workload.',
-                    'Saring tugas berdasarkan status, kategori, atau klik "Tugas Saya" untuk langsung melihat beban kerjamu.'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-new-task',
-                popover: {
-                  title: tMsg('Create Task', 'Buat Tugas'),
-                  description: tMsg(
-                    "Let's simulate creating a request! Click the actual \"New Request\" button to open the form.",
-                    'Yuk simulasikan pembuatan tugas! Klik tombol "Tugas Baru" yang asli untuk membuka formulir.'
-                  ),
-                  side: 'left',
-                  align: 'start',
-                  showButtons: ['previous'],
-                },
-                onHighlighted: () => {
-                  if (driverRef.current) driverRef.current.isAtNewTask = true;
-                },
-                onDeselected: () => {
-                  if (driverRef.current) driverRef.current.isAtNewTask = false;
-                },
-              },
-              {
-                element: '.tour-form-ai-input',
-                popover: {
-                  title: tMsg('Smart Assistant AI', 'Asisten Pintar AI'),
-                  description: tMsg(
-                    'You can now type your request naturally and let the AI draft the task, deadline, and checklist for you!',
-                    'Kamu kini dapat mengetik kebutuhanmu secara alami dan biarkan AI menyusun tugas, tenggat waktu, dan daftar periksa untukmu!'
-                  ),
-                  side: 'bottom',
-                  align: 'start',
-                },
-                onPrevClick: () => {
-                  setIsFormOpen(false);
-                  setTimeout(() => driverObj.movePrevious(), 300);
-                },
-              },
-              {
-                element: '.tour-form-manual-btn',
-                popover: {
-                  title: tMsg('Manual Entry', 'Isi Manual'),
-                  description: tMsg(
-                    'Prefer the old way? Click "Just Fill Manually" to open the standard task form.',
-                    'Lebih suka cara standar? Klik "Isi Manual Saja" untuk membuka formulir tugas biasa.'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                  showButtons: ['previous'],
-                },
-                onHighlighted: () => {
-                  if (driverRef.current) driverRef.current.isAtManualBtn = true;
-                },
-                onDeselected: () => {
-                  if (driverRef.current) driverRef.current.isAtManualBtn = false;
-                },
-              },
-              {
-                element: '.tour-form-project',
-                popover: {
-                  title: tMsg('Task Title', 'Judul Tugas'),
-                  description: tMsg(
-                    'Enter the title of your campaign or task here.',
-                    'Masukkan judul tugas atau proyekmu di sini.'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-                onPrevClick: () => {
-                  setIsFormOpen(false);
-                  setTimeout(() => driverObj.moveTo(4), 300);
-                },
-              },
-              {
-                element: '.tour-form-requester',
-                popover: {
-                  title: tMsg('Smart Assignment', 'Penugasan Cerdas'),
-                  description: tMsg(
-                    'Type a name, or type "@" to search and instantly assign this to a team member. They will get an email!',
-                    'Ketik nama, atau ketik "@" untuk mencari dan langsung menugaskan ini ke rekan tim. Mereka akan mendapat notifikasi email!'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-form-deadline',
-                popover: {
-                  title: tMsg('Smart Deadline', 'Tenggat Waktu Cerdas'),
-                  description: tMsg(
-                    'Pick a deadline. Our system automatically avoids weekends and public holidays!',
-                    'Pilih tenggat waktu. Sistem kami otomatis menghindari akhir pekan dan libur nasional!'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-form-checklist',
-                popover: {
-                  title: tMsg('Sub-task Delegation', 'Delegasi Sub-tugas'),
-                  description: tMsg(
-                    'Break down the task into smaller checklists and assign them to different people.',
-                    'Pecah tugas menjadi daftar periksa yang lebih terperinci dan delegasikan ke rekan tim.'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-              },
-              {
-                element: '.tour-form-submit',
-                popover: {
-                  title: tMsg('Submit Request', 'Kirim Permintaan'),
-                  description: tMsg(
-                    'Once filled, hit Create Task. That concludes our workspace tour! 🚀',
-                    'Setelah terisi, tekan Buat Tugas. Selesai sudah tur ruang kerja kita! 🚀'
-                  ),
-                  side: 'top',
-                  align: 'start',
-                },
-                onNextClick: () => {
-                  setIsFormOpen(false);
-                  driverObj.moveNext();
-                },
-              },
-            ],
-    });
-    driverRef.current = driverObj;
-    setTimeout(() => {
-      driverObj.drive();
-    }, 100);
-  };
-
-  useEffect(() => {
-    if (selectedBoard && selectedBoard.id !== 'global' && !isProactiveAIOpen && !isProjectChatOpen) {
-      const hasSeenBoardTour = localStorage.getItem(`alurku_board_tour_done_v2_${currentUser}`);
-      const isAIOffering = localStorage.getItem('alurku_ai_offer_docs') === 'true';
-      if (!hasSeenBoardTour && !isAIOffering) {
-        const timer = setTimeout(() => {
-          startDriverTour();
-        }, 1000);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [selectedBoard, isProactiveAIOpen, isProjectChatOpen, currentUser]);
-
-  const handleManualFormClick = () => {
-    if (driverRef.current && driverRef.current.isAtManualBtn) {
-      setTimeout(() => {
-        if (driverRef.current) driverRef.current.moveNext();
-      }, 400);
-    }
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      const hasSeenTour = localStorage.getItem(`alurku_tour_done_v2_${currentUser}`);
-      const legacyTour = localStorage.getItem('alurku_tour_done_v2');
-
-      if (!hasSeenTour && !legacyTour) {
-        const timer = setTimeout(() => setShowWelcomeTour(true), 1500);
-        return () => clearTimeout(timer);
-      } else {
-        if (!hasSeenTour && legacyTour) {
-          localStorage.setItem(`alurku_tour_done_v2_${currentUser}`, 'true');
-          localStorage.removeItem('alurku_tour_done_v2');
-        }
-
-        const justLoggedIn = sessionStorage.getItem('alurku_just_logged_in');
-        if (justLoggedIn) {
-          sessionStorage.removeItem('alurku_just_logged_in');
-        }
-      }
-    }
-  }, [isAuthenticated, currentUser]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const verifyToken = params.get('verify');
-      if (verifyToken) {
-        axios
-          .post('/api/verify-email', { token: verifyToken })
-          .then((res) => {
-            showNotification(res.data.message, 'success');
-            setIsLoginMode(true);
-            setShowAuthForm(true);
-          })
-          .catch((err) => {
-            showNotification(err.response?.data?.detail || 'Verification failed or token expired.', 'error');
-          })
-          .finally(() => {
-            const url = new URL(window.location);
-            url.searchParams.delete('verify');
-            window.history.pushState({}, '', url);
-          });
-      }
-    }
-  }, []);
-
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      setIsLoading(true);
-      axios
-        .post('/api/google-login', { token: tokenResponse.access_token }, { timeout: 30000 })
-        .then((res) => {
-          localStorage.setItem('alurku_auth', 'true');
-          localStorage.setItem('alurku_token', res.data.token);
-          localStorage.setItem('alurku_username', res.data.username);
-          sessionStorage.setItem('alurku_just_logged_in', 'true');
-          // Gunakan Hard Reload agar memori React untuk Dashboard termuat dengan bersih tanpa blank screen
-          window.location.href = '/';
-        })
-        .catch((err) => {
-          setIsLoading(false);
-          showNotification(
-            err.response?.data?.detail || (language === 'id' ? 'Gagal masuk dengan Google.' : 'Google Login failed.'),
-            'error'
-          );
-        });
-    },
-    onError: () =>
-      showNotification(
-        language === 'id' ? 'Masuk dengan Google dibatalkan.' : 'Google Login failed or cancelled.',
-        'error'
-      ),
+  // 6. Realtime Notifications & Toast
+  const notifs = useRealtimeNotifications({
+    isAuthenticated: authSession.isAuthenticated,
+    currentUser: authSession.currentUser,
+    language,
+    selectedBoard: boardWs.selectedBoard,
+    fetchTasks: () => taskMgmt.fetchTasks(),
+    fetchBoards: () => boardWs.fetchBoards(),
+    setSelectedTask: (t) => taskMgmt.setSelectedTask(t),
+    setPreviewTask: (t) => taskMgmt.setPreviewTask(t),
+    setIsNotifOpen: modals.setIsNotifOpen,
+    getInboxChats: () => chatComm?.inboxChats || [],
+    fetchDmConversations: () => chatComm.fetchDmConversations(),
+    fetchInboxChats: () => chatComm.fetchInboxChats(),
   });
 
-  const [isPanning, setIsPanning] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
-
-  const handleMouseDown = (e) => {
-    if (
-      e.target.closest('.task-card') ||
-      e.target.closest('.board-col-header') ||
-      e.target.closest('#floating-trash') ||
-      e.target.closest('[data-rbd-drag-handle-context-id]') ||
-      e.target.closest('[data-rpd-drag-handle-context-id]') ||
-      e.target.closest('button') ||
-      e.target.closest('input') ||
-      e.target.closest('textarea') ||
-      e.target.closest('select') ||
-      e.target.closest('a') ||
-      e.target.closest('.fixed') ||
-      e.target.closest(
-        'p, span, h1, h2, h3, h4, h5, h6, strong, em, b, i, blockquote, pre, code, td, th, tr, details, summary, label, li'
-      )
-    ) {
-      return;
-    }
-
-    const scrollable = e.target.closest('.overflow-auto, .overflow-x-auto') || scrollRef.current;
-    if (scrollable) {
-      const rect = scrollable.getBoundingClientRect();
-      const scrollbarHeight = scrollable.offsetHeight - scrollable.clientHeight;
-      const scrollbarWidth = scrollable.offsetWidth - scrollable.clientWidth;
-      if (
-        (scrollbarHeight > 0 && e.clientY >= rect.bottom - scrollbarHeight) ||
-        (scrollbarWidth > 0 && e.clientX >= rect.right - scrollbarWidth)
-      ) {
-        return;
-      }
-
-      activeScrollRef.current = scrollable;
-      setIsPanning(true);
-      setStartX(e.pageX - scrollable.offsetLeft);
-      setScrollLeft(scrollable.scrollLeft);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setIsPanning(false);
-    activeScrollRef.current = null;
-  };
-
-  const handleMouseUp = (e, forceDropPayload = null) => {
-    setIsPanning(false);
-    activeScrollRef.current = null;
-
-    // Deteksi Pasti (Synchronous) Jika Task Dijatuhkan di Atas Tong Sampah Mengambang
-    let droppedOnTrash = isTrashHovered;
-    if (timelineDrag) {
-      const trashEl = document.getElementById('floating-trash');
-      if (trashEl) {
-        const rect = trashEl.getBoundingClientRect();
-        const padding = 40; // Area toleransi hit-box
-        if (
-          e.clientX >= rect.left - padding &&
-          e.clientX <= rect.right + padding &&
-          e.clientY >= rect.top - padding &&
-          e.clientY <= rect.bottom + padding
-        ) {
-          droppedOnTrash = true;
-        }
-      }
-    }
-
-    if (droppedOnTrash && timelineDrag) {
-      const t = timelineDrag.task;
-      setSelectedTask(t);
-      setIsDeleteConfirmOpen(true);
-      setTimelineDrag(null);
-      setIsTrashHovered(false);
-      setHoveredTimelineRow(null);
-      return;
-    }
-
-    const currentDrag = forceDropPayload ? forceDropPayload.dragged : timelineDrag;
-    const currentRow = forceDropPayload ? forceDropPayload.hoveredRow : hoveredTimelineRow;
-
-    if (currentDrag) {
-      let requiresUpdate = false;
-      const t = currentDrag.task;
-      const payload = {
-        project_name: t.project_name,
-        requester: t.requester,
-        category: t.category,
-        description: t.description || '',
-        supporting_access: t.supporting_access || '',
-        start_date: t.start_date || '',
-        deadline: t.deadline ? t.deadline.split(' ')[0] + ' 17:00:00' : '',
-        impact: t.impact || 'Medium',
-        etc: t.etc || 2,
-        auto_nudge: t.auto_nudge || false,
-        recurring: t.recurring || 'none',
-        status: t.status,
-        board_id: t.board_id,
-      };
-      const updatedTask = { ...t };
-
-      if (currentDrag.mode === 'both' && currentRow && currentRow !== 'unknown') {
-        if (groupBy === 'Assignee' && currentRow !== getTaskAssignee(t)) {
-          updatedTask.requester = currentRow === 'Unassigned' ? '' : currentRow;
-          payload.requester = updatedTask.requester;
-          requiresUpdate = true;
-        } else if (groupBy === 'Status' && currentRow !== t.status) {
-          if (!forceDropPayload && currentRow === 'Done' && t.subtask_done < t.subtask_total) {
-            setPendingStatusChange({
-              type: 'timeline',
-              payload: { dragged: currentDrag, hoveredRow: currentRow },
-            });
-            setTimelineDrag(null);
-            setHoveredTimelineRow(null);
-            return;
-          }
-          updatedTask.status = currentRow;
-          payload.status = updatedTask.status;
-          requiresUpdate = true;
-        } else if (groupBy === 'Category' && currentRow !== (t.category || 'Uncategorized')) {
-          updatedTask.category = currentRow === 'Uncategorized' ? '' : currentRow;
-          payload.category = updatedTask.category;
-          requiresUpdate = true;
-        } else if (groupBy === 'Project' && String(currentRow) !== String(t.board_id || 'unknown')) {
-          const newBoardId = parseInt(currentRow);
-          if (!isNaN(newBoardId)) {
-            updatedTask.board_id = newBoardId;
-            payload.board_id = newBoardId;
-            requiresUpdate = true;
-          }
-        }
-      }
-
-      if (requiresUpdate) {
-        const isTaskAdmin =
-          isSuperAdmin ||
-          t.owner_username === currentUser ||
-          (selectedBoard && selectedBoard.owner_username === currentUser) ||
-          (t.requester &&
-            new RegExp(`@${currentUser.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w.-])`, 'i').test(t.requester));
-        if (isTaskAdmin) {
-          setTasks((prev) => prev.map((task) => (task.id === updatedTask.id ? updatedTask : task)));
-          axios
-            .put(`/api/tasks/${updatedTask.id}/details`, payload)
-            .then(() => {
-              showNotification(`Task successfully reassigned!`, 'success');
-              fetchTasks();
-            })
-            .catch((err) => {
-              showNotification(err.response?.data?.detail || 'Failed to update task', 'error');
-              fetchTasks();
-            });
-        } else {
-          showNotification('Permission Denied: You cannot modify this task.', 'error');
-        }
-      }
-
-      if (currentDrag.startOffsetDays !== 0) {
-        updateTaskDates(currentDrag.task, currentDrag.startOffsetDays, currentDrag.mode);
-        setTimeout(() => setTimelineDrag(null), 100);
-      } else {
-        setTimelineDrag(null);
-      }
-      setHoveredTimelineRow(null);
-    }
-  };
-
-  useLayoutEffect(() => {
-    mouseUpRef.current = handleMouseUp;
+  // 7. Tasks
+  const taskMgmt = useTaskManagement({
+    tasks,
+    setTasks,
+    isAuthenticated: authSession.isAuthenticated,
+    currentUser: authSession.currentUser,
+    selectedBoard: boardWs.selectedBoard,
+    setSelectedBoard: boardWs.setSelectedBoard,
+    boards: boardWs.boards,
+    columns: boardWs.columns,
+    categories: boardWs.categories,
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    setIsLoading,
+    isSubmitting,
+    setIsSubmitting,
+    language,
+    tMsg,
+    notifications: notifs.notifications,
+    isSuperAdmin: authSession.isSuperAdmin,
+    accountStatus: authSession.accountStatus,
+    setIsFormOpen: modals.setIsFormOpen,
+    setIsDeleteConfirmOpen: modals.setIsDeleteConfirmOpen,
+    fetchComments: (taskId) => chatComm.fetchComments(taskId),
+    fetchNotifications: () => notifs.fetchNotifications(),
+    driverRef,
+    handleMouseUp: (e, payload) => appPrefs?.handleMouseUp(e, payload),
   });
 
+  // 8. Team & Directory
+  const teamMgmt = useTeamManagement({
+    isAuthenticated: authSession.isAuthenticated,
+    currentUser: authSession.currentUser,
+    selectedBoard: boardWs.selectedBoard,
+    setSelectedBoard: boardWs.setSelectedBoard,
+    activeWorkspace: workspacesMgr.activeWorkspace,
+    setBoards: boardWs.setBoards,
+    fetchBoards: () => boardWs.fetchBoards(),
+    fetchTasks: () => taskMgmt.fetchTasks(),
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    setIsLoading,
+    isSuperAdmin: authSession.isSuperAdmin,
+    setIsSuperAdmin: authSession.setIsSuperAdmin,
+    setAccountStatus: authSession.setAccountStatus,
+    setIsTeamModalOpen: modals.setIsTeamModalOpen,
+    setIsSettingsOpen: modals.setIsSettingsOpen,
+    setIsMobileMenuOpen: modals.setIsMobileMenuOpen,
+    handleLogout: authSession.handleLogout,
+  });
+
+  // 9. Leaves
+  const leavesRec = useLeaveRecords({
+    isAuthenticated: authSession.isAuthenticated,
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    fetchTasks: () => taskMgmt.fetchTasks(),
+  });
+
+  // 10. Chat & Comments
+  const chatComm = useChatCommunication({
+    isAuthenticated: authSession.isAuthenticated,
+    currentUser: authSession.currentUser,
+    selectedBoard: boardWs.selectedBoard,
+    setSelectedBoard: boardWs.setSelectedBoard,
+    selectedTask: taskMgmt.selectedTask,
+    boards: boardWs.boards,
+    fetchTasks: () => taskMgmt.fetchTasks(),
+    fetchSubtasks: (taskId) => taskMgmt.fetchSubtasks(taskId),
+    lastWsMessage,
+    isProjectChatOpen: modals.isProjectChatOpen,
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+  });
+
+  // 11. AI Assistant, Feedback, Support, CSV Export
+  const aiState = useAIAssistantState({
+    currentUser: authSession.currentUser,
+    filteredTasks: taskMgmt.filteredTasks,
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    setIsLoading,
+    setIsSubmitting,
+    language,
+    setIsExportModalOpen: modals.setIsExportModalOpen,
+    setIsFeedbackOpen: modals.setIsFeedbackOpen,
+    setIsSupportOpen: modals.setIsSupportOpen,
+  });
+
+  // 12. App Preferences, Themes, Driver Tour, Timeline drag & Popstate
+  const appPrefs = useAppPreferences({
+    driverRef,
+    isAuthenticated: authSession.isAuthenticated,
+    currentUser: authSession.currentUser,
+    language,
+    t,
+    tMsg,
+    tasks: taskMgmt.tasks,
+    setTasks: taskMgmt.setTasks,
+    boards: boardWs.boards,
+    selectedBoard: boardWs.selectedBoard,
+    setSelectedBoard: boardWs.setSelectedBoard,
+    setSelectedTask: taskMgmt.setSelectedTask,
+    activeWorkspace: workspacesMgr.activeWorkspace,
+    workspaces: workspacesMgr.workspaces,
+    switchWorkspace: workspacesMgr.switchWorkspace,
+    viewMode: taskMgmt.viewMode,
+    groupBy: taskMgmt.groupBy,
+    leaves: leavesRec.leaves,
+    isSuperAdmin: authSession.isSuperAdmin,
+    fetchTasks: () => taskMgmt.fetchTasks(),
+    showNotification: (msg, type) => notifs.showNotification(msg, type),
+    setPendingStatusChange: taskMgmt.setPendingStatusChange,
+    setAppTheme: theme.setAppTheme,
+    setAppBgImage: theme.setAppBgImage,
+    setAppTexture: theme.setAppTexture,
+    setCardTheme: theme.setCardTheme,
+    setIsFormOpen: modals.setIsFormOpen,
+    setIsDeleteConfirmOpen: modals.setIsDeleteConfirmOpen,
+    isProactiveAIOpen: modals.isProactiveAIOpen,
+    setIsProactiveAIOpen: modals.setIsProactiveAIOpen,
+    isProjectChatOpen: modals.isProjectChatOpen,
+    setIsProjectChatOpen: modals.setIsProjectChatOpen,
+    isMobileMenuOpen: modals.isMobileMenuOpen,
+    setIsMobileMenuOpen: modals.setIsMobileMenuOpen,
+    isSettingsOpen: modals.isSettingsOpen,
+    setIsSettingsOpen: modals.setIsSettingsOpen,
+    isDocsOpen: modals.isDocsOpen,
+    setIsDocsOpen: modals.setIsDocsOpen,
+    selectedTask: taskMgmt.selectedTask,
+    isLeaveModalOpen: modals.isLeaveModalOpen,
+    setIsLeaveModalOpen: modals.setIsLeaveModalOpen,
+    isAdminModalOpen: modals.isAdminModalOpen,
+    setIsAdminModalOpen: modals.setIsAdminModalOpen,
+    isFeedbackOpen: modals.isFeedbackOpen,
+    setIsFeedbackOpen: modals.setIsFeedbackOpen,
+    isSupportOpen: modals.isSupportOpen,
+    setIsSupportOpen: modals.setIsSupportOpen,
+    isTeamModalOpen: modals.isTeamModalOpen,
+    setIsTeamModalOpen: modals.setIsTeamModalOpen,
+    isInvitesModalOpen: modals.isInvitesModalOpen,
+    setIsInvitesModalOpen: modals.setIsInvitesModalOpen,
+    isLogoutConfirmOpen: modals.isLogoutConfirmOpen,
+    setIsLogoutConfirmOpen: modals.setIsLogoutConfirmOpen,
+    isDeleteConfirmOpen: modals.isDeleteConfirmOpen,
+    isCreateBoardOpen: modals.isCreateBoardOpen,
+    setIsCreateBoardOpen: modals.setIsCreateBoardOpen,
+    isExportModalOpen: modals.isExportModalOpen,
+    setIsExportModalOpen: modals.setIsExportModalOpen,
+    isMyTicketsOpen: modals.isMyTicketsOpen,
+    setIsMyTicketsOpen: modals.setIsMyTicketsOpen,
+    isChatWorkspaceOpen: modals.isChatWorkspaceOpen,
+    setIsChatWorkspaceOpen: modals.setIsChatWorkspaceOpen,
+    isAssistantOpen: modals.isAssistantOpen,
+    setIsAssistantOpen: modals.setIsAssistantOpen,
+    colModal: boardWs.colModal,
+    setColModal: boardWs.setColModal,
+    showWelcomeTour: modals.showWelcomeTour,
+    setShowWelcomeTour: modals.setShowWelcomeTour,
+    setShowTosUpdate: modals.setShowTosUpdate,
+    isGlobalSearchOpen: modals.isGlobalSearchOpen,
+    setIsGlobalSearchOpen: modals.setIsGlobalSearchOpen,
+    isTrashHovered: taskMgmt.isTrashHovered,
+    setIsTrashHovered: taskMgmt.setIsTrashHovered,
+    userDirectory: teamMgmt.userDirectory,
+  });
+
+  // Initial load effect when authenticated
   useEffect(() => {
-    const onMouseUpGlobal = (e) => {
-      if (mouseUpRef.current) mouseUpRef.current(e);
-    };
-
-    window.addEventListener('mouseup', onMouseUpGlobal);
-    return () => {
-      window.removeEventListener('mouseup', onMouseUpGlobal);
-    };
-  }, []);
-
-  const handleMouseMove = (e) => {
-    if (timelineDrag) {
-      e.preventDefault();
-
-      const dragWidth = timelineDrag.dragWidth || DAY_WIDTH;
-      const deltaX = e.pageX - timelineDrag.startX;
-      let deltaDays = Math.round(deltaX / dragWidth);
-
-      // Jika dalam mode Kalender, tambahkan kalkulasi pergerakan vertikal (per minggu = 7 hari)
-      if (timelineDrag.isCalendar) {
-        const dragHeight = timelineDrag.dragHeight || 100;
-        const deltaY = e.pageY - (timelineDrag.startY || e.pageY);
-        const deltaWeeks = Math.round(deltaY / dragHeight);
-        deltaDays += deltaWeeks * 7;
-      }
-
-      if (deltaDays !== timelineDrag.startOffsetDays) {
-        setTimelineDrag((prev) => (prev ? { ...prev, startOffsetDays: deltaDays } : null));
-      }
-      return;
-    }
-    if (!isPanning || !activeScrollRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - activeScrollRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    activeScrollRef.current.scrollLeft = scrollLeft - walk;
-  };
-
-  const updateTaskDates = (task, deltaDays, mode = 'end') => {
-    const parseDateStr = (dStr) => {
-      if (!dStr) return new Date();
-      const d = new Date(dStr.replace(/-/g, '/'));
-      d.setHours(0, 0, 0, 0);
-      return d;
-    };
-    const formatDStr = (d) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-    let sDate = parseDateStr(task.start_date || task.timestamp.split(' ')[0]);
-    let eDate = task.deadline ? parseDateStr(task.deadline.split(' ')[0]) : parseDateStr();
-
-    const snapToValidDay = (date, direction = 1) => {
-      let d = new Date(date);
-      while (true) {
-        const dStr = formatDStr(d);
-        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-        const isHoliday = leaves.some(
-          (l) => l.leave_date === dStr && (l.leave_type !== 'personal' || isUserAssigned(task, l.username))
-        );
-        if (isWeekend || isHoliday) {
-          d.setDate(d.getDate() + direction);
-        } else {
-          break;
-        }
-      }
-      return d;
-    };
-
-    if (mode === 'end') {
-      eDate.setDate(eDate.getDate() + deltaDays);
-      if (eDate < sDate) eDate = new Date(sDate);
-      eDate = snapToValidDay(eDate, deltaDays >= 0 ? 1 : -1);
-    } else if (mode === 'start') {
-      sDate.setDate(sDate.getDate() + deltaDays);
-      if (sDate > eDate) sDate = new Date(eDate);
-      sDate = snapToValidDay(sDate, deltaDays >= 0 ? 1 : -1);
-    } else if (mode === 'both') {
-      sDate.setDate(sDate.getDate() + deltaDays);
-      eDate.setDate(eDate.getDate() + deltaDays);
-      sDate = snapToValidDay(sDate, deltaDays >= 0 ? 1 : -1);
-      eDate = snapToValidDay(eDate, deltaDays >= 0 ? 1 : -1);
-    }
-
-    if (eDate < sDate) eDate = new Date(sDate);
-
-    const newStartDate = formatDStr(sDate);
-    const newDeadline = formatDStr(eDate) + ' 17:00:00';
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diffDays = Math.round((eDate - today) / (1000 * 60 * 60 * 24));
-    let newPriorityLvl = 'normal';
-    let newPriorityStr = 'NORMAL';
-    if (diffDays <= 1) {
-      newPriorityLvl = 'critical';
-      newPriorityStr = 'CRITICAL';
-    } else if (diffDays <= 3) {
-      newPriorityLvl = 'warning';
-      newPriorityStr = 'WARNING';
-    }
-
-    const updatedTask = {
-      ...task,
-      start_date: newStartDate,
-      deadline: newDeadline,
-      priority_lvl: newPriorityLvl,
-      priority_str: newPriorityStr,
-    };
-    setTasks((prev) => prev.map((t) => (t.id === task.id ? updatedTask : t)));
-
-    const payload = {
-      project_name: task.project_name,
-      requester: task.requester,
-      category: task.category,
-      description: task.description || '',
-      supporting_access: task.supporting_access || '',
-      start_date: newStartDate,
-      deadline: newDeadline,
-      impact: task.impact || 'Medium',
-      etc: task.etc || 2,
-      auto_nudge: task.auto_nudge || false,
-      recurring: task.recurring || 'none',
-      status: task.status,
-    };
-
-    axios
-      .put(`/api/tasks/${task.id}/details`, payload)
-      .then(() => {
-        showNotification('Timeline dates updated', 'success');
-        fetchTasks();
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to update dates', 'error');
-        fetchTasks();
-      });
-  };
-
-  const handleLogout = () => {
-    setIsLogoutConfirmOpen(false);
-    setIsLoading(true);
-    window.isLoggingOut = true;
-
-    // Set state ke homepage segera agar transisi visual langsung mengarah ke Landing Page (Homepage)
-    // dan bukan ke form login/register
-    setShowAuthForm(false);
-    setIsAuthenticated(false);
-    setCurrentUser('');
-    setSelectedBoard(null);
-
-    setTimeout(() => {
-      localStorage.removeItem('alurku_auth');
-      localStorage.removeItem('alurku_token');
-      localStorage.removeItem('alurku_username');
-      localStorage.removeItem('alurku_selected_board');
-      localStorage.removeItem('alurku_proactive_ai_open');
-      localStorage.removeItem('alurku_docs_open');
-      localStorage.removeItem('alurku_chat_ws_open');
-      localStorage.removeItem('alurku_changelog_open');
-
-      // Gunakan reload untuk memastikan seluruh memori cache/state React benar-benar bersih
-      // Spinner loading akan menutupi transisi ini dengan mulus
-      window.location.href = '/';
-    }, 1000);
-  };
-
-  useEffect(() => {
-    const sessionExpired = sessionStorage.getItem('alurku_session_expired');
-    if (sessionExpired) {
-      sessionStorage.removeItem('alurku_session_expired');
-      showNotification('Session expired. Please login again.', 'error');
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleAuthError = () => {
-      if (window.isLoggingOut) return;
-      
-      // Clear storage
-      localStorage.removeItem('alurku_auth');
-      localStorage.removeItem('alurku_token');
-      localStorage.removeItem('alurku_username');
-      localStorage.removeItem('alurku_selected_board');
-      localStorage.removeItem('alurku_proactive_ai_open');
-      localStorage.removeItem('alurku_docs_open');
-      localStorage.removeItem('alurku_chat_ws_open');
-      localStorage.removeItem('alurku_changelog_open');
-      
-      // Set session expired indicator in sessionStorage to show notification on fresh load
-      sessionStorage.setItem('alurku_session_expired', 'true');
-
-      // Redirect immediately to clean all state and prevent blank/black screens
-      window.location.href = '/';
-    };
-    window.addEventListener('auth_error', handleAuthError);
-
-    const interceptor = axios.interceptors.request.use((config) => {
-      const method = (config.method || '').toLowerCase();
-      if (method === 'post' || method === 'put' || method === 'delete') {
-        if (config.url && (config.url.includes('/api/tasks') || config.url.includes('/api/boards'))) {
-          cachedGlobalTasks = null;
-          cachedGlobalTasksTime = 0;
-        }
-      }
-      return config;
-    });
-
-    return () => {
-      window.removeEventListener('auth_error', handleAuthError);
-      axios.interceptors.request.eject(interceptor);
-    };
-  }, []);
-
-  const fetchWorkspaces = () => {
-    if (!isAuthenticated) return Promise.resolve([]);
-    return axios
-      .get('/api/workspaces')
-      .then((res) => {
-        const list = res.data || [];
-        setWorkspaces(list);
-        
-        if (list.length > 0) {
-          const savedId = localStorage.getItem('alurku_active_workspace_id');
-          const found = list.find((w) => String(w.id) === String(savedId));
-          const active = found || list[0];
-          
-          setActiveWorkspace(active);
-          localStorage.setItem('alurku_active_workspace_id', active.id);
-          return list;
-        }
-        return [];
-      })
-      .catch((err) => {
-        console.error('Error fetching workspaces:', err);
-        return [];
-      });
-  };
-
-  const createWorkspace = (name) => {
-    if (!name.trim()) return;
-    axios
-      .post('/api/workspaces', { name: name.trim() })
-      .then((res) => {
-        showNotification(language === 'id' ? 'Workspace berhasil dibuat!' : 'Workspace created successfully!', 'success');
-        fetchWorkspaces().then((list) => {
-          const newWs = list.find((w) => w.id === res.data.workspace.id);
-          if (newWs) {
-             switchWorkspace(newWs);
-          }
-        });
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to create workspace', 'error');
-      });
-  };
-
-  const renameWorkspace = (id, name) => {
-    if (!name.trim()) return;
-    axios
-      .put(`/api/workspaces/${id}`, { name: name.trim() })
-      .then((res) => {
-        showNotification(language === 'id' ? 'Workspace berhasil diubah namanya!' : 'Workspace renamed successfully!', 'success');
-        fetchWorkspaces().then((list) => {
-          const updated = list.find((w) => w.id === id);
-          if (updated) {
-            setActiveWorkspace(updated);
-          }
-        });
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to rename workspace', 'error');
-      });
-  };
-
-  const deleteWorkspace = (id) => {
-    if (!id) return Promise.reject();
-    return axios
-      .delete(`/api/workspaces/${id}`)
-      .then((res) => {
-        showNotification(res.data?.message || (language === 'id' ? 'Workspace berhasil dihapus!' : 'Workspace deleted successfully!'), 'success');
-        return fetchWorkspaces().then((list) => {
-          if (list && list.length > 0) {
-            setActiveWorkspace(list[0]);
-          }
-          return list;
-        });
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to delete workspace', 'error');
-        throw err;
-      });
-  };
-
-  const renameProject = (id, name, description = null) => {
-    if (!name.trim()) return;
-    const payload = { name: name.trim() };
-    if (description !== null) {
-      payload.description = description.trim();
-    }
-    axios
-      .put(`/api/boards/${id}`, payload)
-      .then((res) => {
-        showNotification(language === 'id' ? 'Proyek berhasil diperbarui!' : 'Project updated successfully!', 'success');
-        fetchBoards();
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to update project', 'error');
-      });
-  };
-
-  const switchWorkspace = (workspace) => {
-    setActiveWorkspace(workspace);
-    localStorage.setItem('alurku_active_workspace_id', workspace.id);
-    
-    // Hapus selected board dari workspace lama agar tidak bentrok
-    localStorage.removeItem('alurku_selected_board');
-    setSelectedBoard(null);
-    
-    showNotification(
-      language === 'id' 
-        ? `Berpindah ke workspace: ${workspace.name}`
-        : `Switched to workspace: ${workspace.name}`,
-      'info'
-    );
-    
-    // Hapus cached global tasks cache
-    cachedGlobalTasks = null;
-    cachedGlobalTasksTime = 0;
-    
-    // Muat ulang papan dan tugas untuk workspace yang baru
-    setTimeout(() => {
-      fetchBoards();
-      fetchTasks(true);
-    }, 50);
-  };
-
-  const fetchBoards = () => {
-    if (!isAuthenticated) return;
-    setIsBoardsLoading(true);
-    axios
-      .get('/api/boards')
-      .then((res) => {
-        setBoards(res.data.boards || []);
-        setWorkspaceBoards(res.data.workspace_boards || res.data.boards || []);
-      })
-      .catch((err) => {
-        if (err.response?.status !== 401) console.error(err);
-      })
-      .finally(() => setIsBoardsLoading(false));
-  };
-
-  const fetchTasks = (force = false) => {
-    if (!isAuthenticated) return;
-
-    if (force) {
-      cachedGlobalTasks = null;
-      cachedGlobalTasksTime = 0;
-    }
-
-    const handleNewTasks = (fetchedTasks) => {
-      setTasks(fetchedTasks);
-    };
-
-    if (!selectedBoard || selectedBoard.id === 'global') {
-      const now = Date.now();
-      if (cachedGlobalTasks && now - cachedGlobalTasksTime < 30000) {
-        handleNewTasks(cachedGlobalTasks);
-        setIsTasksLoading(false);
-        // Refresh in the background silently
-        axios
-          .get('/api/tasks/all')
-          .then((res) => {
-            const fetched = res.data.tasks || [];
-            handleNewTasks(fetched);
-            cachedGlobalTasks = fetched;
-            cachedGlobalTasksTime = Date.now();
-          })
-          .catch((err) => {
-            if (err.response?.status !== 401) console.error(err);
-          });
-        return;
-      }
-
-      setIsTasksLoading(true);
-      axios
-        .get('/api/tasks/all')
-        .then((res) => {
-          const fetched = res.data.tasks || [];
-          handleNewTasks(fetched);
-          cachedGlobalTasks = fetched;
-          cachedGlobalTasksTime = Date.now();
-        })
-        .catch((err) => {
-          if (err.response?.status !== 401) console.error(err);
-        })
-        .finally(() => setIsTasksLoading(false));
-      return;
-    }
-
-    axios
-      .get(`/api/boards/${selectedBoard.id}/tasks`)
-      .then((res) => {
-        handleNewTasks(res.data.tasks || []);
-      })
-      .catch((err) => {
-        if (err.response?.status === 403 || err.response?.status === 404) setSelectedBoard(null);
-        if (err.response?.status !== 401) console.error(err);
-      })
-      .finally(() => setIsTasksLoading(false));
-  };
-
-  const fetchInvitations = () => {
-    if (!isAuthenticated) return;
-    axios
-      .get('/api/invitations')
-      .then((res) => setInvitations(res.data.invitations || []))
-      .catch((err) => console.error(err));
-  };
-
-  const fetchTeamMembers = () => {
-    if (!isAuthenticated) return;
-
-    if (!selectedBoard || selectedBoard.id === 'global') {
-      if (activeWorkspace?.id) {
-        axios
-          .get(`/api/workspaces/${activeWorkspace.id}/members`)
-          .then((res) => {
-            const memberUsernames = (res.data || []).map((m) => m.username);
-            setTeamMembers(memberUsernames.length > 0 ? memberUsernames : [currentUser]);
-          })
-          .catch(() => setTeamMembers([currentUser]));
-      } else {
-        setTeamMembers([currentUser]);
-      }
-      return;
-    }
-
-    axios
-      .get(`/api/boards/${selectedBoard.id}/members`)
-      .then((res) => setTeamMembers(res.data.members || []))
-      .catch((err) => {
-        if (err.response?.status === 403) setSelectedBoard(null);
-        console.error(err);
-      });
-  };
-
-  const fetchAvatars = () => {
-    if (!isAuthenticated) return;
-    axios
-      .get('/api/users/avatars')
-      .then((res) => {
-        setAvatarsMap(res.data.avatars || {});
-        if (res.data.directory) setUserDirectory(res.data.directory);
-      })
-      .catch(console.error);
-  };
-
-  const fetchMyTeam = (bId = null) => {
-    if (!isAuthenticated) return;
-    const targetId = bId || (selectedBoard ? selectedBoard.id : null);
-    if (!targetId || targetId === 'global') return;
-    axios
-      .get(`/api/boards/${targetId}/manage`)
-      .then((res) => setMyTeam(res.data.team || []))
-      .catch(console.error);
-  };
-
-  const fetchNotifications = () => {
-    if (!isAuthenticated) return;
-    axios
-      .get('/api/notifications')
-      .then((res) => setNotifications(res.data.notifications || []))
-      .catch((err) => {
-        if (err.response?.status !== 401) console.error(err);
-      });
-  };
-
-  const fetchLeaves = () => {
-    if (!isAuthenticated) return;
-    axios
-      .get('/api/leaves')
-      .then((res) => setLeaves(res.data.leaves || []))
-      .catch((err) => console.error(err));
-  };
-
-  const isDmFetchingRef = useRef(false);
-  const fetchDmConversations = () => {
-    if (!isAuthenticated || isDmFetchingRef.current) return;
-    isDmFetchingRef.current = true;
-    axios
-      .get('/api/dm/conversations')
-      .then((res) => setDmConversations(res.data.conversations || []))
-      .catch(console.error)
-      .finally(() => {
-        setTimeout(() => {
-          isDmFetchingRef.current = false;
-        }, 500);
-      });
-  };
-
-  const isInboxFetchingRef = useRef(false);
-  const fetchInboxChats = () => {
-    if (!isAuthenticated || isInboxFetchingRef.current) return;
-    isInboxFetchingRef.current = true;
-    axios
-      .get('/api/my-chats')
-      .then((res) => {
-        setInboxChats(res.data.chats || []);
-      })
-      .catch(console.error)
-      .finally(() => {
-        setIsInboxLoading(false);
-        setTimeout(() => {
-          isInboxFetchingRef.current = false;
-        }, 500);
-      });
-  };
-
-  const fetchProfileStatus = () => {
-    if (!isAuthenticated) return;
-    axios
-      .get('/api/profile')
-      .then((res) => {
-        setAccountStatus(res.data.account_status || 'active');
-        setIsSuperAdmin(res.data.is_superadmin === 1);
-        setProfileData({ ...res.data, current_password: '', new_password: '' });
-      })
-      .catch(console.error);
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      setIsLoading(true);
-
-      // Failsafe timer: batas toleransi jaringan sebelum loading dinonaktifkan
+    if (authSession.isAuthenticated) {
+      const loadTimer = setTimeout(() => {
+        setIsLoading(true);
+      }, 0);
       const failsafeTimer = setTimeout(() => {
         setIsLoading(false);
       }, 15000);
 
-      fetchWorkspaces()
+      workspacesMgr
+        .fetchWorkspaces()
         .then(() => {
-          fetchBoards();
-          fetchTasks();
+          boardWs.fetchBoards();
+          taskMgmt.fetchTasks();
         })
         .finally(() => {
+          clearTimeout(loadTimer);
           clearTimeout(failsafeTimer);
           setIsLoading(false);
         });
 
-      fetchInvitations();
-      fetchNotifications();
-      fetchAvatars();
-      fetchLeaves();
-      fetchProfileStatus();
-      fetchDmConversations();
-      fetchInboxChats();
+      teamMgmt.fetchInvitations();
+      notifs.fetchNotifications();
+      teamMgmt.fetchAvatars();
+      leavesRec.fetchLeaves();
+      teamMgmt.fetchProfileStatus();
+      chatComm.fetchDmConversations();
+      chatComm.fetchInboxChats();
 
       const interval = setInterval(() => {
         if (document.visibilityState === 'visible') {
-          fetchNotifications();
-          fetchInvitations();
-          fetchDmConversations();
-          fetchInboxChats();
+          notifs.fetchNotifications();
+          teamMgmt.fetchInvitations();
+          chatComm.fetchDmConversations();
+          chatComm.fetchInboxChats();
         }
       }, 60000);
 
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-          fetchNotifications();
-          fetchInvitations();
-          fetchDmConversations();
-          fetchInboxChats();
-        }
-      };
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
       return () => {
+        clearTimeout(loadTimer);
+        clearTimeout(failsafeTimer);
         clearInterval(interval);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
       };
     }
-  }, [isAuthenticated]);
+  }, [authSession.isAuthenticated]);
 
+  // Keep team members in sync with active workspace/board
   useEffect(() => {
-    if (selectedBoard) {
-      localStorage.setItem('alurku_selected_board', JSON.stringify(selectedBoard));
-    } else {
-      localStorage.removeItem('alurku_selected_board');
+    if (authSession.isAuthenticated) {
+      teamMgmt.fetchTeamMembers();
     }
-  }, [selectedBoard]);
-
-  const syncBoardSettings = (newCols, newCats) => {
-    if (!selectedBoard || selectedBoard.id === 'global') return;
-    axios
-      .put(`/api/boards/${selectedBoard.id}/settings`, {
-        statuses: JSON.stringify(newCols),
-        categories: JSON.stringify(newCats),
-      })
-      .then(() => {
-        setSelectedBoard((prev) =>
-          prev ? { ...prev, statuses: JSON.stringify(newCols), categories: JSON.stringify(newCats) } : null
-        );
-        setBoards((prev) =>
-          prev.map((b) =>
-            b.id === selectedBoard.id
-              ? { ...b, statuses: JSON.stringify(newCols), categories: JSON.stringify(newCats) }
-              : b
-          )
-        );
-      })
-      .catch(console.error);
-  };
-
-  // Effect to handle board changes (fetching tasks, setting columns/categories)
-  useEffect(() => {
-    if (selectedBoard) {
-      if (currentBoardIdRef.current !== selectedBoard.id) {
-        setTasks([]);
-        currentBoardIdRef.current = selectedBoard.id;
-
-        if (selectedBoard.id !== 'global') {
-          let dbCols = [],
-            dbCats = [];
-          try {
-            dbCols = JSON.parse(selectedBoard.statuses || '[]');
-          } catch (e) {}
-          try {
-            dbCats = JSON.parse(selectedBoard.categories || '[]');
-          } catch (e) {}
-
-          if (dbCols.length === 0) dbCols = DEFAULT_COLUMNS;
-          if (dbCats.length === 0) dbCats = DEFAULT_CATEGORIES;
-
-          const savedCols = localStorage.getItem(`alurku_columns_${selectedBoard.id}`);
-          const savedCats = localStorage.getItem(`alurku_categories_${selectedBoard.id}`);
-          let localCols = savedCols && savedCols !== 'null' && savedCols !== 'undefined' ? JSON.parse(savedCols) : [];
-          let localCats = savedCats && savedCats !== 'null' && savedCats !== 'undefined' ? JSON.parse(savedCats) : [];
-
-          const mergedCols = [
-            ...localCols.filter((c) => dbCols.includes(c)),
-            ...dbCols.filter((c) => !localCols.includes(c)),
-          ];
-          const mergedCats = [
-            ...localCats.filter((c) => dbCats.includes(c)),
-            ...dbCats.filter((c) => !localCats.includes(c)),
-          ];
-
-          setColumns(mergedCols.length > 0 ? mergedCols : DEFAULT_COLUMNS);
-          setCategories(mergedCats.length > 0 ? mergedCats : DEFAULT_CATEGORIES);
-        } else {
-          setColumns(DEFAULT_COLUMNS);
-          setCategories(DEFAULT_CATEGORIES);
-        }
-        fetchTasks();
-      }
-    } else {
-      setColumns(DEFAULT_COLUMNS);
-      setCategories(DEFAULT_CATEGORIES);
-      if (!cachedGlobalTasks) {
-        setTasks([]);
-      } else {
-        setTasks(cachedGlobalTasks);
-      }
-      currentBoardIdRef.current = null;
-      fetchTasks();
-    }
-  }, [selectedBoard]);
-
-  // Effect to keep team members in sync with the current view and user data
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchTeamMembers();
-    }
-  }, [selectedBoard, userDirectory, isAuthenticated]);
-
-  useEffect(() => {
-    localStorage.setItem('alurku_view_mode', viewMode);
-  }, [viewMode]);
-
-  useEffect(() => {
-    if (viewMode === 'kanban' || viewMode === 'timeline') {
-      setSortBy('Default');
-    } else if (viewMode === 'list') {
-      setSortBy('Date Created');
-    }
-  }, [viewMode, setSortBy]);
-
-  useEffect(() => {
-    if (selectedBoard && selectedBoard.id !== 'global') {
-      fetchTasks();
-    }
-  }, [groupBy]);
-
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    if (unreadCount > 0) {
-      document.title = `(${unreadCount}) alurku.`;
-    } else {
-      document.title = 'alurku. | Task & Project Management';
-    }
-  }, [unreadCount, isAuthenticated]);
-
-  const handleReadNotification = (id) => {
-    axios.put(`/api/notifications/${id}/read`).then(fetchNotifications).catch(console.error);
-  };
-  const handleDeleteNotification = (id) => {
-    axios.delete(`/api/notifications/${id}`).then(fetchNotifications).catch(console.error);
-  };
-  const handleReadAllNotifications = () => {
-    handleMarkAllInboxAsRead();
-  };
-
-  const handleMarkAllInboxAsRead = async () => {
-    try {
-      // 1. Mark all notifications as read in backend
-      await axios.put('/api/notifications/read_all');
-      fetchNotifications();
-
-      // 2. Mark all DMs as read in backend
-      await axios.put('/api/dm/read-all');
-      fetchDmConversations();
-
-      // 3. Mark all board/task comments as read in local storage
-      (inboxChats || []).forEach((chat) => {
-        if (chat.latest_sender === currentUser) return;
-        if (chat.is_dm) return;
-        if (chat.is_project_chat) {
-          localStorage.setItem(
-            `alurku_last_read_board_${chat.board_id}_${currentUser}`,
-            chat.timestamp
-          );
-        } else {
-          localStorage.setItem(
-            `alurku_last_read_task_${chat.task_id}_${currentUser}`,
-            chat.timestamp
-          );
-        }
-      });
-
-      // 4. Refresh my chats list
-      fetchInboxChats();
-    } catch (err) {
-      console.error("Error marking all inbox chats as read:", err);
-    }
-  };
-
-  const handleNotificationTaskClick = (taskId) => {
-    axios
-      .get(`/api/tasks/${taskId}`)
-      .then((res) => {
-        const task = res.data?.task;
-        if (!task) return;
-        setSelectedTask(task);
-      })
-      .catch((err) => {
-        if (err.response?.status === 403) {
-          axios
-            .get(`/api/tasks/preview/${taskId}`)
-            .then((res) => {
-              setPreviewTask(res.data.task);
-            })
-            .catch((err2) => {
-              showNotification(err2.response?.data?.detail || 'Task not found or access denied', 'error');
-            });
-        } else {
-          showNotification(err.response?.data?.detail || 'Task not found or access denied', 'error');
-        }
-      });
-  };
-
-  useEffect(() => {
-    if (tasks.length > 0 && selectedBoard) {
-      // Mencegah pencocokan saat task baru saja dimuat tapi project belum tersinkronisasi
-      if (selectedBoard.id !== 'global' && tasks[0].board_id !== selectedBoard.id) return;
-
-      let colsChanged = false;
-      let catsChanged = false;
-
-      // 1. Deduplicate existing columns & categories (Auto-merge case-insensitive)
-      const deduplicate = (arr) => {
-        const unique = [];
-        const map = new Set();
-        arr.forEach((item) => {
-          const lower = item.toLowerCase();
-          if (!map.has(lower)) {
-            map.add(lower);
-            unique.push(item);
-          }
-        });
-        return unique;
-      };
-
-      let newCols = deduplicate(columns);
-      if (newCols.length !== columns.length) colsChanged = true;
-
-      let newCats = deduplicate(categories);
-
-      // Auto-remove empty categories after 7 days (Keep defaults + currently used + recently empty)
-      const usedCatsLower = new Set(tasks.map((t) => (t.category || '').toLowerCase()).filter(Boolean));
-      const defaultCatsLower = new Set(DEFAULT_CATEGORIES.map((c) => c.toLowerCase()));
-      const preFilterLen = newCats.length;
-      
-      const emptyCatsKey = `alurku_empty_cats_${selectedBoard.id}`;
-      let emptyCatsTimestamps = {};
-      try {
-        emptyCatsTimestamps = JSON.parse(localStorage.getItem(emptyCatsKey) || '{}');
-      } catch (e) {}
-
-      let timestampsChanged = false;
-      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-
-      newCats = newCats.filter((c) => {
-        const lowerC = c.toLowerCase();
-        if (defaultCatsLower.has(lowerC) || usedCatsLower.has(lowerC)) {
-          if (emptyCatsTimestamps[lowerC]) {
-            delete emptyCatsTimestamps[lowerC];
-            timestampsChanged = true;
-          }
-          return true; // Keep used or default
-        }
-
-        // It is an empty custom category
-        if (!emptyCatsTimestamps[lowerC]) {
-          emptyCatsTimestamps[lowerC] = Date.now();
-          timestampsChanged = true;
-          return true; // Keep it, just became empty
-        } else {
-          const daysEmpty = Date.now() - emptyCatsTimestamps[lowerC];
-          if (daysEmpty > sevenDaysMs) {
-            delete emptyCatsTimestamps[lowerC];
-            timestampsChanged = true;
-            return false; // Purge!
-          }
-          return true; // Keep it, not 7 days yet
-        }
-      });
-
-      if (timestampsChanged) {
-        localStorage.setItem(emptyCatsKey, JSON.stringify(emptyCatsTimestamps));
-      }
-
-      if (newCats.length !== preFilterLen || newCats.length !== categories.length) catsChanged = true;
-
-      const taskStatuses = [...new Set(tasks.map((t) => t.status))];
-      const missingCols = taskStatuses.filter((s) => !newCols.some((c) => c.toLowerCase() === s.toLowerCase()));
-      if (missingCols.length > 0) {
-        newCols = [...newCols, ...missingCols];
-        colsChanged = true;
-      }
-
-      const taskCats = [...new Set(tasks.map((t) => t.category))].filter(Boolean);
-      const missingCats = taskCats.filter((c) => !newCats.some((nc) => nc.toLowerCase() === c.toLowerCase()));
-      if (missingCats.length > 0) {
-        newCats = [...newCats, ...missingCats];
-        catsChanged = true;
-      }
-
-      // 2. Auto-merge tasks that use duplicate/wrong-cased categories or statuses
-      let tasksToUpdate = [];
-      const updatedTasks = tasks.map((t) => {
-        let updated = false;
-        let tStatus = t.status;
-        let tCat = t.category;
-
-        const matchedCol = newCols.find((c) => c.toLowerCase() === t.status.toLowerCase());
-        if (matchedCol && matchedCol !== t.status) {
-          tStatus = matchedCol;
-          updated = true;
-        }
-
-        if (t.category) {
-          const matchedCat = newCats.find((c) => c.toLowerCase() === t.category.toLowerCase());
-          if (matchedCat && matchedCat !== t.category) {
-            tCat = matchedCat;
-            updated = true;
-          }
-        }
-
-        if (updated) {
-          const uTask = { ...t, status: tStatus, category: tCat };
-          tasksToUpdate.push(uTask);
-          return uTask;
-        }
-        return t;
-      });
-
-      if (tasksToUpdate.length > 0) {
-        setTasks(updatedTasks);
-        tasksToUpdate.forEach((t) => {
-          const payload = {
-            project_name: t.project_name,
-            requester: t.requester,
-            category: t.category,
-            description: t.description || '',
-            supporting_access: t.supporting_access || '',
-            start_date: t.start_date || t.timestamp.split(' ')[0],
-            deadline: t.deadline ? t.deadline.split(' ')[0] + ' 17:00:00' : '',
-            impact: t.impact || 'Medium',
-            etc: t.etc || 2,
-            auto_nudge: t.auto_nudge || false,
-            recurring: t.recurring || 'none',
-            status: t.status,
-          };
-          axios.put(`/api/tasks/${t.id}/details`, payload).catch(console.error);
-        });
-      }
-
-      if (selectedBoard.id !== 'global') {
-        if (colsChanged) {
-          localStorage.setItem(`alurku_columns_${selectedBoard.id}`, JSON.stringify(newCols));
-          setColumns(newCols);
-        }
-        if (catsChanged) {
-          localStorage.setItem(`alurku_categories_${selectedBoard.id}`, JSON.stringify(newCats));
-          setCategories(newCats);
-        }
-        if (colsChanged || catsChanged) {
-          syncBoardSettings(newCols, newCats);
-        }
-      }
-    }
-  }, [tasks, columns, categories, selectedBoard]);
-
-  const handleOpenAddBoard = (target) => {
-    const maxLimit = 50;
-    const currentLen = target === 'Status' ? columns.length : categories.length;
-    const limitName = target === 'Status' ? 'columns' : 'categories';
-    if (currentLen >= maxLimit) {
-      showNotification(`System limit reached. Maximum ${maxLimit} ${limitName} allowed.`, 'error');
-      return;
-    }
-    setColModal({ isOpen: true, target, mode: 'add', oldName: '', newName: '' });
-  };
-
-  const handleOpenRenameBoard = (target, oldName) => {
-    setColModal({ isOpen: true, target, mode: 'rename', oldName, newName: oldName });
-  };
-
-  const handleOpenDeleteBoard = (target, oldName) => {
-    const hasTasks =
-      target === 'Status' ? tasks.some((t) => t.status === oldName) : tasks.some((t) => t.category === oldName);
-    if (hasTasks) {
-      showNotification(`Cannot remove "${oldName}" because it currently contains tasks.`, 'error');
-      return;
-    }
-    setColModal({ isOpen: true, target, mode: 'delete', oldName, newName: '' });
-  };
-
-  const handleColSubmit = (e) => {
-    e.preventDefault();
-    const { mode, oldName, newName, target } = colModal;
-    const list = target === 'Status' ? columns : categories;
-    const setList = target === 'Status' ? setColumns : setCategories;
-    const storageKey =
-      target === 'Status' ? `alurku_columns_${selectedBoard?.id}` : `alurku_categories_${selectedBoard?.id}`;
-
-    if (mode === 'add') {
-      const name = newName.trim();
-      if (!name) return;
-      if (list.some((c) => c.toLowerCase() === name.toLowerCase())) {
-        showNotification(`${target} already exists!`, 'error');
-        return;
-      }
-      const newList = [...list, name];
-      setList(newList);
-      if (selectedBoard && selectedBoard.id !== 'global') {
-        localStorage.setItem(storageKey, JSON.stringify(newList));
-        if (target === 'Status') syncBoardSettings(newList, categories);
-        else syncBoardSettings(columns, newList);
-      }
-      if (target === 'Category') {
-        if (isFormOpen) setFormData((prev) => ({ ...prev, category: name }));
-        if (isEditing) setEditFormData((prev) => ({ ...prev, category: name }));
-      }
-      showNotification(`${target} added!`, 'success');
-    } else if (mode === 'rename') {
-      const name = newName.trim();
-      if (!name || name.toLowerCase() === oldName.toLowerCase()) {
-        setColModal({ ...colModal, isOpen: false });
-        return;
-      }
-      if (list.some((c) => c.toLowerCase() === name.toLowerCase())) {
-        showNotification(`${target} name already exists!`, 'error');
-        return;
-      }
-
-      const newList = list.map((c) => (c === oldName ? name : c));
-      setList(newList);
-      if (selectedBoard && selectedBoard.id !== 'global') {
-        localStorage.setItem(storageKey, JSON.stringify(newList));
-        if (target === 'Status') syncBoardSettings(newList, categories);
-        else syncBoardSettings(columns, newList);
-      }
-
-      if (target === 'Status') {
-        const updatedTasks = tasks.map((t) => (t.status === oldName ? { ...t, status: name } : t));
-        setTasks(updatedTasks);
-        const tasksToUpdate = tasks.filter((t) => t.status === oldName);
-        tasksToUpdate.forEach((t) => axios.put(`/api/tasks/${t.id}`, { status: name }).catch(console.error));
-      } else {
-        const updatedTasks = tasks.map((t) => (t.category === oldName ? { ...t, category: name } : t));
-        setTasks(updatedTasks);
-        const tasksToUpdate = tasks.filter((t) => t.category === oldName);
-        tasksToUpdate.forEach((t) => {
-          const payload = {
-            project_name: t.project_name,
-            requester: t.requester,
-            category: name,
-            description: t.description || '',
-            supporting_access: t.supporting_access || '',
-            start_date: t.start_date || t.timestamp.split(' ')[0],
-            deadline: t.deadline ? t.deadline.split(' ')[0] + ' 17:00:00' : '',
-            impact: t.impact || 'Medium',
-            etc: t.etc || 2,
-            auto_nudge: t.auto_nudge || false,
-            recurring: t.recurring || 'none',
-            status: t.status,
-          };
-          axios.put(`/api/tasks/${t.id}/details`, payload).catch(console.error);
-        });
-      }
-
-      showNotification(`${target} renamed!`, 'success');
-    } else if (mode === 'delete') {
-      const newList = list.filter((c) => c !== oldName);
-      setList(newList);
-      if (selectedBoard && selectedBoard.id !== 'global') {
-        localStorage.setItem(storageKey, JSON.stringify(newList));
-        if (target === 'Status') syncBoardSettings(newList, categories);
-        else syncBoardSettings(columns, newList);
-      }
-      showNotification(`${target} deleted!`, 'success');
-    }
-
-    setColModal({ isOpen: false, target: 'Status', mode: 'add', oldName: '', newName: '' });
-  };
-
-  useLayoutEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-      if (isAuthenticated) localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
-      if (isAuthenticated) localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode, isAuthenticated]);
-
-  useEffect(() => {
-    if (selectedTask?.id) {
-      fetchSubtasks(selectedTask.id);
-      fetchComments(selectedTask.id);
-
-      // Fetch full task details if the current selectedTask is a partial search result (lacks queue/recurring fields)
-      if (selectedTask.queue_global_number === undefined || selectedTask.recurring === undefined) {
-        axios
-          .get(`/api/tasks/${selectedTask.id}`)
-          .then((res) => {
-            if (res.data?.task) {
-              setSelectedTask(res.data.task);
-            }
-          })
-          .catch((err) => console.error('Failed to load full task details:', err));
-      }
-
-      // Auto-read notifications for this task when opened
-      const unreadForTask = notifications.filter((n) => !n.is_read && n.related_task_id === selectedTask?.id);
-      if (unreadForTask.length > 0) {
-        Promise.all(unreadForTask.map((n) => axios.put(`/api/notifications/${n.id}/read`)))
-          .then(() => fetchNotifications())
-          .catch(console.error);
-      }
-      
-      // Also mark localStorage last_read for this task so unread badges in
-      // ChatSidebar and HomeDashboard disappear immediately regardless of how the task was opened.
-      // We use the current timestamp as a "read up to now" marker; if the task later
-      // gets a new comment it will correctly show as unread again.
-      const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      localStorage.setItem(`innocean_last_read_task_${selectedTask.id}_${currentUser}`, nowStr);
-
-    } else {
-      setSubtasks([]);
-      setComments([]);
-    }
-
-    let interval;
-    if (selectedTask?.id) {
-      interval = setInterval(() => {
-        if (document.visibilityState === 'visible') fetchComments(selectedTask.id);
-      }, 10000);
-    }
-    return () => clearInterval(interval);
-  }, [selectedTask?.id]);
-
-  const fetchSubtasks = (taskId) => {
-    setIsSubtasksLoading(true);
-    axios
-      .get(`/api/tasks/${taskId}/subtasks`)
-      .then((res) => setSubtasks(res.data.subtasks || []))
-      .catch((err) => console.error('Failed to load sub-tasks:', err))
-      .finally(() => setIsSubtasksLoading(false));
-  };
-
-  const handleAddSubtask = (e) => {
-    e.preventDefault();
-    if (!newSubtaskName.trim()) return;
-    axios
-      .post(`/api/tasks/${selectedTask.id}/subtasks`, {
-        task_name: newSubtaskName,
-        assignee: newSubtaskAssignee || null,
-      })
-      .then(() => {
-        setNewSubtaskName('');
-        setNewSubtaskAssignee('');
-        fetchSubtasks(selectedTask.id);
-        fetchComments(selectedTask.id);
-        fetchTasks();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to add sub-task!', 'error'));
-  };
-
-  const handleToggleSubtask = (subtaskId, currentStatus, currentAssignee) => {
-    const newStatus = currentStatus === 1 ? 0 : 1;
-    // Optimistic update — ubah UI langsung tanpa tunggu server
-    const prevSubtasks = subtasks;
-    setSubtasks((prev) =>
-      prev.map((st) => (st.id === subtaskId ? { ...st, is_done: newStatus } : st))
-    );    
-    axios
-      .put(`/api/subtasks/${subtaskId}`, { is_done: newStatus, assignee: currentAssignee })
-      .then(() => {
-        fetchSubtasks(selectedTask.id);
-        fetchComments(selectedTask.id);
-        fetchTasks();
-      })
-      .catch((err) => {
-        // Rollback jika gagal
-        setSubtasks(prevSubtasks);
-        showNotification(err.response?.data?.detail || 'Failed to update sub-task!', 'error');
-      });
-  };
-
-  const handleUpdateSubtaskAssignee = (subtaskId, currentIsDone, newAssignee) => {
-    const keepStatus = currentIsDone === 1 ? 1 : 0;
-    // Optimistic update — ubah assignee langsung di UI
-    const prevSubtasks = subtasks;
-    setSubtasks((prev) =>
-      prev.map((st) => (st.id === subtaskId ? { ...st, assignee: newAssignee } : st))
-    );
-    axios
-      .put(`/api/subtasks/${subtaskId}`, { is_done: keepStatus, assignee: newAssignee })
-      .then(() => {
-        fetchSubtasks(selectedTask.id);
-        fetchComments(selectedTask.id);
-        fetchTasks();
-      })
-      .catch((err) => {
-        // Rollback jika gagal
-        setSubtasks(prevSubtasks);
-        showNotification(err.response?.data?.detail || 'Failed to update sub-task assignee!', 'error');
-      });
-  };
-
-  const handleDeleteSubtask = (subtaskId) => {
-    axios
-      .delete(`/api/subtasks/${subtaskId}`)
-      .then(() => {
-        fetchSubtasks(selectedTask.id);
-        fetchComments(selectedTask.id);
-        fetchTasks();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to delete sub-task!', 'error'));
-  };
-
-  const fetchComments = (taskId, loadMore = false) => {
-    let offset = loadMore ? commentsLengthRef.current : 0;
-    let limit = loadMore ? 50 : Math.max(commentsLengthRef.current || 50, 50);
-    axios
-      .get(`/api/tasks/${taskId}/comments?offset=${offset}&limit=${limit}`)
-      .then((res) => {
-        let msgs = res.data.comments || [];
-        msgs = msgs
-          .map((c) => {
-            const match = c.text ? c.text.match(/<!--PRIVATE:([\w.-]+)-->/) : null;
-            if (match) {
-              return {
-                ...c,
-                isPrivate: true,
-                privateUser: match[1],
-                text: c.text.replace(/<!--PRIVATE:[\w.-]+-->\s*/, ''),
-              };
-            }
-            return c;
-          })
-          .filter(
-            (c) =>
-              c &&
-              (!c.isPrivate || c.privateUser === currentUser)
-          );
-
-        if (loadMore) {
-          setHasMoreComments(msgs.length === 50);
-          setComments((prev) => [...msgs, ...prev]);
-        } else {
-          setHasMoreComments(msgs.length === limit);
-          setComments(msgs);
-        }
-      })
-      .catch((err) => console.error('Failed to load comments:', err));
-  };
-
-  const loadMoreComments = () => {
-    if (selectedTask) fetchComments(selectedTask.id, true);
-  };
-
-  // Real-time WebSocket listener for selected task comments & updates in TaskDetailModal
-  useEffect(() => {
-    if (!lastWsMessage || !selectedTask) return;
-
-    if (lastWsMessage.type === 'chat_message') {
-      if (lastWsMessage.chat_type === 'task' && String(lastWsMessage.target_id) === String(selectedTask.id)) {
-        fetchComments(selectedTask.id);
-      }
-    } else if (lastWsMessage.type === 'task_update') {
-      if (String(lastWsMessage.task_id) === String(selectedTask.id)) {
-        fetchSubtasks(selectedTask.id);
-        fetchComments(selectedTask.id);
-        fetchTasks();
-      }
-    }
-  }, [lastWsMessage, selectedTask?.id]);
-
-  const handleCommentChange = (value) => {
-    setNewComment(value);
-    const match = value.match(/(?:^|\s)@([\w.-]*)$/);
-    if (match) {
-      setCommentMentionQuery(match[1].toLowerCase());
-      setIsCommentMentioning(true);
-      setCommentMentionIndex(0);
-    } else {
-      setIsCommentMentioning(false);
-    }
-  };
-
-  const insertCommentMention = (username) => {
-    const newVal = newComment.replace(/(?:^|\s)@([\w.-]*)$/, ` @${username} `);
-    setNewComment(newVal);
-    setIsCommentMentioning(false);
-  };
-
-  const handleAddComment = (e, textOverride = null, targetTaskId = null) => {
-    if (e && e.preventDefault) e.preventDefault();
-    const textToSubmit = typeof textOverride === 'string' ? textOverride : newComment;
-    if (!textToSubmit.trim()) return;
-
-    // Support direct call with taskId as first or third argument
-    const finalTaskId = targetTaskId || (typeof e === 'number' || typeof e === 'string' ? e : selectedTask?.id);
-    if (!finalTaskId) return;
-
-    return axios
-      .post(`/api/tasks/${finalTaskId}/comments`, { text: textToSubmit.trim() })
-      .then(() => {
-        setNewComment('');
-        fetchComments(finalTaskId);
-        setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to add comment!', 'error'));
-  };
-
-  const handleAskAITaskChat = (taskId, finalComment, userText, onSuccess, isPrivateAI = false) => {
-    setIsAiReplying(true);
-
-    const pad = (n) => String(n).padStart(2, '0');
-    const now = new Date();
-    const localTimeStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(
-      now.getHours()
-    )}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    const tempId = Date.now();
-    const optimisticComment = {
-      id: tempId,
-      username: currentUser,
-      text: finalComment,
-      timestamp: localTimeStr,
-      reactions: {},
-      isPrivate: isPrivateAI,
-      privateUser: currentUser,
-    };
-    setComments((prev) => [...prev, optimisticComment]);
-    if (onSuccess) onSuccess(); // Langsung mengosongkan input
-
-    const commentText = isPrivateAI ? `<!--PRIVATE:${currentUser}-->${finalComment}` : finalComment;
-    const aiPromptText = isPrivateAI
-      ? `${userText}\n\nIMPORTANT INSTRUCTION: You MUST start your entire response exactly with this string: <!--PRIVATE:${currentUser}-->`
-      : userText;
-
-    axios
-      .post(`/api/tasks/${taskId}/comments`, { text: commentText })
-      .then(() => {
-        fetchComments(taskId);
-        return axios.post(`/api/tasks/${taskId}/ai-reply`, { text: aiPromptText }, { timeout: 120000 });
-      })
-      .then(() => {
-        fetchComments(taskId);
-      })
-      .catch((err) => {
-        console.error('AI Task Chat Error:', err);
-        showNotification(err.response?.data?.detail || err.message || 'AI failed to reply', 'error');
-      })
-      .finally(() => {
-        fetchComments(taskId);
-        setIsAiReplying(false);
-      });
-  };
-
-  const handleDeleteComment = (commentId) => {
-    setCommentToDelete(commentId);
-  };
-
-  const confirmDeleteComment = () => {
-    if (!commentToDelete) return;
-    axios
-      .delete(`/api/tasks/${selectedTask.id}/comments/${commentToDelete}`)
-      .then(() => {
-        fetchComments(selectedTask.id);
-        showNotification('Comment deleted', 'success');
-        setCommentToDelete(null);
-      })
-      .catch((err) => showNotification('Failed to delete comment', 'error'));
-  };
-
-  const handleToggleReaction = (commentId, emoji, isProjectChat = false) => {
-    const updateFn = isProjectChat ? setProjectChatMessages : setComments;
-    updateFn((prev) =>
-      prev.map((c) => {
-        if (c.id === commentId) {
-          const newRx = { ...(c.reactions || {}) };
-          const isAlreadySelected = newRx[emoji] && newRx[emoji].includes(currentUser);
-
-          // Hapus user dari semua emoji terlebih dahulu (hanya boleh 1 emot per user)
-          Object.keys(newRx).forEach((key) => {
-            newRx[key] = newRx[key].filter((u) => u !== currentUser);
-            if (newRx[key].length === 0) delete newRx[key];
-          });
-
-          if (!isAlreadySelected) {
-            if (!newRx[emoji]) newRx[emoji] = [];
-            newRx[emoji].push(currentUser);
-          }
-
-          return { ...c, reactions: newRx };
-        }
-        return c;
-      })
-    );
-    axios.post(`/api/comments/${commentId}/react`, { emoji }).catch(() => {
-      if (isProjectChat) fetchProjectChat();
-      else if (selectedTask) fetchComments(selectedTask.id);
-    });
-  };
-
-  const fetchProjectChat = (loadMore = false) => {
-    if (!selectedBoard || selectedBoard.id === 'global') return;
-
-    let offset = loadMore ? projectChatLengthRef.current : 0;
-    let limit = loadMore ? 50 : Math.max(projectChatLengthRef.current || 50, 50);
-    axios
-      .get(`/api/boards/${selectedBoard.id}/chat?offset=${offset}&limit=${limit}`)
-      .then((res) => {
-        let msgs = res.data.messages || [];
-        msgs = msgs
-          .map((c) => {
-            const match = c.text ? c.text.match(/<!--PRIVATE:([\w.-]+)-->/) : null;
-            if (match) {
-              return {
-                ...c,
-                isPrivate: true,
-                privateUser: match[1],
-                text: c.text.replace(/<!--PRIVATE:[\w.-]+-->\s*/, ''),
-              };
-            }
-            return c;
-          })
-          .filter(
-            (c) =>
-              c &&
-              c.username !== 'System' &&
-              c.username?.toLowerCase() !== 'system' &&
-              !c.text?.startsWith('[ACTIVITY]') &&
-              !c.text?.includes('[ACTIVITY]') &&
-              (!c.isPrivate || c.privateUser === currentUser)
-          );
-
-        if (loadMore) {
-          setHasMoreProjectChat(msgs.length === 50);
-          setProjectChatMessages((prev) => [...msgs, ...prev]);
-        } else {
-          setHasMoreProjectChat(msgs.length === limit);
-          setProjectChatMessages(msgs);
-          if (prevChatLenRef.current !== 0 && msgs.length > prevChatLenRef.current) {
-            if (!isProjectChatOpen || drawerTab !== 'team') setHasNewProjectChat(true);
-          }
-          prevChatLenRef.current = msgs.length;
-        }
-      })
-      .catch(console.error);
-  };
-
-  const loadMoreProjectChat = () => {
-    fetchProjectChat(true);
-  };
-
-  const sendProjectChatMessage = (e) => {
-    e.preventDefault();
-    if (!newProjectChatMessage.trim() || !selectedBoard || selectedBoard.id === 'global') return;
-    axios
-      .post(`/api/boards/${selectedBoard.id}/chat`, { text: newProjectChatMessage.trim() })
-      .then(() => {
-        setNewProjectChatMessage('');
-        fetchProjectChat();
-        setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to send message', 'error'));
-  };
-
-  const handleStartMeet = (boardId) => {
-    if (!boardId || boardId === 'global') return;
-    const targetBoard = boards.find((b) => b.id === boardId) || selectedBoard;
-    if (!targetBoard) return;
-
-    const cleanName = targetBoard.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    const roomName = `project-${boardId}-${cleanName}`;
-    const meetLink = `https://meet.jit.si/alurku-${roomName}`;
-
-    // Buka Ruang Meeting dalam jendela Popup terpisah agar terasa seperti In-App
-    const popupFeatures =
-      'width=1000,height=700,left=100,top=100,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes';
-    window.open(meetLink, 'MeetingPopup', popupFeatures);
-
-    axios
-      .post(`/api/boards/${boardId}/chat`, {
-        text: `@team 🎥 I've started a video meeting for this project! Join here: ${meetLink}`,
-      })
-      .then(() => fetchProjectChat())
-      .catch(console.error);
-  };
-
-  const handleChatScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    setShowScrollBottom(scrollHeight - scrollTop > clientHeight + 150);
-  };
-
-  const dismissMention = (id) => {
-    setDismissedMentionIds((prev) => new Set(prev).add(id));
-    setLatestMentionId(null);
-  };
-
-  useEffect(() => {
-    if (projectChatMessages.length > 0 && currentUser) {
-      const mention = [...projectChatMessages]
-        .reverse()
-        .find(
-          (m) => (m.text.includes(`@${currentUser}`) || m.text.includes('@team')) && !dismissedMentionIds.has(m.id)
-        );
-      if (mention) setLatestMentionId(mention.id);
-      else setLatestMentionId(null);
-    } else {
-      setLatestMentionId(null);
-    }
-  }, [projectChatMessages, currentUser, dismissedMentionIds]);
-
-  const handleProjectChatChange = (value) => {
-    setNewProjectChatMessage(value);
-    const match = value.match(/(?:^|\s)@([\w.-]*)$/);
-    if (match) {
-      setProjectMentionQuery(match[1].toLowerCase());
-      setIsProjectMentioning(true);
-      setProjectMentionIndex(0);
-    } else {
-      setIsProjectMentioning(false);
-    }
-  };
-
-  const insertProjectMention = (username) => {
-    const newVal = newProjectChatMessage.replace(/(?:^|\s)@([\w.-]*)$/, ` @${username} `);
-    setNewProjectChatMessage(newVal);
-    setIsProjectMentioning(false);
-  };
-
-  useEffect(() => {
-    let interval;
-    if (selectedBoard && selectedBoard.id !== 'global') {
-      fetchProjectChat();
-      interval = setInterval(
-        () => {
-          if (document.visibilityState === 'visible') fetchProjectChat();
-        },
-        isProjectChatOpen ? 10000 : 60000
-      ); // Live poll 10s (open) or 60s (closed)
-    }
-    return () => clearInterval(interval);
-  }, [isProjectChatOpen, selectedBoard]);
-
-  useEffect(() => {
-    if (isProjectChatOpen && drawerTab === 'team') setHasNewProjectChat(false);
-  }, [isProjectChatOpen, drawerTab]);
-
-  useEffect(() => {
-    prevChatLenRef.current = 0;
-    setHasNewProjectChat(false);
-  }, [selectedBoard]);
-
-  const onDragEnd = (result, force = false) => {
-    if (!result.destination) return;
-    const { source, destination, draggableId, type } = result;
-
-    if (type === 'column') {
-      if (groupBy !== 'Status' && groupBy !== 'Category') return;
-      if (source.index === destination.index) return;
-
-      if (groupBy === 'Status') {
-        const newCols = Array.from(columns);
-        const [removed] = newCols.splice(source.index, 1);
-        newCols.splice(destination.index, 0, removed);
-        setColumns(newCols);
-        if (selectedBoard && selectedBoard.id !== 'global') {
-          localStorage.setItem(`alurku_columns_${selectedBoard.id}`, JSON.stringify(newCols));
-        }
-      } else if (groupBy === 'Category') {
-        const newCats = Array.from(categories);
-        const [removed] = newCats.splice(source.index, 1);
-        newCats.splice(destination.index, 0, removed);
-        setCategories(newCats);
-        if (selectedBoard && selectedBoard.id !== 'global') {
-          localStorage.setItem(`alurku_categories_${selectedBoard.id}`, JSON.stringify(newCats));
-        }
-      }
-      return;
-    }
-
-    // JIKA DIJATUHKAN KE TONG SAMPAH MENGAMBANG
-    if (destination.droppableId === 'trash') {
-      const draggedTask = tasks.find((t) => t.id.toString() === draggableId);
-      if (draggedTask) {
-        const isTaskAdmin =
-          isSuperAdmin ||
-          draggedTask.owner_username === currentUser ||
-          (selectedBoard && selectedBoard.owner_username === currentUser) ||
-          (draggedTask.requester &&
-            new RegExp(`@${currentUser.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w.-])`, 'i').test(
-              draggedTask.requester
-            ));
-        if (isTaskAdmin) {
-          setSelectedTask(draggedTask);
-          setIsDeleteConfirmOpen(true);
-        } else {
-          showNotification(
-            tMsg(
-              'Permission Denied: Only Task Admins can delete this task.',
-              'Izin Ditolak: Hanya Admin Tugas yang dapat menghapus tugas ini.'
-            ),
-            'error'
-          );
-        }
-      }
-      return;
-    }
-
-    if (source.droppableId === destination.droppableId) return;
-
-    const draggedTask = tasks.find((t) => t.id.toString() === draggableId);
-    if (!draggedTask) return;
-
-    // Security & Permission Check pada saat dijatuhkan
-    const isTaskAdmin =
-      isSuperAdmin ||
-      draggedTask.owner_username === currentUser ||
-      (selectedBoard && selectedBoard.owner_username === currentUser) ||
-      (draggedTask.requester &&
-        new RegExp(`@${currentUser.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w.-])`, 'i').test(
-          draggedTask.requester
-        ));
-
-    if (!isTaskAdmin) {
-      showNotification(
-        tMsg(
-          'Permission Denied: Only Task Admins can move this task.',
-          'Izin Ditolak: Hanya Admin Tugas yang dapat memindahkannya.'
-        ),
-        'error'
-      );
-      return;
-    }
-
-    const updatedTasks = tasks.map((t) => {
-      if (t.id.toString() === draggableId) {
-        if (groupBy === 'Status') {
-          let compTime = t.completed_time;
-          if (destination.droppableId === 'Done' || destination.droppableId === 'Rejected') {
-            const now = new Date();
-            compTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-              now.getDate()
-            ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(
-              2,
-              '0'
-            )}:${String(now.getSeconds()).padStart(2, '0')}`;
-          } else {
-            compTime = null;
-          }
-          let newRecurring = t.recurring;
-          if (destination.droppableId === 'Done' && t.status !== 'Done') {
-            newRecurring = 'none';
-          }
-          return { ...t, status: destination.droppableId, completed_time: compTime, recurring: newRecurring };
-        }
-        if (groupBy === 'Category') return { ...t, category: destination.droppableId };
-        if (groupBy === 'Assignee')
-          return { ...t, requester: destination.droppableId === 'Unassigned' ? '' : destination.droppableId };
-        if (groupBy === 'Project') {
-          const targetBoard = boards.find((b) => b.name === destination.droppableId);
-          return {
-            ...t,
-            board_name: destination.droppableId,
-            board_id: targetBoard ? targetBoard.id : t.board_id,
-          };
-        }
-      }
-      return t;
-    });
-
-    if (!force && groupBy === 'Status' && destination.droppableId === 'Done') {
-      if (draggedTask.subtask_done < draggedTask.subtask_total) {
-        setTasks(updatedTasks);
-        setPendingStatusChange({ type: 'drag', payload: result, previousTasks: tasks });
-        return;
-      }
-    }
-
-    setTasks(updatedTasks);
-
-    if (groupBy === 'Status') {
-      axios
-        .put(`/api/tasks/${draggableId}`, { status: destination.droppableId })
-        .then((res) => {
-          if (res.data?.cloned_task_id) {
-            setClonedTaskIds((prev) => new Set(prev).add(Number(res.data.cloned_task_id)));
-          }
-          fetchTasks();
-          if (destination.droppableId === 'Done' && draggedTask.recurring && draggedTask.recurring !== 'none') {
-            // Already called fetchTasks above
-          }
-        })
-        .catch((err) => {
-          showNotification(err.response?.data?.detail || 'Failed to save status to database!', 'error');
-          fetchTasks();
-        });
-    } else {
-      const payload = {
-        project_name: draggedTask.project_name,
-        requester:
-          groupBy === 'Assignee'
-            ? destination.droppableId === 'Unassigned'
-              ? ''
-              : destination.droppableId
-            : draggedTask.requester,
-        category: groupBy === 'Category' ? destination.droppableId : draggedTask.category,
-        description: draggedTask.description || '',
-        supporting_access: draggedTask.supporting_access || '',
-        start_date: draggedTask.start_date || '',
-        deadline: draggedTask.deadline ? draggedTask.deadline.split(' ')[0] + ' 17:00:00' : '',
-        impact: draggedTask.impact || 'Medium',
-        etc: draggedTask.etc || 2,
-        auto_nudge: draggedTask.auto_nudge || false,
-        recurring: draggedTask.recurring || 'none',
-        status: draggedTask.status,
-      };
-      if (groupBy === 'Project') {
-        const targetBoard = boards.find((b) => b.name === destination.droppableId);
-        if (targetBoard) {
-          payload.board_id = targetBoard.id;
-        }
-      }
-      axios
-        .put(`/api/tasks/${draggableId}/details`, payload)
-        .then(() => {
-          if (
-            payload.status === 'Done' &&
-            draggedTask.status !== 'Done' &&
-            draggedTask.recurring &&
-            draggedTask.recurring !== 'none'
-          ) {
-            fetchTasks();
-          }
-        })
-        .catch((err) => {
-          showNotification(err.response?.data?.detail || 'Failed to update task details!', 'error');
-          fetchTasks();
-        });
-    }
-  };
-
-  const handleSubtaskDragEnd = (result) => {
-    if (!result.destination || accountStatus === 'suspended') return;
-    const sourceIndex = result.source.index;
-    const destinationIndex = result.destination.index;
-    if (sourceIndex === destinationIndex) return;
-
-    const newSubtasks = Array.from(subtasks);
-    const [removed] = newSubtasks.splice(sourceIndex, 1);
-    newSubtasks.splice(destinationIndex, 0, removed);
-    setSubtasks(newSubtasks); // Optimistic UI Update
-
-    const orderedIds = newSubtasks.map((s) => s.id);
-    axios.put(`/api/tasks/${selectedTask.id}/subtasks/reorder`, { ordered_ids: orderedIds }).catch(() => {
-      showNotification('Failed to save subtask order!', 'error');
-      fetchSubtasks(selectedTask.id); // Revert jika gagal
-    });
-  };
-
-  const handleRequesterChange = (value, setFormFn, formDataState) => {
-    setFormFn({ ...formDataState, requester: value });
-    const match = value.match(/(?:^|\s)@([\w.-]*)$/);
-    if (match) {
-      setMentionQuery(match[1].toLowerCase());
-      setIsMentioning(true);
-      setMentionIndex(0);
-    } else {
-      setIsMentioning(false);
-    }
-  };
-
-  const insertMention = (username, setFormFn, formDataState) => {
-    const newVal = formDataState.requester.replace(/(?:^|\s)@([\w.-]*)$/, ` @${username} `);
-    setFormFn({ ...formDataState, requester: newVal });
-    setIsMentioning(false);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.project_name || !formData.requester || !formData.start_date || !formData.deadline) {
-      showNotification('Project Name, Requester, Start Date, and Deadline are required!', 'error');
-      return;
-    }
-
-    const startDate = parseLocalZero(formData.start_date);
-    const deadlineDate = parseLocalZero(formData.deadline);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (deadlineDate < startDate) {
-      showNotification(
-        language === 'id'
-          ? 'Tenggat Waktu tidak boleh lebih awal dari Tanggal Mulai!'
-          : 'Deadline cannot be earlier than Start Date!',
-        'error'
-      );
-      return;
-    }
-
-    if (deadlineDate < today) {
-      showNotification(
-        language === 'id'
-          ? 'Tenggat Waktu tidak boleh lebih awal dari Hari Ini!'
-          : 'Deadline cannot be earlier than Today!',
-        'error'
-      );
-      return;
-    }
-
-    const targetBoardId =
-      formData.board_id ||
-      (selectedBoard && selectedBoard.id !== 'global' ? selectedBoard.id : null) ||
-      boards.find((b) => b.id !== 'global')?.id ||
-      boards[0]?.id;
-
-    if (!targetBoardId) {
-      showNotification(
-        language === 'id' ? 'Pilih proyek tujuan terlebih dahulu ya!' : 'Please select a target project first!',
-        'error'
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-    const formattedData = {
-      ...formData,
-      category: formData.category || categories[0] || 'Other',
-      deadline: `${formData.deadline} 17:00:00`,
-      etc: formData.etc || 2,
-      recurring: formData.recurring || 'none',
-      subtasks: formSubtasks,
-    };
-
-    axios
-      .post(`/api/boards/${targetBoardId}/tasks`, formattedData)
-      .then(() => {
-        setIsFormOpen(false);
-        setFormData({
-          project_name: '',
-          requester: '',
-          category: 'Development',
-          description: '',
-          supporting_access: '',
-          start_date: getLocalToday(),
-          deadline: getLocalToday(),
-          recurring: 'none',
-          tags: [],
-        });
-        setFormSubtasks([]);
-        setFormSubtaskInput('');
-        setFormSubtaskAssignee('');
-        fetchTasks();
-        showNotification(language === 'id' ? 'Tugas baru berhasil ditambahkan!' : 'New task added successfully!', 'success');
-        setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
-      })
-      .catch((err) => {
-        console.error('Failed to create task:', err);
-        showNotification(err.response?.data?.detail || 'Failed to save task to database!', 'error');
-      })
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const handleQuickAddTask = (taskData) => {
-    if (!taskData.project_name.trim() || !selectedBoard || selectedBoard.id === 'global') return;
-    const nowStr = getLocalToday();
-    const deadlineStr = taskData.deadline;
-
-    if (deadlineStr) {
-      const deadlineDate = parseLocalZero(deadlineStr);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (deadlineDate < today) {
-        showNotification(
-          language === 'id'
-            ? 'Tenggat Waktu tidak boleh lebih awal dari Hari Ini!'
-            : 'Deadline cannot be earlier than Today!',
-          'error'
-        );
-        return;
-      }
-    }
-
-    const formattedData = {
-      project_name: taskData.project_name.trim(),
-      requester: taskData.requester || currentUser,
-      category: taskData.category || categories[0] || 'Other',
-      description: '',
-      supporting_access: '',
-      start_date: nowStr,
-      deadline: deadlineStr ? `${deadlineStr} 17:00:00` : '',
-      impact: taskData.impact || 'Medium',
-      etc: taskData.etc || 2,
-      recurring: 'none',
-      subtasks: [],
-    };
-    // Return the promise to allow for optimistic UI updates in the calling component
-    return axios.post(`/api/boards/${selectedBoard.id}/tasks`, formattedData);
-  };
-
-  const handleQuickLinkAdd = (taskId, newLink) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-    const currentLinks = task.supporting_access ? task.supporting_access.split('\n').filter((l) => l.trim()) : [];
-    currentLinks.push(newLink.trim());
-    const updatedLinks = currentLinks.join('\n');
-
-    const payload = {
-      project_name: task.project_name,
-      requester: task.requester,
-      category: task.category,
-      description: task.description || '',
-      supporting_access: updatedLinks,
-      start_date: (task.start_date || task.timestamp).split(' ')[0],
-      deadline: task.deadline ? task.deadline.split(' ')[0] + ' 17:00:00' : '',
-      impact: task.impact || 'Medium',
-      etc: task.etc || 2,
-      auto_nudge: task.auto_nudge || false,
-      recurring: task.recurring || 'none',
-      status: task.status,
-    };
-
-    const updatedTask = { ...task, supporting_access: updatedLinks };
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
-    if (selectedTask && selectedTask.id === taskId) {
-      setSelectedTask(updatedTask);
-    }
-
-    axios.put(`/api/tasks/${taskId}/details`, payload).catch((err) => {
-      showNotification('Failed to add link', 'error');
-      fetchTasks();
-    });
-  };
-
-  const handleQuickLinkRemove = (taskId, linkToRemove) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-    const currentLinks = task.supporting_access ? task.supporting_access.split('\n').filter((l) => l.trim()) : [];
-    const updatedLinks = currentLinks.filter((l) => l !== linkToRemove).join('\n');
-
-    const payload = {
-      project_name: task.project_name,
-      requester: task.requester,
-      category: task.category,
-      description: task.description || '',
-      supporting_access: updatedLinks,
-      start_date: (task.start_date || task.timestamp).split(' ')[0],
-      deadline: task.deadline ? task.deadline.split(' ')[0] + ' 17:00:00' : '',
-      impact: task.impact || 'Medium',
-      etc: task.etc || 2,
-      auto_nudge: task.auto_nudge || false,
-      recurring: task.recurring || 'none',
-      status: task.status,
-    };
-
-    const updatedTask = { ...task, supporting_access: updatedLinks };
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? updatedTask : t)));
-    if (selectedTask && selectedTask.id === taskId) {
-      setSelectedTask(updatedTask);
-    }
-
-    axios.put(`/api/tasks/${taskId}/details`, payload).catch((err) => {
-      showNotification('Failed to remove link', 'error');
-      fetchTasks();
-    });
-  };
-
-  const handleAddFormSubtask = (e) => {
-    e.preventDefault();
-    if (!formSubtaskInput.trim()) return;
-    setFormSubtasks([...formSubtasks, { task_name: formSubtaskInput.trim(), assignee: formSubtaskAssignee || null }]);
-    setFormSubtaskInput('');
-    setFormSubtaskAssignee('');
-  };
-
-  const handleRemoveFormSubtask = (index) => {
-    setFormSubtasks(formSubtasks.filter((_, i) => i !== index));
-  };
-
-  const handleDelete = () => {
-    setIsSubmitting(true);
-    axios
-      .delete(`/api/tasks/${selectedTask.id}`)
-      .then(() => {
-        setIsDeleteConfirmOpen(false);
-        setSelectedTask(null);
-        fetchTasks();
-        showNotification('Task deleted successfully!', 'success');
-      })
-      .catch((err) => {
-        console.error('Failed to delete task:', err);
-        showNotification(err.response?.data?.detail || 'Failed to delete task from database!', 'error');
-      })
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const startEditing = (taskToEdit = null) => {
-    const targetTask = taskToEdit || selectedTask;
-    if (!targetTask) return;
-    if (!selectedTask || selectedTask.id !== targetTask.id) {
-      setSelectedTask(targetTask);
-    }
-    setEditFormData({
-      project_name: targetTask.project_name || '',
-      requester: targetTask.requester || '',
-      category: targetTask.category || '',
-      description: targetTask.description || '',
-      supporting_access: targetTask.supporting_access || '',
-      start_date: (targetTask.start_date || targetTask.timestamp || '').split(' ')[0],
-      deadline: targetTask.deadline ? targetTask.deadline.split(' ')[0] : '',
-      impact: targetTask.impact || 'Medium',
-      etc: targetTask.etc || 2,
-      auto_nudge: targetTask.auto_nudge || false,
-      recurring: targetTask.recurring || 'none',
-      status: targetTask.status || 'Pending',
-      board_id: targetTask.board_id,
-      tags: Array.isArray(targetTask.tags)
-        ? targetTask.tags
-        : (typeof targetTask.tags === 'string' && targetTask.tags.trim() && targetTask.tags !== '[]'
-          ? (() => { try { const p = JSON.parse(targetTask.tags); return Array.isArray(p) ? p : [targetTask.tags]; } catch { return targetTask.tags.split(',').map(x => x.trim()).filter(Boolean); } })()
-          : []),
-    });
-    setIsEditing(true);
-  };
-
-  const handleToggleAutoNudge = (taskId, newValue) => {
-    const isEnabled = !!newValue;
-
-    // Optimistic UI Update: Ubah status di UI seketika tanpa menunggu respon backend
-    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, auto_nudge: isEnabled } : t)));
-    setSelectedTask((prev) => (prev && prev.id === taskId ? { ...prev, auto_nudge: isEnabled } : prev));
-
-    axios
-      .put(`/api/tasks/${taskId}/auto-nudge`, { auto_nudge: isEnabled })
-      .then(() => {
-        showNotification(isEnabled ? 'Auto Nudge enabled for this task' : 'Auto Nudge disabled', 'success');
-      })
-      .catch(() => {
-        // Revert (Kembalikan ke awal) jika backend ternyata gagal menyimpannya
-        setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, auto_nudge: !isEnabled } : t)));
-        setSelectedTask((prev) => (prev && prev.id === taskId ? { ...prev, auto_nudge: !isEnabled } : prev));
-        showNotification('Failed to toggle Auto Nudge', 'error');
-      });
-  };
-
-  const handleEditSubmit = (e, force = false) => {
-    e.preventDefault();
-
-    const startDate = parseLocalZero(editFormData.start_date);
-    const deadlineDate = parseLocalZero(editFormData.deadline);
-    const createdDate = parseLocalZero(selectedTask.timestamp);
-
-    if (deadlineDate < startDate) {
-      showNotification(
-        language === 'id'
-          ? 'Tenggat Waktu tidak boleh lebih awal dari Tanggal Mulai!'
-          : 'Deadline cannot be earlier than Start Date!',
-        'error'
-      );
-      return;
-    }
-
-    if (deadlineDate < createdDate) {
-      showNotification(
-        language === 'id'
-          ? 'Tenggat Waktu tidak boleh lebih awal dari Tanggal Dibuat!'
-          : 'Deadline cannot be earlier than Created Date!',
-        'error'
-      );
-      return;
-    }
-
-    if (!force && editFormData.status === 'Done') {
-      const freshTask = tasks.find((t) => t.id === selectedTask?.id) || selectedTask;
-      const hasIncomplete = isSubtasksLoading
-        ? freshTask.subtask_done < freshTask.subtask_total
-        : subtasks.some((st) => st.is_done === 0);
-
-      if (hasIncomplete) {
-        setPendingStatusChange({ type: 'edit', payload: null });
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-    const validDeadline = editFormData.deadline || getLocalToday();
-    const payload = { ...editFormData, deadline: `${validDeadline.trim()} 17:00:00` };
-
-    // Ensure etc is a number
-    if (payload.etc === '' || isNaN(payload.etc)) {
-      payload.etc = 2.0;
-    } else {
-      payload.etc = parseFloat(payload.etc);
-    }
-
-    // Optimistic UI Update
-    const updatedTask = { ...selectedTask, ...payload };
-    if (payload.board_id !== selectedTask.board_id) {
-      const targetBoard = boards.find((b) => b.id === payload.board_id);
-      if (targetBoard) updatedTask.board_name = targetBoard.name;
-    }
-    setTasks((prev) => prev.map((t) => (t.id === selectedTask.id ? updatedTask : t)));
-
-    axios
-      .put(`/api/tasks/${selectedTask.id}/details`, payload)
-      .then((res) => {
-        if (res.data?.cloned_task_id) {
-          setClonedTaskIds((prev) => new Set(prev).add(res.data.cloned_task_id));
-        }
-        setIsEditing(false);
-        setSelectedTask(updatedTask);
-        fetchTasks();
-        fetchComments(selectedTask.id);
-        showNotification('Task details updated successfully!', 'success');
-        setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to update task!', 'error');
-        fetchTasks(); // Revert on error
-      })
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const handleDirectStatusChange = (newStatus, force = false, targetTaskId = null) => {
-    const activeId = targetTaskId || selectedTask?.id;
-    if (!activeId || activeId === 'undefined' || activeId === 'null') {
-      console.warn('handleDirectStatusChange called without valid taskId', { newStatus, activeId, selectedTask });
-      return;
-    }
-
-    const currentTask = (tasks || []).find((t) => String(t.id) === String(activeId)) || selectedTask;
-    if (!currentTask) return;
-
-    if (!force && newStatus === 'Done') {
-      const freshTask = currentTask;
-      const hasIncomplete = isSubtasksLoading
-        ? freshTask.subtask_done < freshTask.subtask_total
-        : subtasks.some((st) => st.is_done === 0);
-
-      if (hasIncomplete) {
-        setPendingStatusChange({ type: 'direct', payload: newStatus, targetTaskId: activeId });
-        return;
-      }
-    }
-
-    const updatedTask = { ...currentTask, status: newStatus };
-    if (newStatus === 'Done' || newStatus === 'Rejected') {
-      const now = new Date();
-      updatedTask.completed_time = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-        now.getDate()
-      ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(
-        2,
-        '0'
-      )}:${String(now.getSeconds()).padStart(2, '0')}`;
-    } else {
-      updatedTask.completed_time = null;
-    }
-    if (newStatus === 'Done' && updatedTask.recurring !== 'none') {
-      updatedTask.recurring = 'none';
-    }
-    setSelectedTask(updatedTask);
-
-    setTasks((prev) => prev.map((t) => (String(t.id) === String(activeId) ? updatedTask : t)));
-
-    axios
-      .put(`/api/tasks/${activeId}`, { status: newStatus })
-      .then((res) => {
-        if (res.data?.cloned_task_id) {
-          setClonedTaskIds((prev) => new Set(prev).add(Number(res.data.cloned_task_id)));
-        }
-        fetchTasks();
-        fetchComments(activeId);
-        showNotification(`Task marked as ${newStatus}`, 'success');
-        setSelectedBoard((prev) => (prev ? { ...prev, deletion_date: null } : null));
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to update status!', 'error');
-        fetchTasks();
-        setSelectedTask((tasks || []).find((t) => String(t.id) === String(activeId)) || selectedTask);
-      });
-  };
-
-  const availableTags = useMemo(() => {
-    const tagSet = new Set();
-    (tasks || []).forEach((t) => {
-      let taskTags = [];
-      if (Array.isArray(t.tags)) {
-        taskTags = t.tags;
-      } else if (typeof t.tags === 'string') {
-        const trimmed = t.tags.trim();
-        if (trimmed && trimmed !== '[]') {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) taskTags = parsed;
-          } catch {
-            taskTags = trimmed.split(',');
-          }
-        }
-      }
-      taskTags.forEach((tag) => {
-        const s = String(tag || '').trim();
-        if (s) tagSet.add(s);
-      });
-    });
-    return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
-  }, [tasks]);
-
-  const filteredTasks = useMemo(() => {
-    const filtered = tasks.filter((task) => {
-      if (selectedBoard && selectedBoard.id !== 'global') {
-        if (task.board_id !== selectedBoard.id) {
-          return false;
-        }
-      }
-
-      const keywords = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
-      const combinedSearchText = [
-        task.project_name,
-        task.requester,
-        task.category,
-        task.description,
-        task.owner_username,
-      ]
-        .join(' ')
-        .toLowerCase();
-      let matchSearch = keywords.length === 0 || keywords.every((kw) => combinedSearchText.includes(kw));
-
-      // Batasi pencarian local untuk task Done/Rejected hanya 90 hari terakhir
-      if (searchQuery && matchSearch && (task.status === 'Done' || task.status === 'Rejected')) {
-        const completedTime = task.completed_time ? new Date(task.completed_time.replace(/-/g, '/')) : new Date(0);
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-        if (completedTime < ninetyDaysAgo) {
-          matchSearch = false; // Abaikan jika terlalu lama
-        }
-      }
-
-      const matchStatus = filterStatus === 'All' || task.status === filterStatus;
-      const matchCategory = filterCategory === 'All' || task.category === filterCategory;
-      const matchAssignee = filterAssignee === 'All' || getTaskAssignee(task) === filterAssignee;
-      const matchTag = (() => {
-        if (!filterTag || filterTag === 'All') return true;
-        let tTags = [];
-        if (Array.isArray(task.tags)) {
-          tTags = task.tags;
-        } else if (typeof task.tags === 'string') {
-          const trimmed = task.tags.trim();
-          if (trimmed && trimmed !== '[]') {
-            try {
-              const parsed = JSON.parse(trimmed);
-              if (Array.isArray(parsed)) tTags = parsed;
-            } catch {
-              tTags = trimmed.split(',');
-            }
-          }
-        }
-        return tTags.some((t) => String(t).trim().toLowerCase() === String(filterTag).trim().toLowerCase());
-      })();
-      const matchMyTasks = !showMyTasks || isUserAssigned(task, currentUser);
-      const matchUnread =
-        !showUnreadOnly ||
-        (notifications || []).some(
-          (n) =>
-            !n.is_read &&
-            n.related_task_id === task.id &&
-            (n.type === 'comment' || n.type === 'mention' || n.type === 'mention_no_email')
-        );
-      const matchHasSubtasks = !showHasSubtasks || (task.subtask_total && task.subtask_total > 0);
-      const matchHideCompleted =
-        !(
-          hideCompleted &&
-          (viewMode === 'kanban' || viewMode === 'list' || viewMode === 'timeline' || viewMode === 'calendar')
-        ) ||
-        (task.status !== 'Done' && task.status !== 'Rejected');
-      const matchDateFilter = (() => {
-        if (!showOverdueOnly && !showDueTodayOnly) return true;
-        if (!task.deadline) return false;
-        const status = (task.status || '').toLowerCase();
-        if (status === 'done' || status === 'rejected') return false;
-
-        const isOverdue = (() => {
-          const end = new Date(task.deadline);
-          const now = new Date();
-          end.setHours(0, 0, 0, 0);
-          now.setHours(0, 0, 0, 0);
-          return end < now;
-        })();
-
-        const isDueToday = (() => {
-          const todayStr = getLocalToday();
-          const deadlineDateStr = task.deadline.split(' ')[0];
-          return deadlineDateStr === todayStr;
-        })();
-
-        if (showOverdueOnly && showDueTodayOnly) {
-          return isOverdue || isDueToday;
-        }
-        if (showOverdueOnly) return isOverdue;
-        if (showDueTodayOnly) return isDueToday;
-        return true;
-      })();
-
-      return (
-        matchSearch &&
-        matchStatus &&
-        matchCategory &&
-        matchAssignee &&
-        matchTag &&
-        matchMyTasks &&
-        matchUnread &&
-        matchHasSubtasks &&
-        matchHideCompleted &&
-        matchDateFilter
-      );
-    });
-
-    const sorted = filtered.sort((a, b) => {
-      let currentSort = sortBy;
-      if (currentSort === 'Default') {
-        const prioWeight = { critical: 1, warning: 2, normal: 3 };
-        const wa = prioWeight[a.priority_lvl || 'normal'] || 3;
-        const wb = prioWeight[b.priority_lvl || 'normal'] || 3;
-        if (wa !== wb) return wa - wb;
-
-        const impactWeight = { High: 1, Medium: 2, Low: 3 };
-        const impA = impactWeight[a.impact || 'Medium'] || 2;
-        const impB = impactWeight[b.impact || 'Medium'] || 2;
-        if (impA !== impB) return impA - impB;
-
-        const da = a.deadline
-          ? new Date(a.deadline.replace(/-/g, '/')).getTime()
-          : new Date(a.timestamp.replace(/-/g, '/')).getTime();
-        const db = b.deadline
-          ? new Date(b.deadline.replace(/-/g, '/')).getTime()
-          : new Date(b.timestamp.replace(/-/g, '/')).getTime();
-        if (da !== db) return da - db;
-        return a.id - b.id;
-      }
-      if (currentSort === 'Impact') {
-        const impactWeight = { High: 3, Medium: 2, Low: 1 };
-        const wa = impactWeight[a.impact || 'Medium'] || 0;
-        const wb = impactWeight[b.impact || 'Medium'] || 0;
-        if (wa !== wb) return wb - wa;
-        if (a.etc !== b.etc) return (b.etc || 2) - (a.etc || 2);
-        const da = a.deadline ? new Date(a.deadline.replace(/-/g, '/')).getTime() : Infinity;
-        const db = b.deadline ? new Date(b.deadline.replace(/-/g, '/')).getTime() : Infinity;
-        if (da !== db) return da - db;
-        return a.id - b.id;
-      }
-      if (currentSort === 'Due Date') {
-        if (!a.deadline) return 1;
-        if (!b.deadline) return -1;
-        const da = new Date(a.deadline.replace(/-/g, '/')).getTime();
-        const db = new Date(b.deadline.replace(/-/g, '/')).getTime();
-        return da - db;
-      }
-      if (currentSort === 'Date Created') {
-        const da = new Date(a.timestamp.replace(/-/g, '/')).getTime();
-        const db = new Date(b.timestamp.replace(/-/g, '/')).getTime();
-        return db - da; // Tugas terbaru di atas
-      }
-      return a.id - b.id;
-    });
-
-    return sorted;
-  }, [
-    tasks,
-    searchQuery,
-    filterStatus,
-    filterCategory,
-    filterAssignee,
-    filterTag,
-    availableTags,
-    showMyTasks,
-    showOverdueOnly,
-    showUnreadOnly,
-    showHasSubtasks,
-    sortBy,
-    currentUser,
-    notifications,
-    hideCompleted,
-    viewMode,
-    groupBy,
-    selectedBoard,
-    boards,
-  ]);
-
-  const activeColumns = useMemo(() => {
-    if (groupBy === 'Status') return columns;
-    if (groupBy === 'Category') return categories;
-    if (groupBy === 'Assignee') return [...new Set(tasks.map((t) => getTaskAssignee(t)))];
-    if (groupBy === 'Project') {
-      const todoListBoard =
-        boards.find((b) => {
-          const name = (b.name || '').toLowerCase();
-          return (name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi') && b.is_private === 1;
-        }) ||
-        boards.find((b) => {
-          const name = (b.name || '').toLowerCase();
-          return name === 'personal tasks' || name === 'to-do list' || name === 'tugas pribadi';
-        });
-      const todoListName =
-        todoListBoard && (!selectedBoard || selectedBoard.id === 'global' || selectedBoard.id === todoListBoard.id)
-          ? todoListBoard.name
-          : null;
-
-      const projCols = [...new Set(tasks.map((t) => t.board_name || 'Unknown Project'))];
-      const allCols = todoListName && !projCols.includes(todoListName) ? [todoListName, ...projCols] : projCols;
-
-      return allCols.sort((a, b) => {
-        const isTodoA = a.toLowerCase() === 'personal tasks' || a.toLowerCase() === 'to-do list';
-        const isTodoB = b.toLowerCase() === 'personal tasks' || b.toLowerCase() === 'to-do list';
-        if (isTodoA && !isTodoB) return -1;
-        if (!isTodoA && isTodoB) return 1;
-        return 0;
-      });
-    }
-    return [];
-  }, [groupBy, columns, categories, tasks, boards]);
-
-  const assigneeOptions = useMemo(() => [...new Set(tasks.map((t) => getTaskAssignee(t)))], [tasks]);
-
-  const handleOpenNewTaskForm = () => {
-    setIsFormOpen(true);
-    if (driverRef.current && driverRef.current.isAtNewTask) {
-      setTimeout(() => {
-        if (driverRef.current) driverRef.current.moveNext();
-      }, 400);
-    }
-  };
-
-  // Logika Global Search (Menunggu 300ms setelah selesai ngetik sebelum memanggil API)
-
-  useEffect(() => {
-    if (globalSearchQuery.trim().length >= 2) {
-      const delayDebounceFn = setTimeout(() => {
-        let filterParam = '';
-        if (!forceSearchAll) {
-          if (selectedBoard && selectedBoard.id !== 'global') {
-            filterParam = `&board_id=${selectedBoard.id}`;
-          } else if (activeWorkspace && activeWorkspace.id) {
-            filterParam = `&workspace_id=${activeWorkspace.id}`;
-          }
-        }
-        axios
-          .get(`/api/tasks/search?q=${encodeURIComponent(globalSearchQuery)}${filterParam}`)
-          .then((res) => {
-            setGlobalSearchResults(res.data.results || []);
-            setGlobalSearchBoards(res.data.boards || []);
-            setIsGlobalSearchOpen(true);
-          })
-          .catch((err) => console.error('Search failed:', err));
-      }, 300);
-      return () => clearTimeout(delayDebounceFn);
-    } else {
-      setGlobalSearchResults([]);
-      setGlobalSearchBoards([]);
-      setIsGlobalSearchOpen(false);
-    }
-  }, [globalSearchQuery, forceSearchAll, selectedBoard, activeWorkspace]);
-
-  const handleGlobalSearchSelect = (task) => {
-    if (task.workspace_id && (!activeWorkspace || activeWorkspace.id !== task.workspace_id)) {
-      const ws = workspaces.find(w => w.id === task.workspace_id);
-      if (ws) switchWorkspace(ws);
-    }
-    
-    let board = boards.find((b) => b.id === task.board_id);
-    if (!board) {
-      board = { id: task.board_id, name: task.board_name, workspace_id: task.workspace_id };
-    }
-    if (board) setSelectedBoard(board);
-    setSelectedTask(task);
-    if (viewMode !== 'search-results') {
-      setGlobalSearchQuery('');
-    }
-    closeGlobalSearch();
-  };
-
-  const handleExportCSV = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    let tasksToExport = filteredTasks;
-    let isGlobal = exportMode === 'global';
-
-    if (isGlobal) {
-      try {
-        const res = await axios.get('/api/tasks/global-export');
-        tasksToExport = res.data.tasks || [];
-
-        tasksToExport = tasksToExport.filter((task) => {
-          const uname = currentUser.toLowerCase();
-          if (isUserAssigned(task, currentUser)) return true;
-          if ((task.requester || '').toLowerCase().trim() === uname) return true;
-
-          const isCreator = (task.owner_username || '').toLowerCase() === uname;
-          const hasOtherAssignees = (task.requester || '').includes('@') || task.subtask_assignees;
-
-          return isCreator && !hasOtherAssignees;
-        });
-      } catch (err) {
-        setIsLoading(false);
-        showNotification('Failed to fetch global tasks', 'error');
-        return;
-      }
-    }
-
-    if (exportStartDate || exportEndDate) {
-      const start = exportStartDate ? new Date(exportStartDate) : new Date('2000-01-01');
-      const end = exportEndDate ? new Date(exportEndDate) : new Date('2100-01-01');
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999); // Pastikan mencakup hingga pukul 23:59 di hari terakhir
-
-      tasksToExport = tasksToExport.filter((t) => {
-        const createdDate = new Date(t.timestamp.split(' ')[0]);
-        const deadlineDate = t.deadline ? new Date(t.deadline.split(' ')[0]) : new Date('1970-01-01');
-        const completedDate = t.completed_time ? new Date(t.completed_time.split(' ')[0]) : new Date('1970-01-01');
-
-        const isCompletedInRange = completedDate >= start && completedDate <= end;
-        const isDeadlineInRange = deadlineDate >= start && deadlineDate <= end;
-        const isCreatedInRange = createdDate >= start && createdDate <= end;
-
-        return isCompletedInRange || isDeadlineInRange || isCreatedInRange;
-      });
-    }
-
-    if (tasksToExport.length === 0) {
-      setIsLoading(false);
-      showNotification('No tasks found in this period.', 'error');
-      return;
-    }
-
-    const headers = isGlobal
-      ? [
-          'Workspace',
-          'Task Name',
-          'Description',
-          'Task Creator',
-          'Requester',
-          'Subtasks',
-          'Category',
-          'Status',
-          'Start Date',
-          'Deadline',
-          'Completed Time',
-          'Impact',
-          'ETC (Hrs)',
-          'Recurring',
-        ]
-      : [
-          'ID',
-          'Task Name',
-          'Description',
-          'Task Creator',
-          'Requester',
-          'Subtasks',
-          'Category',
-          'Status',
-          'Start Date',
-          'Deadline',
-          'Completed Time',
-          'Impact',
-          'ETC (Hrs)',
-          'Recurring',
-        ];
-
-    const escapeCSV = (str) => {
-      if (!str && str !== 0) return '""';
-      return `"${String(str).replace(/"/g, '""')}"`;
-    };
-
-    const csvRows = [
-      headers.join(','),
-      ...tasksToExport.map((t) => {
-        let displayedSubtasks = t.subtask_details;
-
-        // Smart Filter untuk memisahkan Sub-task
-        const escapedUname = currentUser.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const exactMentionRegex = new RegExp(`@${escapedUname}(?![\\w.-])`, 'i');
-
-        if (
-          isGlobal &&
-          !exactMentionRegex.test(t.requester) &&
-          (t.requester || '').toLowerCase().trim() !== currentUser.toLowerCase()
-        ) {
-          displayedSubtasks = (t.subtask_details || '')
-            .split('\n')
-            .filter((line) => exactMentionRegex.test(line))
-            .join('\n');
-        }
-
-        return [
-          isGlobal ? escapeCSV(t.board_name) : t.id,
-          escapeCSV(t.project_name),
-          escapeCSV(t.description),
-          escapeCSV(t.owner_username),
-          escapeCSV(t.requester),
-          escapeCSV(displayedSubtasks),
-          escapeCSV(t.category),
-          escapeCSV(t.status),
-          escapeCSV(t.start_date || (t.timestamp ? t.timestamp.split(' ')[0] : '')),
-          escapeCSV(t.deadline),
-          escapeCSV(t.completed_time),
-          escapeCSV(t.impact || 'Medium'),
-          escapeCSV(t.etc || 2),
-          escapeCSV(t.recurring || 'none'),
-        ].join(',');
-      }),
-    ];
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `alurku_Export_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    setIsExportModalOpen(false);
-    setIsLoading(false);
-    showNotification('Data exported to CSV successfully!', 'success');
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (!loginUsername.trim() || !loginPassword.trim()) {
-      showNotification(
-        language === 'id' ? 'Nama pengguna dan kata sandi wajib diisi!' : 'Username and Password are required!',
-        'error'
-      );
-      return;
-    }
-    setIsLoading(true);
-
-    axios
-      .post('/api/login', { username: loginUsername.trim(), password: loginPassword }, { timeout: 30000 })
-      .then((res) => {
-        setLoginError(null);
-        setLockoutRemaining(0);
-        localStorage.setItem('alurku_auth', 'true');
-        localStorage.setItem('alurku_token', res.data.token);
-        localStorage.setItem('alurku_username', loginUsername.trim());
-
-        sessionStorage.setItem('alurku_just_logged_in', 'true');
-        // Gunakan Hard Reload agar memori React untuk Dashboard termuat dengan bersih tanpa blank screen
-        window.location.href = '/';
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        const detail = err.response?.data?.detail;
-        let errorMsg = language === 'id' ? 'Nama pengguna atau kata sandi salah!' : 'Invalid username or password!';
-
-        if (detail && typeof detail === 'object') {
-          if (detail.lockout) {
-            setLockoutRemaining(detail.remaining_seconds || 900);
-            setLoginError({
-              type: 'lockout',
-              remainingSeconds: detail.remaining_seconds || 900,
-              remainingMinutes: detail.remaining_minutes || 15,
-            });
-            errorMsg = language === 'id'
-              ? `Terlalu banyak percobaan gagal. Akun dikunci selama ${detail.remaining_minutes || 15} menit.`
-              : `Too many failed attempts. Account locked for ${detail.remaining_minutes || 15} minutes.`;
-          } else if (typeof detail.remaining_attempts === 'number') {
-            setLoginError({
-              type: 'wrong_password',
-              remainingAttempts: detail.remaining_attempts,
-            });
-            errorMsg = language === 'id'
-              ? `Kata sandi salah. Sisa percobaan: ${detail.remaining_attempts} kali sebelum akun dikunci.`
-              : `Incorrect password. Remaining attempts: ${detail.remaining_attempts} before account lockout.`;
-          } else if (detail.message) {
-            errorMsg = detail.message;
-          }
-        } else if (typeof detail === 'string') {
-          errorMsg = detail;
-        } else if (err.response?.data) {
-          errorMsg = typeof err.response.data === 'string' ? `Server Error: ${err.response.data}` : 'Server Error';
-        } else if (err.message) {
-          errorMsg = `Connection Error: ${err.message}. Is the backend running?`;
-        }
-        showNotification(errorMsg, 'error');
-      });
-  };
-
-  const openTeamModal = (bId = null) => {
-    fetchMyTeam(bId);
-    setIsTeamModalOpen(true);
-  };
-
-  const handleInviteTeam = (e) => {
-    e.preventDefault();
-    if (!inviteInput.trim()) return;
-    setIsLoading(true);
-
-    axios
-      .post(`/api/boards/${selectedBoard.id}/invite`, { members_input: inviteInput.trim() })
-      .then((res) => {
-        setIsLoading(false);
-        showNotification(res.data.message, 'success');
-        setInviteInput('');
-        setInviteSuggestions([]);
-        fetchMyTeam();
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        showNotification(err.response?.data?.detail || 'Failed to invite user.', 'error');
-      });
-  };
-
-  const handleInviteInputChange = (e) => {
-    const val = e.target.value;
-    setInviteInput(val);
-
-    const parts = val.split(',');
-    const currentPart = parts[parts.length - 1].trim();
-
-    if (currentPart.length >= 1) {
-      const query = currentPart.toLowerCase();
-      const suggestions = userDirectory
-        .filter((u) => {
-          // Privacy Lock: Cegah kebocoran data untuk user yang belum terhubung
-          const isExactMatch =
-            u.username.toLowerCase() === query ||
-            (u.email &&
-              u.email !== 'Hidden for privacy' &&
-              u.email !== 'Email hidden for privacy' &&
-              u.email.toLowerCase() === query);
-
-          if (u.is_connected || isSuperAdmin) {
-            return (
-              u.username.toLowerCase().includes(query) ||
-              (u.email &&
-                u.email !== 'Hidden for privacy' &&
-                u.email !== 'Email hidden for privacy' &&
-                u.email.toLowerCase().includes(query))
-            );
-          } else {
-            return isExactMatch;
-          }
-        })
-        .filter(
-          (u) => u.username !== currentUser && u.username !== 'admin' && !myTeam.some((m) => m.username === u.username)
-        );
-      setInviteSuggestions(suggestions);
-      setInviteIndex(0);
-    } else {
-      setInviteSuggestions([]);
-    }
-  };
-
-  const applyInviteSuggestion = (username) => {
-    const parts = inviteInput.split(',');
-    parts[parts.length - 1] = ` ${username}`;
-    setInviteInput(parts.join(',').trim() + ', ');
-    setInviteSuggestions([]);
-  };
-
-  const handleRevokeMember = (id) => {
-    setMemberToRevoke(id);
-  };
-
-  const confirmRevokeMember = () => {
-    if (!memberToRevoke) return;
-    axios
-      .delete(`/api/boards/${selectedBoard.id}/revoke/${memberToRevoke}`)
-      .then(() => {
-        showNotification('Access revoked successfully', 'success');
-
-        const revokedMember = myTeam.find((m) => m.id === memberToRevoke);
-        if (revokedMember && revokedMember.username === currentUser) {
-          setIsTeamModalOpen(false);
-          setSelectedBoard(null);
-          fetchBoards();
-        } else {
-          fetchMyTeam();
-          fetchTeamMembers();
-          if (revokedMember && revokedMember.status === 'requesting') {
-            setSelectedBoard((prev) =>
-              prev ? { ...prev, access_requests_count: Math.max(0, (prev.access_requests_count || 1) - 1) } : prev
-            );
-            setBoards((prev) =>
-              prev.map((b) =>
-                b.id === selectedBoard.id
-                  ? { ...b, access_requests_count: Math.max(0, (b.access_requests_count || 1) - 1) }
-                  : b
-              )
-            );
-            fetchBoards(); // Update badge count when declining request
-          }
-        }
-
-        setMemberToRevoke(null);
-      })
-      .catch((err) => showNotification('Failed to revoke access', 'error'));
-  };
-
-  const handleAcceptAccessRequest = (memberId) => {
-    axios
-      .put(`/api/boards/${selectedBoard.id}/requests/${memberId}/accept`)
-      .then((res) => {
-        showNotification(res.data.message, 'success');
-        fetchMyTeam();
-        fetchTeamMembers();
-        setSelectedBoard((prev) =>
-          prev ? { ...prev, access_requests_count: Math.max(0, (prev.access_requests_count || 1) - 1) } : prev
-        );
-        setBoards((prev) =>
-          prev.map((b) =>
-            b.id === selectedBoard.id
-              ? { ...b, access_requests_count: Math.max(0, (b.access_requests_count || 1) - 1) }
-              : b
-          )
-        );
-        fetchBoards(); // Update badge count
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to accept request', 'error'));
-  };
-
-  const handleAcceptInvite = (id) => {
-    axios
-      .put(`/api/invitations/${id}/accept`)
-      .then(() => {
-        showNotification('Invitation accepted!', 'success');
-        fetchInvitations();
-        fetchBoards();
-        fetchTasks();
-        fetchTeamMembers();
-      })
-      .catch(() => showNotification('Failed to accept invitation.', 'error'));
-  };
-
-  const handleDeclineInvite = (id) => {
-    axios
-      .delete(`/api/invitations/${id}/decline`)
-      .then(() => {
-        showNotification('Invitation declined.', 'success');
-        fetchInvitations();
-      })
-      .catch(() => showNotification('Failed to decline invitation.', 'error'));
-  };
-
-  const handleTransferToMember = (newOwnerUsername) => {
-    setTransferTargetUsername(newOwnerUsername);
-  };
-
-  const confirmTransferOwnership = () => {
-    if (!transferTargetUsername) return;
-    setIsLoading(true);
-    axios
-      .put(`/api/boards/${selectedBoard.id}/transfer-member`, { new_owner: transferTargetUsername })
-      .then((res) => {
-        setIsLoading(false);
-        if (showNotification) showNotification(res.data.message, 'success');
-        setIsTeamModalOpen(false);
-        setTransferTargetUsername(null);
-        setSelectedBoard(null); // Keluar dari board untuk refresh status dengan bersih
-        fetchBoards();
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        if (showNotification) showNotification(err.response?.data?.detail || 'Failed to transfer', 'error');
-        setTransferTargetUsername(null);
-      });
-  };
-
-  const openSettings = () => {
-    // Bersihkan form sandi dan buka modal murni dari cache lokal (0 hit API, Mencegah Re-render Blink)
-    setProfileData((prev) => ({ ...prev, current_password: '', new_password: '' }));
-    setIsSettingsOpen(true);
-  };
-
-  const handleUpdateProfile = (e) => {
-    e.preventDefault();
-    if (profileData.new_password && !profileData.current_password) {
-      showNotification('Please enter your current password to change it.', 'error');
-      return;
-    }
-    setIsLoading(true);
-    const payload = {
-      full_name: profileData.full_name,
-      email: profileData.email,
-      avatar: profileData.avatar,
-      current_password: profileData.current_password,
-      new_password: profileData.new_password,
-    };
-    axios
-      .put('/api/profile', payload)
-      .then((res) => {
-        setIsLoading(false);
-        showNotification(res.data.message || 'Profile updated successfully!', 'success');
-        fetchAvatars();
-
-        if (res.data.email_changed) {
-          setTimeout(() => {
-            handleLogout();
-            showNotification('Session expired. Please verify your new email to login.', 'info');
-          }, 2500);
-        }
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        showNotification(err.response?.data?.detail || 'Failed to update profile', 'error');
-      });
-  };
-
-  const handleAvatarUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 1024 * 1024) {
-        showNotification('Image size must be less than 1MB', 'error');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData((prev) => ({ ...prev, avatar: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const openAdminModal = () => {
-    setSelectedBoard(null);
-    setIsMobileMenuOpen(false);
-    window.history.pushState({}, '', '/admin');
-    window.dispatchEvent(new CustomEvent('alurku-navigate'));
-    axios
-      .get('/api/admin/users')
-      .then((res) => {
-        setAdminUsers(res.data.users || []);
-      })
-      .catch(() => showNotification('Failed to load users or unauthorized', 'error'));
-  };
-
-  const handleToggleSuperAdmin = (username) => {
-    axios
-      .put(`/api/admin/users/superadmin`, { username, status: '' })
-      .then((res) => {
-        showNotification(res.data.message, 'success');
-        openAdminModal();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to update role', 'error'));
-  };
-
-  const handleManualVerify = (username) => {
-    axios
-      .put(`/api/admin/users/verify`, { username, status: '' })
-      .then((res) => {
-        showNotification(res.data.message, 'success');
-        openAdminModal();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to verify user', 'error'));
-  };
-
-  const handleUpdateUserStatus = (username, status, offboardDate = null) => {
-    axios
-      .put(`/api/admin/users/status`, { username, status, offboard_date: offboardDate })
-      .then((res) => {
-        showNotification(res.data.message, 'success');
-        openAdminModal();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to update status', 'error'));
-  };
-
-  const handleAddLeave = (e) => {
-    e.preventDefault();
-    axios
-      .post('/api/leaves', {
-        start_date: leaveForm.start_date,
-        end_date: leaveForm.end_date,
-        description: leaveForm.desc,
-        leave_type: leaveForm.type,
-      })
-      .then(() => {
-        showNotification('Leave added successfully!', 'success');
-        setLeaveForm({ start_date: '', end_date: '', desc: '', type: 'personal' });
-        fetchLeaves();
-        fetchTasks();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Error adding leave', 'error'));
-  };
-
-  const handleDeleteLeave = (id) => {
-    axios
-      .delete(`/api/leaves/${id}`)
-      .then(() => {
-        fetchLeaves();
-        fetchTasks();
-      })
-      .catch(() => showNotification('Failed to delete', 'error'));
-  };
-
-  const handleDeleteUser = (username) => {
-    axios
-      .post(`/api/admin/users/delete`, { username, status: '' })
-      .then(() => {
-        showNotification(`User @${username} deleted`, 'success');
-        openAdminModal();
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to delete user', 'error'));
-  };
-
-  const handleRegister = (e) => {
-    e.preventDefault();
-    if (!loginUsername.trim() || !loginPassword.trim() || !regFullName.trim() || !regEmail.trim()) {
-      showNotification(
-        language === 'id' ? 'Semua kolom formulir wajib diisi!' : 'All form fields are required!',
-        'error'
-      );
-      return;
-    }
-    if (loginPassword !== regConfirmPassword) {
-      showNotification(
-        language === 'id' ? 'Konfirmasi kata sandi tidak cocok!' : 'Passwords do not match!',
-        'error'
-      );
-      return;
-    }
-    setIsLoading(true);
-
-    axios
-      .post(
-        '/api/register',
-        {
-          full_name: regFullName.trim(),
-          email: regEmail.trim(),
-          username: loginUsername.trim(),
-          password: loginPassword,
-        },
-        { timeout: 30000 }
-      )
-      .then(() => {
-        setTimeout(() => {
-          setIsLoading(false);
-          showNotification(
-            language === 'id'
-              ? 'Pendaftaran berhasil! Silakan cek email kamu untuk verifikasi akun sebelum masuk.'
-              : 'Registration successful! Please check your email to verify your account before logging in.',
-            'success'
-          );
-          setIsLoginMode(true);
-          setLoginPassword('');
-          setRegConfirmPassword('');
-        }, 800);
-      })
-      .catch((err) => {
-        setTimeout(() => {
-          setIsLoading(false);
-          let errorMsg = language === 'id' ? 'Pendaftaran gagal!' : 'Registration failed!';
-          if (err.response?.data?.detail) {
-            errorMsg =
-              typeof err.response.data.detail === 'string'
-                ? err.response.data.detail
-                : (language === 'id' ? 'Validasi gagal, silakan periksa data input kamu.' : 'Validation error, please check your input.');
-          } else if (err.response?.data) {
-            errorMsg = typeof err.response.data === 'string' ? err.response.data : (language === 'id' ? 'Terjadi kesalahan sistem.' : 'Server Error');
-          } else if (err.message) {
-            errorMsg = language === 'id' ? 'Gagal terhubung ke server.' : `Connection Error: ${err.message}`;
-          }
-          showNotification(errorMsg, 'error');
-        }, 500);
-      });
-  };
-
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    if (!forgotEmail.trim()) {
-      return showNotification(
-        language === 'id' ? 'Silakan masukkan alamat email kamu.' : 'Please enter your email.',
-        'error'
-      );
-    }
-    setIsLoading(true);
-
-    axios
-      .post('/api/forgot-password', { email: forgotEmail.trim(), origin: window.location.origin }, { timeout: 30000 })
-      .then(() => {
-        setIsLoading(false);
-        showNotification(
-          language === 'id'
-            ? 'Tautan atur ulang kata sandi telah dikirim ke email kamu jika terdaftar.'
-            : 'If your email is registered, a password reset link has been sent.',
-          'success'
-        );
-        setIsForgotMode(false);
-        setForgotEmail('');
-      })
-      .catch(() => {
-        setIsLoading(false);
-        showNotification(
-          language === 'id' ? 'Gagal mengirim tautan atur ulang kata sandi.' : 'Failed to send reset link.',
-          'error'
-        );
-      });
-  };
-
-  const handleResetPassword = (e) => {
-    e.preventDefault();
-    if (loginPassword !== regConfirmPassword) {
-      return showNotification(
-        language === 'id' ? 'Konfirmasi kata sandi tidak cocok!' : 'Passwords do not match!',
-        'error'
-      );
-    }
-    setIsLoading(true);
-
-    axios
-      .post('/api/reset-password', { token: resetToken, new_password: loginPassword }, { timeout: 30000 })
-      .then(() => {
-        setIsLoading(false);
-        showNotification(
-          language === 'id'
-            ? 'Kata sandi berhasil diperbarui! Kamu sudah bisa masuk sekarang.'
-            : 'Password successfully reset! You can now login.',
-          'success'
-        );
-        setIsResetMode(false);
-        setResetToken(null);
-        setLoginPassword('');
-        setRegConfirmPassword('');
-
-        const url = new URL(window.location);
-        url.searchParams.delete('token');
-        window.history.pushState({}, '', url);
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        showNotification(
-          err.response?.data?.detail || (language === 'id' ? 'Token tidak valid atau telah kedaluwarsa.' : 'Invalid or expired token.'),
-          'error'
-        );
-      });
-  };
-
-  const [isJoiningProject, setIsJoiningProject] = useState(false);
-
-  const handleJoinProject = (boardId) => {
-    const targetId = boardId || selectedBoard?.id;
-    if (!targetId) return;
-    setIsJoiningProject(true);
-    axios
-      .post(`/api/boards/${targetId}/join`)
-      .then((res) => {
-        showNotification(
-          tMsg(
-            `Successfully joined project "${selectedBoard?.name || 'Project'}"!`,
-            `Berhasil bergabung dengan proyek "${selectedBoard?.name || 'Proyek'}"!`
-          ),
-          'success'
-        );
-        fetchBoards();
-        if (selectedBoard) {
-          fetchTasks(true);
-        }
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to join project!', 'error');
-      })
-      .finally(() => setIsJoiningProject(false));
-  };
-
-  const handleCreateBoard = (e) => {
-    e.preventDefault();
-    if (!newBoardName.trim()) return;
-    setIsSubmitting(true);
-    axios
-      .post('/api/boards', { name: newBoardName.trim(), is_private: isPrivateBoard ? 1 : 0 })
-      .then(() => {
-        setIsCreateBoardOpen(false);
-        setNewBoardName('');
-        setIsPrivateBoard(false);
-        fetchBoards();
-        showNotification('Project created successfully!', 'success');
-      })
-      .catch((err) => {
-        showNotification(err.response?.data?.detail || 'Failed to create project', 'error');
-      })
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const confirmDeleteBoard = () => {
-    if (!boardToDelete) return;
-    setIsSubmitting(true);
-    axios
-      .delete(`/api/boards/${boardToDelete.id}`)
-      .then(() => {
-        showNotification('Project deleted!', 'success');
-        fetchBoards();
-        setBoardToDelete(null);
-        setDeleteBoardConfirmText('');
-        if (selectedBoard?.id === boardToDelete.id) setSelectedBoard(null);
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to delete project', 'error'))
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const archiveBoard = (board) => {
-    setBoardToArchive(board);
-  };
-
-  const confirmArchiveBoard = () => {
-    if (!boardToArchive) return;
-    setIsSubmitting(true);
-    axios
-      .patch(`/api/boards/${boardToArchive.id}/archive`)
-      .then(() => {
-        showNotification('Project archived!', 'success');
-        fetchBoards();
-        if (selectedBoard?.id === boardToArchive.id) setSelectedBoard(null);
-        setBoardToArchive(null);
-      })
-      .catch((err) => showNotification(err.response?.data?.detail || 'Failed to archive project', 'error'))
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const handleFeedbackSubmit = (e) => {
-    e.preventDefault();
-    if (!feedbackText.trim()) return;
-    setIsSubmitting(true);
-    axios
-      .post('/api/feedback', { text: feedbackText })
-      .then((res) => {
-        showNotification(res.data.message, 'success');
-        setIsFeedbackOpen(false);
-        setFeedbackText('');
-      })
-      .catch((err) => showNotification('Failed to submit feedback', 'error'))
-      .finally(() => setIsSubmitting(false));
-  };
-
-  const handleSupportSubmit = (e) => {
-    e.preventDefault();
-    if (!supportText.trim()) return;
-    setIsSubmitting(true);
-    axios
-      .post('/api/feedback', { text: `[SUPPORT TICKET] ${supportText}` })
-      .then((res) => {
-        showNotification(
-          language === 'id' ? 'Tiket dukungan berhasil dikirim ke tim IT!' : 'Support ticket sent to IT successfully!',
-          'success'
-        );
-        setIsSupportOpen(false);
-        setSupportText('');
-      })
-      .catch((err) => showNotification('Failed to submit support ticket', 'error'))
-      .finally(() => setIsSubmitting(false));
-  };
-
-  // Intercept Back Button untuk pengalaman layaknya Aplikasi Mobile (PWA)
-  useEffect(() => {
-    const handlePopState = (e) => {
-      // Prioritas 1: Tutup Layer Modal atau View yang sedang aktif
-      if (
-        isSettingsOpen ||
-        isDocsOpen ||
-        isProjectChatOpen ||
-        isFormOpen ||
-        selectedTask ||
-        isLeaveModalOpen ||
-        isAdminModalOpen ||
-        isFeedbackOpen ||
-        isSupportOpen ||
-        isTeamModalOpen ||
-        isInvitesModalOpen ||
-        isLogoutConfirmOpen ||
-        isDeleteConfirmOpen ||
-        isCreateBoardOpen ||
-        isExportModalOpen ||
-        isMyTicketsOpen ||
-        colModal.isOpen ||
-        isMobileMenuOpen ||
-        isAssistantOpen ||
-        isProactiveAIOpen
-      ) {
-        setIsSettingsOpen(false);
-        setIsDocsOpen(false);
-        setIsProjectChatOpen(false);
-        setIsFormOpen(false);
-        setSelectedTask(null);
-        setIsLeaveModalOpen(false);
-        setIsAdminModalOpen(false);
-        setIsFeedbackOpen(false);
-        setIsSupportOpen(false);
-        setIsTeamModalOpen(false);
-        setIsInvitesModalOpen(false);
-        setIsLogoutConfirmOpen(false);
-        setIsDeleteConfirmOpen(false);
-        setIsCreateBoardOpen(false);
-        setIsExportModalOpen(false);
-        setIsMyTicketsOpen(false);
-        setIsMobileMenuOpen(false);
-        setIsChatWorkspaceOpen(false);
-        setIsAssistantOpen(false);
-        if (isProactiveAIOpen) {
-          // Navigate to dashboard when Escape closes ProactiveAI
-          window.history.pushState({}, '', '/dashboard');
-          window.dispatchEvent(new CustomEvent('alurku-navigate'));
-        }
-        setIsProactiveAIOpen(false);
-        setColModal((prev) => ({ ...prev, isOpen: false }));
-        window.history.pushState({ app_state: 'active' }, ''); // Cegah aplikasi keluar
-      }
-      // Prioritas 2: Keluar dari Ruang Kerja Proyek kembali ke Dashboard Utama
-      else if (selectedBoard) {
-        setSelectedBoard(null);
-        window.history.pushState({ app_state: 'active' }, ''); // Cegah aplikasi keluar
-      }
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [
-    isSettingsOpen,
-    isDocsOpen,
-    isProjectChatOpen,
-    isFormOpen,
-    selectedTask,
-    isLeaveModalOpen,
-    isAdminModalOpen,
-    isFeedbackOpen,
-    isSupportOpen,
-    selectedBoard,
-    isTeamModalOpen,
-    isInvitesModalOpen,
-    isLogoutConfirmOpen,
-    isDeleteConfirmOpen,
-    isCreateBoardOpen,
-    isExportModalOpen,
-    isMyTicketsOpen,
-    colModal.isOpen,
-    isChatWorkspaceOpen,
-    isMobileMenuOpen,
-    isAssistantOpen,
-  ]);
-
-  useEffect(() => {
-    if (isAuthenticated) window.history.pushState({ app_state: 'active' }, '');
-  }, [isAuthenticated]);
-
-  const teamWorkloadStats = useMemo(() => {
-    if (!tasks || tasks.length === 0 || !userDirectory || userDirectory.length === 0) {
-      return {};
-    }
-
-    const memberDetailedStats = {};
-    const currentMembersLookup = new Set((userDirectory || []).map((m) => m.username.toLowerCase()));
-
-    tasks.forEach((t) => {
-      if (t.status === 'Rejected') return;
-
-      const involvedUsers = new Set();
-      if (t.owner_username) involvedUsers.add(t.owner_username);
-
-      if (t.requester) {
-        const matches = t.requester.match(/@([\w.-]+)/g);
-        if (matches) {
-          matches.forEach((m) => involvedUsers.add(m.substring(1)));
-        }
-      }
-
-      if (t.subtask_details) {
-        const lines = t.subtask_details.split('\n');
-        lines.forEach((line) => {
-          const match = line.match(/\(@([\w.-]+)\)$/);
-          if (match) involvedUsers.add(match[1]);
-        });
-      }
-
-      const validUsers = Array.from(involvedUsers).filter(
-        (p) => p && p.toLowerCase() !== 'unassigned' && currentMembersLookup.has(p.toLowerCase())
-      );
-      const divisor = validUsers.length > 0 ? validUsers.length : 1;
-      const splitEtc = (t.etc || 2) / divisor;
-
-      validUsers.forEach((person) => {
-        if (!memberDetailedStats[person]) {
-          memberDetailedStats[person] = {
-            total_etc: 0,
-            done_etc: 0,
-            active_etc: 0,
-            critical: 0,
-          };
-        }
-
-        memberDetailedStats[person].total_etc += splitEtc;
-
-        if (t.status === 'Done') {
-          memberDetailedStats[person].done_etc += splitEtc;
-        } else {
-          if (t.status !== 'Pending') memberDetailedStats[person].active_etc += splitEtc;
-          if (t.priority_lvl === 'critical') memberDetailedStats[person].critical += 1;
-        }
-      });
-    });
-    return memberDetailedStats;
-  }, [tasks, userDirectory]);
-
-  const navigateTo = useCallback((path) => {
-    if (typeof window !== 'undefined') {
-      window.history.pushState({}, '', path);
-      window.dispatchEvent(new Event('popstate'));
-    }
-  }, []);
+  }, [boardWs.selectedBoard, teamMgmt.userDirectory, authSession.isAuthenticated]);
 
   return {
-    navigateTo,
-    workspaces,
-    activeWorkspace,
-    fetchWorkspaces,
-    createWorkspace,
-    switchWorkspace,
-    renameWorkspace,
-    deleteWorkspace,
-    renameProject,
-    archiveBoard,
-    isAuthenticated,
-    currentUser,
-    isLoginMode,
-    showAuthForm,
-    loginUsername,
-    loginPassword,
-    loginError,
-    setLoginError,
-    lockoutRemaining,
-    regFullName,
-    regEmail,
-    regConfirmPassword,
-    resetToken,
-    isResetMode,
-    isForgotMode,
-    forgotEmail,
-    tasks,
-    columns,
-    categories,
-    colModal,
-    isFormOpen,
-    viewMode,
-    selectedTask,
-    isDeleteConfirmOpen,
-    isEditing,
-    editFormData,
-    searchQuery,
-    filterStatus,
-    filterCategory,
-    filterAssignee,
-    showMyTasks,
-    showOverdueOnly,
-    groupBy,
-    sortBy,
-    isDarkMode,
-    calDate,
-    subtasks,
-    isSubtasksLoading,
-    newSubtaskName,
-    newSubtaskAssignee,
-    formData,
-    formSubtasks,
-    formSubtaskInput,
-    formSubtaskAssignee,
-    showPassword,
-    showConfirmPassword,
-    notification,
-    isTeamModalOpen,
-    isInvitesModalOpen,
-    inviteInput,
-    inviteSuggestions,
-    invitations,
-    isSettingsOpen,
-    profileData,
-    isMentioning,
-    userDirectory,
-    mentionQuery,
-    isAdminModalOpen,
-    adminUsers,
-    comments,
-    newComment,
-    teamMembers,
-    notifications,
-    isNotifOpen,
-    isNotifClosing,
-    commentToDelete,
-    memberToRevoke,
-    transferTargetUsername,
-    setTransferTargetUsername,
-    avatarsMap,
-    myTeam,
-    boards,
-    workspaceBoards,
-    selectedBoard,
-    isCreateBoardOpen,
-    newBoardName,
-    boardToDelete,
-    deleteBoardConfirmText,
-    isExportModalOpen,
-    exportMode,
-    exportStartDate,
-    exportEndDate,
-    isLeaveModalOpen,
-    leaves,
-    leaveForm,
-    timelineDrag,
-    accountStatus,
-    isSuperAdmin,
-    isFeedbackOpen,
-    feedbackText,
-    isArchivedOpen,
-    isSupportOpen,
-    supportText,
-    isDocsOpen,
-    isMomNotepadOpen,    
-    isMobileMenuOpen,
-    isLogoutConfirmOpen,
-    isPrivacyOpen,
-    isTermsOpen,
-    setIsAuthenticated,
-    setCurrentUser,
-    setIsLoginMode,
-    setShowAuthForm,
-    setLoginUsername,
-    setLoginPassword,
-    setRegFullName,
-    setRegEmail,
-    setRegConfirmPassword,
-    setResetToken,
-    setIsResetMode,
-    setIsForgotMode,
-    setForgotEmail,
-    setTasks,
-    setColumns,
-    setCategories,
-    setColModal,
-    setIsFormOpen,
-    setViewMode,
-    setSelectedTask,
-    setIsDeleteConfirmOpen,
-    setIsEditing,
-    setEditFormData,
-    setSearchQuery,
-    setFilterStatus,
-    setFilterCategory,
-    setFilterAssignee,
-    setFilterTag,
-    setShowMyTasks,
-    showOverdueOnly,
-    setShowOverdueOnly,
-    showDueTodayOnly,
-    setShowDueTodayOnly,
-    showUnreadOnly,
-    setShowUnreadOnly,
-    showHasSubtasks,
-    setShowHasSubtasks,
-    hideCompleted,
-    setHideCompleted,
-    setGroupBy,
-    setSortBy,
-    setIsDarkMode,
-    setCalDate,
-    setSubtasks,
-    setNewSubtaskName,
-    setNewSubtaskAssignee,
-    setFormData,
-    setFormSubtasks,
-    setFormSubtaskInput,
-    setFormSubtaskAssignee,
-    setShowPassword,
-    setShowConfirmPassword,
-    setNotification,
-    setIsTeamModalOpen,
-    setIsInvitesModalOpen,
-    setInviteInput,
-    setInviteSuggestions,
-    setInvitations,
-    setIsSettingsOpen,
-    setProfileData,
-    setIsMentioning,
-    setMentionQuery,
-    isCommentMentioning,
-    setIsCommentMentioning,
-    commentMentionQuery,
-    setCommentMentionQuery,
-    commentMentionIndex,
-    setCommentMentionIndex,
-    setIsAdminModalOpen,
-    setAdminUsers,
-    setComments,
-    setNewComment,
-    isAiReplying,
-    handleAskAITaskChat,
-    setTeamMembers,
-    setNotifications,
-    setIsNotifOpen,
-    setCommentToDelete,
-    setMemberToRevoke,
-    setAvatarsMap,
-    setMyTeam,
-    setBoards,
-    setSelectedBoard,
-    setIsCreateBoardOpen,
-    setNewBoardName,
-    isPrivateBoard,
-    setIsPrivateBoard,
-    setBoardToDelete,
-    boardToArchive,
-    setBoardToArchive,
-    confirmArchiveBoard,
-    setDeleteBoardConfirmText,
-    setIsExportModalOpen,
-    setExportMode,
-    setExportStartDate,
-    setExportEndDate,
-    setIsLeaveModalOpen,
-    setLeaves,
-    setLeaveForm,
-    setTimelineDrag,
-    setAccountStatus,
-    setIsFeedbackOpen,
-    setFeedbackText,
-    setIsArchivedOpen,
-    setIsSupportOpen,
-    setSupportText,
-    setIsDocsOpen,
-    setIsMomNotepadOpen,    
-    setIsMobileMenuOpen,
-    isMobileProfileOpen,
-    setIsMobileProfileOpen,
-    isMyTicketsOpen,
-    setIsMyTicketsOpen,
-    isChatWorkspaceOpen,
-    setIsChatWorkspaceOpen,
-    workspaceChatTarget,
-    setWorkspaceChatTarget,
-    setIsLogoutConfirmOpen,
-    setIsPrivacyOpen,
-    setIsTermsOpen,
-    isChangelogOpen,
-    setIsChangelogOpen,
+    navigateTo: appPrefs.navigateTo,
+    workspaces: workspacesMgr.workspaces,
+    activeWorkspace: workspacesMgr.activeWorkspace,
+    fetchWorkspaces: workspacesMgr.fetchWorkspaces,
+    createWorkspace: workspacesMgr.createWorkspace,
+    switchWorkspace: workspacesMgr.switchWorkspace,
+    renameWorkspace: workspacesMgr.renameWorkspace,
+    deleteWorkspace: workspacesMgr.deleteWorkspace,
+    renameProject: boardWs.renameProject,
+    archiveBoard: boardWs.archiveBoard,
+    isAuthenticated: authSession.isAuthenticated,
+    currentUser: authSession.currentUser,
+    isLoginMode: authSession.isLoginMode,
+    showAuthForm: authSession.showAuthForm,
+    loginUsername: authSession.loginUsername,
+    loginPassword: authSession.loginPassword,
+    loginError: authSession.loginError,
+    setLoginError: authSession.setLoginError,
+    lockoutRemaining: authSession.lockoutRemaining,
+    regFullName: authSession.regFullName,
+    regEmail: authSession.regEmail,
+    regConfirmPassword: authSession.regConfirmPassword,
+    resetToken: authSession.resetToken,
+    isResetMode: authSession.isResetMode,
+    isForgotMode: authSession.isForgotMode,
+    forgotEmail: authSession.forgotEmail,
+    tasks: taskMgmt.tasks,
+    columns: boardWs.columns,
+    categories: boardWs.categories,
+    colModal: boardWs.colModal,
+    isFormOpen: modals.isFormOpen,
+    viewMode: taskMgmt.viewMode,
+    selectedTask: taskMgmt.selectedTask,
+    isDeleteConfirmOpen: modals.isDeleteConfirmOpen,
+    isEditing: taskMgmt.isEditing,
+    editFormData: taskMgmt.editFormData,
+    searchQuery: taskMgmt.searchQuery,
+    filterStatus: taskMgmt.filterStatus,
+    filterCategory: taskMgmt.filterCategory,
+    filterAssignee: taskMgmt.filterAssignee,
+    showMyTasks: taskMgmt.showMyTasks,
+    showOverdueOnly: taskMgmt.showOverdueOnly,
+    groupBy: taskMgmt.groupBy,
+    sortBy: taskMgmt.sortBy,
+    isDarkMode: theme.isDarkMode,
+    calDate: taskMgmt.calDate,
+    subtasks: taskMgmt.subtasks,
+    isSubtasksLoading: taskMgmt.isSubtasksLoading,
+    newSubtaskName: taskMgmt.newSubtaskName,
+    newSubtaskAssignee: taskMgmt.newSubtaskAssignee,
+    formData: taskMgmt.formData,
+    formSubtasks: taskMgmt.formSubtasks,
+    formSubtaskInput: taskMgmt.formSubtaskInput,
+    formSubtaskAssignee: taskMgmt.formSubtaskAssignee,
+    showPassword: authSession.showPassword,
+    showConfirmPassword: authSession.showConfirmPassword,
+    notification: notifs.notification,
+    isTeamModalOpen: modals.isTeamModalOpen,
+    isInvitesModalOpen: modals.isInvitesModalOpen,
+    inviteInput: teamMgmt.inviteInput,
+    inviteSuggestions: teamMgmt.inviteSuggestions,
+    invitations: teamMgmt.invitations,
+    isSettingsOpen: modals.isSettingsOpen,
+    profileData: teamMgmt.profileData,
+    isMentioning: teamMgmt.isMentioning,
+    userDirectory: teamMgmt.userDirectory,
+    mentionQuery: teamMgmt.mentionQuery,
+    isAdminModalOpen: modals.isAdminModalOpen,
+    adminUsers: teamMgmt.adminUsers,
+    comments: chatComm.comments,
+    newComment: chatComm.newComment,
+    teamMembers: teamMgmt.teamMembers,
+    notifications: notifs.notifications,
+    isNotifOpen: modals.isNotifOpen,
+    isNotifClosing: notifs.isNotifClosing,
+    commentToDelete: chatComm.commentToDelete,
+    memberToRevoke: teamMgmt.memberToRevoke,
+    transferTargetUsername: teamMgmt.transferTargetUsername,
+    setTransferTargetUsername: teamMgmt.setTransferTargetUsername,
+    avatarsMap: teamMgmt.avatarsMap,
+    myTeam: teamMgmt.myTeam,
+    boards: boardWs.boards,
+    workspaceBoards: boardWs.workspaceBoards,
+    selectedBoard: boardWs.selectedBoard,
+    isCreateBoardOpen: modals.isCreateBoardOpen,
+    newBoardName: boardWs.newBoardName,
+    boardToDelete: boardWs.boardToDelete,
+    deleteBoardConfirmText: boardWs.deleteBoardConfirmText,
+    isExportModalOpen: modals.isExportModalOpen,
+    exportMode: aiState.exportMode,
+    exportStartDate: aiState.exportStartDate,
+    exportEndDate: aiState.exportEndDate,
+    isLeaveModalOpen: modals.isLeaveModalOpen,
+    leaves: leavesRec.leaves,
+    leaveForm: leavesRec.leaveForm,
+    timelineDrag: appPrefs.timelineDrag,
+    accountStatus: authSession.accountStatus,
+    isSuperAdmin: authSession.isSuperAdmin,
+    isFeedbackOpen: modals.isFeedbackOpen,
+    feedbackText: aiState.feedbackText,
+    isArchivedOpen: modals.isArchivedOpen,
+    isSupportOpen: modals.isSupportOpen,
+    supportText: aiState.supportText,
+    isDocsOpen: modals.isDocsOpen,
+    isMomNotepadOpen: modals.isMomNotepadOpen,
+    isMobileMenuOpen: modals.isMobileMenuOpen,
+    isLogoutConfirmOpen: modals.isLogoutConfirmOpen,
+    isPrivacyOpen: modals.isPrivacyOpen,
+    isTermsOpen: modals.isTermsOpen,
+    setIsAuthenticated: authSession.setIsAuthenticated,
+    setCurrentUser: authSession.setCurrentUser,
+    setIsLoginMode: authSession.setIsLoginMode,
+    setShowAuthForm: authSession.setShowAuthForm,
+    setLoginUsername: authSession.setLoginUsername,
+    setLoginPassword: authSession.setLoginPassword,
+    setRegFullName: authSession.setRegFullName,
+    setRegEmail: authSession.setRegEmail,
+    setRegConfirmPassword: authSession.setRegConfirmPassword,
+    setResetToken: authSession.setResetToken,
+    setIsResetMode: authSession.setIsResetMode,
+    setIsForgotMode: authSession.setIsForgotMode,
+    setForgotEmail: authSession.setForgotEmail,
+    setTasks: taskMgmt.setTasks,
+    setColumns: boardWs.setColumns,
+    setCategories: boardWs.setCategories,
+    setColModal: boardWs.setColModal,
+    setIsFormOpen: modals.setIsFormOpen,
+    setViewMode: taskMgmt.setViewMode,
+    setSelectedTask: taskMgmt.setSelectedTask,
+    setIsDeleteConfirmOpen: modals.setIsDeleteConfirmOpen,
+    setIsEditing: taskMgmt.setIsEditing,
+    setEditFormData: taskMgmt.setEditFormData,
+    setSearchQuery: taskMgmt.setSearchQuery,
+    setFilterStatus: taskMgmt.setFilterStatus,
+    setFilterCategory: taskMgmt.setFilterCategory,
+    setFilterAssignee: taskMgmt.setFilterAssignee,
+    setFilterTag: taskMgmt.setFilterTag,
+    setShowMyTasks: taskMgmt.setShowMyTasks,
+    setShowOverdueOnly: taskMgmt.setShowOverdueOnly,
+    showDueTodayOnly: taskMgmt.showDueTodayOnly,
+    setShowDueTodayOnly: taskMgmt.setShowDueTodayOnly,
+    showUnreadOnly: taskMgmt.showUnreadOnly,
+    setShowUnreadOnly: taskMgmt.setShowUnreadOnly,
+    showHasSubtasks: taskMgmt.showHasSubtasks,
+    setShowHasSubtasks: taskMgmt.setShowHasSubtasks,
+    hideCompleted: taskMgmt.hideCompleted,
+    setHideCompleted: taskMgmt.setHideCompleted,
+    setGroupBy: taskMgmt.setGroupBy,
+    setSortBy: taskMgmt.setSortBy,
+    setIsDarkMode: theme.setIsDarkMode,
+    setCalDate: taskMgmt.setCalDate,
+    setSubtasks: taskMgmt.setSubtasks,
+    setNewSubtaskName: taskMgmt.setNewSubtaskName,
+    setNewSubtaskAssignee: taskMgmt.setNewSubtaskAssignee,
+    setFormData: taskMgmt.setFormData,
+    setFormSubtasks: taskMgmt.setFormSubtasks,
+    setFormSubtaskInput: taskMgmt.setFormSubtaskInput,
+    setFormSubtaskAssignee: taskMgmt.setFormSubtaskAssignee,
+    setShowPassword: authSession.setShowPassword,
+    setShowConfirmPassword: authSession.setShowConfirmPassword,
+    setNotification: notifs.setNotification,
+    setIsTeamModalOpen: modals.setIsTeamModalOpen,
+    setIsInvitesModalOpen: modals.setIsInvitesModalOpen,
+    setInviteInput: teamMgmt.setInviteInput,
+    setInviteSuggestions: teamMgmt.setInviteSuggestions,
+    setInvitations: teamMgmt.setInvitations,
+    setIsSettingsOpen: modals.setIsSettingsOpen,
+    setProfileData: teamMgmt.setProfileData,
+    setIsMentioning: teamMgmt.setIsMentioning,
+    setMentionQuery: teamMgmt.setMentionQuery,
+    isCommentMentioning: chatComm.isCommentMentioning,
+    setIsCommentMentioning: chatComm.setIsCommentMentioning,
+    commentMentionQuery: chatComm.commentMentionQuery,
+    setCommentMentionQuery: chatComm.setCommentMentionQuery,
+    commentMentionIndex: chatComm.commentMentionIndex,
+    setCommentMentionIndex: chatComm.setCommentMentionIndex,
+    setIsAdminModalOpen: modals.setIsAdminModalOpen,
+    setAdminUsers: teamMgmt.setAdminUsers,
+    setComments: chatComm.setComments,
+    setNewComment: chatComm.setNewComment,
+    isAiReplying: chatComm.isAiReplying,
+    handleAskAITaskChat: chatComm.handleAskAITaskChat,
+    setTeamMembers: teamMgmt.setTeamMembers,
+    setNotifications: notifs.setNotifications,
+    setIsNotifOpen: modals.setIsNotifOpen,
+    setCommentToDelete: chatComm.setCommentToDelete,
+    setMemberToRevoke: teamMgmt.setMemberToRevoke,
+    setAvatarsMap: teamMgmt.setAvatarsMap,
+    setMyTeam: teamMgmt.setMyTeam,
+    setBoards: boardWs.setBoards,
+    setSelectedBoard: boardWs.setSelectedBoard,
+    setIsCreateBoardOpen: modals.setIsCreateBoardOpen,
+    setNewBoardName: boardWs.setNewBoardName,
+    isPrivateBoard: boardWs.isPrivateBoard,
+    setIsPrivateBoard: boardWs.setIsPrivateBoard,
+    setBoardToDelete: boardWs.setBoardToDelete,
+    boardToArchive: boardWs.boardToArchive,
+    setBoardToArchive: boardWs.setBoardToArchive,
+    confirmArchiveBoard: boardWs.confirmArchiveBoard,
+    setDeleteBoardConfirmText: boardWs.setDeleteBoardConfirmText,
+    setIsExportModalOpen: modals.setIsExportModalOpen,
+    setExportMode: aiState.setExportMode,
+    setExportStartDate: aiState.setExportStartDate,
+    setExportEndDate: aiState.setExportEndDate,
+    setIsLeaveModalOpen: modals.setIsLeaveModalOpen,
+    setLeaves: leavesRec.setLeaves,
+    setLeaveForm: leavesRec.setLeaveForm,
+    setTimelineDrag: appPrefs.setTimelineDrag,
+    setAccountStatus: authSession.setAccountStatus,
+    setIsFeedbackOpen: modals.setIsFeedbackOpen,
+    setFeedbackText: aiState.setFeedbackText,
+    setIsArchivedOpen: modals.setIsArchivedOpen,
+    setIsSupportOpen: modals.setIsSupportOpen,
+    setSupportText: aiState.setSupportText,
+    setIsDocsOpen: modals.setIsDocsOpen,
+    setIsMomNotepadOpen: modals.setIsMomNotepadOpen,
+    setIsMobileMenuOpen: modals.setIsMobileMenuOpen,
+    isMobileProfileOpen: modals.isMobileProfileOpen,
+    setIsMobileProfileOpen: modals.setIsMobileProfileOpen,
+    isMyTicketsOpen: modals.isMyTicketsOpen,
+    setIsMyTicketsOpen: modals.setIsMyTicketsOpen,
+    isChatWorkspaceOpen: modals.isChatWorkspaceOpen,
+    setIsChatWorkspaceOpen: modals.setIsChatWorkspaceOpen,
+    workspaceChatTarget: modals.workspaceChatTarget,
+    setWorkspaceChatTarget: modals.setWorkspaceChatTarget,
+    setIsLogoutConfirmOpen: modals.setIsLogoutConfirmOpen,
+    setIsPrivacyOpen: modals.setIsPrivacyOpen,
+    setIsTermsOpen: modals.setIsTermsOpen,
+    isChangelogOpen: modals.isChangelogOpen,
+    setIsChangelogOpen: modals.setIsChangelogOpen,
     isSubmitting,
-    isTasksLoading,
-    isBoardsLoading,
-    isKanbanDragging,
-    setIsKanbanDragging,
-    isTrashHovered,
-    setIsTrashHovered,
-    startTour,
-    startDriverTour,
-    showWelcomeTour,
-    setShowWelcomeTour,
-    handleOpenNewTaskForm,
-    handleManualFormClick,
-    loginWithGoogle,
-    handleMouseDown,
-    handleMouseLeave,
-    handleMouseUp,
-    handleMouseMove,
-    showNotification,
-    toastQueue,
-    dismissToast,
-    handleReadNotification,
-    handleDeleteNotification,
-    handleReadAllNotifications,
-    handleMarkAllInboxAsRead,
-    handleNotificationTaskClick,
-    handleOpenAddBoard,
-    handleOpenRenameBoard,
-    handleOpenDeleteBoard,
-    handleColSubmit,
-    handleAddSubtask,
-    handleToggleSubtask,
-    handleUpdateSubtaskAssignee,    
-    handleDeleteSubtask,
-    handleSubtaskDragEnd,
-    handleCommentChange,
-    insertCommentMention,
-    handleAddComment,
-    handleDeleteComment,
-    confirmDeleteComment,
-    onDragEnd,
-    handleRequesterChange,
-    insertMention,
-    handleSubmit,
-    handleQuickAddTask,
-    handleAddFormSubtask,
-    handleRemoveFormSubtask,
-    handleDelete,
-    startEditing,
-    handleEditSubmit,
-    handleDirectStatusChange,
-    handleExportCSV,
-    handleLogin,
-    openTeamModal,
-    handleInviteTeam,
-    handleInviteInputChange,
-    applyInviteSuggestion,
-    handleRevokeMember,
-    handleAcceptAccessRequest,
-    handleTransferToMember,
-    confirmTransferOwnership,
-    confirmRevokeMember,
-    handleAcceptInvite,
-    handleDeclineInvite,
-    openSettings,
-    handleUpdateProfile,
-    handleAvatarUpload,
-    openAdminModal,
-    handleUpdateUserStatus,
-    handleToggleSuperAdmin,
-    handleManualVerify,
-    handleAddLeave,
-    handleDeleteLeave,
-    handleDeleteUser,
-    handleRegister,
-    handleForgotPassword,
-    handleResetPassword,
-    handleLogout,
-    handleCreateBoard,
-    confirmDeleteBoard,
-    handleFeedbackSubmit,
-    handleSupportSubmit,
-    closeNotif,
-    closeGlobalSearch,
-    handleQuickLinkAdd,
-    handleQuickLinkRemove,
-    fetchComments,
-    handleStartMeet,
-    handleChatScroll,
-    filteredTasks,
-    activeColumns,
-    assigneeOptions,
-    unreadCount,
-    scrollRef,
-    fetchTasks,
-    fetchBoards,
-    fetchLeaves,
+    isTasksLoading: taskMgmt.isTasksLoading,
+    isBoardsLoading: boardWs.isBoardsLoading,
+    isKanbanDragging: taskMgmt.isKanbanDragging,
+    setIsKanbanDragging: taskMgmt.setIsKanbanDragging,
+    isTrashHovered: taskMgmt.isTrashHovered,
+    setIsTrashHovered: taskMgmt.setIsTrashHovered,
+    startTour: appPrefs.startTour,
+    startDriverTour: appPrefs.startDriverTour,
+    showWelcomeTour: modals.showWelcomeTour,
+    setShowWelcomeTour: modals.setShowWelcomeTour,
+    handleOpenNewTaskForm: taskMgmt.handleOpenNewTaskForm,
+    handleManualFormClick: appPrefs.handleManualFormClick,
+    loginWithGoogle: authSession.loginWithGoogle,
+    handleMouseDown: appPrefs.handleMouseDown,
+    handleMouseLeave: appPrefs.handleMouseLeave,
+    handleMouseUp: appPrefs.handleMouseUp,
+    handleMouseMove: appPrefs.handleMouseMove,
+    showNotification: notifs.showNotification,
+    toastQueue: notifs.toastQueue,
+    dismissToast: notifs.dismissToast,
+    handleReadNotification: notifs.handleReadNotification,
+    handleDeleteNotification: notifs.handleDeleteNotification,
+    handleReadAllNotifications: notifs.handleReadAllNotifications,
+    handleMarkAllInboxAsRead: notifs.handleMarkAllInboxAsRead,
+    handleNotificationTaskClick: notifs.handleNotificationTaskClick,
+    handleOpenAddBoard: boardWs.handleOpenAddBoard,
+    handleOpenRenameBoard: boardWs.handleOpenRenameBoard,
+    handleOpenDeleteBoard: boardWs.handleOpenDeleteBoard,
+    handleColSubmit: boardWs.handleColSubmit,
+    handleAddSubtask: taskMgmt.handleAddSubtask,
+    handleToggleSubtask: taskMgmt.handleToggleSubtask,
+    handleUpdateSubtaskAssignee: taskMgmt.handleUpdateSubtaskAssignee,
+    handleDeleteSubtask: taskMgmt.handleDeleteSubtask,
+    handleSubtaskDragEnd: taskMgmt.handleSubtaskDragEnd,
+    handleCommentChange: chatComm.handleCommentChange,
+    insertCommentMention: chatComm.insertCommentMention,
+    handleAddComment: chatComm.handleAddComment,
+    handleDeleteComment: chatComm.handleDeleteComment,
+    confirmDeleteComment: chatComm.confirmDeleteComment,
+    onDragEnd: taskMgmt.onDragEnd,
+    handleRequesterChange: (val, fn, state) =>
+      taskMgmt.handleRequesterChange(
+        val,
+        fn,
+        state,
+        teamMgmt.setMentionQuery,
+        teamMgmt.setIsMentioning,
+        teamMgmt.setMentionIndex
+      ),
+    insertMention: (uname, fn, state) =>
+      taskMgmt.insertMention(uname, fn, state, teamMgmt.setIsMentioning),
+    handleSubmit: taskMgmt.handleSubmit,
+    handleQuickAddTask: taskMgmt.handleQuickAddTask,
+    handleAddFormSubtask: taskMgmt.handleAddFormSubtask,
+    handleRemoveFormSubtask: taskMgmt.handleRemoveFormSubtask,
+    handleDelete: taskMgmt.handleDelete,
+    startEditing: taskMgmt.startEditing,
+    handleEditSubmit: taskMgmt.handleEditSubmit,
+    handleDirectStatusChange: taskMgmt.handleDirectStatusChange,
+    handleExportCSV: aiState.handleExportCSV,
+    handleLogin: authSession.handleLogin,
+    openTeamModal: teamMgmt.openTeamModal,
+    handleInviteTeam: teamMgmt.handleInviteTeam,
+    handleInviteInputChange: teamMgmt.handleInviteInputChange,
+    applyInviteSuggestion: teamMgmt.applyInviteSuggestion,
+    handleRevokeMember: teamMgmt.handleRevokeMember,
+    handleAcceptAccessRequest: teamMgmt.handleAcceptAccessRequest,
+    handleTransferToMember: teamMgmt.handleTransferToMember,
+    confirmTransferOwnership: teamMgmt.confirmTransferOwnership,
+    confirmRevokeMember: teamMgmt.confirmRevokeMember,
+    handleAcceptInvite: teamMgmt.handleAcceptInvite,
+    handleDeclineInvite: teamMgmt.handleDeclineInvite,
+    openSettings: teamMgmt.openSettings,
+    handleUpdateProfile: teamMgmt.handleUpdateProfile,
+    handleAvatarUpload: teamMgmt.handleAvatarUpload,
+    openAdminModal: teamMgmt.openAdminModal,
+    handleUpdateUserStatus: teamMgmt.handleUpdateUserStatus,
+    handleToggleSuperAdmin: teamMgmt.handleToggleSuperAdmin,
+    handleManualVerify: teamMgmt.handleManualVerify,
+    handleAddLeave: leavesRec.handleAddLeave,
+    handleDeleteLeave: leavesRec.handleDeleteLeave,
+    handleDeleteUser: teamMgmt.handleDeleteUser,
+    handleRegister: authSession.handleRegister,
+    handleForgotPassword: authSession.handleForgotPassword,
+    handleResetPassword: authSession.handleResetPassword,
+    handleLogout: authSession.handleLogout,
+    handleCreateBoard: boardWs.handleCreateBoard,
+    confirmDeleteBoard: boardWs.confirmDeleteBoard,
+    handleFeedbackSubmit: aiState.handleFeedbackSubmit,
+    handleSupportSubmit: aiState.handleSupportSubmit,
+    closeNotif: notifs.closeNotif,
+    closeGlobalSearch: appPrefs.closeGlobalSearch,
+    handleQuickLinkAdd: taskMgmt.handleQuickLinkAdd,
+    handleQuickLinkRemove: taskMgmt.handleQuickLinkRemove,
+    fetchComments: chatComm.fetchComments,
+    handleStartMeet: chatComm.handleStartMeet,
+    handleChatScroll: chatComm.handleChatScroll,
+    filteredTasks: taskMgmt.filteredTasks,
+    activeColumns: taskMgmt.activeColumns,
+    assigneeOptions: taskMgmt.assigneeOptions,
+    unreadCount: notifs.unreadCount,
+    scrollRef: appPrefs.scrollRef,
+    fetchTasks: taskMgmt.fetchTasks,
+    fetchBoards: boardWs.fetchBoards,
+    fetchLeaves: leavesRec.fetchLeaves,
     DEFAULT_COLUMNS,
     DAY_WIDTH,
-    formatDateMMM,
+    formatDateMMM: appPrefs.formatDateMMM,
     isUserAssigned,
-    globalSearchQuery,
-    setGlobalSearchQuery,
-    globalSearchResults,
-    globalSearchBoards,
-    isGlobalSearchOpen,
-    isGlobalSearchClosing,
-    setIsGlobalSearchOpen,
-    handleGlobalSearchSelect,
-    forceSearchAll,
-    setForceSearchAll,
-    pendingStatusChange,
-    setPendingStatusChange,
-    confirmPendingStatusChange,
-    cancelPendingStatusChange,
-    hoveredTimelineRow,
-    setHoveredTimelineRow,
-    isProactiveAIOpen,
-    setIsProactiveAIOpen,
-    handleToggleAutoNudge,
-    isAssistantOpen,
-    setIsAssistantOpen,
-    appTheme,
-    handleSelectAppTheme,
-    cardTheme,
-    handleSelectCardTheme,
-    appBgImage,
-    setAppBgImage,
-    handleSelectAppBg,
-    handleAppBgUpload,
-    removeAppBgImage,
-    appTexture,
-    handleSelectAppTexture,
-    chatBg,
-    handleChatBgUpload,
-    removeChatBg,
-    handleSelectDefaultBg,
-    isProjectChatOpen,
-    setIsProjectChatOpen,
-    handleToggleReaction,
-    projectChatMessages,
-    newProjectChatMessage,
-    handleProjectChatChange,
-    insertProjectMention,
-    sendProjectChatMessage,
-    chatEndRef,
-    drawerTab,
-    setDrawerTab,
-    isProjectMentioning,
-    projectMentionQuery,
-    hasNewProjectChat,
-    setHasNewProjectChat,
-    hasMoreProjectChat,
-    loadMoreProjectChat,
-    chatSearchQuery,
-    setChatSearchQuery,
-    dmConversations,
-    setDmConversations,
-    fetchDmConversations,
-    inboxChats,
-    setInboxChats,
-    fetchInboxChats,
-    isInboxLoading,
-    isChatSearchOpen,
-    setIsChatSearchOpen,
-    showScrollBottom,
-    setShowScrollBottom,
-    latestMentionId,
-    setLatestMentionId,
-    dismissMention,
-    hasMoreComments,
-    loadMoreComments,
+    globalSearchQuery: appPrefs.globalSearchQuery,
+    setGlobalSearchQuery: appPrefs.setGlobalSearchQuery,
+    globalSearchResults: appPrefs.globalSearchResults,
+    globalSearchBoards: appPrefs.globalSearchBoards,
+    isGlobalSearchOpen: modals.isGlobalSearchOpen,
+    isGlobalSearchClosing: appPrefs.isGlobalSearchClosing,
+    setIsGlobalSearchOpen: modals.setIsGlobalSearchOpen,
+    handleGlobalSearchSelect: appPrefs.handleGlobalSearchSelect,
+    forceSearchAll: appPrefs.forceSearchAll,
+    setForceSearchAll: appPrefs.setForceSearchAll,
+    pendingStatusChange: taskMgmt.pendingStatusChange,
+    setPendingStatusChange: taskMgmt.setPendingStatusChange,
+    confirmPendingStatusChange: taskMgmt.confirmPendingStatusChange,
+    cancelPendingStatusChange: taskMgmt.cancelPendingStatusChange,
+    hoveredTimelineRow: appPrefs.hoveredTimelineRow,
+    setHoveredTimelineRow: appPrefs.setHoveredTimelineRow,
+    isProactiveAIOpen: modals.isProactiveAIOpen,
+    setIsProactiveAIOpen: modals.setIsProactiveAIOpen,
+    handleToggleAutoNudge: taskMgmt.handleToggleAutoNudge,
+    isAssistantOpen: modals.isAssistantOpen,
+    setIsAssistantOpen: modals.setIsAssistantOpen,
+    appTheme: theme.appTheme,
+    handleSelectAppTheme: appPrefs.handleSelectAppTheme,
+    cardTheme: theme.cardTheme,
+    handleSelectCardTheme: appPrefs.handleSelectCardTheme,
+    appBgImage: theme.appBgImage,
+    setAppBgImage: theme.setAppBgImage,
+    handleSelectAppBg: appPrefs.handleSelectAppBg,
+    handleAppBgUpload: appPrefs.handleAppBgUpload,
+    removeAppBgImage: appPrefs.removeAppBgImage,
+    appTexture: theme.appTexture,
+    handleSelectAppTexture: appPrefs.handleSelectAppTexture,
+    chatBg: chatComm.chatBg,
+    handleChatBgUpload: chatComm.handleChatBgUpload,
+    removeChatBg: chatComm.removeChatBg,
+    handleSelectDefaultBg: chatComm.handleSelectDefaultBg,
+    isProjectChatOpen: modals.isProjectChatOpen,
+    setIsProjectChatOpen: modals.setIsProjectChatOpen,
+    handleToggleReaction: chatComm.handleToggleReaction,
+    projectChatMessages: chatComm.projectChatMessages,
+    newProjectChatMessage: chatComm.newProjectChatMessage,
+    handleProjectChatChange: chatComm.handleProjectChatChange,
+    insertProjectMention: chatComm.insertProjectMention,
+    sendProjectChatMessage: chatComm.sendProjectChatMessage,
+    chatEndRef: chatComm.chatEndRef,
+    drawerTab: chatComm.drawerTab,
+    setDrawerTab: chatComm.setDrawerTab,
+    isProjectMentioning: chatComm.isProjectMentioning,
+    projectMentionQuery: chatComm.projectMentionQuery,
+    hasNewProjectChat: chatComm.hasNewProjectChat,
+    setHasNewProjectChat: chatComm.setHasNewProjectChat,
+    hasMoreProjectChat: chatComm.hasMoreProjectChat,
+    loadMoreProjectChat: chatComm.loadMoreProjectChat,
+    chatSearchQuery: chatComm.chatSearchQuery,
+    setChatSearchQuery: chatComm.setChatSearchQuery,
+    dmConversations: chatComm.dmConversations,
+    setDmConversations: chatComm.setDmConversations,
+    fetchDmConversations: chatComm.fetchDmConversations,
+    inboxChats: chatComm.inboxChats,
+    setInboxChats: chatComm.setInboxChats,
+    fetchInboxChats: chatComm.fetchInboxChats,
+    isInboxLoading: chatComm.isInboxLoading,
+    isChatSearchOpen: modals.isChatSearchOpen,
+    setIsChatSearchOpen: modals.setIsChatSearchOpen,
+    showScrollBottom: chatComm.showScrollBottom,
+    setShowScrollBottom: chatComm.setShowScrollBottom,
+    latestMentionId: chatComm.latestMentionId,
+    setLatestMentionId: chatComm.setLatestMentionId,
+    dismissMention: chatComm.dismissMention,
+    hasMoreComments: chatComm.hasMoreComments,
+    loadMoreComments: chatComm.loadMoreComments,
     isLoading,
     setIsLoading,
-    language,
-    setLanguage,
+    language: theme.language,
+    setLanguage: theme.setLanguage,
     t,
-    dateFormat,
-    setDateFormat,
-    showLiveClock,
-    setShowLiveClock,
-    showLiveClockDate,
-    setShowLiveClockDate,
-    pomodoroEnabled,
-    setPomodoroEnabled,
-    showAssistantButton,
-    setShowAssistantButton,
-    notifPosition,
-    setNotifPosition,
-    notifSound,
-    setNotifSound,
-    notifPrivacy,
-    setNotifPrivacy,
-    browserNotifEnabled,
-    setBrowserNotifEnabled,
-    mentionIndex,
-    setMentionIndex,
-    inviteIndex,
-    setInviteIndex,
-    projectMentionIndex,
-    setProjectMentionIndex,
-    setIsProjectMentioning,
-    boardViewMode,
-    setBoardViewMode,
-    boardSortBy,
-    setBoardSortBy,
-    favoriteBoards,
-    setFavoriteBoards,
-    workspaceBoards,
-    setWorkspaceBoards,
-    handleJoinProject,
-    isJoiningProject,
-    isInstallable,
-    handleInstallClick,
-    showTosUpdate,
-    handleAcceptTos,
-    previewTask,
-    setPreviewTask,
-    clonedTaskIds,
-    setClonedTaskIds,
-    teamWorkloadStats,
+    dateFormat: appPrefs.dateFormat,
+    setDateFormat: appPrefs.setDateFormat,
+    showLiveClock: appPrefs.showLiveClock,
+    setShowLiveClock: appPrefs.setShowLiveClock,
+    showLiveClockDate: appPrefs.showLiveClockDate,
+    setShowLiveClockDate: appPrefs.setShowLiveClockDate,
+    pomodoroEnabled: appPrefs.pomodoroEnabled,
+    setPomodoroEnabled: appPrefs.setPomodoroEnabled,
+    showAssistantButton: appPrefs.showAssistantButton,
+    setShowAssistantButton: appPrefs.setShowAssistantButton,
+    notifPosition: notifs.notifPosition,
+    setNotifPosition: notifs.setNotifPosition,
+    notifSound: notifs.notifSound,
+    setNotifSound: notifs.setNotifSound,
+    notifPrivacy: notifs.notifPrivacy,
+    setNotifPrivacy: notifs.setNotifPrivacy,
+    browserNotifEnabled: notifs.browserNotifEnabled,
+    setBrowserNotifEnabled: notifs.setBrowserNotifEnabled,
+    mentionIndex: teamMgmt.mentionIndex,
+    setMentionIndex: teamMgmt.setMentionIndex,
+    inviteIndex: teamMgmt.inviteIndex,
+    setInviteIndex: teamMgmt.setInviteIndex,
+    projectMentionIndex: chatComm.projectMentionIndex,
+    setProjectMentionIndex: chatComm.setProjectMentionIndex,
+    setIsProjectMentioning: chatComm.setIsProjectMentioning,
+    boardViewMode: boardWs.boardViewMode,
+    setBoardViewMode: boardWs.setBoardViewMode,
+    boardSortBy: boardWs.boardSortBy,
+    setBoardSortBy: boardWs.setBoardSortBy,
+    favoriteBoards: boardWs.favoriteBoards,
+    setFavoriteBoards: boardWs.setFavoriteBoards,
+    setWorkspaceBoards: boardWs.setWorkspaceBoards,
+    handleJoinProject: boardWs.handleJoinProject,
+    isJoiningProject: boardWs.isJoiningProject,
+    isInstallable: appPrefs.isInstallable,
+    handleInstallClick: appPrefs.handleInstallClick,
+    showTosUpdate: modals.showTosUpdate,
+    handleAcceptTos: appPrefs.handleAcceptTos,
+    previewTask: taskMgmt.previewTask,
+    setPreviewTask: taskMgmt.setPreviewTask,
+    clonedTaskIds: taskMgmt.clonedTaskIds,
+    setClonedTaskIds: taskMgmt.setClonedTaskIds,
+    teamWorkloadStats: appPrefs.teamWorkloadStats,
     onlineUsers,
     isWsConnected,
     lastWsMessage,
