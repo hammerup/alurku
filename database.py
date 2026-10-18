@@ -32,6 +32,10 @@ class Workspace(Base):
     name = Column(String(100), nullable=False)
     owner_username = Column(String(50), ForeignKey("users.username", ondelete="CASCADE"), index=True)
     tier = Column(String(20), default="free")  # 'free', 'pro', 'business'
+    subscription_cycle = Column(String(20), nullable=True)  # 'monthly', 'yearly'
+    subscription_status = Column(String(20), default="active")  # 'active', 'past_due', 'canceled', 'expired'
+    subscription_expires_at = Column(DateTime, nullable=True)
+    subscription_started_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -324,6 +328,8 @@ class Invoice(Base):
     amount = Column(Integer, nullable=False)  # in IDR
     status = Column(String(20), default="paid")
     payment_method = Column(String(50), default="qris")
+    idempotency_key = Column(String(100), index=True, nullable=True)
+    client_ip = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     paid_at = Column(DateTime, default=datetime.utcnow)
 
@@ -396,6 +402,30 @@ def setup_db():
         except Exception as e:
             db.rollback()
             print(f"[DB Migration] workspaces.tier migration note: {e}")
+
+        # Auto-migration: ensure subscription lifecycle columns exist in workspaces table
+        for col_def in [
+            "subscription_cycle VARCHAR(20)",
+            "subscription_status VARCHAR(20) DEFAULT 'active'",
+            "subscription_expires_at TIMESTAMP",
+            "subscription_started_at TIMESTAMP",
+        ]:
+            try:
+                db.execute(text(f"ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS {col_def}"))
+                db.commit()
+            except Exception:
+                db.rollback()
+
+        # Auto-migration: ensure idempotency_key and client_ip exist in invoices table
+        for col_def in [
+            "idempotency_key VARCHAR(100)",
+            "client_ip VARCHAR(50)",
+        ]:
+            try:
+                db.execute(text(f"ALTER TABLE invoices ADD COLUMN IF NOT EXISTS {col_def}"))
+                db.commit()
+            except Exception:
+                db.rollback()
 
         # Auto-migration: propagate highest subscription tier across all workspaces of each owner
         try:

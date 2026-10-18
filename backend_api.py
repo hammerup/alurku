@@ -770,9 +770,26 @@ def run_startup_auto_nudge():
     finally:
         db.close()
 
+def run_subscription_expiration_check():
+    """Background task to downgrade expired workspace subscriptions to Free."""
+    try:
+        from services.tier_service import check_and_expire_workspace_subscriptions
+        db = SessionLocal()
+        try:
+            count = check_and_expire_workspace_subscriptions(db)
+            if count > 0:
+                print(f"[Subscription Expiration] Processed {count} expired workspaces.")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"[Subscription Expiration] ERROR: {e}")
+
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(run_auto_nudge, 'cron', hour=8, minute=0)
+scheduler.add_job(run_subscription_expiration_check, 'cron', hour=0, minute=5)
 scheduler.start()
 
 # Check and run if the server started/woke up late today (past 08:00 AM) and missed the scheduled job
 threading.Thread(target=run_startup_auto_nudge, daemon=True).start()
+threading.Thread(target=run_subscription_expiration_check, daemon=True).start()

@@ -111,6 +111,9 @@ def list_workspaces(current_user: str = Depends(get_current_user), db: Session =
             "name": ws.name,
             "owner_username": ws.owner_username,
             "tier": tier,
+            "subscription_cycle": getattr(ws, "subscription_cycle", None),
+            "subscription_status": getattr(ws, "subscription_status", "active"),
+            "subscription_expires_at": ws.subscription_expires_at.isoformat() if getattr(ws, "subscription_expires_at", None) else None,
             "created_at": ws.created_at.strftime("%Y-%m-%d %H:%M:%S") if ws.created_at else None,
             "member_count": member_count
         })
@@ -773,6 +776,9 @@ def export_workspace_json(
             "name": workspace.name,
             "owner_username": workspace.owner_username,
             "tier": workspace.tier,
+            "subscription_cycle": getattr(workspace, "subscription_cycle", None),
+            "subscription_status": getattr(workspace, "subscription_status", "active"),
+            "subscription_expires_at": workspace.subscription_expires_at.isoformat() if getattr(workspace, "subscription_expires_at", None) else None,
             "created_at": workspace.created_at.isoformat() if hasattr(workspace.created_at, "isoformat") else str(workspace.created_at),
         },
         "members": members_data,

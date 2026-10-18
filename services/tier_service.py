@@ -95,10 +95,14 @@ def get_workspace_storage_usage_bytes(db: Session, workspace_id: int) -> int:
 
 
 def get_user_highest_tier(db: Session, username: str) -> str:
-    """Finds the user's highest tier across all workspaces they own."""
+    """Finds the user's highest tier across all workspaces they own, verifying expiration."""
     user_workspaces = db.query(Workspace).filter(Workspace.owner_username == username).all()
+    now = datetime.utcnow()
     highest_tier = "free"
     for ws in user_workspaces:
+        # If workspace subscription has expired, it does not grant paid tier
+        if getattr(ws, "subscription_expires_at", None) and ws.subscription_expires_at < now:
+            continue
         ws_tier = (getattr(ws, "tier", "free") or "free").lower().strip()
         if ws_tier == "business":
             return "business"
@@ -112,9 +116,21 @@ def get_effective_workspace_tier(db: Session, workspace: Workspace) -> str:
     Returns the effective tier for a workspace.
     In alurku's account-wide subscription model, every workspace owned by a user
     inherits the highest tier of that owner's subscription.
+    Also verifies whether the subscription has expired.
     """
     if not workspace:
         return "free"
+
+    now = datetime.utcnow()
+    # Check if this workspace subscription has expired
+    if getattr(workspace, "subscription_expires_at", None) and workspace.subscription_expires_at < now:
+        if workspace.tier != "free" or getattr(workspace, "subscription_status", "active") != "expired":
+            workspace.tier = "free"
+            workspace.subscription_status = "expired"
+            try:
+                db.commit()
+            except Exception:
+                db.rollback()
 
     direct_tier = (getattr(workspace, "tier", "free") or "free").lower().strip()
     if direct_tier == "business":
@@ -131,8 +147,57 @@ def get_effective_workspace_tier(db: Session, workspace: Workspace) -> str:
             except Exception:
                 db.rollback()
             return owner_tier
+        elif tier_hierarchy.get(owner_tier, 0) < tier_hierarchy.get(direct_tier, 0):
+            # If owner's tier dropped to free (e.g. expired), sync workspace down
+            workspace.tier = owner_tier
+            try:
+                db.commit()
+            except Exception:
+                db.rollback()
+            return owner_tier
 
     return direct_tier
+
+
+def check_and_expire_workspace_subscriptions(db: Session) -> int:
+    """
+    Checks all workspaces where tier is pro or business, and subscription_expires_at < now.
+    Sets tier='free', subscription_status='expired', and sends in-app notifications.
+    """
+    now = datetime.utcnow()
+    expired_workspaces = (
+        db.query(Workspace)
+        .filter(
+            Workspace.tier.in_(["pro", "business"]),
+            Workspace.subscription_expires_at.isnot(None),
+            Workspace.subscription_expires_at < now
+        )
+        .all()
+    )
+    count = 0
+    for ws in expired_workspaces:
+        old_tier = ws.tier
+        ws.tier = "free"
+        ws.subscription_status = "expired"
+        count += 1
+        try:
+            from utils import create_notification
+            create_notification(
+                db,
+                ws.owner_username,
+                f"Masa aktif langganan paket {old_tier.capitalize()} untuk ruang kerja '{ws.name}' telah berakhir. Ruang kerja telah dialihkan ke paket Gratis.",
+                "subscription_expired",
+                None,
+            )
+        except Exception:
+            pass
+
+    if count > 0:
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+    return count
 
 
 def sync_all_users_workspace_tiers(db: Session):

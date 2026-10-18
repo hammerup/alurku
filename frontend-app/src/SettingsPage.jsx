@@ -1674,30 +1674,95 @@ export default function SettingsPage({
 
                 {/* Plan Overview Card */}
                 <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#111E38] to-[#1E293B] text-white space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-[10px] font-black tracking-widest text-[#FACC15] uppercase">
-                        {msg('Current Subscription', 'Langganan Aktif')}
-                      </span>
-                      <div className="text-2xl font-black tracking-tight mt-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black tracking-widest text-[#FACC15] uppercase">
+                          {msg('Current Subscription', 'Langganan Aktif')}
+                        </span>
+                        {activeWorkspace?.tier !== 'free' && (
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              activeWorkspace?.subscription_status === 'expired'
+                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                : 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
+                            }`}
+                          >
+                            {activeWorkspace?.subscription_status === 'expired'
+                              ? msg('Expired', 'Kedaluwarsa')
+                              : msg('Active', 'Aktif')}
+                          </span>
+                        )}
+                        {activeWorkspace?.subscription_cycle && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-white/80">
+                            {activeWorkspace.subscription_cycle === 'yearly'
+                              ? msg('Yearly', 'Tahunan')
+                              : msg('Monthly', 'Bulanan')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-2xl font-black tracking-tight mt-1">
                         {activeWorkspace?.tier === 'pro'
                           ? 'Plan Pro'
                           : activeWorkspace?.tier === 'business'
                           ? 'Plan Business'
                           : 'Plan Free'}
                       </div>
+                      {activeWorkspace?.subscription_expires_at && (
+                        <div className="text-xs text-slate-300 mt-1 flex items-center gap-1.5 font-medium">
+                          <svg className="w-3.5 h-3.5 text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>
+                            {msg('Valid until:', 'Masa aktif s/d:')}{' '}
+                            <span className="font-bold text-white">
+                              {new Date(activeWorkspace.subscription_expires_at).toLocaleDateString(
+                                language === 'id' ? 'id-ID' : 'en-US',
+                                { day: 'numeric', month: 'long', year: 'numeric' }
+                              )}
+                            </span>
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-black text-[#FACC15]">
                         {activeWorkspace?.tier === 'pro'
-                          ? 'Rp79.000'
+                          ? (activeWorkspace?.subscription_cycle === 'monthly' ? 'Rp99.000' : 'Rp79.000')
                           : activeWorkspace?.tier === 'business'
-                          ? 'Rp199.000'
+                          ? (activeWorkspace?.subscription_cycle === 'monthly' ? 'Rp249.000' : 'Rp199.000')
                           : 'Rp0'}
                       </div>
                       <div className="text-[10px] text-slate-400 font-semibold">
-                        {activeWorkspace?.tier === 'free' ? msg('Forever free', 'Gratis selamanya') : msg('/month billed annually', '/bulan ditagih tahunan')}
+                        {activeWorkspace?.tier === 'free'
+                          ? msg('Forever free', 'Gratis selamanya')
+                          : activeWorkspace?.subscription_cycle === 'monthly'
+                          ? msg('/month billed monthly', '/bulan ditagih bulanan')
+                          : msg('/month billed annually', '/bulan ditagih tahunan')}
                       </div>
+                      {activeWorkspace?.subscription_expires_at && (
+                        <div className="mt-1">
+                          {(() => {
+                            const diffDays = Math.max(
+                              0,
+                              Math.ceil((new Date(activeWorkspace.subscription_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                            );
+                            return (
+                              <span
+                                className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                  diffDays <= 7
+                                    ? 'bg-rose-500/30 text-rose-200 border border-rose-500/40'
+                                    : 'bg-emerald-500/20 text-emerald-300'
+                                }`}
+                              >
+                                {diffDays === 0
+                                  ? msg('Expires today', 'Berakhir hari ini')
+                                  : msg(`${diffDays} days left`, `${diffDays} hari tersisa`)}
+                              </span>
+                            );
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1951,7 +2016,7 @@ export default function SettingsPage({
           lang={language}
           token={localStorage.getItem('alurku_token') || ''}
           onClose={() => setIsCheckoutModalOpen(false)}
-          onSuccess={(invoice) => {
+          onSuccess={(invoice, subscription) => {
             setIsCheckoutModalOpen(false);
             showNotification(msg('Checkout completed successfully!', 'Pembayaran berhasil diselesaikan!'), 'success');
             if (fetchWorkspaces) {

@@ -153,13 +153,21 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
   const handleCheckout = async () => {
     setPaying(true);
     setError('');
+    const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `idem-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     try {
       const r = await axios.post(
         `${apiBase}/workspaces/${workspaceId}/checkout`,
-        { tier, billing_cycle: cycle, payment_method: payMethod },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { tier, billing_cycle: cycle, payment_method: payMethod, idempotency_key: idempotencyKey },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': idempotencyKey,
+          },
+        }
       );
-      onSuccess?.(r.data.invoice);
+      onSuccess?.(r.data.invoice, r.data.subscription);
     } catch (e) {
       setError(e?.response?.data?.detail || (lang === 'id' ? 'Pembayaran gagal.' : 'Payment failed.'));
     } finally {

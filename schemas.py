@@ -264,6 +264,7 @@ class CheckoutRequestModel(BaseModel):
     tier: str  # 'pro' or 'business'
     billing_cycle: str  # 'monthly' or 'yearly'
     payment_method: Optional[str] = "qris"
+    idempotency_key: Optional[str] = None
 
 
 class InvoiceResponseModel(BaseModel):
