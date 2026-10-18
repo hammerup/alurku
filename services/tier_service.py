@@ -4,7 +4,7 @@ Monetization & Tier Packaging Enforcement Engine for alurku.
 Implements quota thresholds, usage calculations, and security guard checks.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -12,6 +12,8 @@ from sqlalchemy import func, or_
 
 from database import Workspace, WorkspaceMember, Board, Request, TaskAttachment, SecurityLog, get_security_log, set_security_log
 
+# Grace Period policy: 3 days after subscription_expires_at before hard downgrade to Free
+GRACE_PERIOD_DAYS = 3
 
 # Official Tier Limits Matrix based on alurku-pricing-and-packaging specification
 TIER_LIMITS: Dict[str, Dict[str, Any]] = {
@@ -95,14 +97,16 @@ def get_workspace_storage_usage_bytes(db: Session, workspace_id: int) -> int:
 
 
 def get_user_highest_tier(db: Session, username: str) -> str:
-    """Finds the user's highest tier across all workspaces they own, verifying expiration."""
+    """Finds the user's highest tier across all workspaces they own, verifying expiration & grace period."""
     user_workspaces = db.query(Workspace).filter(Workspace.owner_username == username).all()
     now = datetime.utcnow()
     highest_tier = "free"
     for ws in user_workspaces:
-        # If workspace subscription has expired, it does not grant paid tier
-        if getattr(ws, "subscription_expires_at", None) and ws.subscription_expires_at < now:
-            continue
+        # If workspace subscription has expired past the 3-day grace period, it does not grant paid tier
+        if getattr(ws, "subscription_expires_at", None):
+            grace_deadline = ws.subscription_expires_at + timedelta(days=GRACE_PERIOD_DAYS)
+            if now > grace_deadline:
+                continue
         ws_tier = (getattr(ws, "tier", "free") or "free").lower().strip()
         if ws_tier == "business":
             return "business"
@@ -116,21 +120,32 @@ def get_effective_workspace_tier(db: Session, workspace: Workspace) -> str:
     Returns the effective tier for a workspace.
     In alurku's account-wide subscription model, every workspace owned by a user
     inherits the highest tier of that owner's subscription.
-    Also verifies whether the subscription has expired.
+    Also verifies whether the subscription has expired or is currently in 3-day grace period.
     """
     if not workspace:
         return "free"
 
     now = datetime.utcnow()
-    # Check if this workspace subscription has expired
+    # Check if this workspace subscription has passed expiration date
     if getattr(workspace, "subscription_expires_at", None) and workspace.subscription_expires_at < now:
-        if workspace.tier != "free" or getattr(workspace, "subscription_status", "active") != "expired":
-            workspace.tier = "free"
-            workspace.subscription_status = "expired"
-            try:
-                db.commit()
-            except Exception:
-                db.rollback()
+        grace_deadline = workspace.subscription_expires_at + timedelta(days=GRACE_PERIOD_DAYS)
+        if now <= grace_deadline:
+            # Within Grace Period (3 days): keep active paid tier, update status to grace_period
+            if getattr(workspace, "subscription_status", "active") != "grace_period":
+                workspace.subscription_status = "grace_period"
+                try:
+                    db.commit()
+                except Exception:
+                    db.rollback()
+        else:
+            # Past grace period: hard downgrade to free
+            if workspace.tier != "free" or getattr(workspace, "subscription_status", "active") != "expired":
+                workspace.tier = "free"
+                workspace.subscription_status = "expired"
+                try:
+                    db.commit()
+                except Exception:
+                    db.rollback()
 
     direct_tier = (getattr(workspace, "tier", "free") or "free").lower().strip()
     if direct_tier == "business":
@@ -148,7 +163,7 @@ def get_effective_workspace_tier(db: Session, workspace: Workspace) -> str:
                 db.rollback()
             return owner_tier
         elif tier_hierarchy.get(owner_tier, 0) < tier_hierarchy.get(direct_tier, 0):
-            # If owner's tier dropped to free (e.g. expired), sync workspace down
+            # If owner's tier dropped to free (e.g. expired past grace period), sync workspace down
             workspace.tier = owner_tier
             try:
                 db.commit()
@@ -162,42 +177,128 @@ def get_effective_workspace_tier(db: Session, workspace: Workspace) -> str:
 def check_and_expire_workspace_subscriptions(db: Session) -> int:
     """
     Checks all workspaces where tier is pro or business, and subscription_expires_at < now.
-    Sets tier='free', subscription_status='expired', and sends in-app notifications.
+    - If now <= expires_at + 3 days: transitions to 'grace_period' and notifies owner.
+    - If now > expires_at + 3 days: sets tier='free', subscription_status='expired', and notifies owner.
+    Returns the total number of workspaces downgraded to Free.
     """
     now = datetime.utcnow()
     expired_workspaces = (
         db.query(Workspace)
         .filter(
-            Workspace.tier.in_(["pro", "business"]),
+            or_(
+                Workspace.tier.in_(["pro", "business"]),
+                Workspace.subscription_status == "grace_period",
+            ),
             Workspace.subscription_expires_at.isnot(None),
-            Workspace.subscription_expires_at < now
+            Workspace.subscription_expires_at < now,
         )
         .all()
     )
-    count = 0
+    downgraded_count = 0
     for ws in expired_workspaces:
-        old_tier = ws.tier
-        ws.tier = "free"
-        ws.subscription_status = "expired"
-        count += 1
-        try:
-            from utils import create_notification
-            create_notification(
-                db,
-                ws.owner_username,
-                f"Masa aktif langganan paket {old_tier.capitalize()} untuk ruang kerja '{ws.name}' telah berakhir. Ruang kerja telah dialihkan ke paket Gratis.",
-                "subscription_expired",
-                None,
-            )
-        except Exception:
-            pass
+        grace_deadline = ws.subscription_expires_at + timedelta(days=GRACE_PERIOD_DAYS)
+        if now <= grace_deadline:
+            # Within Grace Period (3 days)
+            if ws.subscription_status != "grace_period":
+                ws.subscription_status = "grace_period"
+                try:
+                    from utils import create_notification
+                    days_left = max(0, (grace_deadline - now).days)
+                    create_notification(
+                        db,
+                        ws.owner_username,
+                        f"Masa aktif langganan paket {ws.tier.capitalize()} untuk ruang kerja '{ws.name}' telah berakhir dan memasuki Masa Tenggang (Grace Period {days_left} hari tersisa). Perpanjang sekarang agar akses tidak terputus.",
+                        "subscription_grace_period",
+                        None,
+                    )
+                except Exception:
+                    pass
+        else:
+            # Past grace period -> Downgrade to Free
+            old_tier = ws.tier
+            ws.tier = "free"
+            ws.subscription_status = "expired"
+            downgraded_count += 1
+            try:
+                from utils import create_notification
+                create_notification(
+                    db,
+                    ws.owner_username,
+                    f"Masa tenggang (Grace Period) langganan paket {old_tier.capitalize()} untuk ruang kerja '{ws.name}' telah berakhir. Ruang kerja telah dialihkan ke paket Gratis.",
+                    "subscription_expired",
+                    None,
+                )
+            except Exception:
+                pass
 
-    if count > 0:
+    if len(expired_workspaces) > 0:
         try:
             db.commit()
         except Exception:
             db.rollback()
-    return count
+    return downgraded_count
+
+
+def send_subscription_due_reminders(db: Session) -> Dict[str, int]:
+    """
+    Scans active subscriptions expiring in 7 days (H-7) or 3 days (H-3)
+    and sends proactive reminder notifications to workspace owners.
+    Deduplicates using SecurityLog to prevent duplicate notifications on the same date.
+    """
+    now = datetime.utcnow()
+    active_workspaces = (
+        db.query(Workspace)
+        .filter(
+            Workspace.tier.in_(["pro", "business"]),
+            Workspace.subscription_expires_at.isnot(None),
+            Workspace.subscription_expires_at > now,
+        )
+        .all()
+    )
+
+    h7_count = 0
+    h3_count = 0
+
+    for ws in active_workspaces:
+        days_left = (ws.subscription_expires_at - now).days
+        exp_date_str = ws.subscription_expires_at.strftime("%Y-%m-%d")
+        tier_label = ws.tier.capitalize()
+
+        if days_left == 7:
+            dedup_key = f"sub_reminder_h7:{ws.id}:{exp_date_str}"
+            if not get_security_log(db, dedup_key):
+                try:
+                    from utils import create_notification
+                    create_notification(
+                        db,
+                        ws.owner_username,
+                        f"Pengingat: Langganan paket {tier_label} untuk ruang kerja '{ws.name}' akan berakhir dalam 7 hari ({exp_date_str}). Perpanjang langganan Anda agar alur kerja tetap lancar.",
+                        "subscription_reminder_h7",
+                        None,
+                    )
+                    set_security_log(db, dedup_key, 1)
+                    h7_count += 1
+                except Exception:
+                    pass
+
+        elif days_left == 3:
+            dedup_key = f"sub_reminder_h3:{ws.id}:{exp_date_str}"
+            if not get_security_log(db, dedup_key):
+                try:
+                    from utils import create_notification
+                    create_notification(
+                        db,
+                        ws.owner_username,
+                        f"Perhatian: Langganan paket {tier_label} untuk ruang kerja '{ws.name}' akan berakhir dalam 3 hari ({exp_date_str}). Segera perpanjang untuk menghindari gangguan layanan.",
+                        "subscription_reminder_h3",
+                        None,
+                    )
+                    set_security_log(db, dedup_key, 1)
+                    h3_count += 1
+                except Exception:
+                    pass
+
+    return {"h7_reminders_sent": h7_count, "h3_reminders_sent": h3_count}
 
 
 def sync_all_users_workspace_tiers(db: Session):

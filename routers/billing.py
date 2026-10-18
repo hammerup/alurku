@@ -5,10 +5,13 @@ SSOT Pricing (per LandingPricingPage.jsx /harga):
   Pro:      Rp 79.000/bln (yearly) | Rp 99.000/bln (monthly)
   Business: Rp 199.000/bln (yearly) | Rp 249.000/bln (monthly)
 """
+import os
 import random
 import json
+import hmac
+import hashlib
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from fastapi import APIRouter, HTTPException, Depends, Request, Header
 from sqlalchemy.orm import Session
@@ -63,6 +66,35 @@ def _is_workspace_admin_or_owner(db: Session, workspace_id: int, username: str) 
     return member is not None
 
 
+def _verify_webhook_signature(
+    payload_bytes: bytes,
+    signature_header: Optional[str] = None,
+    token_header: Optional[str] = None,
+) -> bool:
+    """
+    Validates webhook authenticity via HMAC SHA-256 signature or shared secret token.
+    Supported by Mayar, Midtrans, and standard payment gateways.
+    """
+    secret = (os.getenv("MAYAR_WEBHOOK_TOKEN") or os.getenv("MAYAR_API_KEY") or "").strip()
+    if not secret:
+        # If secret is not configured in environment, allow webhook in non-enforcing / development mode
+        return True
+
+    # 1. Direct token header comparison (x-callback-token or Authorization: Bearer <secret>)
+    if token_header:
+        cleaned_tok = token_header.replace("Bearer ", "").strip()
+        if hmac.compare_digest(cleaned_tok, secret):
+            return True
+
+    # 2. Cryptographic HMAC SHA-256 signature verification (x-mayar-signature or x-signature)
+    if signature_header:
+        computed_sig = hmac.new(secret.encode("utf-8"), payload_bytes, hashlib.sha256).hexdigest()
+        if hmac.compare_digest(computed_sig.lower(), signature_header.strip().lower()):
+            return True
+
+    return False
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/api/workspaces/{workspace_id}/checkout")
@@ -74,7 +106,7 @@ def checkout(
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Simulate checkout: validate pricing, enforce idempotency & rate limits, record invoice, upgrade subscription lifecycle."""
+    """Simulate checkout: validate pricing, enforce idempotency & rate limits, record invoice with B2B tax details, upgrade subscription."""
     tier = payload.tier.lower().strip()
     cycle = payload.billing_cycle.lower().strip()
     method = payload.payment_method or "qris"
@@ -113,6 +145,9 @@ def checkout(
                     "amount": existing_invoice.amount,
                     "status": existing_invoice.status,
                     "payment_method": PAYMENT_LABELS.get(existing_invoice.payment_method, existing_invoice.payment_method),
+                    "company_name": existing_invoice.company_name,
+                    "tax_id": existing_invoice.tax_id,
+                    "billing_address": existing_invoice.billing_address,
                     "paid_at": existing_invoice.paid_at.isoformat() if existing_invoice.paid_at else None,
                 },
             }
@@ -139,6 +174,9 @@ def checkout(
         inv_number = _invoice_number()
 
     client_ip = request.client.host if request.client else "unknown"
+    company_name = (payload.company_name or "").strip() or None
+    tax_id = (payload.tax_id or "").strip() or None
+    billing_address = (payload.billing_address or "").strip() or None
 
     invoice = Invoice(
         invoice_number=inv_number,
@@ -151,6 +189,9 @@ def checkout(
         payment_method=method,
         idempotency_key=idempotency_key,
         client_ip=client_ip,
+        company_name=company_name,
+        tax_id=tax_id,
+        billing_address=billing_address,
         created_at=now,
         paid_at=now,
     )
@@ -204,9 +245,120 @@ def checkout(
             "amount": invoice.amount,
             "status": invoice.status,
             "payment_method": PAYMENT_LABELS.get(method, method),
+            "company_name": invoice.company_name,
+            "tax_id": invoice.tax_id,
+            "billing_address": invoice.billing_address,
             "paid_at": invoice.paid_at.isoformat() if invoice.paid_at else None,
         },
     }
+
+
+@router.post("/api/billing/webhook")
+@router.post("/api/billing/webhook/mayar")
+async def billing_webhook(
+    request: Request,
+    db: Session = Depends(get_db),
+    x_mayar_signature: Optional[str] = Header(None, alias="x-mayar-signature"),
+    x_signature: Optional[str] = Header(None, alias="x-signature"),
+    x_callback_token: Optional[str] = Header(None, alias="x-callback-token"),
+    authorization: Optional[str] = Header(None, alias="authorization"),
+):
+    """
+    Payment gateway webhook receiver (supports Mayar & generic webhooks).
+    Validates cryptographic signature/token, activates subscription upon successful payment,
+    and records invoice lifecycle transitions.
+    """
+    body_bytes = await request.body()
+    sig = x_mayar_signature or x_signature
+    tok = x_callback_token or authorization
+
+    if not _verify_webhook_signature(body_bytes, sig, tok):
+        raise HTTPException(status_code=401, detail="Verifikasi signature webhook pembayaran gagal.")
+
+    try:
+        payload = json.loads(body_bytes.decode("utf-8")) if body_bytes else {}
+    except Exception:
+        raise HTTPException(status_code=400, detail="Format JSON payload webhook tidak valid.")
+
+    # Event extraction: supports Mayar format {event: "payment.received", data: {...}}
+    # as well as flat format {event: "payment.received", invoice_number: "..."}
+    event = (payload.get("event") or payload.get("status") or "").lower().strip()
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else payload
+
+    inv_num = (
+        data.get("invoice_number")
+        or data.get("external_id")
+        or data.get("order_id")
+        or payload.get("invoice_number")
+        or ""
+    ).strip()
+
+    if not inv_num:
+        return {"status": "ok", "message": "Webhook ping/test diterima tanpa nomor faktur.", "event": event}
+
+    invoice = db.query(Invoice).filter(Invoice.invoice_number == inv_num).first()
+    if not invoice:
+        invoice = db.query(Invoice).filter(Invoice.idempotency_key == inv_num).first()
+
+    if not invoice:
+        return {"status": "ignored", "message": f"Faktur '{inv_num}' tidak ditemukan.", "event": event}
+
+    now = datetime.utcnow()
+
+    # Success / Settlement events
+    if event in ("payment.received", "payment.settled", "invoice.paid", "paid", "settlement", "success"):
+        invoice.status = "paid"
+        invoice.paid_at = now
+
+        if data.get("payment_method"):
+            invoice.payment_method = data.get("payment_method")
+
+        # Expiration calculation (+365 days yearly, +30 days monthly)
+        cycle = invoice.billing_cycle
+        expires_at = now + timedelta(days=365) if cycle == "yearly" else now + timedelta(days=30)
+
+        # Upgrade all workspaces of the owner
+        owned_workspaces = db.query(Workspace).filter(Workspace.owner_username == invoice.username).all()
+        tier_rank = {"free": 0, "pro": 1, "business": 2}
+        for ws in owned_workspaces:
+            if tier_rank.get(invoice.tier, 0) >= tier_rank.get(ws.tier or "free", 0):
+                ws.tier = invoice.tier
+                ws.subscription_cycle = cycle
+                ws.subscription_status = "active"
+                ws.subscription_started_at = now
+                ws.subscription_expires_at = expires_at
+
+        db.commit()
+
+        tier_label = TIER_LABELS.get(invoice.tier, invoice.tier.capitalize())
+        create_notification(
+            db,
+            invoice.username,
+            f"Pembayaran diterima via Gateway! Ruang kerja kini aktif berlangganan paket {tier_label}. No. Faktur: {invoice.invoice_number}.",
+            "billing_success",
+            None,
+        )
+
+        return {
+            "status": "ok",
+            "message": "Pembayaran diverifikasi dan langganan berhasil diaktifkan.",
+            "event": event,
+            "invoice_number": invoice.invoice_number,
+            "tier": invoice.tier,
+            "invoice_status": invoice.status,
+        }
+
+    elif event in ("payment.failed", "invoice.expired", "expire", "cancel", "failed"):
+        invoice.status = "failed"
+        db.commit()
+        return {
+            "status": "ok",
+            "message": "Status faktur ditandai gagal/kedaluwarsa.",
+            "event": event,
+            "invoice_number": invoice.invoice_number,
+        }
+
+    return {"status": "ok", "message": f"Event '{event}' diterima dan diabaikan.", "event": event}
 
 
 @router.post("/api/billing/cron/process-expirations")
@@ -214,12 +366,14 @@ def process_expirations(
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Trigger periodic check to downgrade expired workspaces to Free tier."""
-    from services.tier_service import check_and_expire_workspace_subscriptions
+    """Trigger periodic check to process grace periods, expirations, and H-7 / H-3 reminders."""
+    from services.tier_service import check_and_expire_workspace_subscriptions, send_subscription_due_reminders
     expired_count = check_and_expire_workspace_subscriptions(db)
+    reminders = send_subscription_due_reminders(db)
     return {
         "message": f"Pemeriksaan kedaluwarsa selesai. {expired_count} workspace diturunkan ke paket Gratis.",
         "expired_workspaces_count": expired_count,
+        "reminders_sent": reminders,
         "checked_at": datetime.utcnow().isoformat(),
     }
 
@@ -251,6 +405,9 @@ def list_invoices(
             "amount": inv.amount,
             "status": inv.status,
             "payment_method": PAYMENT_LABELS.get(inv.payment_method, inv.payment_method),
+            "company_name": inv.company_name,
+            "tax_id": inv.tax_id,
+            "billing_address": inv.billing_address,
             "created_at": inv.created_at.isoformat() if inv.created_at else None,
             "paid_at": inv.paid_at.isoformat() if inv.paid_at else None,
         }
@@ -264,7 +421,7 @@ def get_invoice(
     current_user: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Returns full invoice details for receipt printing."""
+    """Returns full invoice details with B2B tax information for receipt printing."""
     inv = db.query(Invoice).filter(Invoice.invoice_number == invoice_number).first()
     if not inv:
         raise HTTPException(status_code=404, detail="Faktur tidak ditemukan.")
@@ -283,6 +440,9 @@ def get_invoice(
         "amount": inv.amount,
         "status": inv.status,
         "payment_method": PAYMENT_LABELS.get(inv.payment_method, inv.payment_method),
+        "company_name": inv.company_name,
+        "tax_id": inv.tax_id,
+        "billing_address": inv.billing_address,
         "created_at": inv.created_at.isoformat() if inv.created_at else None,
         "paid_at": inv.paid_at.isoformat() if inv.paid_at else None,
     }

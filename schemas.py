@@ -265,6 +265,9 @@ class CheckoutRequestModel(BaseModel):
     billing_cycle: str  # 'monthly' or 'yearly'
     payment_method: Optional[str] = "qris"
     idempotency_key: Optional[str] = None
+    company_name: Optional[str] = None
+    tax_id: Optional[str] = None
+    billing_address: Optional[str] = None
 
 
 class InvoiceResponseModel(BaseModel):
@@ -276,5 +279,8 @@ class InvoiceResponseModel(BaseModel):
     amount: int
     status: str
     payment_method: str
+    company_name: Optional[str] = None
+    tax_id: Optional[str] = None
+    billing_address: Optional[str] = None
     created_at: Optional[str] = None
     paid_at: Optional[str] = None

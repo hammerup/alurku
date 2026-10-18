@@ -93,6 +93,34 @@ export default function InvoiceDetailModal({ invoice, lang = 'id', onClose }) {
             <span className="text-[#111E38] dark:text-slate-100 font-medium">{invoice.payment_method}</span>
           </div>
 
+          {/* B2B Tax Invoice Details */}
+          {(invoice.company_name || invoice.tax_id) && (
+            <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 text-xs space-y-1.5">
+              <div className="font-bold text-[#111E38] dark:text-[#FACC15] flex items-center justify-between pb-1 border-b border-gray-200 dark:border-slate-700/60">
+                <span>{lang === 'id' ? 'Faktur Pajak B2B / NPWP' : 'B2B Tax Invoice / Tax ID'}</span>
+                <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-1.5 py-0.5 rounded">B2B</span>
+              </div>
+              {invoice.company_name && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500 dark:text-slate-400">{lang === 'id' ? 'Perusahaan' : 'Company'}</span>
+                  <span className="font-medium text-[#111E38] dark:text-slate-100">{invoice.company_name}</span>
+                </div>
+              )}
+              {invoice.tax_id && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500 dark:text-slate-400">NPWP</span>
+                  <span className="font-mono font-medium text-[#111E38] dark:text-slate-100">{invoice.tax_id}</span>
+                </div>
+              )}
+              {invoice.billing_address && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500 dark:text-slate-400">{lang === 'id' ? 'Alamat' : 'Address'}</span>
+                  <span className="text-right text-[#111E38] dark:text-slate-100 max-w-[200px] truncate">{invoice.billing_address}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Line items */}
           <div className="border-t border-dashed border-gray-200 dark:border-slate-700/80 pt-4 flex flex-col gap-2">
             <div className="flex justify-between text-sm">
@@ -143,6 +171,10 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
   const [tier, setTier] = useState('pro');
   const [cycle, setCycle] = useState('yearly');
   const [payMethod, setPayMethod] = useState('qris');
+  const [showB2B, setShowB2B] = useState(false);
+  const [companyName, setCompanyName] = useState('');
+  const [taxId, setTaxId] = useState('');
+  const [billingAddress, setBillingAddress] = useState('');
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState('');
 
@@ -159,7 +191,15 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
     try {
       const r = await axios.post(
         `${apiBase}/workspaces/${workspaceId}/checkout`,
-        { tier, billing_cycle: cycle, payment_method: payMethod, idempotency_key: idempotencyKey },
+        {
+          tier,
+          billing_cycle: cycle,
+          payment_method: payMethod,
+          idempotency_key: idempotencyKey,
+          company_name: companyName.trim() || undefined,
+          tax_id: taxId.trim() || undefined,
+          billing_address: billingAddress.trim() || undefined,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -288,6 +328,63 @@ export function CheckoutModal({ workspaceId, currentTier = 'free', lang = 'id', 
                 );
               })}
             </div>
+          </div>
+
+          {/* B2B Tax Invoice Form (Optional) */}
+          <div className="border border-gray-200 dark:border-slate-700/80 rounded-xl p-3 bg-gray-50/50 dark:bg-slate-800/40">
+            <button
+              type="button"
+              onClick={() => setShowB2B(!showB2B)}
+              className="w-full flex items-center justify-between text-xs font-bold text-[#111E38] dark:text-slate-200 cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-[#FACC15]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                {lang === 'id' ? 'Informasi Faktur Pajak B2B (Opsional)' : 'B2B Tax Invoice Details (Optional)'}
+              </span>
+              <span className="text-[10px] text-gray-400">{showB2B ? '▲' : '▼'}</span>
+            </button>
+            {showB2B && (
+              <div className="mt-3 space-y-2.5 pt-2 border-t border-gray-200 dark:border-slate-700/60">
+                <div>
+                  <label className="text-[11px] font-medium text-gray-500 dark:text-slate-400 block mb-1">
+                    {lang === 'id' ? 'Nama Perusahaan / PT / CV' : 'Company Name'}
+                  </label>
+                  <input
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="PT Digital Solusi Indonesia"
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#111E38] dark:text-slate-100 focus:outline-none focus:border-[#FACC15]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-gray-500 dark:text-slate-400 block mb-1">
+                    {lang === 'id' ? 'NPWP (Nomor Pokok Wajib Pajak)' : 'Tax ID / NPWP'}
+                  </label>
+                  <input
+                    type="text"
+                    value={taxId}
+                    onChange={(e) => setTaxId(e.target.value)}
+                    placeholder="01.234.567.8-901.000"
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#111E38] dark:text-slate-100 focus:outline-none focus:border-[#FACC15]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-medium text-gray-500 dark:text-slate-400 block mb-1">
+                    {lang === 'id' ? 'Alamat Penagihan' : 'Billing Address'}
+                  </label>
+                  <input
+                    type="text"
+                    value={billingAddress}
+                    onChange={(e) => setBillingAddress(e.target.value)}
+                    placeholder="Jl. Sudirman Kav. 21, Jakarta Pusat"
+                    className="w-full text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[#111E38] dark:text-slate-100 focus:outline-none focus:border-[#FACC15]"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {error && <p className="text-xs text-red-500 dark:text-red-400 font-medium text-center">{error}</p>}

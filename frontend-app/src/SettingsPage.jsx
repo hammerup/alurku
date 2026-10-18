@@ -1685,11 +1685,15 @@ export default function SettingsPage({
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                               activeWorkspace?.subscription_status === 'expired'
                                 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                : activeWorkspace?.subscription_status === 'grace_period'
+                                ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
                                 : 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
                             }`}
                           >
                             {activeWorkspace?.subscription_status === 'expired'
                               ? msg('Expired', 'Kedaluwarsa')
+                              : activeWorkspace?.subscription_status === 'grace_period'
+                              ? msg('Grace Period (3 Days)', 'Masa Tenggang (3 Hari)')
                               : msg('Active', 'Aktif')}
                           </span>
                         )}
@@ -1766,6 +1770,34 @@ export default function SettingsPage({
                     </div>
                   </div>
                 </div>
+
+                {/* Grace Period Warning Alert Banner */}
+                {activeWorkspace?.subscription_status === 'grace_period' && (
+                  <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start justify-between gap-3 text-amber-800 dark:text-amber-200 text-xs">
+                    <div className="flex items-start gap-2.5">
+                      <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <div>
+                        <div className="font-bold text-sm">
+                          {msg('Subscription in Grace Period (3 Days)', 'Langganan dalam Masa Tenggang (3 Hari)')}
+                        </div>
+                        <p className="text-amber-700/80 dark:text-amber-300/80 mt-0.5">
+                          {msg(
+                            'Your active subscription period has ended. You still have full access for 3 days before downgrading to the Free plan. Renew now to prevent workflow disruption.',
+                            'Masa aktif langganan telah berakhir. Anda masih memiliki akses penuh selama 3 hari sebelum dialihkan ke paket Gratis. Perpanjang sekarang agar alur kerja tidak terganggu.'
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowCheckoutModal(true)}
+                      className="px-3 py-1.5 rounded-lg bg-[#FACC15] text-[#111E38] font-bold text-xs hover:bg-yellow-400 transition-colors shrink-0 cursor-pointer"
+                    >
+                      {msg('Renew Now', 'Perpanjang Sekarang')}
+                    </button>
+                  </div>
+                )}
 
                 {/* Usage Meters */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -330,6 +330,9 @@ class Invoice(Base):
     payment_method = Column(String(50), default="qris")
     idempotency_key = Column(String(100), index=True, nullable=True)
     client_ip = Column(String(50), nullable=True)
+    company_name = Column(String(255), nullable=True)
+    tax_id = Column(String(50), nullable=True)
+    billing_address = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     paid_at = Column(DateTime, default=datetime.utcnow)
 
@@ -416,10 +419,13 @@ def setup_db():
             except Exception:
                 db.rollback()
 
-        # Auto-migration: ensure idempotency_key and client_ip exist in invoices table
+        # Auto-migration: ensure idempotency_key, client_ip, and B2B columns exist in invoices table
         for col_def in [
             "idempotency_key VARCHAR(100)",
             "client_ip VARCHAR(50)",
+            "company_name VARCHAR(255)",
+            "tax_id VARCHAR(50)",
+            "billing_address TEXT",
         ]:
             try:
                 db.execute(text(f"ALTER TABLE invoices ADD COLUMN IF NOT EXISTS {col_def}"))

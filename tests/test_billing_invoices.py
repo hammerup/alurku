@@ -226,7 +226,7 @@ def test_checkout_subscription_lifecycle_dates(client, billing_user_token_ws):
         db.close()
 
 
-def test_expiration_downgrade_engine(client, billing_user_token_ws):
+def test_expiration_downgrade_and_grace_period_engine(client, billing_user_token_ws):
     from datetime import datetime, timedelta
     from services.tier_service import check_and_expire_workspace_subscriptions, get_effective_workspace_tier
 
@@ -234,21 +234,30 @@ def test_expiration_downgrade_engine(client, billing_user_token_ws):
     db = SessionLocal()
     try:
         ws = db.query(Workspace).filter(Workspace.id == ws_id).first()
-        # Simulate expired subscription (expired 2 days ago)
+        
+        # 1. Test Grace Period: expired 1 day ago (within 3-day grace period)
         ws.tier = "pro"
         ws.subscription_status = "active"
-        ws.subscription_expires_at = datetime.utcnow() - timedelta(days=2)
+        ws.subscription_expires_at = datetime.utcnow() - timedelta(days=1)
         db.commit()
 
-        # Check effective tier
-        eff_tier = get_effective_workspace_tier(db, ws)
-        assert eff_tier == "free"
+        # Workspace should retain paid tier during grace period
+        eff_tier_grace = get_effective_workspace_tier(db, ws)
+        assert eff_tier_grace == "pro"
+        assert ws.subscription_status == "grace_period"
+
+        # 2. Test Hard Downgrade: expired 4 days ago (past 3-day grace period)
+        ws.tier = "pro"
+        ws.subscription_status = "grace_period"
+        ws.subscription_expires_at = datetime.utcnow() - timedelta(days=4)
+        db.commit()
 
         # Run expiration processor
         count = check_and_expire_workspace_subscriptions(db)
         db.refresh(ws)
         assert ws.tier == "free"
         assert ws.subscription_status == "expired"
+        assert count >= 1
     finally:
         db.close()
 
@@ -267,4 +276,152 @@ def test_checkout_rate_limiting(client, billing_user_token_ws):
     
     # At least one request should be rate-limited (429)
     assert 429 in statuses, f"Expected 429 in {statuses}"
+
+
+def test_checkout_b2b_tax_invoice(client, billing_user_token_ws):
+    token, ws_id, username = billing_user_token_ws
+    company = "PT Teknologi Maju Nusantara"
+    tax_id = "01.234.567.8-999.000"
+    address = "Gedung Menara Cyber Lt. 12, Jakarta"
+
+    resp = client.post(
+        f"/api/workspaces/{ws_id}/checkout",
+        json={
+            "tier": "business",
+            "billing_cycle": "yearly",
+            "payment_method": "va_bca",
+            "company_name": company,
+            "tax_id": tax_id,
+            "billing_address": address,
+        },
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200, resp.text
+    inv = resp.json()["invoice"]
+    assert inv["company_name"] == company
+    assert inv["tax_id"] == tax_id
+    assert inv["billing_address"] == address
+
+    # Verify retrieval via GET /api/invoices/{invoice_number}
+    inv_num = inv["invoice_number"]
+    detail_resp = client.get(f"/api/invoices/{inv_num}", headers={"Authorization": f"Bearer {token}"})
+    assert detail_resp.status_code == 200
+    detail = detail_resp.json()
+    assert detail["company_name"] == company
+    assert detail["tax_id"] == tax_id
+    assert detail["billing_address"] == address
+
+
+def test_webhook_payment_gateway_activation(client, billing_user_token_ws):
+    import os
+    token, ws_id, username = billing_user_token_ws
+    # 1. Create a pending invoice directly in DB
+    db = SessionLocal()
+    inv_num = f"INV-TEST-WH-{ws_id}"
+    try:
+        existing = db.query(Invoice).filter(Invoice.invoice_number == inv_num).first()
+        if existing:
+            db.delete(existing)
+            db.commit()
+
+        invoice = Invoice(
+            invoice_number=inv_num,
+            workspace_id=ws_id,
+            username=username,
+            tier="business",
+            billing_cycle="yearly",
+            amount=2_388_000,
+            status="pending",
+            payment_method="qris",
+        )
+        db.add(invoice)
+        db.commit()
+    finally:
+        db.close()
+
+    # 2. Simulate Payment Gateway Webhook event with valid auth token
+    secret_token = os.getenv("MAYAR_WEBHOOK_TOKEN", "")
+    headers = {"x-callback-token": secret_token} if secret_token else {}
+
+    webhook_payload = {
+        "event": "payment.received",
+        "data": {
+            "invoice_number": inv_num,
+            "amount": 2_388_000,
+            "payment_method": "qris",
+            "status": "paid",
+        }
+    }
+    wh_resp = client.post(
+        "/api/billing/webhook/mayar",
+        json=webhook_payload,
+        headers=headers,
+    )
+    assert wh_resp.status_code == 200, wh_resp.text
+    res = wh_resp.json()
+    assert res["status"] == "ok"
+    assert res["invoice_status"] == "paid"
+
+    # 3. Verify workspace was upgraded to Business
+    db = SessionLocal()
+    try:
+        ws = db.query(Workspace).filter(Workspace.id == ws_id).first()
+        assert ws.tier == "business"
+        assert ws.subscription_status == "active"
+        assert ws.subscription_expires_at is not None
+    finally:
+        db.close()
+
+
+def test_webhook_signature_verification_security(client):
+    import os, hmac, hashlib, json
+
+    secret_key = "test_mayar_secret_webhook_token_123"
+    os.environ["MAYAR_WEBHOOK_TOKEN"] = secret_key
+
+    try:
+        payload = {"event": "payment.received", "data": {"invoice_number": "INV-DUMMY-999"}}
+        payload_bytes = json.dumps(payload).encode("utf-8")
+
+        # Valid HMAC signature
+        valid_sig = hmac.new(secret_key.encode("utf-8"), payload_bytes, hashlib.sha256).hexdigest()
+        resp_valid = client.post(
+            "/api/billing/webhook",
+            data=payload_bytes,
+            headers={"Content-Type": "application/json", "x-mayar-signature": valid_sig},
+        )
+        assert resp_valid.status_code == 200
+
+        # Invalid HMAC signature should be rejected with 401
+        invalid_sig = "tampered_fake_signature_hex"
+        resp_invalid = client.post(
+            "/api/billing/webhook",
+            data=payload_bytes,
+            headers={"Content-Type": "application/json", "x-mayar-signature": invalid_sig},
+        )
+        assert resp_invalid.status_code == 401
+        assert "gagal" in resp_invalid.json()["detail"].lower()
+    finally:
+        os.environ.pop("MAYAR_WEBHOOK_TOKEN", None)
+
+
+def test_proactive_subscription_reminders(client, billing_user_token_ws):
+    from datetime import datetime, timedelta
+    from services.tier_service import send_subscription_due_reminders
+
+    token, ws_id, username = billing_user_token_ws
+    db = SessionLocal()
+    try:
+        ws = db.query(Workspace).filter(Workspace.id == ws_id).first()
+        # Set subscription to expire exactly in 7 days
+        ws.tier = "pro"
+        ws.subscription_status = "active"
+        ws.subscription_expires_at = datetime.utcnow() + timedelta(days=7, hours=1)
+        db.commit()
+
+        # Run reminders
+        reminders = send_subscription_due_reminders(db)
+        assert reminders["h7_reminders_sent"] >= 1
+    finally:
+        db.close()
 
