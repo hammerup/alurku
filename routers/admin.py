@@ -428,6 +428,7 @@ def get_public_policies(db: Session = Depends(get_db)):
         "default_ai_engine": p.get("default_ai_engine", "auto"),
         "enable_proactive_nudge": p.get("enable_proactive_nudge", True),
         "enable_auto_subtasks": p.get("enable_auto_subtasks", True),
+        "tax_rate_percent": float(p.get("tax_rate_percent", 11) or 0),
     }
 
 

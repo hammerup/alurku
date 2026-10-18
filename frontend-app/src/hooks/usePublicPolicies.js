@@ -12,6 +12,7 @@ const DEFAULT_POLICIES = {
   default_ai_engine: 'auto',
   enable_proactive_nudge: true,
   enable_auto_subtasks: true,
+  tax_rate_percent: 11,
 };
 
 export function usePublicPolicies() {

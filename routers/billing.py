@@ -16,7 +16,7 @@ from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, Request, Header
 from sqlalchemy.orm import Session
 
-from database import get_db, Invoice, Workspace, WorkspaceMember
+from database import get_db, Invoice, Workspace, WorkspaceMember, get_system_policies
 from schemas import CheckoutRequestModel
 from dependencies import get_current_user
 from utils import create_notification
@@ -142,6 +142,9 @@ def checkout(
                     "tier": existing_invoice.tier,
                     "tier_label": tier_label,
                     "billing_cycle": existing_invoice.billing_cycle,
+                    "subtotal": existing_invoice.subtotal if existing_invoice.subtotal is not None else existing_invoice.amount,
+                    "tax_rate": existing_invoice.tax_rate if existing_invoice.tax_rate is not None else 0.0,
+                    "tax_amount": existing_invoice.tax_amount if existing_invoice.tax_amount is not None else 0,
                     "amount": existing_invoice.amount,
                     "status": existing_invoice.status,
                     "payment_method": PAYMENT_LABELS.get(existing_invoice.payment_method, existing_invoice.payment_method),
@@ -165,8 +168,13 @@ def checkout(
             detail="Terlalu banyak percobaan pembayaran dalam waktu singkat. Mohon tunggu 15 menit sebelum mencoba kembali.",
         )
 
+    # Dynamic tax calculation from system policies (PPN %)
+    policies = get_system_policies(db)
+    tax_rate = float(policies.get("tax_rate_percent", 0) or 0)
     monthly_rate = PRICING[tier][cycle]
-    amount = monthly_rate * 12 if cycle == "yearly" else monthly_rate
+    subtotal = monthly_rate * 12 if cycle == "yearly" else monthly_rate
+    tax_amount = int(round(subtotal * (tax_rate / 100.0)))
+    total_amount = subtotal + tax_amount
 
     # Generate unique invoice number
     inv_number = _invoice_number()
@@ -184,7 +192,10 @@ def checkout(
         username=current_user,
         tier=tier,
         billing_cycle=cycle,
-        amount=amount,
+        subtotal=subtotal,
+        tax_rate=tax_rate,
+        tax_amount=tax_amount,
+        amount=total_amount,
         status="paid",
         payment_method=method,
         idempotency_key=idempotency_key,
@@ -242,6 +253,9 @@ def checkout(
             "tier": invoice.tier,
             "tier_label": tier_label,
             "billing_cycle": invoice.billing_cycle,
+            "subtotal": invoice.subtotal if invoice.subtotal is not None else invoice.amount,
+            "tax_rate": invoice.tax_rate if invoice.tax_rate is not None else 0.0,
+            "tax_amount": invoice.tax_amount if invoice.tax_amount is not None else 0,
             "amount": invoice.amount,
             "status": invoice.status,
             "payment_method": PAYMENT_LABELS.get(method, method),
@@ -402,6 +416,9 @@ def list_invoices(
             "tier": inv.tier,
             "tier_label": TIER_LABELS.get(inv.tier, inv.tier.capitalize()),
             "billing_cycle": inv.billing_cycle,
+            "subtotal": inv.subtotal if inv.subtotal is not None else inv.amount,
+            "tax_rate": inv.tax_rate if inv.tax_rate is not None else 0.0,
+            "tax_amount": inv.tax_amount if inv.tax_amount is not None else 0,
             "amount": inv.amount,
             "status": inv.status,
             "payment_method": PAYMENT_LABELS.get(inv.payment_method, inv.payment_method),
@@ -437,6 +454,9 @@ def get_invoice(
         "tier": inv.tier,
         "tier_label": TIER_LABELS.get(inv.tier, inv.tier.capitalize()),
         "billing_cycle": inv.billing_cycle,
+        "subtotal": inv.subtotal if inv.subtotal is not None else inv.amount,
+        "tax_rate": inv.tax_rate if inv.tax_rate is not None else 0.0,
+        "tax_amount": inv.tax_amount if inv.tax_amount is not None else 0,
         "amount": inv.amount,
         "status": inv.status,
         "payment_method": PAYMENT_LABELS.get(inv.payment_method, inv.payment_method),

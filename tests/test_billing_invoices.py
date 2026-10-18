@@ -60,8 +60,12 @@ def test_checkout_pro_yearly(client, billing_user_token_ws):
     data = resp.json()
     assert "invoice" in data
     inv = data["invoice"]
-    # SSOT: Pro yearly = Rp 79.000/bln billed annually = Rp 948.000
-    assert inv["amount"] == 948_000, f"Expected 948000, got {inv['amount']}"
+    # SSOT: Pro yearly base subtotal = Rp 79.000 * 12 = Rp 948.000
+    # Tax: 11% PPN = Rp 104.280 -> Total amount = Rp 1.052.280
+    assert inv["subtotal"] == 948_000, f"Expected subtotal 948000, got {inv.get('subtotal')}"
+    assert inv["tax_rate"] == 11.0, f"Expected tax_rate 11.0, got {inv.get('tax_rate')}"
+    assert inv["tax_amount"] == 104_280, f"Expected tax_amount 104280, got {inv.get('tax_amount')}"
+    assert inv["amount"] == 1_052_280, f"Expected 1052280, got {inv['amount']}"
     assert inv["tier"] == "pro"
     assert inv["billing_cycle"] == "yearly"
     assert inv["invoice_number"].startswith("INV-")
@@ -77,8 +81,12 @@ def test_checkout_pro_monthly(client, billing_user_token_ws):
     )
     assert resp.status_code == 200, resp.text
     inv = resp.json()["invoice"]
-    # SSOT: Pro monthly = Rp 99.000
-    assert inv["amount"] == 99_000, f"Expected 99000, got {inv['amount']}"
+    # SSOT: Pro monthly base subtotal = Rp 99.000
+    # Tax: 11% PPN = Rp 10.890 -> Total amount = Rp 109.890
+    assert inv["subtotal"] == 99_000, f"Expected subtotal 99000, got {inv.get('subtotal')}"
+    assert inv["tax_rate"] == 11.0, f"Expected tax_rate 11.0, got {inv.get('tax_rate')}"
+    assert inv["tax_amount"] == 10_890, f"Expected tax_amount 10890, got {inv.get('tax_amount')}"
+    assert inv["amount"] == 109_890, f"Expected 109890, got {inv['amount']}"
 
 
 def test_checkout_business_yearly(client, billing_user_token_ws):
@@ -90,8 +98,12 @@ def test_checkout_business_yearly(client, billing_user_token_ws):
     )
     assert resp.status_code == 200, resp.text
     inv = resp.json()["invoice"]
-    # SSOT: Business yearly = Rp 199.000/bln billed annually = Rp 2.388.000
-    assert inv["amount"] == 2_388_000, f"Expected 2388000, got {inv['amount']}"
+    # SSOT: Business yearly base subtotal = Rp 199.000 * 12 = Rp 2.388.000
+    # Tax: 11% PPN = Rp 262.680 -> Total amount = Rp 2.650.680
+    assert inv["subtotal"] == 2_388_000, f"Expected subtotal 2388000, got {inv.get('subtotal')}"
+    assert inv["tax_rate"] == 11.0, f"Expected tax_rate 11.0, got {inv.get('tax_rate')}"
+    assert inv["tax_amount"] == 262_680, f"Expected tax_amount 262680, got {inv.get('tax_amount')}"
+    assert inv["amount"] == 2_650_680, f"Expected 2650680, got {inv['amount']}"
 
 
 def test_checkout_upgrades_workspace_tier(client, billing_user_token_ws):
@@ -424,4 +436,89 @@ def test_proactive_subscription_reminders(client, billing_user_token_ws):
         assert reminders["h7_reminders_sent"] >= 1
     finally:
         db.close()
+
+
+def test_dynamic_tax_policy_setting(client, billing_user_token_ws):
+    """Verifies administrator can adjust PPN tax percentage and checkout calculates tax dynamically."""
+    from database import get_system_policies, set_system_policies
+
+    token, ws_id, username = billing_user_token_ws
+    db = SessionLocal()
+    original_policies = get_system_policies(db)
+    try:
+        # 1. Set PPN to 0% (e.g. Non-PKP / Tax Exempt)
+        set_system_policies(db, {"tax_rate_percent": 0.0})
+
+        resp_zero = client.post(
+            f"/api/workspaces/{ws_id}/checkout",
+            json={"tier": "pro", "billing_cycle": "monthly", "payment_method": "qris"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp_zero.status_code == 200
+        inv_zero = resp_zero.json()["invoice"]
+        assert inv_zero["subtotal"] == 99_000
+        assert inv_zero["tax_rate"] == 0.0
+        assert inv_zero["tax_amount"] == 0
+        assert inv_zero["amount"] == 99_000
+
+        # 2. Set PPN to 12% (upcoming VAT rate)
+        set_system_policies(db, {"tax_rate_percent": 12.0})
+
+        resp_twelve = client.post(
+            f"/api/workspaces/{ws_id}/checkout",
+            json={"tier": "pro", "billing_cycle": "monthly", "payment_method": "va_mandiri"},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp_twelve.status_code == 200
+        inv_twelve = resp_twelve.json()["invoice"]
+        assert inv_twelve["subtotal"] == 99_000
+        assert inv_twelve["tax_rate"] == 12.0
+        expected_tax = int(round(99_000 * 0.12))  # 11,880
+        assert inv_twelve["tax_amount"] == expected_tax
+        assert inv_twelve["amount"] == 99_000 + expected_tax
+
+        # 3. Verify get_invoice reflects dynamic tax fields
+        inv_number = inv_twelve["invoice_number"]
+        detail_resp = client.get(f"/api/invoices/{inv_number}", headers={"Authorization": f"Bearer {token}"})
+        assert detail_resp.status_code == 200
+        detail = detail_resp.json()
+        assert detail["subtotal"] == 99_000
+        assert detail["tax_rate"] == 12.0
+        assert detail["tax_amount"] == expected_tax
+        assert detail["amount"] == 99_000 + expected_tax
+
+    finally:
+        # Restore original policies
+        set_system_policies(db, original_policies)
+        db.close()
+
+
+def test_tier_limits_telemetry_includes_workspaces_and_projects(client, billing_user_token_ws):
+    """Verifies that workspace telemetry endpoint includes workspaces_owned and projects."""
+    token, ws_id, username = billing_user_token_ws
+    resp = client.get(
+        f"/api/workspaces/{ws_id}/usage",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+
+    # Telemetry must include workspaces_owned
+    assert "workspaces_owned" in data
+    assert "used" in data["workspaces_owned"]
+    assert "max" in data["workspaces_owned"]
+    assert "is_unlimited" in data["workspaces_owned"]
+    assert data["workspaces_owned"]["used"] >= 1
+
+    # Telemetry must include projects
+    assert "projects" in data
+    assert "used" in data["projects"]
+    assert "max" in data["projects"]
+    assert "is_unlimited" in data["projects"]
+
+    # Telemetry must include members, storage, ai_requests
+    assert "members" in data
+    assert "storage" in data
+    assert "ai_requests" in data
+
 

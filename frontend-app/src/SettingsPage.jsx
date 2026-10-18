@@ -1800,9 +1800,71 @@ export default function SettingsPage({
                 )}
 
                 {/* Usage Meters */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                  {/* Workspaces Meter */}
+                  <div className="p-4 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <span>{msg('Workspaces', 'Ruang Kerja')}</span>
+                      <span>
+                        {usageData?.workspaces_owned?.used ?? 1} /{' '}
+                        {usageData?.workspaces_owned?.is_unlimited || activeWorkspace?.tier === 'business'
+                          ? '∞'
+                          : (usageData?.workspaces_owned?.max ?? (activeWorkspace?.tier === 'pro' ? 3 : 1))}
+                      </span>
+                    </div>
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-blue-600 dark:bg-blue-400 h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            usageData?.workspaces_owned?.is_unlimited || activeWorkspace?.tier === 'business'
+                              ? 20
+                              : (((usageData?.workspaces_owned?.used ?? 1) / (usageData?.workspaces_owned?.max ?? (activeWorkspace?.tier === 'pro' ? 3 : 1))) * 100)
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="text-[10px] text-slate-400">
+                      {activeWorkspace?.tier === 'business'
+                        ? msg('Unlimited workspaces', 'Ruang kerja tanpa batas')
+                        : msg('Owned workspaces', 'Ruang kerja yang dimiliki')}
+                    </div>
+                  </div>
+
+                  {/* Projects Meter */}
+                  <div className="p-4 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <span>{msg('Active Projects', 'Proyek Aktif')}</span>
+                      <span>
+                        {usageData?.projects?.used ?? 0} /{' '}
+                        {usageData?.projects?.is_unlimited || activeWorkspace?.tier !== 'free'
+                          ? '∞'
+                          : (usageData?.projects?.max ?? 3)}
+                      </span>
+                    </div>
+                    <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-emerald-600 dark:bg-emerald-400 h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            usageData?.projects?.is_unlimited || activeWorkspace?.tier !== 'free'
+                              ? 15
+                              : (((usageData?.projects?.used ?? 0) / (usageData?.projects?.max ?? 3)) * 100)
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="text-[10px] text-slate-400">
+                      {activeWorkspace?.tier !== 'free'
+                        ? msg('Unlimited active projects', 'Proyek tanpa batas')
+                        : msg('Maximum 3 projects', 'Maksimal 3 proyek')}
+                    </div>
+                  </div>
+
                   {/* Seats Meter */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
+                  <div className="p-4 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span>{msg('Team Seats', 'Kursi Anggota')}</span>
                       <span>
@@ -1829,7 +1891,7 @@ export default function SettingsPage({
                   </div>
 
                   {/* Storage Meter */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
+                  <div className="p-4 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span>{msg('Storage Used', 'Penyimpanan')}</span>
                       <span>
@@ -1854,7 +1916,7 @@ export default function SettingsPage({
                   </div>
 
                   {/* AI Prompts Meter */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
+                  <div className="p-4 rounded-2xl bg-[#F3F4F6]/70 dark:bg-[#090D16]/50 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
                       <span>{msg('AI Prompts / Mo', 'Prompt AI / Bulan')}</span>
                       <span>

@@ -325,7 +325,10 @@ class Invoice(Base):
     username = Column(String(50), ForeignKey("users.username", ondelete="CASCADE"), index=True)
     tier = Column(String(20), nullable=False)
     billing_cycle = Column(String(20), nullable=False)  # 'monthly' or 'yearly'
-    amount = Column(Integer, nullable=False)  # in IDR
+    subtotal = Column(Integer, nullable=True)  # in IDR (before tax)
+    tax_rate = Column(Float, default=0.0)  # tax rate percentage, e.g. 11.0
+    tax_amount = Column(Integer, default=0)  # tax amount in IDR
+    amount = Column(Integer, nullable=False)  # in IDR (total billed)
     status = Column(String(20), default="paid")
     payment_method = Column(String(50), default="qris")
     idempotency_key = Column(String(100), index=True, nullable=True)
@@ -370,6 +373,7 @@ _DEFAULT_POLICIES = {
     "default_ai_engine": "auto",
     "enable_proactive_nudge": True,
     "enable_auto_subtasks": True,
+    "tax_rate_percent": 11,
 }
 
 def get_system_policies(db) -> dict:
@@ -378,6 +382,14 @@ def get_system_policies(db) -> dict:
     if not isinstance(saved, dict):
         saved = {}
     return {**_DEFAULT_POLICIES, **saved}
+
+
+def set_system_policies(db, policies: dict):
+    """Save or update system policies."""
+    current = get_system_policies(db)
+    updated = {**current, **policies}
+    set_security_log(db, "system_policies", updated)
+    return updated
 # ────────────────────────────────────────────────────────────────────────────
 
 
@@ -426,6 +438,9 @@ def setup_db():
             "company_name VARCHAR(255)",
             "tax_id VARCHAR(50)",
             "billing_address TEXT",
+            "subtotal INTEGER",
+            "tax_rate FLOAT DEFAULT 0.0",
+            "tax_amount INTEGER DEFAULT 0",
         ]:
             try:
                 db.execute(text(f"ALTER TABLE invoices ADD COLUMN IF NOT EXISTS {col_def}"))

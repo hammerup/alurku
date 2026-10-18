@@ -224,6 +224,7 @@ class SystemPolicyModel(BaseModel):
     default_ai_engine: Optional[str] = "auto"
     enable_proactive_nudge: Optional[bool] = True
     enable_auto_subtasks: Optional[bool] = True
+    tax_rate_percent: Optional[float] = 11.0
 
 
 class ContentModerationActionModel(BaseModel):
@@ -276,6 +277,9 @@ class InvoiceResponseModel(BaseModel):
     username: str
     tier: str
     billing_cycle: str
+    subtotal: Optional[int] = None
+    tax_rate: Optional[float] = 0.0
+    tax_amount: Optional[int] = 0
     amount: int
     status: str
     payment_method: str

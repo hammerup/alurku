@@ -16,6 +16,7 @@ export default function AdminPoliciesTab({ language, showNotification }) {
     default_ai_engine: 'auto',
     enable_proactive_nudge: true,
     enable_auto_subtasks: true,
+    tax_rate_percent: 11,
   });
   const [isPoliciesSaving, setIsPoliciesSaving] = useState(false);
 
@@ -231,6 +232,43 @@ export default function AdminPoliciesTab({ language, showNotification }) {
                 onChange={(e) => setPolicies({ ...policies, enable_auto_subtasks: e.target.checked })}
                 className="w-5 h-5 accent-[#111E38] dark:accent-[#FACC15] cursor-pointer"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Box 5: Tax & Invoicing Policies (PPN) */}
+        <div className="bg-white dark:bg-[#121B2D] border border-neutral-200/80 dark:border-neutral-800/80 p-6 rounded-3xl shadow-2xs space-y-4 md:col-span-2">
+          <div className="flex items-center gap-2 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+            <span className="material-symbols-outlined text-emerald-500">receipt_long</span>
+            <h3 className="text-sm font-extrabold text-[#111E38] dark:text-white">
+              {tMsg('Tax & Billing Policies (PPN)', 'Kebijakan Pajak & Penagihan (PPN)')}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+            <div>
+              <label className="block text-xs font-bold text-neutral-700 dark:text-neutral-300 mb-1.5">
+                {tMsg('Value Added Tax (PPN) %', 'Tarif Pajak Pertambahan Nilai (PPN) %')}
+              </label>
+              <div className="relative w-full max-w-xs">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={policies.tax_rate_percent ?? 11}
+                  onChange={(e) => setPolicies({ ...policies, tax_rate_percent: parseFloat(e.target.value) || 0 })}
+                  className="w-full p-3 pr-8 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-bold outline-none focus:border-[#111E38] dark:focus:border-[#FACC15]"
+                  placeholder="11"
+                />
+                <span className="absolute right-3 top-3 text-xs font-bold text-neutral-400">%</span>
+              </div>
+            </div>
+            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-relaxed">
+              {tMsg(
+                'The tax percentage is automatically applied during checkout and printed on official tax receipts / invoices. Default per Indonesian Tax Law (UU HPP) is 11%, or set 0% for non-PKP / non-taxable entities.',
+                'Persentase tarif PPN yang otomatis dihitung saat pengguna melakukan checkout langganan dan tertera pada faktur resmi. Standar UU HPP Indonesia adalah 11%, atau atur 0% untuk instansi non-PKP.'
+              )}
             </div>
           </div>
         </div>
